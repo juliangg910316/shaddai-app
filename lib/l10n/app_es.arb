@@ -1,0 +1,21 @@
+{
+  "appTitle": "D'Shaddai",
+  "@appTitle": {
+    "description": "El nombre de la aplicación"
+  },
+  "bookAppointment": "Reservar Turno",
+  "welcomeBack": "Bienvenida, {name}",
+  "@welcomeBack": {
+    "placeholders": {
+      "name": {
+        "type": "String",
+        "example": "María"
+      }
+    }
+  },
+  "homeTab": "Inicio",
+  "servicesTab": "Servicios",
+  "appointmentsTab": "Turnos",
+  "profileTab": "Perfil",
+  "adminTab": "Admin"
+}

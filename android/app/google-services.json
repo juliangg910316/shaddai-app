@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "788834679654",
+    "project_id": "shaddai-68df1",
+    "storage_bucket": "shaddai-68df1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:788834679654:android:3c1b01df542ce56afc66a7",
+        "android_client_info": {
+          "package_name": "com.juliangg.shaddai"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAfzmaH8f0j6CjleVaudHTIUtVa9lpXphc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

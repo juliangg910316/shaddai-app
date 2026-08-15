@@ -1,0 +1,10 @@
+{
+  "appTitle": "D'Shaddai",
+  "bookAppointment": "Agendar Horário",
+  "welcomeBack": "Bem-vinda, {name}",
+  "homeTab": "Início",
+  "servicesTab": "Serviços",
+  "appointmentsTab": "Horários",
+  "profileTab": "Perfil",
+  "adminTab": "Admin"
+}
