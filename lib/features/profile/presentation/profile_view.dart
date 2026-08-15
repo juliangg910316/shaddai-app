@@ -15,7 +15,9 @@ class ProfileView extends ConsumerWidget {
     final appointmentsAsync = ref.watch(clientAppointmentsProvider);
 
     if (user == null) {
-      return const Center(child: CircularProgressIndicator(color: ThemeColors.darkGreen));
+      return const Center(
+        child: CircularProgressIndicator(color: ThemeColors.darkGreen),
+      );
     }
 
     return Scaffold(
@@ -28,7 +30,7 @@ class ProfileView extends ConsumerWidget {
             onPressed: () {
               ref.read(authControllerProvider.notifier).signOut();
             },
-          )
+          ),
         ],
       ),
       body: SafeArea(
@@ -48,7 +50,11 @@ class ProfileView extends ConsumerWidget {
                     const CircleAvatar(
                       radius: 50,
                       backgroundColor: ThemeColors.darkGreen,
-                      child: Icon(Icons.person, size: 50, color: ThemeColors.gold),
+                      child: Icon(
+                        Icons.person,
+                        size: 50,
+                        color: ThemeColors.gold,
+                      ),
                     ),
                   const SizedBox(height: 16),
                   Text(
@@ -63,7 +69,10 @@ class ProfileView extends ConsumerWidget {
                   const SizedBox(height: 4),
                   Text(
                     user.phoneNumber ?? user.email,
-                    style: const TextStyle(color: ThemeColors.olive, fontSize: 16),
+                    style: const TextStyle(
+                      color: ThemeColors.olive,
+                      fontSize: 16,
+                    ),
                   ),
                 ],
               ),
@@ -83,12 +92,20 @@ class ProfileView extends ConsumerWidget {
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       backgroundColor: ThemeColors.darkGreen,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
                     ),
-                    icon: const Icon(Icons.admin_panel_settings, color: ThemeColors.gold),
+                    icon: const Icon(
+                      Icons.admin_panel_settings,
+                      color: ThemeColors.gold,
+                    ),
                     label: const Text(
                       'PANEL DE ADMINISTRADOR',
-                      style: TextStyle(color: ThemeColors.gold, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        color: ThemeColors.gold,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -117,7 +134,11 @@ class ProfileView extends ConsumerWidget {
             // Appointments List
             Expanded(
               child: appointmentsAsync.when(
-                loading: () => const Center(child: CircularProgressIndicator(color: ThemeColors.darkGreen)),
+                loading: () => const Center(
+                  child: CircularProgressIndicator(
+                    color: ThemeColors.darkGreen,
+                  ),
+                ),
                 error: (err, stack) => Center(child: Text('Error: $err')),
                 data: (appointments) {
                   if (appointments.isEmpty) {
@@ -130,9 +151,11 @@ class ProfileView extends ConsumerWidget {
                     itemCount: appointments.length,
                     itemBuilder: (context, index) {
                       final app = appointments[index];
-                      final dateStr = DateFormat('dd MMM yyyy').format(app.startTime);
+                      final dateStr = DateFormat(
+                        'dd MMM yyyy',
+                      ).format(app.startTime);
                       final timeStr = DateFormat('HH:mm').format(app.startTime);
-                      
+
                       Color statusColor;
                       String statusText;
                       switch (app.status) {
@@ -151,7 +174,9 @@ class ProfileView extends ConsumerWidget {
 
                       return Card(
                         margin: const EdgeInsets.only(bottom: 12),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         child: ListTile(
                           contentPadding: const EdgeInsets.all(16),
                           leading: Container(
@@ -160,17 +185,26 @@ class ProfileView extends ConsumerWidget {
                               color: ThemeColors.bone,
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const Icon(Icons.calendar_today, color: ThemeColors.darkGreen),
+                            child: const Icon(
+                              Icons.calendar_today,
+                              color: ThemeColors.darkGreen,
+                            ),
                           ),
                           title: Text(
                             '$dateStr a las $timeStr',
-                            style: const TextStyle(fontWeight: FontWeight.bold, color: ThemeColors.black),
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: ThemeColors.black,
+                            ),
                           ),
                           subtitle: Padding(
-                            padding: const EdgeInsets.top(8.0),
+                            padding: const EdgeInsets.only(top: 8.0),
                             child: Text(
                               statusText,
-                              style: TextStyle(color: statusColor, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                color: statusColor,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                         ),
@@ -179,7 +213,7 @@ class ProfileView extends ConsumerWidget {
                   );
                 },
               ),
-            )
+            ),
           ],
         ),
       ),
