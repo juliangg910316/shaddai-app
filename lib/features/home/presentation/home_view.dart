@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/theme_colors.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import '/l10n/app_localizations.dart';
 import '../../auth/providers/auth_provider.dart';
 
 class HomeView extends ConsumerWidget {
@@ -43,20 +43,29 @@ class HomeView extends ConsumerWidget {
               else
                 const Padding(
                   padding: EdgeInsets.only(right: 16.0),
-                  child: Icon(Icons.account_circle, color: ThemeColors.darkGreen, size: 32),
+                  child: Icon(
+                    Icons.account_circle,
+                    color: ThemeColors.darkGreen,
+                    size: 32,
+                  ),
                 ),
             ],
           ),
-          
+
           SliverToBoxAdapter(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Welcome Message
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20.0,
+                    vertical: 8.0,
+                  ),
                   child: Text(
-                    l10n.welcomeBack(currentUser?.displayName?.split(' ').first ?? "Invitada"),
+                    l10n.welcomeBack(
+                      currentUser?.displayName?.split(' ').first ?? "Invitada",
+                    ),
                     style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w600,
@@ -73,7 +82,9 @@ class HomeView extends ConsumerWidget {
                     color: ThemeColors.white,
                     borderRadius: BorderRadius.circular(24),
                     image: DecorationImage(
-                      image: const NetworkImage('https://images.unsplash.com/photo-1522337660859-02fbefca4702?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'),
+                      image: const NetworkImage(
+                        'https://images.unsplash.com/photo-1522337660859-02fbefca4702?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                      ),
                       fit: BoxFit.cover,
                       colorFilter: ColorFilter.mode(
                         Colors.black.withOpacity(0.5),
@@ -141,9 +152,24 @@ class HomeView extends ConsumerWidget {
                     scrollDirection: Axis.horizontal,
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     children: [
-                      _buildServiceCard('Manicure Clásica', '45 min', '\$25', 'https://images.unsplash.com/photo-1604654894610-df63bc536371?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'),
-                      _buildServiceCard('Acrílicas Full', '90 min', '\$55', 'https://images.unsplash.com/photo-1519014816548-bf5fe059e98b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'),
-                      _buildServiceCard('Pedicure Spa', '60 min', '\$40', 'https://images.unsplash.com/photo-1516975080661-460d3fc3cfa5?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'),
+                      _buildServiceCard(
+                        'Manicure Clásica',
+                        '45 min',
+                        '\$25',
+                        'https://images.unsplash.com/photo-1604654894610-df63bc536371?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+                      ),
+                      _buildServiceCard(
+                        'Acrílicas Full',
+                        '90 min',
+                        '\$55',
+                        'https://images.unsplash.com/photo-1519014816548-bf5fe059e98b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+                      ),
+                      _buildServiceCard(
+                        'Pedicure Spa',
+                        '60 min',
+                        '\$40',
+                        'https://images.unsplash.com/photo-1516975080661-460d3fc3cfa5?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+                      ),
                     ],
                   ),
                 ),
@@ -162,10 +188,18 @@ class HomeView extends ConsumerWidget {
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
                     children: [
-                      _buildGalleryImage('https://images.unsplash.com/photo-1595868846114-1e75ff41cb5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'),
-                      _buildGalleryImage('https://images.unsplash.com/photo-1512496015851-a1cbf89a09c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'),
-                      _buildGalleryImage('https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'),
-                      _buildGalleryImage('https://images.unsplash.com/photo-1519014816548-bf5fe059e98b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80'),
+                      _buildGalleryImage(
+                        'https://images.unsplash.com/photo-1595868846114-1e75ff41cb5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+                      ),
+                      _buildGalleryImage(
+                        'https://images.unsplash.com/photo-1512496015851-a1cbf89a09c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+                      ),
+                      _buildGalleryImage(
+                        'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+                      ),
+                      _buildGalleryImage(
+                        'https://images.unsplash.com/photo-1519014816548-bf5fe059e98b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
+                      ),
                     ],
                   ),
                 ),
@@ -176,12 +210,17 @@ class HomeView extends ConsumerWidget {
                 _buildSectionTitle('Encuéntranos'),
                 const SizedBox(height: 16),
                 Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
                     color: ThemeColors.white,
                     borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: ThemeColors.gold.withOpacity(0.5)),
+                    border: Border.all(
+                      color: ThemeColors.gold.withOpacity(0.5),
+                    ),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -194,18 +233,30 @@ class HomeView extends ConsumerWidget {
                               color: ThemeColors.bone,
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            child: const Icon(Icons.location_on, color: ThemeColors.darkGreen),
+                            child: const Icon(
+                              Icons.location_on,
+                              color: ThemeColors.darkGreen,
+                            ),
                           ),
                           const SizedBox(width: 16),
                           const Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text('D\'Shaddai Studio', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                                Text('Av. Principal 123, Centro', style: TextStyle(color: ThemeColors.olive)),
+                                Text(
+                                  'D\'Shaddai Studio',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                Text(
+                                  'Av. Principal 123, Centro',
+                                  style: TextStyle(color: ThemeColors.olive),
+                                ),
                               ],
                             ),
-                          )
+                          ),
                         ],
                       ),
                       const SizedBox(height: 24),
@@ -216,21 +267,32 @@ class HomeView extends ConsumerWidget {
                           borderRadius: BorderRadius.circular(12),
                           color: Colors.grey[300],
                           image: const DecorationImage(
-                            image: NetworkImage('https://images.unsplash.com/photo-1524661135-423995f22d0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80'), // Placeholder for Map
+                            image: NetworkImage(
+                              'https://images.unsplash.com/photo-1524661135-423995f22d0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+                            ), // Placeholder for Map
                             fit: BoxFit.cover,
-                          )
+                          ),
                         ),
                         child: Center(
                           child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
                             decoration: BoxDecoration(
                               color: ThemeColors.darkGreen.withOpacity(0.9),
                               borderRadius: BorderRadius.circular(20),
                             ),
-                            child: const Text('Ver en el Mapa', style: TextStyle(color: ThemeColors.gold, fontWeight: FontWeight.bold)),
+                            child: const Text(
+                              'Ver en el Mapa',
+                              style: TextStyle(
+                                color: ThemeColors.gold,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           ),
                         ),
-                      )
+                      ),
                     ],
                   ),
                 ),
@@ -238,7 +300,7 @@ class HomeView extends ConsumerWidget {
                 const SizedBox(height: 40),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
@@ -259,13 +321,22 @@ class HomeView extends ConsumerWidget {
               fontFamily: 'serif',
             ),
           ),
-          const Icon(Icons.arrow_forward_ios, size: 16, color: ThemeColors.gold),
+          const Icon(
+            Icons.arrow_forward_ios,
+            size: 16,
+            color: ThemeColors.gold,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildServiceCard(String title, String duration, String price, String imageUrl) {
+  Widget _buildServiceCard(
+    String title,
+    String duration,
+    String price,
+    String imageUrl,
+  ) {
     return Container(
       width: 160,
       margin: const EdgeInsets.symmetric(horizontal: 8),
@@ -299,23 +370,33 @@ class HomeView extends ConsumerWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: ThemeColors.darkGreen),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: ThemeColors.darkGreen,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
                 Text(
                   duration,
-                  style: const TextStyle(color: ThemeColors.olive, fontSize: 12),
+                  style: const TextStyle(
+                    color: ThemeColors.olive,
+                    fontSize: 12,
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   price,
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: ThemeColors.gold, fontSize: 16),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: ThemeColors.gold,
+                    fontSize: 16,
+                  ),
                 ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
@@ -324,10 +405,7 @@ class HomeView extends ConsumerWidget {
   Widget _buildGalleryImage(String imageUrl) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
-      child: Image.network(
-        imageUrl,
-        fit: BoxFit.cover,
-      ),
+      child: Image.network(imageUrl, fit: BoxFit.cover),
     );
   }
 }
