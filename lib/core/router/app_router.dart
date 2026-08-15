@@ -31,15 +31,30 @@ final sectionNavigatorKeyServices = GlobalKey<NavigatorState>();
 final sectionNavigatorKeyBooking = GlobalKey<NavigatorState>();
 final sectionNavigatorKeyProfile = GlobalKey<NavigatorState>();
 
+class RouterNotifier extends ChangeNotifier {
+  final Ref _ref;
+
+  RouterNotifier(this._ref) {
+    _ref.listen(authStateProvider, (_, _) => notifyListeners());
+    _ref.listen(currentUserProvider, (_, _) => notifyListeners());
+  }
+}
+
+final routerNotifierProvider = Provider<RouterNotifier>((ref) {
+  return RouterNotifier(ref);
+});
+
 final goRouterProvider = Provider<GoRouter>((ref) {
-  // Listen to Auth State and User State to trigger redirects
-  final authState = ref.watch(authStateProvider);
-  final currentUser = ref.watch(currentUserProvider);
+  final notifier = ref.watch(routerNotifierProvider);
 
   return GoRouter(
     navigatorKey: rootNavigatorKey,
     initialLocation: '/home',
+    refreshListenable: notifier,
     redirect: (context, state) {
+      final authState = ref.read(authStateProvider);
+      final currentUser = ref.read(currentUserProvider);
+
       final isLoggedIn = authState.value != null;
       final isLoggingIn = state.matchedLocation == '/login';
       final isPhoneCapture = state.matchedLocation == '/capture_phone';
