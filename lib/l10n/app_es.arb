@@ -13,6 +13,10 @@
       }
     }
   },
+  "welcomeGreeting": "Bienvenida,",
+  "@welcomeGreeting": {
+    "description": "Saludo del inicio, el nombre se muestra aparte y con otro color"
+  },
   "homeTab": "Inicio",
   "servicesTab": "Servicios",
   "appointmentsTab": "Turnos",

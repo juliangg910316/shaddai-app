@@ -14,73 +14,146 @@ class LoginView extends ConsumerWidget {
       backgroundColor: ThemeColors.bone,
       body: SafeArea(
         child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24.0),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 34, vertical: 40),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(
-                  Icons.spa,
-                  size: 80,
-                  color: ThemeColors.darkGreen,
+                // Monograma dentro del aro dorado
+                Container(
+                  width: 96,
+                  height: 96,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: ThemeColors.gold),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    "D'S",
+                    style: AppText.serif(
+                      size: 34,
+                      color: ThemeColors.gold,
+                      spacing: 1,
+                      height: 1,
+                    ),
+                  ),
                 ),
-                const SizedBox(height: 24),
-                const Text(
+                const SizedBox(height: 34),
+                Text(
                   "D'Shaddai",
-                  style: TextStyle(
-                    fontSize: 40,
-                    fontWeight: FontWeight.bold,
+                  style: AppText.serif(
+                    size: 46,
+                    color: ThemeColors.darkGreen,
+                    height: 1,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'NAIL DESIGNER · BEIDIS VIERA',
+                  textAlign: TextAlign.center,
+                  style: AppText.eyebrow(
+                    size: 10,
                     color: ThemeColors.gold,
-                    fontFamily: 'serif',
+                    spacing: 3.4,
                   ),
                 ),
-                const SizedBox(height: 8),
-                const Text(
-                  "Inicia sesión para agendar tu turno",
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: ThemeColors.olive,
+                const SizedBox(height: 30),
+                Container(
+                  width: 34,
+                  height: 1,
+                  color: ThemeColors.gold.withValues(alpha: 0.6),
+                ),
+                const SizedBox(height: 30),
+                SizedBox(
+                  width: 250,
+                  child: Text(
+                    'Inicia sesión para agendar tu turno',
+                    textAlign: TextAlign.center,
+                    style: AppText.sans(
+                      size: 16,
+                      weight: FontWeight.w300,
+                      color: ThemeColors.olive,
+                      height: 1.6,
+                    ),
                   ),
                 ),
-                const SizedBox(height: 48),
+                const SizedBox(height: 40),
                 if (authState.isLoading)
-                  const CircularProgressIndicator(color: ThemeColors.darkGreen)
-                else
-                  ElevatedButton.icon(
-                    onPressed: () {
-                      ref.read(authControllerProvider.notifier).signInWithGoogle();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                      backgroundColor: ThemeColors.white,
-                      foregroundColor: ThemeColors.black,
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
-                        side: BorderSide(color: Colors.grey.shade300),
+                  const SizedBox(
+                    height: 56,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: ThemeColors.darkGreen,
+                        strokeWidth: 2,
                       ),
                     ),
-                    icon: Image.network(
-                      'https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg',
-                      height: 24,
-                      errorBuilder: (context, error, stackTrace) => const Icon(Icons.login),
-                    ),
-                    label: const Text(
-                      "Continuar con Google",
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                    ),
+                  )
+                else
+                  _GoogleSignInButton(
+                    onPressed: () => ref
+                        .read(authControllerProvider.notifier)
+                        .signInWithGoogle(),
                   ),
                 if (authState.hasError) ...[
                   const SizedBox(height: 24),
                   Text(
-                    'Error: ${authState.error}',
-                    style: const TextStyle(color: Colors.red),
+                    '${authState.error}',
                     textAlign: TextAlign.center,
+                    style: AppText.sans(
+                      size: 12,
+                      color: ThemeColors.danger,
+                      height: 1.5,
+                    ),
                   ),
-                ]
+                ],
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _GoogleSignInButton extends StatelessWidget {
+  final VoidCallback onPressed;
+
+  const _GoogleSignInButton({required this.onPressed});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton(
+        onPressed: onPressed,
+        style: OutlinedButton.styleFrom(
+          backgroundColor: ThemeColors.white,
+          foregroundColor: ThemeColors.black,
+          padding: const EdgeInsets.symmetric(vertical: 17, horizontal: 24),
+          side: BorderSide(color: ThemeColors.darkGreen.withValues(alpha: 0.14)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.network(
+              'https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg',
+              height: 20,
+              width: 20,
+              errorBuilder: (context, error, stack) => const Icon(
+                Icons.g_mobiledata,
+                size: 22,
+                color: ThemeColors.darkGreen,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Text(
+              'Continuar con Google',
+              style: AppText.sans(size: 16, color: ThemeColors.black),
+            ),
+          ],
         ),
       ),
     );

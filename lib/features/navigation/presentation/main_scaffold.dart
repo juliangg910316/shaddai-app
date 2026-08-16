@@ -28,25 +28,26 @@ class MainScaffold extends StatelessWidget {
         backgroundColor: ThemeColors.darkGreen,
         selectedItemColor: ThemeColors.gold,
         unselectedItemColor: ThemeColors.bone.withValues(alpha: 0.6),
+        // El diseño usa iconos de trazo y etiquetas pequeñas, siempre visibles.
+        elevation: 0,
+        iconSize: 22,
+        selectedFontSize: 10,
+        unselectedFontSize: 10,
         items: [
           BottomNavigationBarItem(
             icon: const Icon(Icons.home_outlined),
-            activeIcon: const Icon(Icons.home),
             label: l10n.homeTab,
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.spa_outlined),
-            activeIcon: const Icon(Icons.spa),
             label: l10n.servicesTab,
           ),
           BottomNavigationBarItem(
-            icon: const Icon(Icons.calendar_month_outlined),
-            activeIcon: const Icon(Icons.calendar_month),
+            icon: const Icon(Icons.calendar_today_outlined),
             label: l10n.appointmentsTab,
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.person_outline),
-            activeIcon: const Icon(Icons.person),
             label: l10n.profileTab,
           ),
         ],

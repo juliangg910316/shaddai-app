@@ -20,6 +20,9 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String get welcomeGreeting => 'Bienvenida,';
+
+  @override
   String get homeTab => 'Inicio';
 
   @override

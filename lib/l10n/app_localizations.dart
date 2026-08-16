@@ -116,6 +116,12 @@ abstract class AppLocalizations {
   /// **'Bienvenida, {name}'**
   String welcomeBack(String name);
 
+  /// Saludo del inicio, el nombre se muestra aparte y con otro color
+  ///
+  /// In es, this message translates to:
+  /// **'Bienvenida,'**
+  String get welcomeGreeting;
+
   /// No description provided for @homeTab.
   ///
   /// In es, this message translates to:

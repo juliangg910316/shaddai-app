@@ -71,6 +71,17 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  # Tipografías de la identidad D'Shaddai:
+  # Cormorant Garamond para títulos, Jost para la UI.
+  # Ambas son variables (eje wght), Flutter interpola los pesos.
+  fonts:
+    - family: Cormorant Garamond
+      fonts:
+        - asset: assets/fonts/CormorantGaramond-Variable.ttf
+    - family: Jost
+      fonts:
+        - asset: assets/fonts/Jost-Variable.ttf
+
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

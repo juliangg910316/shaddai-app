@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/theme_colors.dart';
+import '../../../core/widgets/app_widgets.dart';
 import '../providers/auth_provider.dart';
 
 class PhoneCaptureView extends ConsumerStatefulWidget {
@@ -25,76 +26,124 @@ class _PhoneCaptureViewState extends ConsumerState<PhoneCaptureView> {
     if (phone.isEmpty || phone.length < 8) return;
 
     setState(() => _isLoading = true);
-    
+
     final user = ref.read(currentUserProvider).value;
     if (user != null) {
       await ref.read(userRepositoryProvider).updatePhoneNumber(user.uid, phone);
       // Forzar refresco para que GoRouter detecte que ya tiene teléfono
       ref.invalidate(currentUserProvider);
     }
-    
-    setState(() => _isLoading = false);
+
+    if (mounted) setState(() => _isLoading = false);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: ThemeColors.bone,
-      appBar: AppBar(
-        title: const Text('Completar Perfil'),
-        automaticallyImplyLeading: false, 
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              "Tu número se usará para mantener contacto directo con la manicuri por WhatsApp, lo que permitirá confirmar, mover o cancelar turnos.",
-              style: TextStyle(
-                fontSize: 16,
-                color: ThemeColors.olive,
-                height: 1.5,
-              ),
-            ),
-            const SizedBox(height: 32),
-            TextField(
-              controller: _phoneController,
-              keyboardType: TextInputType.phone,
-              decoration: InputDecoration(
-                labelText: 'Número de WhatsApp',
-                prefixIcon: const Icon(Icons.phone, color: ThemeColors.darkGreen),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: ThemeColors.darkGreen, width: 2),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 34, vertical: 32),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Monograma, igual que en la pantalla de acceso
+              Center(
+                child: Container(
+                  width: 76,
+                  height: 76,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: ThemeColors.gold),
+                  ),
+                  alignment: Alignment.center,
+                  child: Text(
+                    "D'S",
+                    style: AppText.serif(
+                      size: 26,
+                      color: ThemeColors.gold,
+                      spacing: 1,
+                      height: 1,
+                    ),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _savePhone,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: ThemeColors.darkGreen,
+              const SizedBox(height: 26),
+              Center(
+                child: Text(
+                  'Completar Perfil',
+                  style: AppText.serif(size: 30, color: ThemeColors.darkGreen),
                 ),
-                child: _isLoading 
-                    ? const CircularProgressIndicator(color: ThemeColors.gold)
-                    : const Text(
-                        'GUARDAR Y CONTINUAR',
-                        style: TextStyle(
-                          color: ThemeColors.gold,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1.2,
-                        ),
-                      ),
               ),
-            )
-          ],
+              const SizedBox(height: 10),
+              Center(
+                child: SizedBox(
+                  width: 260,
+                  child: Text(
+                    'Un último paso antes de agendar',
+                    textAlign: TextAlign.center,
+                    style: AppText.sans(
+                      size: 15,
+                      weight: FontWeight.w300,
+                      color: ThemeColors.olive,
+                      height: 1.6,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 34),
+              Text('TU WHATSAPP', style: AppText.eyebrow()),
+              const SizedBox(height: 8),
+              TextField(
+                controller: _phoneController,
+                keyboardType: TextInputType.phone,
+                cursorColor: ThemeColors.gold,
+                style: AppText.sans(size: 16, color: ThemeColors.darkGreen),
+                decoration: InputDecoration(
+                  hintText: '+58 412 555 0134',
+                  prefixIcon: const Padding(
+                    padding: EdgeInsets.only(left: 16, right: 10),
+                    child: WhatsAppIcon(),
+                  ),
+                  prefixIconConstraints: const BoxConstraints(
+                    minWidth: 0,
+                    minHeight: 0,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 9),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2),
+                child: Text(
+                  'Beidis te escribe por WhatsApp para confirmar tu turno, '
+                  'coordinar cambios y avisarte si se libera un horario. '
+                  'No lo compartimos con nadie más.',
+                  style: AppText.sans(
+                    size: 12,
+                    weight: FontWeight.w300,
+                    color: ThemeColors.olive,
+                    height: 1.6,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 30),
+              if (_isLoading)
+                const SizedBox(
+                  height: 54,
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: ThemeColors.darkGreen,
+                      strokeWidth: 2,
+                    ),
+                  ),
+                )
+              else
+                GoldPillButton(
+                  label: 'GUARDAR Y CONTINUAR',
+                  onPressed: _savePhone,
+                ),
+            ],
+          ),
         ),
       ),
     );

@@ -2,6 +2,7 @@
   "appTitle": "D'Shaddai",
   "bookAppointment": "Agendar Horário",
   "welcomeBack": "Bem-vinda, {name}",
+  "welcomeGreeting": "Bem-vinda,",
   "homeTab": "Início",
   "servicesTab": "Serviços",
   "appointmentsTab": "Horários",
