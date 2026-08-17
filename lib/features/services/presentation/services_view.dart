@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/constants/theme_colors.dart';
 import '../../../core/widgets/app_widgets.dart';
+import '../../../l10n/app_localizations.dart';
 
 /// Carta de servicios fija hasta definir de qué colección se lee.
 class _Service {
@@ -20,47 +21,46 @@ class _ServiceCategory {
   const _ServiceCategory(this.title, this.services);
 }
 
-const _catalog = <_ServiceCategory>[
-  _ServiceCategory('Manicure', [
+List<_ServiceCategory> _catalog(AppLocalizations l10n) => [
+  _ServiceCategory(l10n.categoryManicure, [
     _Service(
-      'Manicure Clásica',
-      'Limpieza, exfoliación, masaje y esmaltado tradicional.',
-      '45 min',
+      l10n.serviceManicureClassicName,
+      l10n.serviceManicureClassicDesc,
+      l10n.duration45Min,
       '\$25',
     ),
     _Service(
-      'Manicure Semipermanente',
-      'Limpieza profunda y esmaltado de larga duración (Gel).',
-      '60 min',
+      l10n.serviceManicureSemipermName,
+      l10n.serviceManicureSemipermDesc,
+      l10n.duration60Min,
       '\$35',
     ),
   ]),
-  _ServiceCategory('Acrílicas & Gel', [
+  _ServiceCategory(l10n.categoryAcrylicGel, [
     _Service(
-      'Set Nuevo Acrílicas',
-      'Uñas acrílicas con molde o tip, largo medio. Incluye esmaltado.',
-      '90 min',
+      l10n.serviceAcrylicSetName,
+      l10n.serviceAcrylicSetDesc,
+      l10n.duration90Min,
       '\$55',
     ),
     _Service(
-      'Retoque Acrílico',
-      'Relleno de crecimiento (hasta 3 semanas).',
-      '60 min',
+      l10n.serviceAcrylicTouchupName,
+      l10n.serviceAcrylicTouchupDesc,
+      l10n.duration60Min,
       '\$30',
     ),
   ]),
-  _ServiceCategory('Pedicure', [
+  _ServiceCategory(l10n.categoryPedicure, [
     _Service(
-      'Pedicure Spa',
-      'Limpieza profunda, remoción de callosidades, exfoliación, '
-          'mascarilla y esmaltado.',
-      '60 min',
+      l10n.servicePedicureSpaName,
+      l10n.servicePedicureSpaDesc,
+      l10n.duration60Min,
       '\$40',
     ),
     _Service(
-      'Jelly Pedicure',
-      'Terapia de hidratación profunda con textura gelatinosa relajante.',
-      '75 min',
+      l10n.serviceJellyPedicureName,
+      l10n.serviceJellyPedicureDesc,
+      l10n.duration75Min,
       '\$50',
     ),
   ]),
@@ -71,6 +71,8 @@ class ServicesView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final catalog = _catalog(AppLocalizations.of(context)!);
+
     return Scaffold(
       backgroundColor: ThemeColors.bone,
       body: Column(
@@ -80,7 +82,7 @@ class ServicesView extends StatelessWidget {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(20, 22, 20, 40),
               children: [
-                for (final category in _catalog) ...[
+                for (final category in catalog) ...[
                   SectionHeading(category.title, size: 22),
                   const SizedBox(height: 16),
                   for (final service in category.services) ...[
@@ -103,6 +105,8 @@ class _ServicesHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       width: double.infinity,
       padding: EdgeInsets.only(
@@ -120,12 +124,12 @@ class _ServicesHeader extends StatelessWidget {
       child: Column(
         children: [
           Text(
-            'Nuestros Servicios',
+            l10n.ourServicesTitle,
             style: AppText.serif(size: 24, color: ThemeColors.darkGreen),
           ),
           const SizedBox(height: 4),
           Text(
-            "CARTA D'SHADDAI",
+            l10n.servicesMenuEyebrow,
             style: AppText.eyebrow(
               size: 11,
               color: ThemeColors.gold,
@@ -219,7 +223,7 @@ class _ServiceCard extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  'RESERVAR',
+                  AppLocalizations.of(context)!.bookAction,
                   style: AppText.sans(
                     size: 12,
                     weight: FontWeight.w500,

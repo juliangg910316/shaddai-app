@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../../core/constants/spanish_dates.dart';
 import '../../../core/constants/theme_colors.dart';
 import '../../../core/widgets/app_widgets.dart';
+import '../../../l10n/app_localizations.dart';
 import '../providers/booking_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../data/models/appointment_model.dart';
@@ -19,10 +20,19 @@ class _ServiceOption {
   const _ServiceOption(this.chipLabel, this.summaryLabel);
 }
 
-const _serviceOptions = <_ServiceOption>[
-  _ServiceOption('Clásica 45m', 'Clásica 45 min'),
-  _ServiceOption('Semiperm. 60m', 'Semiperm. 60 min'),
-  _ServiceOption('Acrílicas 90m', 'Acrílicas 90 min'),
+List<_ServiceOption> _serviceOptions(AppLocalizations l10n) => [
+  _ServiceOption(
+    l10n.serviceOptionClassicChip,
+    l10n.serviceOptionClassicSummary,
+  ),
+  _ServiceOption(
+    l10n.serviceOptionSemipermChip,
+    l10n.serviceOptionSemipermSummary,
+  ),
+  _ServiceOption(
+    l10n.serviceOptionAcrylicChip,
+    l10n.serviceOptionAcrylicSummary,
+  ),
 ];
 
 class BookingView extends ConsumerStatefulWidget {
@@ -38,6 +48,7 @@ class _BookingViewState extends ConsumerState<BookingView> {
   DateTime? _selectedSlot;
 
   Future<void> _confirmBooking(DateTime slot) async {
+    final l10n = AppLocalizations.of(context)!;
     final user = ref.read(currentUserProvider).value;
     if (user == null) return;
 
@@ -50,16 +61,14 @@ class _BookingViewState extends ConsumerState<BookingView> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Confirmar Reserva'),
-          content: Text(
-            '¿Deseas reservar tu turno para el día $dateStr a las $timeStr?',
-          ),
+          title: Text(l10n.confirmBookingDialogTitle),
+          content: Text(l10n.confirmBookingDialogBody(dateStr, timeStr)),
           actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
               child: Text(
-                'CANCELAR',
+                l10n.cancelAction,
                 style: AppText.sans(
                   size: 12,
                   weight: FontWeight.w500,
@@ -71,7 +80,7 @@ class _BookingViewState extends ConsumerState<BookingView> {
             ElevatedButton(
               onPressed: () => Navigator.of(context).pop(true),
               child: Text(
-                'CONFIRMAR',
+                l10n.confirmAction,
                 style: AppText.sans(
                   size: 12,
                   weight: FontWeight.w600,
@@ -107,19 +116,15 @@ class _BookingViewState extends ConsumerState<BookingView> {
 
         if (mounted) {
           setState(() => _selectedSlot = null);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                '¡Reserva creada exitosamente! Esperando confirmación del administrador.',
-              ),
-            ),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(l10n.bookingCreatedSuccess)));
         }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Error al crear la reserva: $e'),
+              content: Text(l10n.bookingCreateError(e)),
               backgroundColor: ThemeColors.danger,
             ),
           );
@@ -134,8 +139,10 @@ class _BookingViewState extends ConsumerState<BookingView> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final selectedDate = ref.watch(selectedDateProvider);
     final availableSlots = ref.watch(availableSlotsProvider);
+    final serviceOptions = _serviceOptions(l10n);
 
     return Scaffold(
       backgroundColor: ThemeColors.bone,
@@ -155,7 +162,7 @@ class _BookingViewState extends ConsumerState<BookingView> {
                   children: [
                     Center(
                       child: Text(
-                        'Reservar Turno',
+                        l10n.bookAppointment,
                         style: AppText.serif(
                           size: 24,
                           color: ThemeColors.darkGreen,
@@ -165,7 +172,10 @@ class _BookingViewState extends ConsumerState<BookingView> {
                     const SizedBox(height: 18),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Text('1 · SERVICIO', style: AppText.eyebrow()),
+                      child: Text(
+                        l10n.stepServiceLabel,
+                        style: AppText.eyebrow(),
+                      ),
                     ),
                     const SizedBox(height: 9),
                     Padding(
@@ -174,12 +184,11 @@ class _BookingViewState extends ConsumerState<BookingView> {
                         spacing: 7,
                         runSpacing: 7,
                         children: [
-                          for (var i = 0; i < _serviceOptions.length; i++)
+                          for (var i = 0; i < serviceOptions.length; i++)
                             _ServiceChip(
-                              label: _serviceOptions[i].chipLabel,
+                              label: serviceOptions[i].chipLabel,
                               selected: i == _selectedService,
-                              onTap: () =>
-                                  setState(() => _selectedService = i),
+                              onTap: () => setState(() => _selectedService = i),
                             ),
                         ],
                       ),
@@ -187,7 +196,7 @@ class _BookingViewState extends ConsumerState<BookingView> {
                     const SizedBox(height: 14),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Text('2 · FECHA', style: AppText.eyebrow()),
+                      child: Text(l10n.stepDateLabel, style: AppText.eyebrow()),
                     ),
                     _BookingCalendar(
                       selectedDate: selectedDate,
@@ -211,7 +220,7 @@ class _BookingViewState extends ConsumerState<BookingView> {
                       textBaseline: TextBaseline.alphabetic,
                       children: [
                         Text(
-                          '3 · Horario',
+                          l10n.stepTimeLabel,
                           style: AppText.serif(
                             size: 21,
                             color: ThemeColors.darkGreen,
@@ -222,7 +231,7 @@ class _BookingViewState extends ConsumerState<BookingView> {
                           child: Text(
                             '${SpanishDates.weekdayShort(selectedDate)} '
                             '${selectedDate.day} · '
-                            '${_serviceOptions[_selectedService].summaryLabel}',
+                            '${serviceOptions[_selectedService].summaryLabel}',
                             textAlign: TextAlign.right,
                             overflow: TextOverflow.ellipsis,
                             style: AppText.sans(
@@ -248,7 +257,7 @@ class _BookingViewState extends ConsumerState<BookingView> {
                       error: (err, stack) => Padding(
                         padding: const EdgeInsets.symmetric(vertical: 30),
                         child: Text(
-                          'No pudimos cargar los horarios: $err',
+                          l10n.slotsLoadError(err),
                           style: AppText.sans(
                             size: 13,
                             color: ThemeColors.danger,
@@ -265,8 +274,10 @@ class _BookingViewState extends ConsumerState<BookingView> {
                     const SizedBox(height: 16),
                     GoldPillButton(
                       label: _selectedSlot == null
-                          ? 'ELIGE UN HORARIO'
-                          : 'CONFIRMAR ${DateFormat('HH:mm').format(_selectedSlot!)}',
+                          ? l10n.chooseTimeSlotAction
+                          : l10n.confirmAtTimeAction(
+                              DateFormat('HH:mm').format(_selectedSlot!),
+                            ),
                       onPressed: _selectedSlot == null
                           ? null
                           : () => _confirmBooking(_selectedSlot!),
@@ -276,9 +287,9 @@ class _BookingViewState extends ConsumerState<BookingView> {
                       child: Text.rich(
                         TextSpan(
                           children: [
-                            const TextSpan(text: 'Tu turno quedará en '),
+                            TextSpan(text: l10n.bookingPendingNoticePrefix),
                             TextSpan(
-                              text: 'Esperando confirmación',
+                              text: l10n.bookingPendingNoticeHighlight,
                               style: AppText.sans(
                                 size: 11.5,
                                 weight: FontWeight.w300,
@@ -286,9 +297,7 @@ class _BookingViewState extends ConsumerState<BookingView> {
                                 height: 1.5,
                               ),
                             ),
-                            const TextSpan(
-                              text: ' hasta que Beidis lo apruebe.',
-                            ),
+                            TextSpan(text: l10n.bookingPendingNoticeSuffix),
                           ],
                         ),
                         textAlign: TextAlign.center,
@@ -400,8 +409,7 @@ class _BookingCalendar extends StatelessWidget {
           ),
           leftChevronPadding: EdgeInsets.zero,
           rightChevronPadding: EdgeInsets.zero,
-          titleTextFormatter: (date, locale) =>
-              SpanishDates.monthAndYear(date),
+          titleTextFormatter: (date, locale) => SpanishDates.monthAndYear(date),
           titleTextStyle: AppText.serif(
             size: 18,
             color: ThemeColors.darkGreen,
@@ -409,8 +417,7 @@ class _BookingCalendar extends StatelessWidget {
           ),
         ),
         daysOfWeekStyle: DaysOfWeekStyle(
-          dowTextFormatter: (date, locale) =>
-              SpanishDates.weekdayInitial(date),
+          dowTextFormatter: (date, locale) => SpanishDates.weekdayInitial(date),
           weekdayStyle: AppText.sans(
             size: 10,
             color: ThemeColors.olive,
@@ -441,10 +448,7 @@ class _BookingCalendar extends StatelessWidget {
             color: ThemeColors.gold.withValues(alpha: 0.28),
             shape: BoxShape.circle,
           ),
-          todayTextStyle: AppText.sans(
-            size: 14,
-            color: ThemeColors.darkGreen,
-          ),
+          todayTextStyle: AppText.sans(size: 14, color: ThemeColors.darkGreen),
           selectedDecoration: const BoxDecoration(
             color: ThemeColors.darkGreen,
             shape: BoxShape.circle,
@@ -478,7 +482,7 @@ class _SlotSection extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 26),
         child: Center(
           child: Text(
-            'No hay horarios disponibles para esta fecha.',
+            AppLocalizations.of(context)!.noSlotsAvailable,
             style: AppText.sans(
               size: 13,
               weight: FontWeight.w300,

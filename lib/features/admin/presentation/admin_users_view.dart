@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/theme_colors.dart';
 import '../../../core/widgets/app_widgets.dart';
+import '../../../l10n/app_localizations.dart';
 import '../providers/admin_provider.dart';
 
 class AdminUsersView extends ConsumerWidget {
@@ -9,11 +10,12 @@ class AdminUsersView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final usersAsync = ref.watch(adminUsersProvider);
 
     return Scaffold(
       backgroundColor: ThemeColors.bone,
-      appBar: AppBar(title: const Text('Clientes')),
+      appBar: AppBar(title: Text(l10n.adminClientsTitle)),
       body: usersAsync.when(
         loading: () => const Center(
           child: CircularProgressIndicator(
@@ -25,7 +27,7 @@ class AdminUsersView extends ConsumerWidget {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Text(
-              'No pudimos cargar los clientes: $err',
+              l10n.adminClientsLoadError(err),
               textAlign: TextAlign.center,
               style: AppText.sans(size: 13, color: ThemeColors.danger),
             ),
@@ -35,7 +37,7 @@ class AdminUsersView extends ConsumerWidget {
           if (users.isEmpty) {
             return Center(
               child: Text(
-                'No hay clientes registrados.',
+                l10n.adminNoClientsRegistered,
                 style: AppText.sans(
                   size: 13,
                   weight: FontWeight.w300,
@@ -86,7 +88,9 @@ class AdminUsersView extends ConsumerWidget {
                           ),
                           const SizedBox(height: 5),
                           Text(
-                            user.isBlocked ? 'BLOQUEADA' : 'ACTIVA',
+                            user.isBlocked
+                                ? l10n.userStatusBlocked
+                                : l10n.userStatusActive,
                             style: AppText.eyebrow(
                               size: 10,
                               spacing: 1.6,

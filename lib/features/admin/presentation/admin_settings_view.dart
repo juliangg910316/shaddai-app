@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/theme_colors.dart';
 import '../../../core/widgets/app_widgets.dart';
 import '../../../data/models/calendar_settings_model.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../booking/providers/booking_provider.dart';
 import '../providers/admin_provider.dart';
 
@@ -27,14 +28,14 @@ class _AdminSettingsViewState extends ConsumerState<AdminSettingsView> {
     'sunday',
   ];
 
-  final Map<String, String> _esNames = {
-    'monday': 'Lunes',
-    'tuesday': 'Martes',
-    'wednesday': 'Miércoles',
-    'thursday': 'Jueves',
-    'friday': 'Viernes',
-    'saturday': 'Sábado',
-    'sunday': 'Domingo',
+  Map<String, String> _dayNames(AppLocalizations l10n) => {
+    'monday': l10n.weekdayMonday,
+    'tuesday': l10n.weekdayTuesday,
+    'wednesday': l10n.weekdayWednesday,
+    'thursday': l10n.weekdayThursday,
+    'friday': l10n.weekdayFriday,
+    'saturday': l10n.weekdaySaturday,
+    'sunday': l10n.weekdaySunday,
   };
 
   @override
@@ -54,6 +55,7 @@ class _AdminSettingsViewState extends ConsumerState<AdminSettingsView> {
   Future<void> _saveSettings() async {
     setState(() => _isLoading = true);
 
+    final l10n = AppLocalizations.of(context)!;
     final currentSettings = ref.read(calendarSettingsProvider).value;
     if (currentSettings != null) {
       final newSettings = CalendarSettingsModel(
@@ -65,9 +67,9 @@ class _AdminSettingsViewState extends ConsumerState<AdminSettingsView> {
       await ref.read(adminControllerProvider).updateSettings(newSettings);
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Ajustes guardados correctamente.')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(l10n.settingsSavedSuccess)));
       }
     }
 
@@ -76,10 +78,12 @@ class _AdminSettingsViewState extends ConsumerState<AdminSettingsView> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     if (_tempHours.isEmpty) {
       return Scaffold(
         backgroundColor: ThemeColors.bone,
-        appBar: AppBar(title: const Text('Horarios')),
+        appBar: AppBar(title: Text(l10n.scheduleSettingsTitle)),
         body: const Center(
           child: CircularProgressIndicator(
             color: ThemeColors.darkGreen,
@@ -89,10 +93,12 @@ class _AdminSettingsViewState extends ConsumerState<AdminSettingsView> {
       );
     }
 
+    final dayNames = _dayNames(l10n);
+
     return Scaffold(
       backgroundColor: ThemeColors.bone,
       appBar: AppBar(
-        title: const Text('Horarios'),
+        title: Text(l10n.scheduleSettingsTitle),
         actions: [
           if (_isLoading)
             const Padding(
@@ -135,7 +141,7 @@ class _AdminSettingsViewState extends ConsumerState<AdminSettingsView> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      _esNames[dayKey]!,
+                      dayNames[dayKey]!,
                       style: AppText.serif(
                         size: 19,
                         color: ThemeColors.darkGreen,
@@ -144,7 +150,7 @@ class _AdminSettingsViewState extends ConsumerState<AdminSettingsView> {
                     Row(
                       children: [
                         Text(
-                          'CERRADO',
+                          l10n.closedLabel,
                           style: AppText.eyebrow(
                             size: 10,
                             spacing: 1.6,
@@ -184,8 +190,8 @@ class _AdminSettingsViewState extends ConsumerState<AdminSettingsView> {
                               size: 15,
                               color: ThemeColors.darkGreen,
                             ),
-                            decoration: const InputDecoration(
-                              labelText: 'Apertura (HH:MM)',
+                            decoration: InputDecoration(
+                              labelText: l10n.openingTimeLabel,
                             ),
                             onChanged: (val) {
                               _tempHours[dayKey] = DaySchedule(
@@ -204,8 +210,8 @@ class _AdminSettingsViewState extends ConsumerState<AdminSettingsView> {
                               size: 15,
                               color: ThemeColors.darkGreen,
                             ),
-                            decoration: const InputDecoration(
-                              labelText: 'Cierre (HH:MM)',
+                            decoration: InputDecoration(
+                              labelText: l10n.closingTimeLabel,
                             ),
                             onChanged: (val) {
                               _tempHours[dayKey] = DaySchedule(

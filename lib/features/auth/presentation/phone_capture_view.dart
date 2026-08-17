@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/theme_colors.dart';
 import '../../../core/widgets/app_widgets.dart';
+import '../../../l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
 
 class PhoneCaptureView extends ConsumerStatefulWidget {
@@ -39,6 +40,8 @@ class _PhoneCaptureViewState extends ConsumerState<PhoneCaptureView> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Scaffold(
       backgroundColor: ThemeColors.bone,
       body: SafeArea(
@@ -71,7 +74,7 @@ class _PhoneCaptureViewState extends ConsumerState<PhoneCaptureView> {
               const SizedBox(height: 26),
               Center(
                 child: Text(
-                  'Completar Perfil',
+                  l10n.completeProfileTitle,
                   style: AppText.serif(size: 30, color: ThemeColors.darkGreen),
                 ),
               ),
@@ -80,7 +83,7 @@ class _PhoneCaptureViewState extends ConsumerState<PhoneCaptureView> {
                 child: SizedBox(
                   width: 260,
                   child: Text(
-                    'Un último paso antes de agendar',
+                    l10n.completeProfileSubtitle,
                     textAlign: TextAlign.center,
                     style: AppText.sans(
                       size: 15,
@@ -92,7 +95,7 @@ class _PhoneCaptureViewState extends ConsumerState<PhoneCaptureView> {
                 ),
               ),
               const SizedBox(height: 34),
-              Text('TU WHATSAPP', style: AppText.eyebrow()),
+              Text(l10n.whatsappFieldLabel, style: AppText.eyebrow()),
               const SizedBox(height: 8),
               TextField(
                 controller: _phoneController,
@@ -100,7 +103,7 @@ class _PhoneCaptureViewState extends ConsumerState<PhoneCaptureView> {
                 cursorColor: ThemeColors.gold,
                 style: AppText.sans(size: 16, color: ThemeColors.darkGreen),
                 decoration: InputDecoration(
-                  hintText: '+58 412 555 0134',
+                  hintText: l10n.phoneHintExample,
                   prefixIcon: const Padding(
                     padding: EdgeInsets.only(left: 16, right: 10),
                     child: WhatsAppIcon(),
@@ -115,9 +118,7 @@ class _PhoneCaptureViewState extends ConsumerState<PhoneCaptureView> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 2),
                 child: Text(
-                  'Beidis te escribe por WhatsApp para confirmar tu turno, '
-                  'coordinar cambios y avisarte si se libera un horario. '
-                  'No lo compartimos con nadie más.',
+                  l10n.whatsappDisclaimer,
                   style: AppText.sans(
                     size: 12,
                     weight: FontWeight.w300,
@@ -139,7 +140,7 @@ class _PhoneCaptureViewState extends ConsumerState<PhoneCaptureView> {
                 )
               else
                 GoldPillButton(
-                  label: 'GUARDAR Y CONTINUAR',
+                  label: l10n.saveAndContinueAction,
                   onPressed: _savePhone,
                 ),
             ],

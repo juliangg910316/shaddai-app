@@ -18,21 +18,21 @@ class _FeaturedService {
   const _FeaturedService(this.name, this.duration, this.price, [this.imageUrl]);
 }
 
-const _featuredServices = <_FeaturedService>[
+List<_FeaturedService> _featuredServices(AppLocalizations l10n) => [
   _FeaturedService(
-    'Manicure Clásica',
-    '45 min',
+    l10n.serviceManicureClassicName,
+    l10n.duration45Min,
     '\$25',
     'https://images.unsplash.com/photo-1604654894610-df63bc536371?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
   ),
-  _FeaturedService('Acrílicas Full', '90 min', '\$55'),
+  _FeaturedService(l10n.serviceAcrylicFullName, l10n.duration90Min, '\$55'),
   _FeaturedService(
-    'Pedicure Spa',
-    '60 min',
+    l10n.servicePedicureSpaName,
+    l10n.duration60Min,
     '\$40',
     'https://images.unsplash.com/photo-1516975080661-460d3fc3cfa5?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
   ),
-  _FeaturedService('Retoque Acrílico', '60 min', '\$30'),
+  _FeaturedService(l10n.serviceAcrylicTouchupName, l10n.duration60Min, '\$30'),
 ];
 
 const _galleryPhotos = <String?>[
@@ -49,7 +49,9 @@ class HomeView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final currentUser = ref.watch(currentUserProvider).value;
-    final firstName = currentUser?.displayName.split(' ').first ?? 'Invitada';
+    final firstName =
+        currentUser?.displayName.split(' ').first ?? l10n.guestFallbackName;
+    final featuredServices = _featuredServices(l10n);
 
     return Scaffold(
       backgroundColor: ThemeColors.bone,
@@ -74,11 +76,13 @@ class HomeView extends ConsumerWidget {
             actions: [
               Padding(
                 padding: const EdgeInsets.only(right: 20),
-                child: InitialsAvatar(
-                  photoUrl: currentUser?.photoUrl,
-                  name: currentUser?.displayName,
-                  size: 34,
-                ),
+                child: currentUser != null
+                    ? InitialsAvatar(
+                        photoUrl: currentUser.photoUrl,
+                        name: currentUser.displayName,
+                        size: 34,
+                      )
+                    : null,
               ),
             ],
           ),
@@ -126,8 +130,8 @@ class HomeView extends ConsumerWidget {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 28, 20, 14),
                   child: SectionHeadingWithAction(
-                    'Servicios populares',
-                    actionLabel: 'VER TODO',
+                    l10n.popularServicesTitle,
+                    actionLabel: l10n.viewAllAction,
                     onAction: () => context.go('/services'),
                   ),
                 ),
@@ -144,9 +148,9 @@ class HomeView extends ConsumerWidget {
                           mainAxisSpacing: 14,
                           mainAxisExtent: 160,
                         ),
-                    itemCount: _featuredServices.length,
+                    itemCount: featuredServices.length,
                     itemBuilder: (context, index) => _ServiceTile(
-                      service: _featuredServices[index],
+                      service: featuredServices[index],
                       onTap: () => context.go('/booking'),
                     ),
                   ),
@@ -156,7 +160,7 @@ class HomeView extends ConsumerWidget {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 22, 20, 12),
                   child: Text(
-                    'Nuestros trabajos',
+                    l10n.ourWorkTitle,
                     style: AppText.serif(
                       size: 21,
                       color: ThemeColors.darkGreen,
@@ -184,13 +188,13 @@ class HomeView extends ConsumerWidget {
                           : ThemeColors.sandDark;
                       if (url == null) {
                         return PhotoPlaceholder(
-                          label: 'FOTO DEL SALÓN',
+                          label: l10n.salonPhotoPlaceholder,
                           color: tint,
                         );
                       }
                       return NetworkPhoto(
                         url: url,
-                        placeholderLabel: 'FOTO DEL SALÓN',
+                        placeholderLabel: l10n.salonPhotoPlaceholder,
                         placeholderColor: tint,
                       );
                     },
@@ -198,9 +202,9 @@ class HomeView extends ConsumerWidget {
                 ),
 
                 // Ubicación
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(20, 30, 20, 14),
-                  child: SectionHeading('Encuéntranos'),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 30, 20, 14),
+                  child: SectionHeading(l10n.findUsTitle),
                 ),
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -230,7 +234,7 @@ class HomeView extends ConsumerWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "Shaddai Studio",
+                                    l10n.salonName,
                                     style: AppText.serif(
                                       size: 17,
                                       color: ThemeColors.black,
@@ -238,7 +242,7 @@ class HomeView extends ConsumerWidget {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    'Rua Prof. Nivaldo Braga 1108, Capão da Imbuia, Curitiba - PR',
+                                    l10n.salonAddress,
                                     style: AppText.sans(
                                       size: 13,
                                       weight: FontWeight.w300,
@@ -275,6 +279,8 @@ class _HeroCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(22),
       child: Container(
@@ -311,7 +317,7 @@ class _HeroCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Text(
-                    "D'Shaddai\nNail Salon",
+                    l10n.heroTitle,
                     style: AppText.serif(
                       size: 34,
                       color: ThemeColors.white,
@@ -320,7 +326,7 @@ class _HeroCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Cuidado de lujo para tus uñas',
+                    l10n.heroSubtitle,
                     style: AppText.sans(
                       size: 14,
                       weight: FontWeight.w300,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/app_localizations.dart';
 import '../constants/theme_colors.dart';
 
 /// Iniciales de un nombre ("Ana Herrera" -> "AH").
@@ -10,8 +11,7 @@ String initialsOf(String? name) {
       .toList();
   if (parts.isEmpty) return '·';
   if (parts.length == 1) return parts.first.substring(0, 1).toUpperCase();
-  return (parts.first.substring(0, 1) + parts[1].substring(0, 1))
-      .toUpperCase();
+  return (parts.first.substring(0, 1) + parts[1].substring(0, 1)).toUpperCase();
 }
 
 /// Título de sección con la línea dorada que lo acompaña en el diseño.
@@ -118,10 +118,7 @@ class InitialsAvatar extends StatelessWidget {
         shape: BoxShape.circle,
         border: goldBorder ? Border.all(color: ThemeColors.gold) : null,
         image: photoUrl != null
-            ? DecorationImage(
-                image: NetworkImage(photoUrl!),
-                fit: BoxFit.cover,
-              )
+            ? DecorationImage(image: NetworkImage(photoUrl!), fit: BoxFit.cover)
             : null,
       ),
       alignment: Alignment.center,
@@ -237,14 +234,14 @@ class OutlinePillButton extends StatelessWidget {
 
 /// Marco vacío color arena que reemplaza una foto todavía no cargada.
 class PhotoPlaceholder extends StatelessWidget {
-  final String label;
+  final String? label;
   final double? height;
   final double radius;
   final Color color;
 
   const PhotoPlaceholder({
     super.key,
-    this.label = 'FOTO',
+    this.label,
     this.height,
     this.radius = 14,
     this.color = ThemeColors.sand,
@@ -261,7 +258,7 @@ class PhotoPlaceholder extends StatelessWidget {
       ),
       alignment: Alignment.center,
       child: Text(
-        label,
+        label ?? AppLocalizations.of(context)!.photoPlaceholderDefault,
         style: AppText.eyebrow(
           size: 9,
           spacing: 1.6,
@@ -277,7 +274,7 @@ class NetworkPhoto extends StatelessWidget {
   final String url;
   final double? height;
   final double radius;
-  final String placeholderLabel;
+  final String? placeholderLabel;
   final Color placeholderColor;
 
   const NetworkPhoto({
@@ -285,7 +282,7 @@ class NetworkPhoto extends StatelessWidget {
     required this.url,
     this.height,
     this.radius = 14,
-    this.placeholderLabel = 'FOTO',
+    this.placeholderLabel,
     this.placeholderColor = ThemeColors.sand,
   });
 
@@ -421,32 +418,47 @@ class AppointmentStatusStyle {
   const AppointmentStatusStyle(this.label, this.color);
 
   /// Etiquetas de la vista de cliente ("CONFIRMADA" / "EN REVISIÓN").
-  static AppointmentStatusStyle forClient(String status) {
+  static AppointmentStatusStyle forClient(
+    AppLocalizations l10n,
+    String status,
+  ) {
     switch (status) {
       case 'confirmed':
-        return const AppointmentStatusStyle(
-          'CONFIRMADA',
+        return AppointmentStatusStyle(
+          l10n.statusConfirmedClient,
           ThemeColors.darkGreen,
         );
       case 'cancelled':
-        return const AppointmentStatusStyle('CANCELADA', ThemeColors.danger);
+        return AppointmentStatusStyle(
+          l10n.statusCancelledClient,
+          ThemeColors.danger,
+        );
       default:
-        return const AppointmentStatusStyle('EN REVISIÓN', ThemeColors.gold);
+        return AppointmentStatusStyle(
+          l10n.statusWaitingConfirmationClient,
+          ThemeColors.gold,
+        );
     }
   }
 
   /// Etiquetas del panel admin ("CONFIRMADO" / "POR CONFIRMAR").
-  static AppointmentStatusStyle forAdmin(String status) {
+  static AppointmentStatusStyle forAdmin(AppLocalizations l10n, String status) {
     switch (status) {
       case 'confirmed':
-        return const AppointmentStatusStyle(
-          'CONFIRMADO',
+        return AppointmentStatusStyle(
+          l10n.statusConfirmedAdmin,
           ThemeColors.darkGreen,
         );
       case 'cancelled':
-        return const AppointmentStatusStyle('CANCELADO', ThemeColors.danger);
+        return AppointmentStatusStyle(
+          l10n.statusCancelledAdmin,
+          ThemeColors.danger,
+        );
       default:
-        return const AppointmentStatusStyle('POR CONFIRMAR', ThemeColors.gold);
+        return AppointmentStatusStyle(
+          l10n.pendingConfirmationLabel,
+          ThemeColors.gold,
+        );
     }
   }
 }

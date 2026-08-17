@@ -21,7 +21,9 @@ final appointmentsForDateProvider = StreamProvider<List<AppointmentModel>>((
   ref,
 ) {
   final date = ref.watch(selectedDateProvider);
-  return ref.watch(bookingRepositoryProvider).getActiveAppointmentsForDate(date);
+  return ref
+      .watch(bookingRepositoryProvider)
+      .getActiveAppointmentsForDate(date);
 });
 
 // Calcula los horarios disponibles basándose en el calendario y las citas existentes

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/theme_colors.dart';
+import '../../../l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
 
 class LoginView extends ConsumerWidget {
@@ -8,6 +9,7 @@ class LoginView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final authState = ref.watch(authControllerProvider);
 
     return Scaffold(
@@ -40,7 +42,7 @@ class LoginView extends ConsumerWidget {
                 ),
                 const SizedBox(height: 34),
                 Text(
-                  "D'Shaddai",
+                  l10n.brandFullName,
                   style: AppText.serif(
                     size: 46,
                     color: ThemeColors.darkGreen,
@@ -49,7 +51,7 @@ class LoginView extends ConsumerWidget {
                 ),
                 const SizedBox(height: 12),
                 Text(
-                  'NAIL DESIGNER · BEIDIS VIERA',
+                  l10n.loginTagline,
                   textAlign: TextAlign.center,
                   style: AppText.eyebrow(
                     size: 10,
@@ -67,7 +69,7 @@ class LoginView extends ConsumerWidget {
                 SizedBox(
                   width: 250,
                   child: Text(
-                    'Inicia sesión para agendar tu turno',
+                    l10n.loginSubtitle,
                     textAlign: TextAlign.center,
                     style: AppText.sans(
                       size: 16,
@@ -122,6 +124,8 @@ class _GoogleSignInButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton(
@@ -130,7 +134,9 @@ class _GoogleSignInButton extends StatelessWidget {
           backgroundColor: ThemeColors.white,
           foregroundColor: ThemeColors.black,
           padding: const EdgeInsets.symmetric(vertical: 17, horizontal: 24),
-          side: BorderSide(color: ThemeColors.darkGreen.withValues(alpha: 0.14)),
+          side: BorderSide(
+            color: ThemeColors.darkGreen.withValues(alpha: 0.14),
+          ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
           ),
@@ -150,7 +156,7 @@ class _GoogleSignInButton extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             Text(
-              'Continuar con Google',
+              l10n.continueWithGoogle,
               style: AppText.sans(size: 16, color: ThemeColors.black),
             ),
           ],

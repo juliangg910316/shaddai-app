@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../core/constants/spanish_dates.dart';
 import '../../../core/constants/theme_colors.dart';
 import '../../../core/widgets/app_widgets.dart';
+import '../../../l10n/app_localizations.dart';
 import '../providers/admin_provider.dart';
 import '../../../data/models/appointment_model.dart';
 
@@ -14,6 +15,7 @@ class AdminDashboardView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final selectedDate = ref.watch(adminSelectedDateProvider);
     final appointmentsAsync = ref.watch(adminAppointmentsProvider);
     final appointments = appointmentsAsync.value ?? const <AppointmentModel>[];
@@ -49,7 +51,7 @@ class AdminDashboardView extends ConsumerWidget {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: Text(
-                    'No pudimos cargar la agenda: $err',
+                    l10n.adminAgendaLoadError(err),
                     textAlign: TextAlign.center,
                     style: AppText.sans(size: 13, color: ThemeColors.danger),
                   ),
@@ -59,7 +61,7 @@ class AdminDashboardView extends ConsumerWidget {
                 if (items.isEmpty) {
                   return Center(
                     child: Text(
-                      'No hay reservas para este día.',
+                      l10n.adminNoAppointmentsToday,
                       style: AppText.sans(
                         size: 13,
                         weight: FontWeight.w300,
@@ -101,6 +103,8 @@ class _AdminHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       // Cabecera verde oscuro: la barra de estado necesita iconos claros.
       value: SystemUiOverlayStyle.light.copyWith(
@@ -140,12 +144,12 @@ class _AdminHeader extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Agenda',
+                        l10n.adminAgendaTitle,
                         style: AppText.serif(size: 24, color: ThemeColors.gold),
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'PANEL DE BEIDIS',
+                        l10n.adminPanelEyebrow,
                         style: AppText.eyebrow(
                           size: 11,
                           weight: FontWeight.w300,
@@ -220,13 +224,16 @@ class _AdminHeader extends StatelessWidget {
             Row(
               children: [
                 Expanded(
-                  child: _StatTile(value: totalCount, label: 'TURNOS HOY'),
+                  child: _StatTile(
+                    value: totalCount,
+                    label: l10n.adminStatAppointmentsToday,
+                  ),
                 ),
                 const SizedBox(width: 10),
                 Expanded(
                   child: _StatTile(
                     value: waitingCount,
-                    label: 'POR CONFIRMAR',
+                    label: l10n.pendingConfirmationLabel,
                   ),
                 ),
               ],
@@ -281,7 +288,8 @@ class _AppointmentCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final status = AppointmentStatusStyle.forAdmin(appointment.status);
+    final l10n = AppLocalizations.of(context)!;
+    final status = AppointmentStatusStyle.forAdmin(l10n, appointment.status);
     final waiting = appointment.status == 'waiting_confirmation';
     final startStr = DateFormat('HH:mm').format(appointment.startTime);
     final endStr = DateFormat('HH:mm').format(appointment.endTime);
@@ -364,7 +372,7 @@ class _AppointmentCard extends ConsumerWidget {
               children: [
                 Expanded(
                   child: OutlinePillButton(
-                    label: 'CANCELAR',
+                    label: l10n.cancelAction,
                     color: ThemeColors.danger,
                     onPressed: () => ref
                         .read(adminControllerProvider)
@@ -393,7 +401,7 @@ class _AppointmentCard extends ConsumerWidget {
                           ),
                         ),
                         child: Text(
-                          'CONFIRMAR',
+                          l10n.confirmAction,
                           style: AppText.sans(
                             size: 12,
                             weight: FontWeight.w500,

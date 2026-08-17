@@ -5,7 +5,7 @@ class UserRepository {
   final FirebaseFirestore _firestore;
 
   UserRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   Future<UserModel?> getUser(String uid) async {
     final doc = await _firestore.collection('users').doc(uid).get();
@@ -16,10 +16,10 @@ class UserRepository {
   }
 
   Future<void> saveUser(UserModel user) async {
-    await _firestore.collection('users').doc(user.uid).set(
-      user.toMap(),
-      SetOptions(merge: true),
-    );
+    await _firestore
+        .collection('users')
+        .doc(user.uid)
+        .set(user.toMap(), SetOptions(merge: true));
   }
 
   Future<void> updatePhoneNumber(String uid, String phoneNumber) async {
@@ -29,9 +29,7 @@ class UserRepository {
   }
 
   Future<void> updateFcmToken(String uid, String token) async {
-    await _firestore.collection('users').doc(uid).update({
-      'fcmToken': token,
-    });
+    await _firestore.collection('users').doc(uid).update({'fcmToken': token});
   }
 
   // ADMIN METHODS

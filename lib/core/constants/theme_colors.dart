@@ -85,7 +85,11 @@ class ThemeColors {
           foregroundColor: gold,
           elevation: 0,
           padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 24),
-          textStyle: AppText.sans(size: 12, weight: FontWeight.w600, spacing: 2),
+          textStyle: AppText.sans(
+            size: 12,
+            weight: FontWeight.w600,
+            spacing: 2,
+          ),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
           ),
@@ -94,7 +98,11 @@ class ThemeColors {
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           foregroundColor: olive,
-          textStyle: AppText.sans(size: 12, weight: FontWeight.w500, spacing: 1.2),
+          textStyle: AppText.sans(
+            size: 12,
+            weight: FontWeight.w500,
+            spacing: 1.2,
+          ),
         ),
       ),
       inputDecorationTheme: InputDecorationThemeData(
@@ -123,9 +131,7 @@ class ThemeColors {
         backgroundColor: darkGreen,
         contentTextStyle: AppText.sans(size: 14, color: bone),
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: bone,
@@ -145,7 +151,11 @@ class ThemeColors {
         backgroundColor: darkGreen,
         selectedItemColor: gold,
         unselectedItemColor: bone.withValues(alpha: 0.6),
-        selectedLabelStyle: AppText.sans(size: 10, weight: FontWeight.w500, spacing: 0.6),
+        selectedLabelStyle: AppText.sans(
+          size: 10,
+          weight: FontWeight.w500,
+          spacing: 0.6,
+        ),
         unselectedLabelStyle: AppText.sans(size: 10),
         type: BottomNavigationBarType.fixed,
         elevation: 0,

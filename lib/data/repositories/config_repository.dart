@@ -5,14 +5,12 @@ class ConfigRepository {
   final FirebaseFirestore _firestore;
 
   ConfigRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   Stream<CalendarSettingsModel> getCalendarSettings() {
-    return _firestore
-        .collection('settings')
-        .doc('calendar')
-        .snapshots()
-        .map((doc) {
+    return _firestore.collection('settings').doc('calendar').snapshots().map((
+      doc,
+    ) {
       if (doc.exists && doc.data() != null) {
         return CalendarSettingsModel.fromMap(doc.data()!);
       }

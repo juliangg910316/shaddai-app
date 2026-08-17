@@ -5,6 +5,7 @@ import '../../../core/constants/spanish_dates.dart';
 import '../../../core/constants/theme_colors.dart';
 import '../../../core/widgets/app_widgets.dart';
 import '../../../data/models/appointment_model.dart';
+import '../../../l10n/app_localizations.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/profile_provider.dart';
 
@@ -13,6 +14,7 @@ class ProfileView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final user = ref.watch(currentUserProvider).value;
     final appointmentsAsync = ref.watch(clientAppointmentsProvider);
 
@@ -41,7 +43,7 @@ class ProfileView extends ConsumerWidget {
                   const SizedBox(width: 22),
                   Expanded(
                     child: Text(
-                      'Mi Perfil',
+                      l10n.myProfileTitle,
                       textAlign: TextAlign.center,
                       style: AppText.serif(
                         size: 24,
@@ -110,7 +112,7 @@ class ProfileView extends ConsumerWidget {
                       size: 18,
                     ),
                     label: Text(
-                      'PANEL DE ADMINISTRADOR',
+                      l10n.adminPanelButtonLabel,
                       style: AppText.sans(
                         size: 12,
                         weight: FontWeight.w500,
@@ -122,9 +124,9 @@ class ProfileView extends ConsumerWidget {
                 ),
               ),
 
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: SectionHeading('Mis reservas'),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: SectionHeading(l10n.myAppointmentsTitle),
             ),
             const SizedBox(height: 16),
 
@@ -140,7 +142,7 @@ class ProfileView extends ConsumerWidget {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Text(
-                      'No pudimos cargar tus reservas: $err',
+                      l10n.myAppointmentsLoadError(err),
                       textAlign: TextAlign.center,
                       style: AppText.sans(size: 13, color: ThemeColors.danger),
                     ),
@@ -154,7 +156,7 @@ class ProfileView extends ConsumerWidget {
                         padding: const EdgeInsets.symmetric(vertical: 26),
                         child: Center(
                           child: Text(
-                            'Todavía no tienes reservas.',
+                            l10n.noAppointmentsYet,
                             style: AppText.sans(
                               size: 13,
                               weight: FontWeight.w300,
@@ -170,7 +172,7 @@ class ProfileView extends ConsumerWidget {
                       ],
                     const SizedBox(height: 10),
                     OutlinePillButton(
-                      label: 'RESERVAR OTRO TURNO',
+                      label: l10n.bookAnotherAppointmentAction,
                       onPressed: () => context.go('/booking'),
                     ),
                   ],
@@ -191,7 +193,8 @@ class _AppointmentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final status = AppointmentStatusStyle.forClient(appointment.status);
+    final l10n = AppLocalizations.of(context)!;
+    final status = AppointmentStatusStyle.forClient(l10n, appointment.status);
     final cancelled = appointment.status == 'cancelled';
     final start = appointment.startTime;
     final timeStr =

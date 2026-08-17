@@ -7,8 +7,8 @@ class AuthRepository {
   final GoogleSignIn _googleSignIn;
 
   AuthRepository({FirebaseAuth? auth, GoogleSignIn? googleSignIn})
-      : _auth = auth ?? FirebaseAuth.instance,
-        _googleSignIn = googleSignIn ?? GoogleSignIn.instance;
+    : _auth = auth ?? FirebaseAuth.instance,
+      _googleSignIn = googleSignIn ?? GoogleSignIn.instance;
 
   Stream<User?> get authStateChanges => _auth.authStateChanges();
   User? get currentUser => _auth.currentUser;
@@ -38,4 +38,3 @@ class AuthRepository {
     await _auth.signOut();
   }
 }
-

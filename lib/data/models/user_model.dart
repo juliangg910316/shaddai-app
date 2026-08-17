@@ -43,7 +43,7 @@ class UserModel {
       'fcmToken': fcmToken,
     };
   }
-  
+
   UserModel copyWith({
     String? uid,
     String? email,

@@ -5,10 +5,13 @@ class BookingRepository {
   final FirebaseFirestore _firestore;
 
   BookingRepository({FirebaseFirestore? firestore})
-      : _firestore = firestore ?? FirebaseFirestore.instance;
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   Future<void> createAppointment(AppointmentModel appointment) async {
-    await _firestore.collection('appointments').doc(appointment.id).set(appointment.toMap());
+    await _firestore
+        .collection('appointments')
+        .doc(appointment.id)
+        .set(appointment.toMap());
   }
 
   Stream<List<AppointmentModel>> getAppointmentsForDate(DateTime date) {
@@ -21,10 +24,10 @@ class BookingRepository {
         .where('startTime', isLessThan: Timestamp.fromDate(end))
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs
-          .map((doc) => AppointmentModel.fromMap(doc.data(), doc.id))
-          .toList();
-    });
+          return snapshot.docs
+              .map((doc) => AppointmentModel.fromMap(doc.data(), doc.id))
+              .toList();
+        });
   }
 
   // Para el cliente: solo ver las ocupadas activas (no canceladas)
@@ -39,10 +42,10 @@ class BookingRepository {
         .where('status', whereIn: ['waiting_confirmation', 'confirmed'])
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs
-          .map((doc) => AppointmentModel.fromMap(doc.data(), doc.id))
-          .toList();
-    });
+          return snapshot.docs
+              .map((doc) => AppointmentModel.fromMap(doc.data(), doc.id))
+              .toList();
+        });
   }
 
   Stream<List<AppointmentModel>> getClientAppointments(String clientId) {
@@ -52,10 +55,10 @@ class BookingRepository {
         .orderBy('startTime', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs
-          .map((doc) => AppointmentModel.fromMap(doc.data(), doc.id))
-          .toList();
-    });
+          return snapshot.docs
+              .map((doc) => AppointmentModel.fromMap(doc.data(), doc.id))
+              .toList();
+        });
   }
 
   // ADMIN METHODS

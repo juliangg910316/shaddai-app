@@ -18,11 +18,7 @@ class DaySchedule {
   }
 
   Map<String, dynamic> toMap() {
-    return {
-      'open': open,
-      'close': close,
-      'isClosed': isClosed,
-    };
+    return {'open': open, 'close': close, 'isClosed': isClosed};
   }
 }
 
@@ -52,9 +48,13 @@ class CalendarSettingsModel {
       blockedDates: blocked.map((e) => e.toString()).toList(),
     );
   }
-  
+
   factory CalendarSettingsModel.defaultSettings() {
-    final defaultDay = DaySchedule(open: '09:00', close: '18:00', isClosed: false);
+    final defaultDay = DaySchedule(
+      open: '09:00',
+      close: '18:00',
+      isClosed: false,
+    );
     return CalendarSettingsModel(
       openingHours: {
         'monday': defaultDay,
@@ -69,7 +69,7 @@ class CalendarSettingsModel {
       blockedDates: [],
     );
   }
-  
+
   Map<String, dynamic> toMap() {
     final hoursMap = <String, dynamic>{};
     openingHours.forEach((key, value) {

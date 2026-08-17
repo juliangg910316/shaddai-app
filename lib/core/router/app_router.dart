@@ -69,10 +69,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
       if (isLoggedIn) {
         // If logged in but data is loading, don't redirect yet
         if (currentUser.isLoading) return null;
-        
+
         final user = currentUser.value;
         // If user logged in but has no phone number, force them to phone capture
-        if (user != null && (user.phoneNumber == null || user.phoneNumber!.isEmpty)) {
+        if (user != null &&
+            (user.phoneNumber == null || user.phoneNumber!.isEmpty)) {
           if (!isPhoneCapture) return '/capture_phone';
           return null; // Let them stay on capture phone
         }
@@ -98,10 +99,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         path: '/admin/settings',
         builder: (context, state) => const AdminSettingsView(),
       ),
-      GoRoute(
-        path: '/login',
-        builder: (context, state) => const LoginView(),
-      ),
+      GoRoute(path: '/login', builder: (context, state) => const LoginView()),
       GoRoute(
         path: '/capture_phone',
         builder: (context, state) => const PhoneCaptureView(),
