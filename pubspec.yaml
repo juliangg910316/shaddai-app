@@ -38,6 +38,7 @@ dependencies:
   firebase_auth: ^6.5.7
   cloud_firestore: ^6.8.0
   firebase_messaging: ^16.5.0
+  google_maps_flutter: ^2.18.0
   google_sign_in: ^7.2.0
   flutter_riverpod: ^3.4.2
   go_router: ^17.5.0
@@ -75,13 +76,12 @@ flutter:
   # Cormorant Garamond para títulos, Jost para la UI.
   # Ambas son variables (eje wght), Flutter interpola los pesos.
   fonts:
-    - family: Cormorant Garamond
-      fonts:
-        - asset: assets/fonts/CormorantGaramond-Variable.ttf
-    - family: Jost
-      fonts:
-        - asset: assets/fonts/Jost-Variable.ttf
-
+  - family: Cormorant Garamond
+    fonts:
+    - asset: assets/fonts/CormorantGaramond-Variable.ttf
+  - family: Jost
+    fonts:
+    - asset: assets/fonts/Jost-Variable.ttf
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

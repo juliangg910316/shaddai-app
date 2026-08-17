@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
+import '/l10n/app_localizations.dart';
 import '../../../core/constants/theme_colors.dart';
 import '../../../core/widgets/app_widgets.dart';
-import '/l10n/app_localizations.dart';
 import '../../auth/providers/auth_provider.dart';
+import 'google_map_container.dart';
 
 /// Datos de catálogo fijos hasta definir de qué colección salen.
 class _FeaturedService {
@@ -228,7 +230,7 @@ class HomeView extends ConsumerWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "D'Shaddai Studio",
+                                    "Shaddai Studio",
                                     style: AppText.serif(
                                       size: 17,
                                       color: ThemeColors.black,
@@ -236,7 +238,7 @@ class HomeView extends ConsumerWidget {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    'Av. Principal 123, Centro',
+                                    'Rua Prof. Nivaldo Braga 1108, Capão da Imbuia, Curitiba - PR',
                                     style: AppText.sans(
                                       size: 13,
                                       weight: FontWeight.w300,
@@ -249,13 +251,7 @@ class HomeView extends ConsumerWidget {
                           ],
                         ),
                         const SizedBox(height: 18),
-                        const NetworkPhoto(
-                          url:
-                              'https://images.unsplash.com/photo-1524661135-423995f22d0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
-                          height: 140,
-                          radius: 12,
-                          placeholderLabel: 'MAPA',
-                        ),
+                        GoogleMapContainer(),
                       ],
                     ),
                   ),
@@ -369,11 +365,7 @@ class _ServiceTile extends StatelessWidget {
               width: double.infinity,
               child: service.imageUrl == null
                   ? const PhotoPlaceholder(radius: 0)
-                  : NetworkPhoto(
-                      url: service.imageUrl!,
-                      height: 88,
-                      radius: 0,
-                    ),
+                  : NetworkPhoto(url: service.imageUrl!, height: 88, radius: 0),
             ),
             Expanded(
               child: Padding(
