@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+
 import '../../../core/constants/theme_colors.dart';
 import '../../../l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
@@ -13,6 +15,13 @@ class LoginView extends ConsumerWidget {
     final authState = ref.watch(authControllerProvider);
 
     return Scaffold(
+      appBar: AppBar(
+        title: Text("Autenticacion"),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios),
+          onPressed: () => context.go('/home'),
+        ),
+      ),
       backgroundColor: ThemeColors.bone,
       body: SafeArea(
         child: Center(
