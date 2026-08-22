@@ -48,6 +48,15 @@ dependencies:
     sdk: flutter
   uuid: ^4.6.0
 
+dependency_overrides:
+  # TEMP: pin older native Android plugin builds to avoid a Kotlin Build
+  # Tools API "cacheable" incremental-cache crash on Windows
+  # ("Storage ... is already registered") hit by the latest
+  # google_maps_flutter_android/google_sign_in_android Gradle scripts.
+  # Remove once upstream ships a fix.
+  google_maps_flutter_android: 2.19.6
+  google_sign_in_android: 7.2.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -6,11 +6,11 @@ import 'l10n/app_localizations.dart';
 
 import 'core/constants/theme_colors.dart';
 import 'core/router/app_router.dart';
-import 'firebase_options.dart';
+import 'firebase_options.dart';                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
+ 
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
