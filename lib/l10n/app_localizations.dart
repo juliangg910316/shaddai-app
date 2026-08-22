@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// El nombre de la aplicación
   ///
   /// In es, this message translates to:
-  /// **'D\'Shaddai'**
+  /// **'Shaddai'**
   String get appTitle;
 
   /// No description provided for @bookAppointment.
@@ -161,7 +161,7 @@ abstract class AppLocalizations {
   /// No description provided for @brandFullName.
   ///
   /// In es, this message translates to:
-  /// **'D\'Shaddai'**
+  /// **'Shaddai'**
   String get brandFullName;
 
   /// No description provided for @popularServicesTitle.
@@ -209,7 +209,7 @@ abstract class AppLocalizations {
   /// No description provided for @heroTitle.
   ///
   /// In es, this message translates to:
-  /// **'D\'Shaddai\nNail Salon'**
+  /// **'Shaddai\nNail Salon'**
   String get heroTitle;
 
   /// No description provided for @heroSubtitle.
@@ -353,7 +353,7 @@ abstract class AppLocalizations {
   /// No description provided for @servicesMenuEyebrow.
   ///
   /// In es, this message translates to:
-  /// **'CARTA D\'SHADDAI'**
+  /// **'CARTA SHADDAI'**
   String get servicesMenuEyebrow;
 
   /// No description provided for @bookAction.

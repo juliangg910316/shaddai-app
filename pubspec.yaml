@@ -81,7 +81,7 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  # Tipografías de la identidad D'Shaddai:
+  # Tipografías de la identidad Shaddai:
   # Cormorant Garamond para títulos, Jost para la UI.
   # Ambas son variables (eje wght), Flutter interpola los pesos.
   fonts:

@@ -1,7 +1,7 @@
-# Scope del Proyecto: App de Reservas D'Shaddai
+# Scope del Proyecto: App de Reservas Shaddai
 
 ## Descripción General
-Creación de una aplicación móvil multiplataforma desarrollada en Flutter para el salón de belleza "D'Shaddai · Nail Designer · Beidis Viera". La aplicación servirá como plataforma principal para mostrar la información del salón y permitir la autogestión de reserva de turnos por parte de las clientas. El backend estará soportado íntegramente por Firebase.
+Creación de una aplicación móvil multiplataforma desarrollada en Flutter para el salón de belleza "Shaddai · Nail Designer · Beidis Viera". La aplicación servirá como plataforma principal para mostrar la información del salón y permitir la autogestión de reserva de turnos por parte de las clientas. El backend estará soportado íntegramente por Firebase.
 
 ## Idiomas (Internacionalización)
 La aplicación será bilingüe y soportará los siguientes idiomas:

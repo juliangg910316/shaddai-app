@@ -1,6 +1,6 @@
-# Arquitectura Técnica: App D'Shaddai
+# Arquitectura Técnica: App Shaddai
 
-Este documento especifica las decisiones técnicas, herramientas, esquemas de bases de datos y la gestión de estados que se utilizarán para el desarrollo de la aplicación móvil D'Shaddai.
+Este documento especifica las decisiones técnicas, herramientas, esquemas de bases de datos y la gestión de estados que se utilizarán para el desarrollo de la aplicación móvil Shaddai.
 
 ## 1. Stack Tecnológico
 

@@ -9,7 +9,7 @@ class AppLocalizationsEs extends AppLocalizations {
   AppLocalizationsEs([String locale = 'es']) : super(locale);
 
   @override
-  String get appTitle => 'D\'Shaddai';
+  String get appTitle => 'Shaddai';
 
   @override
   String get bookAppointment => 'Reservar Turno';
@@ -41,7 +41,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get guestFallbackName => 'Invitada';
 
   @override
-  String get brandFullName => 'D\'Shaddai';
+  String get brandFullName => 'Shaddai';
 
   @override
   String get popularServicesTitle => 'Servicios populares';
@@ -66,7 +66,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'Rua Prof. Nivaldo Braga 1108, Capão da Imbuia, Curitiba - PR';
 
   @override
-  String get heroTitle => 'D\'Shaddai\nNail Salon';
+  String get heroTitle => 'Shaddai\nNail Salon';
 
   @override
   String get heroSubtitle => 'Cuidado de lujo para tus uñas';
@@ -144,7 +144,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get ourServicesTitle => 'Nuestros Servicios';
 
   @override
-  String get servicesMenuEyebrow => 'CARTA D\'SHADDAI';
+  String get servicesMenuEyebrow => 'CARTA SHADDAI';
 
   @override
   String get bookAction => 'RESERVAR';

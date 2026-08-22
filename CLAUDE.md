@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Flutter mobile app (Android/iOS) for the nail salon **D'Shaddai · Nail Designer · Beidis Viera**. Clients browse salon info and self-book appointments; an admin configures the calendar, confirms/cancels bookings, and blocks abusive clients. Backend is entirely Firebase.
+Flutter mobile app (Android/iOS) for the nail salon **Shaddai · Nail Designer · Beidis Viera**. Clients browse salon info and self-book appointments; an admin configures the calendar, confirms/cancels bookings, and blocks abusive clients. Backend is entirely Firebase.
 
 Planning docs live in `.ia/` (Spanish): `project_scope.md` (product scope/roles), `technical_architecture.md` (Firestore schema, security rules, FCM flow), `modules_diagram.md` (module layout). Read these before changing data models or adding features — they are the spec the code is implementing.
 

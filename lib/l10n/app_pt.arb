@@ -1,5 +1,5 @@
 {
-  "appTitle": "D'Shaddai",
+  "appTitle": "Shaddai",
   "bookAppointment": "Agendar Horário",
   "welcomeBack": "Bem-vinda, {name}",
   "welcomeGreeting": "Bem-vinda,",
@@ -10,7 +10,7 @@
   "adminTab": "Admin",
 
   "guestFallbackName": "Convidada",
-  "brandFullName": "D'Shaddai",
+  "brandFullName": "Shaddai",
 
   "popularServicesTitle": "Serviços populares",
   "viewAllAction": "VER TUDO",
@@ -19,7 +19,7 @@
   "findUsTitle": "Encontre-nos",
   "salonName": "Shaddai Studio",
   "salonAddress": "Rua Prof. Nivaldo Braga 1108, Capão da Imbuia, Curitiba - PR",
-  "heroTitle": "D'Shaddai\nNail Salon",
+  "heroTitle": "Shaddai\nNail Salon",
   "heroSubtitle": "Cuidado de luxo para suas unhas",
   "photoPlaceholderDefault": "FOTO",
 
@@ -45,7 +45,7 @@
   "categoryAcrylicGel": "Acrílicas & Gel",
   "categoryPedicure": "Pedicure",
   "ourServicesTitle": "Nossos Serviços",
-  "servicesMenuEyebrow": "CARTA D'SHADDAI",
+  "servicesMenuEyebrow": "CARTA SHADDAI",
   "bookAction": "AGENDAR",
 
   "cancelAction": "CANCELAR",

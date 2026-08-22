@@ -8,7 +8,7 @@ class AppFonts {
 }
 
 class ThemeColors {
-  // Paleta de colores oficial de la web D'Shaddai
+  // Paleta de colores oficial de la web Shaddai
   static const Color bone = Color(0xFFF5F1E8);
   static const Color white = Color(0xFFFAFAF8);
   static const Color black = Color(0xFF1A1A1A);

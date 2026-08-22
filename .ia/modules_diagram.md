@@ -1,6 +1,6 @@
-# Diagrama de Módulos: App D'Shaddai
+# Diagrama de Módulos: App Shaddai
 
-Este documento detalla la estructura modular de la aplicación Flutter para D'Shaddai, siguiendo un enfoque de arquitectura basada en características (Feature-First) que facilita la escalabilidad y el mantenimiento a largo plazo.
+Este documento detalla la estructura modular de la aplicación Flutter para Shaddai, siguiendo un enfoque de arquitectura basada en características (Feature-First) que facilita la escalabilidad y el mantenimiento a largo plazo.
 
 ## Arquitectura a Nivel de Sistema
 
