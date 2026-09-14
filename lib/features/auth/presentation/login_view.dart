@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/constants/theme_colors.dart';
 import '../../../l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
+import 'widgets/google_signin_button.dart';
 
 class LoginView extends ConsumerWidget {
   const LoginView({super.key});
@@ -99,6 +101,10 @@ class LoginView extends ConsumerWidget {
                       ),
                     ),
                   )
+                else if (kIsWeb)
+                  // Web must use Google's own rendered button: GIS does not
+                  // allow a custom button to trigger sign-in imperatively.
+                  SizedBox(height: 44, child: buildWebGoogleSignInButton())
                 else
                   _GoogleSignInButton(
                     onPressed: () => ref
