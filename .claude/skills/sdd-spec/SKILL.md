@@ -1,0 +1,21 @@
+---
+name: sdd-spec
+description: SDD · Entrevista y genera la spec (uso - /sdd-spec 001-nombre idea inicial)
+argument-hint: <NNN-nombre> <idea inicial>
+disable-model-invocation: true
+---
+
+NO escribas código en ningún momento. Lee docs/constitution.md, MEMORY.md y docs/ESPECIFICACION.md, y usa la skill sdd.
+
+Carpeta de la spec: specs/$0/
+Idea inicial (el texto que va después del nombre de la carpeta): $ARGUMENTS
+
+Tu trabajo:
+1. Si specs/$0/spec.md ya existe, léelo y parte de él en lugar de empezar de cero.
+2. Hazme preguntas de UNA en UNA para eliminar ambigüedades (casos límite,
+   errores, roles, navegación, diferencias entre Web y Android/iOS, qué queda
+   fuera de esta versión). Máximo 5 preguntas.
+3. Con mis respuestas, genera (o actualiza) specs/$0/spec.md siguiendo la plantilla de la
+   skill sdd, con los requisitos en EARS y "Estado: borrador".
+4. Solo el QUÉ y el POR QUÉ: nada de stack, arquitectura ni nombres de archivos.
+5. Muéstrame la spec y espera. Si te digo que la apruebo, cambia su estado a "aprobada".

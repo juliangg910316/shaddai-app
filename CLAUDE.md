@@ -4,9 +4,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Flutter mobile app (Android/iOS) for the nail salon **Shaddai · Nail Designer · Beidis Viera**. Clients browse salon info and self-book appointments; an admin configures the calendar, confirms/cancels bookings, and blocks abusive clients. Backend is entirely Firebase.
+Flutter app (Android, iOS and Web) for the nail salon **Studio Shaddai · Nail Designer · Beidis Viera**. Clients browse salon info and self-book appointments; an admin configures the calendar, confirms/cancels bookings, and blocks abusive clients. Backend is entirely Firebase.
 
-Planning docs live in `.ia/` (Spanish): `project_scope.md` (product scope/roles), `technical_architecture.md` (Firestore schema, security rules, FCM flow), `modules_diagram.md` (module layout). Read these before changing data models or adding features — they are the spec the code is implementing.
+Planning docs live in `.ia/` (Spanish): `project_scope.md` (product scope/roles), `technical_architecture.md` (Firestore schema, security rules, FCM flow), `modules_diagram.md` (module layout). Read these before changing data models or adding features. The consolidated product vision and common requirements are in `docs/ESPECIFICACION.md`; feature requirements live in `specs/` (see "Spec-Driven Development" below).
+
+### Unification in progress (decided 2026-10-20)
+
+This repo is the base for merging in `../shaddai-web` (landing page and design system). Decisions:
+- Keep this repo's feature-first architecture; do **not** adopt shaddai-web's `ui/view_model`/`domain`/`Result<T>` layout, nor its Dio/Retrofit stack.
+- Adopt shaddai-web's design: `AppColors` + `LandingColors` (light and dark, **dark by default**), Cormorant Garamond + **Inter**, and a persisted ES/PT language switcher.
+- Same features on every platform, but **separate UI per platform**: Web (`kIsWeb`) is the single-page scrolling landing; Android/iOS use the `BottomNavigationBar`.
+- Services and prices move to **Firestore**.
+- Web hosting: **Hostinger**, domain **dshaddai.com** (not Firebase Hosting).
 
 Source comments and user-facing strings are Spanish; UI text belongs in ARB files, not literals.
 
@@ -67,3 +76,22 @@ Spanish (`app_es.arb`, the template) and Portuguese (`app_pt.arb`), auto-selecte
 ### Not yet implemented
 
 `firebase_messaging` is a dependency and `UserModel.fcmToken` / `UserRepository.updateFcmToken` exist, but nothing requests permissions or captures a token yet. Cloud Functions (the admin push notification on new booking) and Firestore security rules are also unwritten — no `functions/` or `firestore.rules` in this repo.
+
+## Spec-Driven Development
+
+Work follows SDD as taught in the Big School course "Desarrollo con IA" (same setup as the SpinStreak project): skill `sdd` (`.claude/skills/sdd/`) plus the user-invoked skills `/sdd-constitution`, `/sdd-spec`, `/sdd-clarify`, `/sdd-plan`, `/sdd-tasks`, `/sdd-implement`, `/sdd-validate`, `/sdd-change` and `/sdd-status`.
+
+- Flow: constitution → spec → clarification → plan → tasks → implementation (one task at a time) → validation. Never move to the next phase without the author's explicit approval; `spec.md`/`plan.md`/`tasks.md` only become `aprobada` when the author says so.
+- Files: `docs/constitution.md` (non-negotiable principles), `docs/ESPECIFICACION.md` (global vision + common requirements), `specs/NNN-nombre/{spec,plan,tasks}.md`.
+- **Tests first** (author's decision, 2026-10-20): each task writes its tests first (red), then the code (green). Never advance with failing tests. Fakes for Firebase are injected through the repository constructors; never hit real Firebase from a test.
+- Gate for every task: `dart format .` with no changes, `flutter analyze` with no errors or warnings, `flutter test` green.
+- Fixes and refactors that don't change behaviour don't need a spec.
+- Ask before: adding dependencies, changing the architecture, changing Firestore collections/fields or security rules. Never commit unless asked.
+
+## Memory
+
+Read `MEMORY.md` at the start of a session. After finishing a task or SDD phase, update it: status, decisions (with their why) and mistakes to avoid. Keep it to ~50 lines and never store secrets.
+
+## Project documentation (Obsidian vault)
+
+Project notes: `01 - Projects/DShaddai/` in the vault (Mac: `~/Documents/DriveSalva/Obsidian Vault/`; Windows: `D:\Obsidian Vault\`). The repo is the source of truth; the vault holds a summary.
