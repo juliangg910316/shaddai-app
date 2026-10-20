@@ -156,9 +156,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get confirmAction => 'CONFIRMAR';
 
   @override
-  String adminAgendaLoadError(Object error) {
-    return 'Não foi possível carregar a agenda: $error';
-  }
+  String get adminAgendaLoadError =>
+      'Não foi possível carregar a agenda. Tente novamente.';
 
   @override
   String get adminNoAppointmentsToday =>
@@ -216,9 +215,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get adminClientsTitle => 'Clientes';
 
   @override
-  String adminClientsLoadError(Object error) {
-    return 'Não foi possível carregar os clientes: $error';
-  }
+  String get adminClientsLoadError =>
+      'Não foi possível carregar os clientes. Tente novamente.';
 
   @override
   String get adminNoClientsRegistered => 'Não há clientes cadastrados.';
@@ -270,9 +268,8 @@ class AppLocalizationsPt extends AppLocalizations {
       'Reserva criada com sucesso! Aguardando confirmação da administradora.';
 
   @override
-  String bookingCreateError(Object error) {
-    return 'Erro ao criar a reserva: $error';
-  }
+  String get bookingCreateError =>
+      'Não foi possível criar a reserva. Tente novamente.';
 
   @override
   String get stepServiceLabel => '1 · SERVIÇO';
@@ -284,9 +281,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get stepTimeLabel => '3 · Horário';
 
   @override
-  String slotsLoadError(Object error) {
-    return 'Não foi possível carregar os horários: $error';
-  }
+  String get slotsLoadError =>
+      'Não foi possível carregar os horários. Tente novamente.';
 
   @override
   String get chooseTimeSlotAction => 'ESCOLHA UM HORÁRIO';
@@ -336,9 +332,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get myAppointmentsTitle => 'Meus horários';
 
   @override
-  String myAppointmentsLoadError(Object error) {
-    return 'Não foi possível carregar seus horários: $error';
-  }
+  String get myAppointmentsLoadError =>
+      'Não foi possível carregar seus horários. Tente novamente.';
 
   @override
   String get noAppointmentsYet => 'Você ainda não tem horários marcados.';
@@ -360,4 +355,56 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get statusCancelledAdmin => 'CANCELADO';
+
+  @override
+  String get preferencesTitle => 'Preferências';
+
+  @override
+  String get themeLabel => 'Tema';
+
+  @override
+  String get themeLight => 'Claro';
+
+  @override
+  String get themeDark => 'Escuro';
+
+  @override
+  String get themeSystem => 'Sistema';
+
+  @override
+  String get themeMenuTooltip => 'Alterar tema';
+
+  @override
+  String get languageLabel => 'Idioma';
+
+  @override
+  String get languageSpanish => 'Español';
+
+  @override
+  String get languagePortuguese => 'Português';
+
+  @override
+  String get languageCodeEs => 'ES';
+
+  @override
+  String get languageCodePt => 'PT';
+
+  @override
+  String get languageSwitchLabel => 'Alterar idioma';
+
+  @override
+  String get selectedOption => 'Selecionado';
+
+  @override
+  String get profileGuestTitle => 'Perfil';
+
+  @override
+  String get profileGuestLoginButton => 'Entrar';
+
+  @override
+  String get authBlockedError =>
+      'Sua conta está bloqueada. Fale conosco pelo WhatsApp se achar que é um erro.';
+
+  @override
+  String get authGenericError => 'Não foi possível entrar. Tente novamente.';
 }

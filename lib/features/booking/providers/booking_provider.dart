@@ -4,6 +4,7 @@ import '../../../data/models/appointment_model.dart';
 import '../../../data/models/calendar_settings_model.dart';
 import '../../../data/repositories/booking_repository.dart';
 import '../../../data/repositories/config_repository.dart';
+import '../../../core/utils/weekday_key.dart';
 import 'package:intl/intl.dart';
 
 final bookingRepositoryProvider = Provider((ref) => BookingRepository());
@@ -49,8 +50,8 @@ final availableSlotsProvider = Provider<AsyncValue<List<DateTime>>>((ref) {
     return const AsyncData([]);
   }
 
-  // Obtener día de la semana para parsear en inglés
-  final weekdayStr = DateFormat('EEEE').format(date).toLowerCase();
+  // Clave del día en inglés, independiente del idioma de la interfaz
+  final weekdayStr = weekdayKey(date);
 
   final daySchedule = settings.openingHours[weekdayStr];
   if (daySchedule == null || daySchedule.isClosed) {

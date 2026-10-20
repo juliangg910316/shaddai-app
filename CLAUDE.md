@@ -12,7 +12,7 @@ Planning docs live in `.ia/` (Spanish): `project_scope.md` (product scope/roles)
 
 This repo is the base for merging in `../shaddai-web` (landing page and design system). Decisions:
 - Keep this repo's feature-first architecture; do **not** adopt shaddai-web's `ui/view_model`/`domain`/`Result<T>` layout, nor its Dio/Retrofit stack.
-- Adopt shaddai-web's design: `AppColors` + `LandingColors` (light and dark, **dark by default**), Cormorant Garamond + **Inter**, and a persisted ES/PT language switcher.
+- Adopt shaddai-web's design: `AppColors` + `LandingColors` (light, dark and system, **system by default** — changed in spec 001), Cormorant Garamond + **Inter**, and a persisted ES/PT language switcher.
 - Same features on every platform, but **separate UI per platform**: Web (`kIsWeb`) is the single-page scrolling landing; Android/iOS use the `BottomNavigationBar`.
 - Services and prices move to **Firestore**.
 - Web hosting: **Hostinger**, domain **dshaddai.com** (not Firebase Hosting).
@@ -31,7 +31,7 @@ flutter gen-l10n                 # regenerate lib/l10n/app_localizations*.dart f
 flutter build apk / flutter build ios
 ```
 
-**The Flutter SDK at `/Users/macbookpro/Development/flutter` cannot run on this machine** — it requires macOS 14+ and this host is macOS 13.0. Every `flutter`/`dart` invocation fails with `VM initialization failed`. Do not attempt to build, analyze, or test from here; write code carefully and let the user verify on a supported machine.
+The author works on more than one machine. On the current Mac (macOS 27, SDK at `/Users/juliangg/develop/flutter`, Flutter 3.47.7) `flutter`/`dart` run normally: build, analyze and test here. On an older Mac with macOS 13 (SDK at `/Users/macbookpro/Development/flutter`) Flutter fails with `VM initialization failed`, because it needs macOS 14+. If `flutter --version` fails, write the code carefully and let the author verify it on a supported machine.
 
 `test/widget_test.dart` is still the untouched Flutter counter template and does not match this app (it pumps `MyApp` without a `ProviderScope` or Firebase init). Replace it rather than extending it.
 

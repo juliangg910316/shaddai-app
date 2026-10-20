@@ -3,9 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/theme_colors.dart';
-import '../../../data/models/user_model.dart';
+import '../../../core/platform/platform_provider.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../auth/providers/auth_provider.dart';
+import '../../preferences/presentation/language_switch.dart';
+import '../../preferences/presentation/theme_menu_button.dart';
 
 class MainScaffold extends ConsumerWidget {
   final StatefulNavigationShell navigationShell;
@@ -22,9 +23,22 @@ class MainScaffold extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final user = ref.watch(currentUserProvider).value;
+    final isWeb = ref.watch(isWebProvider);
 
     return Scaffold(
+      // Provisional hasta la landing de Web (spec 002): en Web, los selectores
+      // de tema e idioma van en una barra superior (RF-27).
+      appBar: isWeb
+          ? AppBar(
+              automaticallyImplyLeading: false,
+              actions: const [
+                ThemeMenuButton(),
+                SizedBox(width: 8),
+                LanguageSwitch(),
+                SizedBox(width: 16),
+              ],
+            )
+          : null,
       body: navigationShell,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: navigationShell.currentIndex,
@@ -38,13 +52,14 @@ class MainScaffold extends ConsumerWidget {
         iconSize: 22,
         selectedFontSize: 10,
         unselectedFontSize: 10,
-        items: _items(user, l10n),
+        items: _items(l10n),
       ),
     );
   }
 }
 
-List<BottomNavigationBarItem> _items(UserModel? user, AppLocalizations l10n) {
+// Perfil está siempre, también sin sesión: ahí van las Preferencias (RF-24).
+List<BottomNavigationBarItem> _items(AppLocalizations l10n) {
   final List<BottomNavigationBarItem> list = [];
   list.add(
     BottomNavigationBarItem(
@@ -64,13 +79,11 @@ List<BottomNavigationBarItem> _items(UserModel? user, AppLocalizations l10n) {
       label: l10n.appointmentsTab,
     ),
   );
-  if (user != null) {
-    list.add(
-      BottomNavigationBarItem(
-        icon: const Icon(Icons.person_outline),
-        label: l10n.profileTab,
-      ),
-    );
-  }
+  list.add(
+    BottomNavigationBarItem(
+      icon: const Icon(Icons.person_outline),
+      label: l10n.profileTab,
+    ),
+  );
   return list;
 }

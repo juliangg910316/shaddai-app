@@ -5,11 +5,22 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/theme_colors.dart';
 import '../../../l10n/app_localizations.dart';
+import '../providers/auth_failure.dart';
 import '../providers/auth_provider.dart';
 import 'widgets/google_signin_button.dart';
 
 class LoginView extends ConsumerWidget {
   const LoginView({super.key});
+
+  /// Texto de la app para el error de inicio de sesión, nunca el mensaje
+  /// técnico (RF-22). Al cancelar no se muestra nada.
+  static String? _errorMessage(Object? error, AppLocalizations l10n) {
+    return switch (error) {
+      null || AuthFailure.cancelled => null,
+      AuthFailure.blocked => l10n.authBlockedError,
+      _ => l10n.authGenericError,
+    };
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -111,10 +122,11 @@ class LoginView extends ConsumerWidget {
                         .read(authControllerProvider.notifier)
                         .signInWithGoogle(),
                   ),
-                if (authState.hasError) ...[
+                if (_errorMessage(authState.error, l10n)
+                    case final message?) ...[
                   const SizedBox(height: 24),
                   Text(
-                    '${authState.error}',
+                    message,
                     textAlign: TextAlign.center,
                     style: AppText.sans(
                       size: 12,

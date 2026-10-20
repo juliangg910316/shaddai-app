@@ -47,16 +47,19 @@ class AdminDashboardView extends ConsumerWidget {
                   strokeWidth: 2,
                 ),
               ),
-              error: (err, stack) => Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Text(
-                    l10n.adminAgendaLoadError(err),
-                    textAlign: TextAlign.center,
-                    style: AppText.sans(size: 13, color: ThemeColors.danger),
+              error: (err, stack) {
+                debugPrint('Error al cargar la agenda: $err');
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Text(
+                      l10n.adminAgendaLoadError,
+                      textAlign: TextAlign.center,
+                      style: AppText.sans(size: 13, color: ThemeColors.danger),
+                    ),
                   ),
-                ),
-              ),
+                );
+              },
               data: (items) {
                 if (items.isEmpty) {
                   return Center(

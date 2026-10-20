@@ -1,9 +1,8 @@
 /// Nombres de días y meses en español para la UI.
 ///
-/// Se mantienen como constantes en vez de usar `DateFormat` con locale porque
-/// la lógica de disponibilidad depende de `DateFormat('EEEE')` sin localizar
-/// (ver `availableSlotsProvider`); inicializar datos de locale globalmente
-/// rompería esa búsqueda por clave.
+/// Provisional: la spec 001 los sustituye por `DateFormat` localizado y este
+/// archivo se borra en su tarea T14. La lógica de disponibilidad ya no depende
+/// del idioma (usa `weekdayKey`).
 class SpanishDates {
   /// Índice 0 = enero.
   static const List<String> months = [

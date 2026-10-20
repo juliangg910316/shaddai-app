@@ -121,10 +121,12 @@ class _BookingViewState extends ConsumerState<BookingView> {
           ).showSnackBar(SnackBar(content: Text(l10n.bookingCreatedSuccess)));
         }
       } catch (e) {
+        // El detalle técnico solo va al log; la persona ve un texto de la app.
+        debugPrint('Error al crear la reserva: $e');
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(l10n.bookingCreateError(e)),
+              content: Text(l10n.bookingCreateError),
               backgroundColor: ThemeColors.danger,
             ),
           );
@@ -254,16 +256,19 @@ class _BookingViewState extends ConsumerState<BookingView> {
                           ),
                         ),
                       ),
-                      error: (err, stack) => Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 30),
-                        child: Text(
-                          l10n.slotsLoadError(err),
-                          style: AppText.sans(
-                            size: 13,
-                            color: ThemeColors.danger,
+                      error: (err, stack) {
+                        debugPrint('Error al cargar los horarios: $err');
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 30),
+                          child: Text(
+                            l10n.slotsLoadError,
+                            style: AppText.sans(
+                              size: 13,
+                              color: ThemeColors.danger,
+                            ),
                           ),
-                        ),
-                      ),
+                        );
+                      },
                       data: (slots) => _SlotSection(
                         slots: slots,
                         selectedSlot: _selectedSlot,

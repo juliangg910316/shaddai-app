@@ -21,7 +21,7 @@
 | Nombre | Studio Shaddai |
 | Plataformas | Android, iOS y Web, con las mismas funciones |
 | Interfaz por plataforma | Web: landing de una página donde el scroll es la estructura principal. Android/iOS: barra de navegación inferior |
-| Diseño | El de la web: tema claro y oscuro (oscuro por defecto), Cormorant Garamond para títulos e Inter para la interfaz |
+| Diseño | El de la web: tema claro, oscuro y del sistema (del sistema por defecto), Cormorant Garamond para títulos e Inter para la interfaz |
 | Idiomas | Español y portugués, con selector manual que se recuerda; sin preferencia, el del dispositivo (por defecto español) |
 | Acceso | Información pública sin sesión; para reservar, inicio de sesión con Google y WhatsApp obligatorio |
 | Servicios y precios | Guardados en Firestore |
@@ -65,7 +65,7 @@
 > Propuesta derivada de las decisiones de la sección 2. Pendiente de revisión del autor.
 
 - **RC-1**: EL SISTEMA muestra todos los textos de la interfaz en español o en portugués, incluidos los textos propios de Flutter (fechas, diálogos, botones del sistema).
-- **RC-2**: EL SISTEMA ofrece tema claro y oscuro, usa el oscuro si la persona no ha elegido ninguno y recuerda su elección.
+- **RC-2**: EL SISTEMA ofrece tema claro, oscuro y del sistema, usa el del sistema si la persona no ha elegido ninguno y recuerda su elección.
 - **RC-3**: EL SISTEMA recuerda el idioma elegido; sin elección, usa el del dispositivo si es español o portugués y, si no, español.
 - **RC-4**: EL SISTEMA ofrece las mismas funciones en Android, iOS y Web; en Web la navegación es una página con scroll y en Android/iOS, una barra de navegación inferior.
 
@@ -77,7 +77,7 @@ Mapa aprobado el 2026-10-20, en orden. Varias funcionalidades (reservas, perfil,
 
 | Spec | Nombre | Estado |
 | --- | --- | --- |
-| 001-design-system | Tema claro/oscuro, tipografía y selector de idioma | sin empezar |
+| 001-design-system | Tema claro/oscuro, tipografía y selector de idioma | spec, plan y tareas aprobados |
 | 002-landing-web | Landing de una página en Web | sin empezar |
 | 003-navegacion-movil | Barra de navegación inferior en Android/iOS | sin empezar |
 | 004-servicios-firestore | Servicios y precios en Firestore | sin empezar |

@@ -8,6 +8,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/models/user_model.dart';
+import 'auth_failure.dart';
 
 final authRepositoryProvider = Provider((ref) => AuthRepository());
 final userRepositoryProvider = Provider((ref) => UserRepository());
@@ -52,7 +53,7 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
       final credential = await _authRepo.signInWithGoogleAccount(event.user);
       await _syncFirestoreUser(credential);
     } catch (e, st) {
-      state = AsyncError(e, st);
+      _fail(e, st);
     }
   }
 
@@ -62,12 +63,24 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
       final credential = await _authRepo.signInWithGoogle();
       await _syncFirestoreUser(credential);
     } catch (e, st) {
-      state = AsyncError(e, st);
+      _fail(e, st);
     }
   }
 
+  /// Error técnico de un servicio externo: al log, y a la vista solo
+  /// [AuthFailure.unknown] (RF-22).
+  void _fail(Object error, StackTrace stackTrace) {
+    debugPrint('Error al iniciar sesión: $error');
+    state = AsyncError(AuthFailure.unknown, stackTrace);
+  }
+
   Future<void> _syncFirestoreUser(UserCredential? credential) async {
-    if (credential != null && credential.user != null) {
+    // El repositorio devuelve null cuando se cancela el diálogo de Google.
+    if (credential == null) {
+      state = AsyncError(AuthFailure.cancelled, StackTrace.current);
+      return;
+    }
+    if (credential.user != null) {
       final fbUser = credential.user!;
 
       // Check if user exists in Firestore
@@ -84,10 +97,7 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
         await _userRepo.saveUser(newUser);
       } else if (existingUser.isBlocked) {
         await _authRepo.signOut();
-        state = AsyncError(
-          'Cuenta bloqueada por el administrador.',
-          StackTrace.current,
-        );
+        state = AsyncError(AuthFailure.blocked, StackTrace.current);
         return;
       }
     }

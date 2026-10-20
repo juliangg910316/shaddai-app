@@ -377,8 +377,8 @@ abstract class AppLocalizations {
   /// No description provided for @adminAgendaLoadError.
   ///
   /// In es, this message translates to:
-  /// **'No pudimos cargar la agenda: {error}'**
-  String adminAgendaLoadError(Object error);
+  /// **'No pudimos cargar la agenda. Inténtalo de nuevo.'**
+  String get adminAgendaLoadError;
 
   /// No description provided for @adminNoAppointmentsToday.
   ///
@@ -491,8 +491,8 @@ abstract class AppLocalizations {
   /// No description provided for @adminClientsLoadError.
   ///
   /// In es, this message translates to:
-  /// **'No pudimos cargar los clientes: {error}'**
-  String adminClientsLoadError(Object error);
+  /// **'No pudimos cargar los clientes. Inténtalo de nuevo.'**
+  String get adminClientsLoadError;
 
   /// No description provided for @adminNoClientsRegistered.
   ///
@@ -587,8 +587,8 @@ abstract class AppLocalizations {
   /// No description provided for @bookingCreateError.
   ///
   /// In es, this message translates to:
-  /// **'Error al crear la reserva: {error}'**
-  String bookingCreateError(Object error);
+  /// **'No pudimos crear la reserva. Inténtalo de nuevo.'**
+  String get bookingCreateError;
 
   /// No description provided for @stepServiceLabel.
   ///
@@ -611,8 +611,8 @@ abstract class AppLocalizations {
   /// No description provided for @slotsLoadError.
   ///
   /// In es, this message translates to:
-  /// **'No pudimos cargar los horarios: {error}'**
-  String slotsLoadError(Object error);
+  /// **'No pudimos cargar los horarios. Inténtalo de nuevo.'**
+  String get slotsLoadError;
 
   /// No description provided for @chooseTimeSlotAction.
   ///
@@ -707,8 +707,8 @@ abstract class AppLocalizations {
   /// No description provided for @myAppointmentsLoadError.
   ///
   /// In es, this message translates to:
-  /// **'No pudimos cargar tus reservas: {error}'**
-  String myAppointmentsLoadError(Object error);
+  /// **'No pudimos cargar tus reservas. Inténtalo de nuevo.'**
+  String get myAppointmentsLoadError;
 
   /// No description provided for @noAppointmentsYet.
   ///
@@ -751,6 +751,108 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'CANCELADO'**
   String get statusCancelledAdmin;
+
+  /// No description provided for @preferencesTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Preferencias'**
+  String get preferencesTitle;
+
+  /// No description provided for @themeLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Tema'**
+  String get themeLabel;
+
+  /// No description provided for @themeLight.
+  ///
+  /// In es, this message translates to:
+  /// **'Claro'**
+  String get themeLight;
+
+  /// No description provided for @themeDark.
+  ///
+  /// In es, this message translates to:
+  /// **'Oscuro'**
+  String get themeDark;
+
+  /// No description provided for @themeSystem.
+  ///
+  /// In es, this message translates to:
+  /// **'Sistema'**
+  String get themeSystem;
+
+  /// No description provided for @themeMenuTooltip.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar tema'**
+  String get themeMenuTooltip;
+
+  /// No description provided for @languageLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Idioma'**
+  String get languageLabel;
+
+  /// Nombre del idioma en su propio idioma, igual en todas las traducciones
+  ///
+  /// In es, this message translates to:
+  /// **'Español'**
+  String get languageSpanish;
+
+  /// Nombre del idioma en su propio idioma, igual en todas las traducciones
+  ///
+  /// In es, this message translates to:
+  /// **'Português'**
+  String get languagePortuguese;
+
+  /// Código del idioma en el selector de Web
+  ///
+  /// In es, this message translates to:
+  /// **'ES'**
+  String get languageCodeEs;
+
+  /// Código del idioma en el selector de Web
+  ///
+  /// In es, this message translates to:
+  /// **'PT'**
+  String get languageCodePt;
+
+  /// No description provided for @languageSwitchLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar idioma'**
+  String get languageSwitchLabel;
+
+  /// Lo que anuncia el lector de pantalla en la opción activa
+  ///
+  /// In es, this message translates to:
+  /// **'Seleccionado'**
+  String get selectedOption;
+
+  /// No description provided for @profileGuestTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Perfil'**
+  String get profileGuestTitle;
+
+  /// No description provided for @profileGuestLoginButton.
+  ///
+  /// In es, this message translates to:
+  /// **'Iniciar sesión'**
+  String get profileGuestLoginButton;
+
+  /// No description provided for @authBlockedError.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu cuenta está bloqueada. Escríbenos por WhatsApp si crees que es un error.'**
+  String get authBlockedError;
+
+  /// No description provided for @authGenericError.
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos iniciar sesión. Inténtalo de nuevo.'**
+  String get authGenericError;
 }
 
 class _AppLocalizationsDelegate

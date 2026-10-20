@@ -8,6 +8,8 @@
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
 	<string>Shaddai</string>
+	<key>GMSApiKey</key>
+	<string>AIzaSyArQbQd97hLs3AjB4J0Y_sCTAhKI6II-zI</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>

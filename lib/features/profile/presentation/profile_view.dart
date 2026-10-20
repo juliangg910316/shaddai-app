@@ -7,6 +7,7 @@ import '../../../core/widgets/app_widgets.dart';
 import '../../../data/models/appointment_model.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../preferences/presentation/preferences_section.dart';
 import '../providers/profile_provider.dart';
 
 class ProfileView extends ConsumerWidget {
@@ -15,8 +16,14 @@ class ProfileView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final user = ref.watch(currentUserProvider).value;
+    final userAsync = ref.watch(currentUserProvider);
+    final user = userAsync.value;
     final appointmentsAsync = ref.watch(clientAppointmentsProvider);
+
+    // Sin sesión: Preferencias y acceso al inicio de sesión (RF-25).
+    if (user == null && !userAsync.isLoading) {
+      return const _GuestProfile();
+    }
 
     if (user == null) {
       return const Scaffold(
@@ -138,16 +145,22 @@ class ProfileView extends ConsumerWidget {
                     strokeWidth: 2,
                   ),
                 ),
-                error: (err, stack) => Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Text(
-                      l10n.myAppointmentsLoadError(err),
-                      textAlign: TextAlign.center,
-                      style: AppText.sans(size: 13, color: ThemeColors.danger),
+                error: (err, stack) {
+                  debugPrint('Error al cargar mis reservas: $err');
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: Text(
+                        l10n.myAppointmentsLoadError,
+                        textAlign: TextAlign.center,
+                        style: AppText.sans(
+                          size: 13,
+                          color: ThemeColors.danger,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
+                  );
+                },
                 data: (appointments) => ListView(
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
                   children: [
@@ -175,11 +188,49 @@ class ProfileView extends ConsumerWidget {
                       label: l10n.bookAnotherAppointmentAction,
                       onPressed: () => context.go('/booking'),
                     ),
+                    const SizedBox(height: 32),
+                    const PreferencesSection(),
                   ],
                 ),
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Perfil sin sesión: solo Preferencias y el botón para iniciar sesión
+/// (RF-25, RF-26).
+class _GuestProfile extends StatelessWidget {
+  const _GuestProfile();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return Scaffold(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(20, 6, 20, 28),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Text(
+                l10n.profileGuestTitle,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+              const SizedBox(height: 28),
+              const PreferencesSection(),
+              const SizedBox(height: 32),
+              ElevatedButton(
+                onPressed: () => context.go('/login'),
+                child: Text(l10n.profileGuestLoginButton),
+              ),
+            ],
+          ),
         ),
       ),
     );

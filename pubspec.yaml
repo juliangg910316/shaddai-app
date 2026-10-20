@@ -22,6 +22,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   uuid: ^4.6.0
+  shared_preferences: ^2.5.6
 
 dependency_overrides:
   # TEMP: pin older native Android plugin builds to avoid a Kotlin Build
@@ -46,13 +47,17 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  # Tipografías de la identidad Shaddai:
-  # Cormorant Garamond para títulos, Jost para la UI.
+  # Tipografías de la identidad Shaddai, incluidas en la app (spec 001, RNF-5):
+  # Cormorant Garamond para títulos, Inter para la UI.
   # Ambas son variables (eje wght), Flutter interpola los pesos.
+  # Jost es la fuente anterior: se quita en la tarea T14 de la spec 001.
   fonts:
   - family: Cormorant Garamond
     fonts:
     - asset: assets/fonts/CormorantGaramond-Variable.ttf
+  - family: Inter
+    fonts:
+    - asset: assets/fonts/Inter-Variable.ttf
   - family: Jost
     fonts:
     - asset: assets/fonts/Jost-Variable.ttf

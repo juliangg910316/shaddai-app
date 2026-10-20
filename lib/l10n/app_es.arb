@@ -68,14 +68,7 @@
   "cancelAction": "CANCELAR",
   "confirmAction": "CONFIRMAR",
 
-  "adminAgendaLoadError": "No pudimos cargar la agenda: {error}",
-  "@adminAgendaLoadError": {
-    "placeholders": {
-      "error": {
-        "type": "Object"
-      }
-    }
-  },
+  "adminAgendaLoadError": "No pudimos cargar la agenda. Inténtalo de nuevo.",
   "adminNoAppointmentsToday": "No hay reservas para este día.",
   "adminAgendaTitle": "Agenda",
   "adminPanelEyebrow": "PANEL DE BEIDIS",
@@ -96,14 +89,7 @@
   "closingTimeLabel": "Cierre (HH:MM)",
 
   "adminClientsTitle": "Clientes",
-  "adminClientsLoadError": "No pudimos cargar los clientes: {error}",
-  "@adminClientsLoadError": {
-    "placeholders": {
-      "error": {
-        "type": "Object"
-      }
-    }
-  },
+  "adminClientsLoadError": "No pudimos cargar los clientes. Inténtalo de nuevo.",
   "adminNoClientsRegistered": "No hay clientes registrados.",
   "userStatusBlocked": "BLOQUEADA",
   "userStatusActive": "ACTIVA",
@@ -132,25 +118,11 @@
     }
   },
   "bookingCreatedSuccess": "¡Reserva creada exitosamente! Esperando confirmación del administrador.",
-  "bookingCreateError": "Error al crear la reserva: {error}",
-  "@bookingCreateError": {
-    "placeholders": {
-      "error": {
-        "type": "Object"
-      }
-    }
-  },
+  "bookingCreateError": "No pudimos crear la reserva. Inténtalo de nuevo.",
   "stepServiceLabel": "1 · SERVICIO",
   "stepDateLabel": "2 · FECHA",
   "stepTimeLabel": "3 · Horario",
-  "slotsLoadError": "No pudimos cargar los horarios: {error}",
-  "@slotsLoadError": {
-    "placeholders": {
-      "error": {
-        "type": "Object"
-      }
-    }
-  },
+  "slotsLoadError": "No pudimos cargar los horarios. Inténtalo de nuevo.",
   "chooseTimeSlotAction": "ELIGE UN HORARIO",
   "confirmAtTimeAction": "CONFIRMAR {time}",
   "@confirmAtTimeAction": {
@@ -174,14 +146,7 @@
   "myProfileTitle": "Mi Perfil",
   "adminPanelButtonLabel": "PANEL DE ADMINISTRADOR",
   "myAppointmentsTitle": "Mis reservas",
-  "myAppointmentsLoadError": "No pudimos cargar tus reservas: {error}",
-  "@myAppointmentsLoadError": {
-    "placeholders": {
-      "error": {
-        "type": "Object"
-      }
-    }
-  },
+  "myAppointmentsLoadError": "No pudimos cargar tus reservas. Inténtalo de nuevo.",
   "noAppointmentsYet": "Todavía no tienes reservas.",
   "bookAnotherAppointmentAction": "RESERVAR OTRO TURNO",
 
@@ -189,5 +154,38 @@
   "statusCancelledClient": "CANCELADA",
   "statusWaitingConfirmationClient": "EN REVISIÓN",
   "statusConfirmedAdmin": "CONFIRMADO",
-  "statusCancelledAdmin": "CANCELADO"
+  "statusCancelledAdmin": "CANCELADO",
+
+  "preferencesTitle": "Preferencias",
+  "themeLabel": "Tema",
+  "themeLight": "Claro",
+  "themeDark": "Oscuro",
+  "themeSystem": "Sistema",
+  "themeMenuTooltip": "Cambiar tema",
+  "languageLabel": "Idioma",
+  "languageSpanish": "Español",
+  "@languageSpanish": {
+    "description": "Nombre del idioma en su propio idioma, igual en todas las traducciones"
+  },
+  "languagePortuguese": "Português",
+  "@languagePortuguese": {
+    "description": "Nombre del idioma en su propio idioma, igual en todas las traducciones"
+  },
+  "languageCodeEs": "ES",
+  "@languageCodeEs": {
+    "description": "Código del idioma en el selector de Web"
+  },
+  "languageCodePt": "PT",
+  "@languageCodePt": {
+    "description": "Código del idioma en el selector de Web"
+  },
+  "languageSwitchLabel": "Cambiar idioma",
+  "selectedOption": "Seleccionado",
+  "@selectedOption": {
+    "description": "Lo que anuncia el lector de pantalla en la opción activa"
+  },
+  "profileGuestTitle": "Perfil",
+  "profileGuestLoginButton": "Iniciar sesión",
+  "authBlockedError": "Tu cuenta está bloqueada. Escríbenos por WhatsApp si crees que es un error.",
+  "authGenericError": "No pudimos iniciar sesión. Inténtalo de nuevo."
 }

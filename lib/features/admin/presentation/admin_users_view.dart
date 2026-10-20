@@ -23,16 +23,19 @@ class AdminUsersView extends ConsumerWidget {
             strokeWidth: 2,
           ),
         ),
-        error: (err, stack) => Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Text(
-              l10n.adminClientsLoadError(err),
-              textAlign: TextAlign.center,
-              style: AppText.sans(size: 13, color: ThemeColors.danger),
+        error: (err, stack) {
+          debugPrint('Error al cargar las clientas: $err');
+          return Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                l10n.adminClientsLoadError,
+                textAlign: TextAlign.center,
+                style: AppText.sans(size: 13, color: ThemeColors.danger),
+              ),
             ),
-          ),
-        ),
+          );
+        },
         data: (users) {
           if (users.isEmpty) {
             return Center(

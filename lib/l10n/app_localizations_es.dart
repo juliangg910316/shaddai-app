@@ -156,9 +156,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get confirmAction => 'CONFIRMAR';
 
   @override
-  String adminAgendaLoadError(Object error) {
-    return 'No pudimos cargar la agenda: $error';
-  }
+  String get adminAgendaLoadError =>
+      'No pudimos cargar la agenda. Inténtalo de nuevo.';
 
   @override
   String get adminNoAppointmentsToday => 'No hay reservas para este día.';
@@ -215,9 +214,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get adminClientsTitle => 'Clientes';
 
   @override
-  String adminClientsLoadError(Object error) {
-    return 'No pudimos cargar los clientes: $error';
-  }
+  String get adminClientsLoadError =>
+      'No pudimos cargar los clientes. Inténtalo de nuevo.';
 
   @override
   String get adminNoClientsRegistered => 'No hay clientes registrados.';
@@ -269,9 +267,8 @@ class AppLocalizationsEs extends AppLocalizations {
       '¡Reserva creada exitosamente! Esperando confirmación del administrador.';
 
   @override
-  String bookingCreateError(Object error) {
-    return 'Error al crear la reserva: $error';
-  }
+  String get bookingCreateError =>
+      'No pudimos crear la reserva. Inténtalo de nuevo.';
 
   @override
   String get stepServiceLabel => '1 · SERVICIO';
@@ -283,9 +280,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get stepTimeLabel => '3 · Horario';
 
   @override
-  String slotsLoadError(Object error) {
-    return 'No pudimos cargar los horarios: $error';
-  }
+  String get slotsLoadError =>
+      'No pudimos cargar los horarios. Inténtalo de nuevo.';
 
   @override
   String get chooseTimeSlotAction => 'ELIGE UN HORARIO';
@@ -335,9 +331,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get myAppointmentsTitle => 'Mis reservas';
 
   @override
-  String myAppointmentsLoadError(Object error) {
-    return 'No pudimos cargar tus reservas: $error';
-  }
+  String get myAppointmentsLoadError =>
+      'No pudimos cargar tus reservas. Inténtalo de nuevo.';
 
   @override
   String get noAppointmentsYet => 'Todavía no tienes reservas.';
@@ -359,4 +354,57 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get statusCancelledAdmin => 'CANCELADO';
+
+  @override
+  String get preferencesTitle => 'Preferencias';
+
+  @override
+  String get themeLabel => 'Tema';
+
+  @override
+  String get themeLight => 'Claro';
+
+  @override
+  String get themeDark => 'Oscuro';
+
+  @override
+  String get themeSystem => 'Sistema';
+
+  @override
+  String get themeMenuTooltip => 'Cambiar tema';
+
+  @override
+  String get languageLabel => 'Idioma';
+
+  @override
+  String get languageSpanish => 'Español';
+
+  @override
+  String get languagePortuguese => 'Português';
+
+  @override
+  String get languageCodeEs => 'ES';
+
+  @override
+  String get languageCodePt => 'PT';
+
+  @override
+  String get languageSwitchLabel => 'Cambiar idioma';
+
+  @override
+  String get selectedOption => 'Seleccionado';
+
+  @override
+  String get profileGuestTitle => 'Perfil';
+
+  @override
+  String get profileGuestLoginButton => 'Iniciar sesión';
+
+  @override
+  String get authBlockedError =>
+      'Tu cuenta está bloqueada. Escríbenos por WhatsApp si crees que es un error.';
+
+  @override
+  String get authGenericError =>
+      'No pudimos iniciar sesión. Inténtalo de nuevo.';
 }
