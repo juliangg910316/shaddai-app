@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/platform/platform_provider.dart';
 import '../../../l10n/app_localizations.dart';
-import '../../preferences/presentation/language_switch.dart';
-import '../../preferences/presentation/theme_menu_button.dart';
 
-class MainScaffold extends ConsumerWidget {
+class MainScaffold extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
 
   const MainScaffold({super.key, required this.navigationShell});
@@ -20,24 +16,11 @@ class MainScaffold extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isWeb = ref.watch(isWebProvider);
 
+    // Solo Android/iOS: Web usa `WebShell`, con la barra superior (spec 002).
     return Scaffold(
-      // Provisional hasta la landing de Web (spec 002): en Web, los selectores
-      // de tema e idioma van en una barra superior (RF-27).
-      appBar: isWeb
-          ? AppBar(
-              automaticallyImplyLeading: false,
-              actions: const [
-                ThemeMenuButton(),
-                SizedBox(width: 8),
-                LanguageSwitch(),
-                SizedBox(width: 16),
-              ],
-            )
-          : null,
       body: navigationShell,
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: navigationShell.currentIndex,

@@ -12,6 +12,11 @@ import '../../features/admin/presentation/admin_users_view.dart';
 import '../../features/admin/presentation/admin_settings_view.dart';
 import '../../features/services/presentation/services_view.dart';
 import '../../features/profile/presentation/profile_view.dart';
+import '../../features/landing/landing_section.dart';
+import '../../features/landing/presentation/landing_page.dart';
+import '../../features/navigation/presentation/web_shell.dart';
+import '../platform/platform_provider.dart';
+import 'redirect_logic.dart';
 
 // Placeholder views for other tabs
 class PlaceholderView extends StatelessWidget {
@@ -48,105 +53,146 @@ final routerNotifierProvider = Provider<RouterNotifier>((ref) {
 
 final goRouterProvider = Provider<GoRouter>((ref) {
   final notifier = ref.watch(routerNotifierProvider);
+  final isWeb = ref.watch(isWebProvider);
 
   return GoRouter(
     navigatorKey: rootNavigatorKey,
-    initialLocation: '/home',
+    initialLocation: isWeb ? '/' : '/home',
     refreshListenable: notifier,
+    // Las reglas viven en la función pura `resolveRedirect` (spec 002, D-3).
     redirect: (context, state) {
-      final authState = ref.read(authStateProvider);
       final currentUser = ref.read(currentUserProvider);
+      final user = currentUser.value;
+      final phone = user?.phoneNumber;
 
-      final isLoggedIn = authState.value != null;
-      final isLoggingIn = state.matchedLocation == '/login';
-      final isPhoneCapture = state.matchedLocation == '/capture_phone';
-
-      // If user is trying to access booking but isn't logged in
-      if (!isLoggedIn && state.matchedLocation.startsWith('/booking')) {
-        return '/login';
-      }
-
-      if (isLoggedIn) {
-        // If logged in but data is loading, don't redirect yet
-        if (currentUser.isLoading) return null;
-
-        final user = currentUser.value;
-        // If user logged in but has no phone number, force them to phone capture
-        if (user != null &&
-            (user.phoneNumber == null || user.phoneNumber!.isEmpty)) {
-          if (!isPhoneCapture) return '/capture_phone';
-          return null; // Let them stay on capture phone
-        }
-
-        // If they are on login or capture phone and everything is fine, go home
-        if (isLoggingIn || isPhoneCapture) {
-          return '/home';
-        }
-      }
-
-      return null; // No redirect
+      return resolveRedirect(
+        RedirectInput(
+          isWeb: isWeb,
+          path: state.uri.path,
+          query: state.uri.queryParameters,
+          isLoggedIn: ref.read(authStateProvider).value != null,
+          isUserLoading: currentUser.isLoading,
+          needsPhone: user != null && (phone == null || phone.isEmpty),
+          isAdmin: user?.role == 'admin',
+        ),
+      );
     },
+    routes: isWeb ? _webRoutes() : _mobileRoutes(),
+  );
+});
+
+/// Web: todas las páginas dentro de [WebShell], con la barra superior
+/// (spec 002, RF-13). La landing es la entrada.
+List<RouteBase> _webRoutes() => [
+  ShellRoute(
+    builder: (context, state, child) => WebShell(child: child),
     routes: [
       GoRoute(
+        path: '/',
+        builder: (context, state) => LandingPage(
+          key: landingPageKey,
+          section: LandingSection.fromQuery(
+            state.uri.queryParameters['section'],
+          ),
+        ),
+      ),
+      GoRoute(
+        path: '/login',
+        builder: (context, state) => const WebAccountPage(child: LoginView()),
+      ),
+      GoRoute(
+        path: '/capture_phone',
+        builder: (context, state) =>
+            const WebAccountPage(child: PhoneCaptureView()),
+      ),
+      GoRoute(
+        path: '/booking',
+        builder: (context, state) => const WebAccountPage(child: BookingView()),
+      ),
+      GoRoute(
+        path: '/profile',
+        builder: (context, state) => const WebAccountPage(child: ProfileView()),
+      ),
+      GoRoute(
         path: '/admin',
-        builder: (context, state) => const AdminDashboardView(),
+        builder: (context, state) =>
+            const WebAccountPage(child: AdminDashboardView()),
       ),
       GoRoute(
         path: '/admin/users',
-        builder: (context, state) => const AdminUsersView(),
+        builder: (context, state) =>
+            const WebAccountPage(child: AdminUsersView()),
       ),
       GoRoute(
         path: '/admin/settings',
-        builder: (context, state) => const AdminSettingsView(),
+        builder: (context, state) =>
+            const WebAccountPage(child: AdminSettingsView()),
       ),
-      GoRoute(path: '/login', builder: (context, state) => const LoginView()),
-      GoRoute(
-        path: '/capture_phone',
-        builder: (context, state) => const PhoneCaptureView(),
+      // Direcciones de las pestañas móviles: `resolveRedirect` las lleva a
+      // la landing antes de que se muestren (RF-29).
+      GoRoute(path: '/home', builder: (context, state) => const SizedBox()),
+      GoRoute(path: '/services', builder: (context, state) => const SizedBox()),
+    ],
+  ),
+];
+
+/// Android/iOS: la barra inferior con sus cuatro pestañas, sin cambios.
+List<RouteBase> _mobileRoutes() => [
+  GoRoute(
+    path: '/admin',
+    builder: (context, state) => const AdminDashboardView(),
+  ),
+  GoRoute(
+    path: '/admin/users',
+    builder: (context, state) => const AdminUsersView(),
+  ),
+  GoRoute(
+    path: '/admin/settings',
+    builder: (context, state) => const AdminSettingsView(),
+  ),
+  GoRoute(path: '/login', builder: (context, state) => const LoginView()),
+  GoRoute(
+    path: '/capture_phone',
+    builder: (context, state) => const PhoneCaptureView(),
+  ),
+  StatefulShellRoute.indexedStack(
+    builder: (context, state, navigationShell) {
+      return MainScaffold(navigationShell: navigationShell);
+    },
+    branches: [
+      StatefulShellBranch(
+        navigatorKey: sectionNavigatorKeyHome,
+        routes: [
+          GoRoute(path: '/home', builder: (context, state) => const HomeView()),
+        ],
       ),
-      StatefulShellRoute.indexedStack(
-        builder: (context, state, navigationShell) {
-          return MainScaffold(navigationShell: navigationShell);
-        },
-        branches: [
-          StatefulShellBranch(
-            navigatorKey: sectionNavigatorKeyHome,
-            routes: [
-              GoRoute(
-                path: '/home',
-                builder: (context, state) => const HomeView(),
-              ),
-            ],
+      StatefulShellBranch(
+        navigatorKey: sectionNavigatorKeyServices,
+        routes: [
+          GoRoute(
+            path: '/services',
+            builder: (context, state) => const ServicesView(),
           ),
-          StatefulShellBranch(
-            navigatorKey: sectionNavigatorKeyServices,
-            routes: [
-              GoRoute(
-                path: '/services',
-                builder: (context, state) => const ServicesView(),
-              ),
-            ],
+        ],
+      ),
+      StatefulShellBranch(
+        navigatorKey: sectionNavigatorKeyBooking,
+        routes: [
+          GoRoute(
+            path: '/booking',
+            builder: (context, state) => const BookingView(),
           ),
-          StatefulShellBranch(
-            navigatorKey: sectionNavigatorKeyBooking,
-            routes: [
-              GoRoute(
-                path: '/booking',
-                builder: (context, state) => const BookingView(),
-              ),
-            ],
-          ),
-          StatefulShellBranch(
-            navigatorKey: sectionNavigatorKeyProfile,
-            routes: [
-              GoRoute(
-                path: '/profile',
-                builder: (context, state) => const ProfileView(),
-              ),
-            ],
+        ],
+      ),
+      StatefulShellBranch(
+        navigatorKey: sectionNavigatorKeyProfile,
+        routes: [
+          GoRoute(
+            path: '/profile',
+            builder: (context, state) => const ProfileView(),
           ),
         ],
       ),
     ],
-  );
-});
+  ),
+];

@@ -24,6 +24,39 @@ void main() {
     expect(end.background, BrandColors.dark.background);
   });
 
+  test(
+    'la superficie de marca cambia entre claro (crema) y oscuro (verde)',
+    () {
+      expect(BrandColors.light.brandSurface, const Color(0xFFEFE9DA));
+      expect(BrandColors.dark.brandSurface, const Color(0xFF2E3D28));
+    },
+  );
+
+  test('copyWith y lerp incluyen los tokens de la landing', () {
+    const red = Color(0xFFFF0000);
+    final copy = BrandColors.light.copyWith(
+      brandSurface: red,
+      onBrandSurface: red,
+      onBrandSurfaceMuted: red,
+      onBrandSurfaceAccent: red,
+      brandSurfaceHairline: red,
+    );
+    expect([
+      copy.brandSurface,
+      copy.onBrandSurface,
+      copy.onBrandSurfaceMuted,
+      copy.onBrandSurfaceAccent,
+      copy.brandSurfaceHairline,
+    ], everyElement(red));
+
+    final end = BrandColors.light.lerp(BrandColors.dark, 1);
+    expect(end.brandSurface, BrandColors.dark.brandSurface);
+    expect(end.onBrandSurface, BrandColors.dark.onBrandSurface);
+    expect(end.onBrandSurfaceMuted, BrandColors.dark.onBrandSurfaceMuted);
+    expect(end.onBrandSurfaceAccent, BrandColors.dark.onBrandSurfaceAccent);
+    expect(end.brandSurfaceHairline, BrandColors.dark.brandSurfaceHairline);
+  });
+
   test('lerp con otra extensión devuelve la misma instancia', () {
     expect(BrandColors.light.lerp(null, 0.5), same(BrandColors.light));
   });

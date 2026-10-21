@@ -78,7 +78,7 @@ Mapa aprobado el 2026-10-20, en orden. Varias funcionalidades (reservas, perfil,
 | Spec | Nombre | Estado |
 | --- | --- | --- |
 | 001-design-system | Tema claro/oscuro, tipografía y selector de idioma | implementada (2026-10-21) |
-| 002-landing-web | Landing de una página en Web | sin empezar |
+| 002-landing-web | Landing de una página en Web | implementada (2026-10-21) |
 | 003-navegacion-movil | Barra de navegación inferior en Android/iOS | sin empezar |
 | 004-servicios-firestore | Servicios y precios en Firestore | sin empezar |
 | 005-reservas | Reserva de turnos (rediseño y servicio del turno) | sin empezar |

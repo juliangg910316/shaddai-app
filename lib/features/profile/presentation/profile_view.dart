@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/platform/platform_provider.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/brand_colors.dart';
 import '../../../core/utils/capitalize.dart';
@@ -22,6 +23,7 @@ class ProfileView extends ConsumerWidget {
     final userAsync = ref.watch(currentUserProvider);
     final user = userAsync.value;
     final appointmentsAsync = ref.watch(clientAppointmentsProvider);
+    final isWeb = ref.watch(isWebProvider);
 
     // Sin sesión: Preferencias y acceso al inicio de sesión (RF-25).
     if (user == null && !userAsync.isLoading) {
@@ -54,8 +56,12 @@ class ProfileView extends ConsumerWidget {
                     ),
                   ),
                   GestureDetector(
-                    onTap: () =>
-                        ref.read(authControllerProvider.notifier).signOut(),
+                    onTap: () {
+                      // En Web, primero a la landing: el perfil sin sesión
+                      // llevaría al login (spec 002, RF-28).
+                      if (isWeb) context.go('/');
+                      ref.read(authControllerProvider.notifier).signOut();
+                    },
                     child: Icon(Icons.logout, size: 22, color: brand.inkMuted),
                   ),
                 ],
@@ -170,8 +176,12 @@ class ProfileView extends ConsumerWidget {
                       label: l10n.bookAnotherAppointmentAction,
                       onPressed: () => context.go('/booking'),
                     ),
-                    const SizedBox(height: 32),
-                    const PreferencesSection(),
+                    // En Web, tema e idioma están en la barra superior
+                    // (spec 002, RF-31).
+                    if (!isWeb) ...[
+                      const SizedBox(height: 32),
+                      const PreferencesSection(),
+                    ],
                   ],
                 ),
               ),

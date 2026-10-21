@@ -77,6 +77,35 @@ void main() {
         }
       });
 
+      // Superficie de marca de la landing (spec 002, D-6).
+      final onBrandSurface = {
+        'onBrandSurface': brand.onBrandSurface,
+        'onBrandSurfaceMuted': brand.onBrandSurfaceMuted,
+        'onBrandSurfaceAccent': brand.onBrandSurfaceAccent,
+      };
+      for (final text in onBrandSurface.entries) {
+        test('${text.key} sobre brandSurface ≥ 4,5:1', () {
+          expect(
+            _ratio(text.value, brand.brandSurface),
+            greaterThanOrEqualTo(_normalText),
+          );
+        });
+      }
+
+      test('accentIcon sobre brandSurface ≥ 3:1', () {
+        expect(
+          _ratio(brand.accentIcon, brand.brandSurface),
+          greaterThanOrEqualTo(_iconOrLargeText),
+        );
+      });
+
+      test('los textos sobre brandSurface son opacos', () {
+        for (final text in onBrandSurface.entries) {
+          expect(text.value.a, 1.0, reason: text.key);
+        }
+        expect(brand.brandSurface.a, 1.0);
+      });
+
       test('el velo se oscurece hacia abajo', () {
         expect(brand.photoScrimEnd.a, greaterThan(brand.photoScrimStart.a));
       });

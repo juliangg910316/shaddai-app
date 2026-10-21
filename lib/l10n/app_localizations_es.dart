@@ -413,4 +413,482 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get loginAppBarTitle => 'Autenticación';
+
+  @override
+  String get webNavServices => 'Servicios';
+
+  @override
+  String get webNavCatalog => 'Catálogo';
+
+  @override
+  String get webNavAbout => 'Sobre mí';
+
+  @override
+  String get webNavReserve => 'Reservar';
+
+  @override
+  String get webMenuOpenLabel => 'Abrir menú';
+
+  @override
+  String get webMenuCloseLabel => 'Cerrar menú';
+
+  @override
+  String get webHomeLinkLabel => 'Studio Shaddai, ir al inicio';
+
+  @override
+  String get accountSignIn => 'Entrar';
+
+  @override
+  String get accountMenuLabel => 'Menú de cuenta';
+
+  @override
+  String get accountMyAppointments => 'Mis turnos';
+
+  @override
+  String get accountAdminPanel => 'Panel de administración';
+
+  @override
+  String get accountSignOut => 'Cerrar sesión';
+
+  @override
+  String get bookingCreatedWebTitle => 'Reserva creada';
+
+  @override
+  String get bookingBackToLanding => 'Volver al inicio';
+
+  @override
+  String get webAppTitle => 'Studio Shaddai · Nail Designer';
+
+  @override
+  String get landingHeroKicker => 'Nail Designer · Capão da Imbuia, Curitiba';
+
+  @override
+  String get landingHeroScript => 'Un tiempo para ti.';
+
+  @override
+  String get landingHeroTitleLine1 => 'Más que uñas,';
+
+  @override
+  String get landingHeroTitleLine2Em => 'momentos de bienestar.';
+
+  @override
+  String get landingHeroDesc =>
+      'Manicura, pedicura, alargamientos, esmaltado en gel y spa en un estudio privado, con hora reservada y atención en español y portugués.';
+
+  @override
+  String get landingHeroCtaReserve => 'Reservar cita';
+
+  @override
+  String get landingHeroCtaPrices => 'Ver lista de precios';
+
+  @override
+  String get landingHeroStatServicesLabel => 'Servicios';
+
+  @override
+  String get landingHeroStatFollowersLabel => 'Seguidoras';
+
+  @override
+  String get landingHeroStatNoticeLabel => 'Aviso p/ cambios';
+
+  @override
+  String get landingHeroAddressLabel => 'Estudio privado · Curitiba';
+
+  @override
+  String get landingHeroAddressCta => 'Mapa →';
+
+  @override
+  String get landingHeroBadgeLine1 => 'Francesa';
+
+  @override
+  String get landingHeroBadgeLine2 => 'gratis';
+
+  @override
+  String get landingHeroImageAlt =>
+      'Beidis Viera – Studio Shaddai Nail Designer';
+
+  @override
+  String get landingMarqueeGelPolish => 'Esmaltado en gel';
+
+  @override
+  String get landingMarqueeSpaMore => 'Spa y más';
+
+  @override
+  String get landingMarqueeManicure => 'Manicura';
+
+  @override
+  String get landingMarqueePedicure => 'Pedicura';
+
+  @override
+  String get landingMarqueeExtensions => 'Alargamientos';
+
+  @override
+  String get landingServicesEyebrow => 'Lista de precios';
+
+  @override
+  String get landingServicesTitle => 'Todos los';
+
+  @override
+  String get landingServicesTitleEm => 'servicios';
+
+  @override
+  String get landingServicesNote =>
+      'Precios en reales. Cada cita empieza con el diagnóstico de tus uñas: duración y acabado los decidimos juntas.';
+
+  @override
+  String get landingServices1Title => 'Manos';
+
+  @override
+  String get landingServices1Subtitle => 'Cuidado y elegancia siempre';
+
+  @override
+  String get landingServices1Row1 => 'Manicure tradicional';
+
+  @override
+  String get landingServices1Row2 => 'Spa de manos';
+
+  @override
+  String get landingServices1Row3 => 'Esmaltado en gel · manos';
+
+  @override
+  String get landingServices1Row4 => 'Baño de gel (corto a medio)';
+
+  @override
+  String get landingServices1Row5 => 'Baño de gel (largo)';
+
+  @override
+  String get landingServices1Note =>
+      'El baño de gel incluye preparación, cutículas, esmaltado en gel de un color y decoración simple.';
+
+  @override
+  String get landingServices2Title => 'Pies';
+
+  @override
+  String get landingServices2Subtitle => 'Confort y bienestar';
+
+  @override
+  String get landingServices2Row1 => 'Pedicura tradicional';
+
+  @override
+  String get landingServices2Row2 => 'Pedicura + Mini Spa';
+
+  @override
+  String get landingServices2Row3 => 'Pedicura Spa';
+
+  @override
+  String get landingServices2Row4 => 'Plástica de pies + Pedicura';
+
+  @override
+  String get landingServices2Row5 => 'Esmaltado en gel · pies';
+
+  @override
+  String get landingServices2Note =>
+      'Mini Spa: cuidado localizado de callosidades. Spa: exfoliación, hidratación y cuidado completo de los pies.';
+
+  @override
+  String get landingServices3Title => 'Alargamientos';
+
+  @override
+  String get landingServices3Subtitle => 'Gel, Polygel y Acrílico';
+
+  @override
+  String get landingServices3GroupNew => 'Nueva aplicación';
+
+  @override
+  String get landingServices3GroupMaintenance => 'Mantenimiento';
+
+  @override
+  String get landingServices3RowShort => 'Corto';
+
+  @override
+  String get landingServices3RowMedium => 'Medio';
+
+  @override
+  String get landingServices3RowLong => 'Largo';
+
+  @override
+  String get landingServices3RowExtraLong => 'Extra largo';
+
+  @override
+  String get landingServices3Note =>
+      'Mismo precio por técnica; solo varía el largo. El precio base incluye preparación, cutículas, estructura, esmaltado en gel de un color y decoración simple en 1 uña. Mantenimiento hasta 30 días.';
+
+  @override
+  String get landingServices4Subtitle => 'Practicidad y ligereza';
+
+  @override
+  String get landingServices4Row1 => 'Corto / Medio';
+
+  @override
+  String get landingServices4Row2 => 'Largo';
+
+  @override
+  String get landingServices4Row3 => 'Mantenimiento / reaplicación · desde';
+
+  @override
+  String get landingServices4Note =>
+      'Mantenimiento según el crecimiento y el estado de la estructura.';
+
+  @override
+  String get landingServices5Title => 'Retiradas';
+
+  @override
+  String get landingServices5Subtitle => 'Salud de la uña primero';
+
+  @override
+  String get landingServices5Row1 => 'Esmaltado en gel';
+
+  @override
+  String get landingServices5Row2 => 'Baño de gel';
+
+  @override
+  String get landingServices5Row3 => 'Alargamiento';
+
+  @override
+  String get landingServices5Note =>
+      'Retirada + nueva aplicación en la misma cita: R\$ 30.';
+
+  @override
+  String get landingServices6Title => 'Decoración y adicionales';
+
+  @override
+  String get landingServices6Subtitle => 'Detalles que marcan la diferencia';
+
+  @override
+  String get landingServices6Row1 => 'Francesa elaborada';
+
+  @override
+  String get landingServices6Row2 => 'Cromado / ojo de gato';
+
+  @override
+  String get landingServices6Row3 => 'Encapsulado';
+
+  @override
+  String get landingServices6Row4 => 'Nail art simple';
+
+  @override
+  String get landingServices6Row5 => 'Nail art intermedia';
+
+  @override
+  String get landingServices6Row6 => 'Nail art elaborada';
+
+  @override
+  String get landingServices6Row7 => 'Pedrería';
+
+  @override
+  String get landingServices6Note =>
+      'Adhesivos, composiciones con varias técnicas y diseños personalizados se valoran según cantidad de uñas, dificultad y tiempo.';
+
+  @override
+  String get landingCombosEyebrow => 'Ventajas';
+
+  @override
+  String get landingCombosNote =>
+      'Los combos no son acumulables con otras promociones.';
+
+  @override
+  String get landingCombo1Name => 'Manos y Pies Tradicional';
+
+  @override
+  String get landingCombo1Desc => 'Manicura tradicional + Pedicura tradicional';
+
+  @override
+  String get landingCombo2Name => 'Gel Completo';
+
+  @override
+  String get landingCombo2Desc => 'Esmaltado en gel manos + pies';
+
+  @override
+  String get landingCombo3Name => 'Momento Shaddai';
+
+  @override
+  String get landingCombo3Desc => 'Manicura + Spa de manos + Pedicura Spa';
+
+  @override
+  String get landingCatalogEyebrow => 'Material del estudio';
+
+  @override
+  String get landingCatalogTitle => 'Catálogo de';
+
+  @override
+  String get landingCatalogTitleEm => 'servicios';
+
+  @override
+  String get landingCatalogNote =>
+      'Toca para ampliar cada página del catálogo.';
+
+  @override
+  String get landingCatalogAltPortada =>
+      'Studio Shaddai — Catálogo de servicios';
+
+  @override
+  String get landingCatalogAltAlongamentos => 'Alargamientos';
+
+  @override
+  String get landingCatalogAltSoftGel => 'Soft Gel';
+
+  @override
+  String get landingCatalogAltManutencion => 'Mantenimiento de uñas';
+
+  @override
+  String get landingCatalogAltDecoraciones => 'Decoraciones para uñas';
+
+  @override
+  String get landingCatalogAltCombos => 'Combos y paquetes especiales';
+
+  @override
+  String get landingCatalogAltNaturales => 'Uñas naturales';
+
+  @override
+  String get landingCatalogAltPies => 'Pies y cuidados especiales';
+
+  @override
+  String get landingCatalogAltAgendamiento => 'Agendamiento de citas';
+
+  @override
+  String get landingCatalogMoreCta => 'Más páginas del catálogo en Instagram';
+
+  @override
+  String get landingInfoEyebrow => 'Información importante';
+
+  @override
+  String get landingInfoTitle => 'Cómo funciona la';
+
+  @override
+  String get landingInfoTitleEm => 'atención';
+
+  @override
+  String get landingInfoDesc =>
+      'Reglas simples para cuidar la estructura de tus uñas — y tu hora reservada.';
+
+  @override
+  String get landingInfoScript => 'Tu tiempo también importa ♡';
+
+  @override
+  String get landingInfo1Title => 'Reposición';
+
+  @override
+  String get landingInfo1Body =>
+      '1 uña durante el mantenimiento: incluida. A partir de la 2ª uña: R\$ 5 cada una. Fuera del mantenimiento: R\$ 15.';
+
+  @override
+  String get landingInfo2Title => 'Plazo de mantenimiento';
+
+  @override
+  String get landingInfo2Body =>
+      'Los mantenimientos se realizan hasta 30 días. Pasado ese plazo, el servicio puede considerarse nueva aplicación según el crecimiento, desprendimientos y estado de la estructura.';
+
+  @override
+  String get landingInfo3Title => 'Retrasos';
+
+  @override
+  String get landingInfo3Body =>
+      'Tolerancia de 10 minutos. Después, la cita puede adaptarse o reprogramarse para no afectar los horarios siguientes.';
+
+  @override
+  String get landingInfo4Title => 'Cancelaciones';
+
+  @override
+  String get landingInfo4Body =>
+      'Cancelaciones o cambios de horario: avisar con al menos 24 horas de antelación. Atención siempre con hora reservada.';
+
+  @override
+  String get landingGalleryEyebrow => 'Mi trabajo';
+
+  @override
+  String get landingGalleryTitle => 'Galería de';
+
+  @override
+  String get landingGalleryTitleEm => 'diseños';
+
+  @override
+  String get landingGalleryMoreLink => 'Ver más en Instagram →';
+
+  @override
+  String landingGalleryItemLabel(int n) {
+    return 'Diseño $n — ver más en Instagram';
+  }
+
+  @override
+  String get landingAboutQuoteLabel => 'En sus palabras';
+
+  @override
+  String get landingAboutQuote => '“La belleza también es cuidarte a ti.”';
+
+  @override
+  String get landingAboutEyebrow => 'Mi historia';
+
+  @override
+  String get landingAboutTitle => 'Soy';
+
+  @override
+  String get landingAboutParagraph1 =>
+      'Nail designer y apasionada de la belleza. Detrás de Studio Shaddai hay una mujer que sigue aprendiendo, soñando y creciendo cada día.';
+
+  @override
+  String get landingAboutParagraph2 =>
+      'Las redes muestran el resultado final, pero detrás de cada diseño hay preparación, técnica y pasión por el detalle. Para mí, cada uña es una oportunidad de crear algo bello que también cuide la salud de tus manos.';
+
+  @override
+  String get landingAboutValue1 => 'Técnica con fundamento, no solo tendencia';
+
+  @override
+  String get landingAboutValue2 => 'Salud de la uña primero, siempre';
+
+  @override
+  String get landingAboutValue3 => 'Espacio higienizado, trabajo impecable';
+
+  @override
+  String get landingAboutValue4 => 'Atención en español y portugués';
+
+  @override
+  String get landingContactEyebrow => 'Hablemos';
+
+  @override
+  String get landingContactTitle => 'Reserva tu';
+
+  @override
+  String get landingContactTitleEm => 'cita';
+
+  @override
+  String get landingContactDesc =>
+      '¿Lista para tener las uñas que siempre quisiste? Escríbeme y encontramos el momento perfecto para ti.';
+
+  @override
+  String get landingContactCtaWhatsapp => 'Agenda por WhatsApp ♡';
+
+  @override
+  String get landingContactPhoneLabel => 'Teléfono';
+
+  @override
+  String get landingContactEmailLabel => 'Email';
+
+  @override
+  String get landingContactAddressLabel => 'Dirección';
+
+  @override
+  String get landingContactInstagramLabel => 'Instagram';
+
+  @override
+  String get landingFooterTagline => 'La belleza también es cuidarte ♡';
+
+  @override
+  String get landingWhatsappFloatTitle => 'Reservar por WhatsApp';
+
+  @override
+  String get landingSoftGelTitle => 'Soft Gel';
+
+  @override
+  String get landingCombosTitle => 'Combos';
+
+  @override
+  String get landingCombosTitleEm => 'Shaddai';
+
+  @override
+  String get landingHeroBadgeLine3 => '1ª visita ♡';
+
+  @override
+  String get landingServices6RowBabyBoomer => 'Baby boomer';
+
+  @override
+  String get landingServices6RowReversa => 'Reversa';
 }

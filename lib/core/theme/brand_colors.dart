@@ -32,6 +32,11 @@ class BrandColors extends ThemeExtension<BrandColors> {
     required this.goldHairline,
     required this.goldHairlineSoft,
     required this.danger,
+    required this.brandSurface,
+    required this.onBrandSurface,
+    required this.onBrandSurfaceMuted,
+    required this.onBrandSurfaceAccent,
+    required this.brandSurfaceHairline,
   });
 
   /// Fondo de pantalla.
@@ -91,6 +96,23 @@ class BrandColors extends ThemeExtension<BrandColors> {
   /// Cancelados, acciones destructivas y errores.
   final Color danger;
 
+  /// Superficie de marca de la landing de Web (spec 002): barra superior,
+  /// hero y bandas destacadas. Crema en claro, verde en oscuro.
+  final Color brandSurface;
+
+  /// Texto e iconos sobre [brandSurface].
+  final Color onBrandSurface;
+
+  /// Texto secundario sobre [brandSurface] (opaco, ≥ 4,5:1).
+  final Color onBrandSurfaceMuted;
+
+  /// Dorado para texto sobre [brandSurface]: en claro, [accentText] no llega a
+  /// 4,5:1 sobre la crema.
+  final Color onBrandSurfaceAccent;
+
+  /// Bordes finos de 1 px sobre [brandSurface], solo decorativos.
+  final Color brandSurfaceHairline;
+
   static const light = BrandColors(
     background: Color(0xFFF5F1E8),
     surface: Color(0xFFFAFAF8),
@@ -114,6 +136,11 @@ class BrandColors extends ThemeExtension<BrandColors> {
     goldHairline: Color(0x80C7A86D),
     goldHairlineSoft: Color(0x59C7A86D),
     danger: Color(0xFF9C4A41),
+    brandSurface: Color(0xFFEFE9DA),
+    onBrandSurface: Color(0xFF2E3D28),
+    onBrandSurfaceMuted: Color(0xFF5F6650),
+    onBrandSurfaceAccent: Color(0xFF7A602E),
+    brandSurfaceHairline: Color(0x262E3D28),
   );
 
   static const dark = BrandColors(
@@ -139,6 +166,11 @@ class BrandColors extends ThemeExtension<BrandColors> {
     goldHairline: Color(0x80C7A86D),
     goldHairlineSoft: Color(0x59C7A86D),
     danger: Color(0xFFD98A80),
+    brandSurface: Color(0xFF2E3D28),
+    onBrandSurface: Color(0xFFF5F1E8),
+    onBrandSurfaceMuted: Color(0xFFBEBFB3),
+    onBrandSurfaceAccent: Color(0xFFC7A86D),
+    brandSurfaceHairline: Color(0x2EF5F1E8),
   );
 
   @override
@@ -165,6 +197,11 @@ class BrandColors extends ThemeExtension<BrandColors> {
     Color? goldHairline,
     Color? goldHairlineSoft,
     Color? danger,
+    Color? brandSurface,
+    Color? onBrandSurface,
+    Color? onBrandSurfaceMuted,
+    Color? onBrandSurfaceAccent,
+    Color? brandSurfaceHairline,
   }) {
     return BrandColors(
       background: background ?? this.background,
@@ -189,6 +226,11 @@ class BrandColors extends ThemeExtension<BrandColors> {
       goldHairline: goldHairline ?? this.goldHairline,
       goldHairlineSoft: goldHairlineSoft ?? this.goldHairlineSoft,
       danger: danger ?? this.danger,
+      brandSurface: brandSurface ?? this.brandSurface,
+      onBrandSurface: onBrandSurface ?? this.onBrandSurface,
+      onBrandSurfaceMuted: onBrandSurfaceMuted ?? this.onBrandSurfaceMuted,
+      onBrandSurfaceAccent: onBrandSurfaceAccent ?? this.onBrandSurfaceAccent,
+      brandSurfaceHairline: brandSurfaceHairline ?? this.brandSurfaceHairline,
     );
   }
 
@@ -219,6 +261,17 @@ class BrandColors extends ThemeExtension<BrandColors> {
       goldHairline: mix(goldHairline, other.goldHairline),
       goldHairlineSoft: mix(goldHairlineSoft, other.goldHairlineSoft),
       danger: mix(danger, other.danger),
+      brandSurface: mix(brandSurface, other.brandSurface),
+      onBrandSurface: mix(onBrandSurface, other.onBrandSurface),
+      onBrandSurfaceMuted: mix(onBrandSurfaceMuted, other.onBrandSurfaceMuted),
+      onBrandSurfaceAccent: mix(
+        onBrandSurfaceAccent,
+        other.onBrandSurfaceAccent,
+      ),
+      brandSurfaceHairline: mix(
+        brandSurfaceHairline,
+        other.brandSurfaceHairline,
+      ),
     );
   }
 }

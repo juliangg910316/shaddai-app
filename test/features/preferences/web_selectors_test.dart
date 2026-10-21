@@ -3,21 +3,38 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shaddai/core/platform/platform_provider.dart';
 import 'package:shaddai/features/preferences/presentation/language_switch.dart';
+import 'package:shaddai/features/navigation/presentation/web_top_bar.dart';
 import 'package:shaddai/features/preferences/presentation/theme_menu_button.dart';
 
 import '../../helpers/fake_session.dart';
 import '../../helpers/pump_app.dart';
+import '../../helpers/pump_web_app.dart';
 
+/// En Web, la app real con su barra superior (spec 002); en Android/iOS, la
+/// barra inferior, que no tiene selectores.
 Future<void> _pumpShell(
   WidgetTester tester, {
   bool isWeb = true,
   Map<String, Object> stored = const {'theme': 'system', 'language': 'es'},
+  double width = 1280,
+  double height = 900,
+  String location = '/',
 }) async {
+  if (isWeb) {
+    await pumpWebApp(
+      tester,
+      location: location,
+      stored: stored,
+      width: width,
+      height: height,
+    );
+    return;
+  }
   await pumpApp(
     tester,
     stored: stored,
     router: shellRouter(initialLocation: '/home'),
-    overrides: [...sessionOverrides(), isWebProvider.overrideWithValue(isWeb)],
+    overrides: [...sessionOverrides(), isWebProvider.overrideWithValue(false)],
   );
   await tester.pumpAndSettle();
 }
@@ -64,7 +81,7 @@ Finder _pill(String code) =>
     find.ancestor(of: find.text(code), matching: find.byType(ChoiceChip));
 
 void main() {
-  group('barra provisional (RF-27)', () {
+  group('barra superior de Web (spec 001 RF-27, spec 002 RF-13)', () {
     testWidgets('en Web muestra los dos selectores', (tester) async {
       await _pumpShell(tester);
 
@@ -140,7 +157,14 @@ void main() {
     testWidgets('se maneja con teclado: Tab, Intro, flechas y Esc (RNF-4)', (
       tester,
     ) async {
-      await _pumpShell(tester, stored: {'theme': 'light', 'language': 'es'});
+      // La barra es la misma en todas las páginas. Se empieza en una con
+      // contenido enfocable: el teclado en la landing se prueba en la spec
+      // 002 (T13), cuando tenga sus secciones.
+      await _pumpShell(
+        tester,
+        stored: {'theme': 'light', 'language': 'es'},
+        location: '/login',
+      );
       final button = find.byType(ThemeMenuButton);
 
       await _moveFocusTo(tester, button, LogicalKeyboardKey.tab);
@@ -200,7 +224,7 @@ void main() {
     });
 
     testWidgets('se maneja con teclado: Tab y Espacio (RNF-4)', (tester) async {
-      await _pumpShell(tester);
+      await _pumpShell(tester, location: '/login');
 
       await _moveFocusTo(tester, _pill('PT'), LogicalKeyboardKey.tab);
       await tester.sendKeyEvent(LogicalKeyboardKey.space);
@@ -215,8 +239,7 @@ void main() {
     final semantics = tester.ensureSemantics();
     await _pumpShell(tester);
 
-    // Se mide solo la barra superior: la inferior es de la spec 003.
-    final bar = find.byType(AppBar);
+    final bar = find.byType(WebTopBar);
     for (final selector in [
       find.descendant(of: bar, matching: find.byType(IconButton)),
       _pill('ES'),
@@ -232,13 +255,18 @@ void main() {
 
   testWidgets('con el texto al 200 % y en PT, la barra no se desborda '
       '(RNF-6)', (tester) async {
-    tester.view.devicePixelRatio = 1;
-    tester.view.physicalSize = const Size(360, 800);
     tester.platformDispatcher.textScaleFactorTestValue = 2;
-    addTearDown(tester.view.reset);
     addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
 
-    await _pumpShell(tester, stored: {'language': 'pt'});
+    await _pumpShell(
+      tester,
+      stored: {'language': 'pt'},
+      width: 360,
+      height: 800,
+    );
+    // En estrecho, los selectores van en el menú lateral (spec 002, RF-15).
+    await tester.tap(find.byTooltip('Abrir menu'));
+    await settleWeb(tester);
 
     expect(find.byType(LanguageSwitch), findsOneWidget);
     expect(tester.takeException(), isNull);

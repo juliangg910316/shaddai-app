@@ -865,6 +865,918 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Autenticación'**
   String get loginAppBarTitle;
+
+  /// Enlace de la barra superior de Web a la lista de precios
+  ///
+  /// In es, this message translates to:
+  /// **'Servicios'**
+  String get webNavServices;
+
+  /// Enlace de la barra superior de Web al catálogo
+  ///
+  /// In es, this message translates to:
+  /// **'Catálogo'**
+  String get webNavCatalog;
+
+  /// Enlace de la barra superior de Web a la sección Sobre mí
+  ///
+  /// In es, this message translates to:
+  /// **'Sobre mí'**
+  String get webNavAbout;
+
+  /// Botón de la barra superior de Web que lleva a la reserva
+  ///
+  /// In es, this message translates to:
+  /// **'Reservar'**
+  String get webNavReserve;
+
+  /// Botón del menú lateral en ancho estrecho
+  ///
+  /// In es, this message translates to:
+  /// **'Abrir menú'**
+  String get webMenuOpenLabel;
+
+  /// Botón para cerrar el menú lateral
+  ///
+  /// In es, this message translates to:
+  /// **'Cerrar menú'**
+  String get webMenuCloseLabel;
+
+  /// Etiqueta del logotipo de la barra superior para lectores de pantalla
+  ///
+  /// In es, this message translates to:
+  /// **'Studio Shaddai, ir al inicio'**
+  String get webHomeLinkLabel;
+
+  /// Botón de cuenta de Web sin sesión
+  ///
+  /// In es, this message translates to:
+  /// **'Entrar'**
+  String get accountSignIn;
+
+  /// Etiqueta del botón de cuenta de Web con sesión
+  ///
+  /// In es, this message translates to:
+  /// **'Menú de cuenta'**
+  String get accountMenuLabel;
+
+  /// Opción del menú de cuenta que lleva al perfil
+  ///
+  /// In es, this message translates to:
+  /// **'Mis turnos'**
+  String get accountMyAppointments;
+
+  /// Opción del menú de cuenta, solo para admin
+  ///
+  /// In es, this message translates to:
+  /// **'Panel de administración'**
+  String get accountAdminPanel;
+
+  /// Opción del menú de cuenta que cierra la sesión
+  ///
+  /// In es, this message translates to:
+  /// **'Cerrar sesión'**
+  String get accountSignOut;
+
+  /// Título del diálogo de Web tras crear una reserva
+  ///
+  /// In es, this message translates to:
+  /// **'Reserva creada'**
+  String get bookingCreatedWebTitle;
+
+  /// Botón del diálogo de reserva creada que lleva a la landing
+  ///
+  /// In es, this message translates to:
+  /// **'Volver al inicio'**
+  String get bookingBackToLanding;
+
+  /// Título de la pestaña del navegador y de la app
+  ///
+  /// In es, this message translates to:
+  /// **'Studio Shaddai · Nail Designer'**
+  String get webAppTitle;
+
+  /// No description provided for @landingHeroKicker.
+  ///
+  /// In es, this message translates to:
+  /// **'Nail Designer · Capão da Imbuia, Curitiba'**
+  String get landingHeroKicker;
+
+  /// No description provided for @landingHeroScript.
+  ///
+  /// In es, this message translates to:
+  /// **'Un tiempo para ti.'**
+  String get landingHeroScript;
+
+  /// No description provided for @landingHeroTitleLine1.
+  ///
+  /// In es, this message translates to:
+  /// **'Más que uñas,'**
+  String get landingHeroTitleLine1;
+
+  /// No description provided for @landingHeroTitleLine2Em.
+  ///
+  /// In es, this message translates to:
+  /// **'momentos de bienestar.'**
+  String get landingHeroTitleLine2Em;
+
+  /// No description provided for @landingHeroDesc.
+  ///
+  /// In es, this message translates to:
+  /// **'Manicura, pedicura, alargamientos, esmaltado en gel y spa en un estudio privado, con hora reservada y atención en español y portugués.'**
+  String get landingHeroDesc;
+
+  /// No description provided for @landingHeroCtaReserve.
+  ///
+  /// In es, this message translates to:
+  /// **'Reservar cita'**
+  String get landingHeroCtaReserve;
+
+  /// No description provided for @landingHeroCtaPrices.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver lista de precios'**
+  String get landingHeroCtaPrices;
+
+  /// No description provided for @landingHeroStatServicesLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Servicios'**
+  String get landingHeroStatServicesLabel;
+
+  /// No description provided for @landingHeroStatFollowersLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Seguidoras'**
+  String get landingHeroStatFollowersLabel;
+
+  /// No description provided for @landingHeroStatNoticeLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Aviso p/ cambios'**
+  String get landingHeroStatNoticeLabel;
+
+  /// No description provided for @landingHeroAddressLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Estudio privado · Curitiba'**
+  String get landingHeroAddressLabel;
+
+  /// No description provided for @landingHeroAddressCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Mapa →'**
+  String get landingHeroAddressCta;
+
+  /// No description provided for @landingHeroBadgeLine1.
+  ///
+  /// In es, this message translates to:
+  /// **'Francesa'**
+  String get landingHeroBadgeLine1;
+
+  /// No description provided for @landingHeroBadgeLine2.
+  ///
+  /// In es, this message translates to:
+  /// **'gratis'**
+  String get landingHeroBadgeLine2;
+
+  /// No description provided for @landingHeroImageAlt.
+  ///
+  /// In es, this message translates to:
+  /// **'Beidis Viera – Studio Shaddai Nail Designer'**
+  String get landingHeroImageAlt;
+
+  /// No description provided for @landingMarqueeGelPolish.
+  ///
+  /// In es, this message translates to:
+  /// **'Esmaltado en gel'**
+  String get landingMarqueeGelPolish;
+
+  /// No description provided for @landingMarqueeSpaMore.
+  ///
+  /// In es, this message translates to:
+  /// **'Spa y más'**
+  String get landingMarqueeSpaMore;
+
+  /// No description provided for @landingMarqueeManicure.
+  ///
+  /// In es, this message translates to:
+  /// **'Manicura'**
+  String get landingMarqueeManicure;
+
+  /// No description provided for @landingMarqueePedicure.
+  ///
+  /// In es, this message translates to:
+  /// **'Pedicura'**
+  String get landingMarqueePedicure;
+
+  /// No description provided for @landingMarqueeExtensions.
+  ///
+  /// In es, this message translates to:
+  /// **'Alargamientos'**
+  String get landingMarqueeExtensions;
+
+  /// No description provided for @landingServicesEyebrow.
+  ///
+  /// In es, this message translates to:
+  /// **'Lista de precios'**
+  String get landingServicesEyebrow;
+
+  /// No description provided for @landingServicesTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Todos los'**
+  String get landingServicesTitle;
+
+  /// No description provided for @landingServicesTitleEm.
+  ///
+  /// In es, this message translates to:
+  /// **'servicios'**
+  String get landingServicesTitleEm;
+
+  /// No description provided for @landingServicesNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Precios en reales. Cada cita empieza con el diagnóstico de tus uñas: duración y acabado los decidimos juntas.'**
+  String get landingServicesNote;
+
+  /// No description provided for @landingServices1Title.
+  ///
+  /// In es, this message translates to:
+  /// **'Manos'**
+  String get landingServices1Title;
+
+  /// No description provided for @landingServices1Subtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuidado y elegancia siempre'**
+  String get landingServices1Subtitle;
+
+  /// No description provided for @landingServices1Row1.
+  ///
+  /// In es, this message translates to:
+  /// **'Manicure tradicional'**
+  String get landingServices1Row1;
+
+  /// No description provided for @landingServices1Row2.
+  ///
+  /// In es, this message translates to:
+  /// **'Spa de manos'**
+  String get landingServices1Row2;
+
+  /// No description provided for @landingServices1Row3.
+  ///
+  /// In es, this message translates to:
+  /// **'Esmaltado en gel · manos'**
+  String get landingServices1Row3;
+
+  /// No description provided for @landingServices1Row4.
+  ///
+  /// In es, this message translates to:
+  /// **'Baño de gel (corto a medio)'**
+  String get landingServices1Row4;
+
+  /// No description provided for @landingServices1Row5.
+  ///
+  /// In es, this message translates to:
+  /// **'Baño de gel (largo)'**
+  String get landingServices1Row5;
+
+  /// No description provided for @landingServices1Note.
+  ///
+  /// In es, this message translates to:
+  /// **'El baño de gel incluye preparación, cutículas, esmaltado en gel de un color y decoración simple.'**
+  String get landingServices1Note;
+
+  /// No description provided for @landingServices2Title.
+  ///
+  /// In es, this message translates to:
+  /// **'Pies'**
+  String get landingServices2Title;
+
+  /// No description provided for @landingServices2Subtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Confort y bienestar'**
+  String get landingServices2Subtitle;
+
+  /// No description provided for @landingServices2Row1.
+  ///
+  /// In es, this message translates to:
+  /// **'Pedicura tradicional'**
+  String get landingServices2Row1;
+
+  /// No description provided for @landingServices2Row2.
+  ///
+  /// In es, this message translates to:
+  /// **'Pedicura + Mini Spa'**
+  String get landingServices2Row2;
+
+  /// No description provided for @landingServices2Row3.
+  ///
+  /// In es, this message translates to:
+  /// **'Pedicura Spa'**
+  String get landingServices2Row3;
+
+  /// No description provided for @landingServices2Row4.
+  ///
+  /// In es, this message translates to:
+  /// **'Plástica de pies + Pedicura'**
+  String get landingServices2Row4;
+
+  /// No description provided for @landingServices2Row5.
+  ///
+  /// In es, this message translates to:
+  /// **'Esmaltado en gel · pies'**
+  String get landingServices2Row5;
+
+  /// No description provided for @landingServices2Note.
+  ///
+  /// In es, this message translates to:
+  /// **'Mini Spa: cuidado localizado de callosidades. Spa: exfoliación, hidratación y cuidado completo de los pies.'**
+  String get landingServices2Note;
+
+  /// No description provided for @landingServices3Title.
+  ///
+  /// In es, this message translates to:
+  /// **'Alargamientos'**
+  String get landingServices3Title;
+
+  /// No description provided for @landingServices3Subtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Gel, Polygel y Acrílico'**
+  String get landingServices3Subtitle;
+
+  /// No description provided for @landingServices3GroupNew.
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva aplicación'**
+  String get landingServices3GroupNew;
+
+  /// No description provided for @landingServices3GroupMaintenance.
+  ///
+  /// In es, this message translates to:
+  /// **'Mantenimiento'**
+  String get landingServices3GroupMaintenance;
+
+  /// No description provided for @landingServices3RowShort.
+  ///
+  /// In es, this message translates to:
+  /// **'Corto'**
+  String get landingServices3RowShort;
+
+  /// No description provided for @landingServices3RowMedium.
+  ///
+  /// In es, this message translates to:
+  /// **'Medio'**
+  String get landingServices3RowMedium;
+
+  /// No description provided for @landingServices3RowLong.
+  ///
+  /// In es, this message translates to:
+  /// **'Largo'**
+  String get landingServices3RowLong;
+
+  /// No description provided for @landingServices3RowExtraLong.
+  ///
+  /// In es, this message translates to:
+  /// **'Extra largo'**
+  String get landingServices3RowExtraLong;
+
+  /// No description provided for @landingServices3Note.
+  ///
+  /// In es, this message translates to:
+  /// **'Mismo precio por técnica; solo varía el largo. El precio base incluye preparación, cutículas, estructura, esmaltado en gel de un color y decoración simple en 1 uña. Mantenimiento hasta 30 días.'**
+  String get landingServices3Note;
+
+  /// No description provided for @landingServices4Subtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Practicidad y ligereza'**
+  String get landingServices4Subtitle;
+
+  /// No description provided for @landingServices4Row1.
+  ///
+  /// In es, this message translates to:
+  /// **'Corto / Medio'**
+  String get landingServices4Row1;
+
+  /// No description provided for @landingServices4Row2.
+  ///
+  /// In es, this message translates to:
+  /// **'Largo'**
+  String get landingServices4Row2;
+
+  /// No description provided for @landingServices4Row3.
+  ///
+  /// In es, this message translates to:
+  /// **'Mantenimiento / reaplicación · desde'**
+  String get landingServices4Row3;
+
+  /// No description provided for @landingServices4Note.
+  ///
+  /// In es, this message translates to:
+  /// **'Mantenimiento según el crecimiento y el estado de la estructura.'**
+  String get landingServices4Note;
+
+  /// No description provided for @landingServices5Title.
+  ///
+  /// In es, this message translates to:
+  /// **'Retiradas'**
+  String get landingServices5Title;
+
+  /// No description provided for @landingServices5Subtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Salud de la uña primero'**
+  String get landingServices5Subtitle;
+
+  /// No description provided for @landingServices5Row1.
+  ///
+  /// In es, this message translates to:
+  /// **'Esmaltado en gel'**
+  String get landingServices5Row1;
+
+  /// No description provided for @landingServices5Row2.
+  ///
+  /// In es, this message translates to:
+  /// **'Baño de gel'**
+  String get landingServices5Row2;
+
+  /// No description provided for @landingServices5Row3.
+  ///
+  /// In es, this message translates to:
+  /// **'Alargamiento'**
+  String get landingServices5Row3;
+
+  /// No description provided for @landingServices5Note.
+  ///
+  /// In es, this message translates to:
+  /// **'Retirada + nueva aplicación en la misma cita: R\$ 30.'**
+  String get landingServices5Note;
+
+  /// No description provided for @landingServices6Title.
+  ///
+  /// In es, this message translates to:
+  /// **'Decoración y adicionales'**
+  String get landingServices6Title;
+
+  /// No description provided for @landingServices6Subtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Detalles que marcan la diferencia'**
+  String get landingServices6Subtitle;
+
+  /// No description provided for @landingServices6Row1.
+  ///
+  /// In es, this message translates to:
+  /// **'Francesa elaborada'**
+  String get landingServices6Row1;
+
+  /// No description provided for @landingServices6Row2.
+  ///
+  /// In es, this message translates to:
+  /// **'Cromado / ojo de gato'**
+  String get landingServices6Row2;
+
+  /// No description provided for @landingServices6Row3.
+  ///
+  /// In es, this message translates to:
+  /// **'Encapsulado'**
+  String get landingServices6Row3;
+
+  /// No description provided for @landingServices6Row4.
+  ///
+  /// In es, this message translates to:
+  /// **'Nail art simple'**
+  String get landingServices6Row4;
+
+  /// No description provided for @landingServices6Row5.
+  ///
+  /// In es, this message translates to:
+  /// **'Nail art intermedia'**
+  String get landingServices6Row5;
+
+  /// No description provided for @landingServices6Row6.
+  ///
+  /// In es, this message translates to:
+  /// **'Nail art elaborada'**
+  String get landingServices6Row6;
+
+  /// No description provided for @landingServices6Row7.
+  ///
+  /// In es, this message translates to:
+  /// **'Pedrería'**
+  String get landingServices6Row7;
+
+  /// No description provided for @landingServices6Note.
+  ///
+  /// In es, this message translates to:
+  /// **'Adhesivos, composiciones con varias técnicas y diseños personalizados se valoran según cantidad de uñas, dificultad y tiempo.'**
+  String get landingServices6Note;
+
+  /// No description provided for @landingCombosEyebrow.
+  ///
+  /// In es, this message translates to:
+  /// **'Ventajas'**
+  String get landingCombosEyebrow;
+
+  /// No description provided for @landingCombosNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Los combos no son acumulables con otras promociones.'**
+  String get landingCombosNote;
+
+  /// No description provided for @landingCombo1Name.
+  ///
+  /// In es, this message translates to:
+  /// **'Manos y Pies Tradicional'**
+  String get landingCombo1Name;
+
+  /// No description provided for @landingCombo1Desc.
+  ///
+  /// In es, this message translates to:
+  /// **'Manicura tradicional + Pedicura tradicional'**
+  String get landingCombo1Desc;
+
+  /// No description provided for @landingCombo2Name.
+  ///
+  /// In es, this message translates to:
+  /// **'Gel Completo'**
+  String get landingCombo2Name;
+
+  /// No description provided for @landingCombo2Desc.
+  ///
+  /// In es, this message translates to:
+  /// **'Esmaltado en gel manos + pies'**
+  String get landingCombo2Desc;
+
+  /// No description provided for @landingCombo3Name.
+  ///
+  /// In es, this message translates to:
+  /// **'Momento Shaddai'**
+  String get landingCombo3Name;
+
+  /// No description provided for @landingCombo3Desc.
+  ///
+  /// In es, this message translates to:
+  /// **'Manicura + Spa de manos + Pedicura Spa'**
+  String get landingCombo3Desc;
+
+  /// No description provided for @landingCatalogEyebrow.
+  ///
+  /// In es, this message translates to:
+  /// **'Material del estudio'**
+  String get landingCatalogEyebrow;
+
+  /// No description provided for @landingCatalogTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Catálogo de'**
+  String get landingCatalogTitle;
+
+  /// No description provided for @landingCatalogTitleEm.
+  ///
+  /// In es, this message translates to:
+  /// **'servicios'**
+  String get landingCatalogTitleEm;
+
+  /// No description provided for @landingCatalogNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Toca para ampliar cada página del catálogo.'**
+  String get landingCatalogNote;
+
+  /// No description provided for @landingCatalogAltPortada.
+  ///
+  /// In es, this message translates to:
+  /// **'Studio Shaddai — Catálogo de servicios'**
+  String get landingCatalogAltPortada;
+
+  /// No description provided for @landingCatalogAltAlongamentos.
+  ///
+  /// In es, this message translates to:
+  /// **'Alargamientos'**
+  String get landingCatalogAltAlongamentos;
+
+  /// No description provided for @landingCatalogAltSoftGel.
+  ///
+  /// In es, this message translates to:
+  /// **'Soft Gel'**
+  String get landingCatalogAltSoftGel;
+
+  /// No description provided for @landingCatalogAltManutencion.
+  ///
+  /// In es, this message translates to:
+  /// **'Mantenimiento de uñas'**
+  String get landingCatalogAltManutencion;
+
+  /// No description provided for @landingCatalogAltDecoraciones.
+  ///
+  /// In es, this message translates to:
+  /// **'Decoraciones para uñas'**
+  String get landingCatalogAltDecoraciones;
+
+  /// No description provided for @landingCatalogAltCombos.
+  ///
+  /// In es, this message translates to:
+  /// **'Combos y paquetes especiales'**
+  String get landingCatalogAltCombos;
+
+  /// No description provided for @landingCatalogAltNaturales.
+  ///
+  /// In es, this message translates to:
+  /// **'Uñas naturales'**
+  String get landingCatalogAltNaturales;
+
+  /// No description provided for @landingCatalogAltPies.
+  ///
+  /// In es, this message translates to:
+  /// **'Pies y cuidados especiales'**
+  String get landingCatalogAltPies;
+
+  /// No description provided for @landingCatalogAltAgendamiento.
+  ///
+  /// In es, this message translates to:
+  /// **'Agendamiento de citas'**
+  String get landingCatalogAltAgendamiento;
+
+  /// No description provided for @landingCatalogMoreCta.
+  ///
+  /// In es, this message translates to:
+  /// **'Más páginas del catálogo en Instagram'**
+  String get landingCatalogMoreCta;
+
+  /// No description provided for @landingInfoEyebrow.
+  ///
+  /// In es, this message translates to:
+  /// **'Información importante'**
+  String get landingInfoEyebrow;
+
+  /// No description provided for @landingInfoTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Cómo funciona la'**
+  String get landingInfoTitle;
+
+  /// No description provided for @landingInfoTitleEm.
+  ///
+  /// In es, this message translates to:
+  /// **'atención'**
+  String get landingInfoTitleEm;
+
+  /// No description provided for @landingInfoDesc.
+  ///
+  /// In es, this message translates to:
+  /// **'Reglas simples para cuidar la estructura de tus uñas — y tu hora reservada.'**
+  String get landingInfoDesc;
+
+  /// No description provided for @landingInfoScript.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu tiempo también importa ♡'**
+  String get landingInfoScript;
+
+  /// No description provided for @landingInfo1Title.
+  ///
+  /// In es, this message translates to:
+  /// **'Reposición'**
+  String get landingInfo1Title;
+
+  /// No description provided for @landingInfo1Body.
+  ///
+  /// In es, this message translates to:
+  /// **'1 uña durante el mantenimiento: incluida. A partir de la 2ª uña: R\$ 5 cada una. Fuera del mantenimiento: R\$ 15.'**
+  String get landingInfo1Body;
+
+  /// No description provided for @landingInfo2Title.
+  ///
+  /// In es, this message translates to:
+  /// **'Plazo de mantenimiento'**
+  String get landingInfo2Title;
+
+  /// No description provided for @landingInfo2Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Los mantenimientos se realizan hasta 30 días. Pasado ese plazo, el servicio puede considerarse nueva aplicación según el crecimiento, desprendimientos y estado de la estructura.'**
+  String get landingInfo2Body;
+
+  /// No description provided for @landingInfo3Title.
+  ///
+  /// In es, this message translates to:
+  /// **'Retrasos'**
+  String get landingInfo3Title;
+
+  /// No description provided for @landingInfo3Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Tolerancia de 10 minutos. Después, la cita puede adaptarse o reprogramarse para no afectar los horarios siguientes.'**
+  String get landingInfo3Body;
+
+  /// No description provided for @landingInfo4Title.
+  ///
+  /// In es, this message translates to:
+  /// **'Cancelaciones'**
+  String get landingInfo4Title;
+
+  /// No description provided for @landingInfo4Body.
+  ///
+  /// In es, this message translates to:
+  /// **'Cancelaciones o cambios de horario: avisar con al menos 24 horas de antelación. Atención siempre con hora reservada.'**
+  String get landingInfo4Body;
+
+  /// No description provided for @landingGalleryEyebrow.
+  ///
+  /// In es, this message translates to:
+  /// **'Mi trabajo'**
+  String get landingGalleryEyebrow;
+
+  /// No description provided for @landingGalleryTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Galería de'**
+  String get landingGalleryTitle;
+
+  /// No description provided for @landingGalleryTitleEm.
+  ///
+  /// In es, this message translates to:
+  /// **'diseños'**
+  String get landingGalleryTitleEm;
+
+  /// No description provided for @landingGalleryMoreLink.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver más en Instagram →'**
+  String get landingGalleryMoreLink;
+
+  /// Etiqueta de accesibilidad para cada foto de la galería
+  ///
+  /// In es, this message translates to:
+  /// **'Diseño {n} — ver más en Instagram'**
+  String landingGalleryItemLabel(int n);
+
+  /// No description provided for @landingAboutQuoteLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'En sus palabras'**
+  String get landingAboutQuoteLabel;
+
+  /// No description provided for @landingAboutQuote.
+  ///
+  /// In es, this message translates to:
+  /// **'“La belleza también es cuidarte a ti.”'**
+  String get landingAboutQuote;
+
+  /// No description provided for @landingAboutEyebrow.
+  ///
+  /// In es, this message translates to:
+  /// **'Mi historia'**
+  String get landingAboutEyebrow;
+
+  /// No description provided for @landingAboutTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Soy'**
+  String get landingAboutTitle;
+
+  /// No description provided for @landingAboutParagraph1.
+  ///
+  /// In es, this message translates to:
+  /// **'Nail designer y apasionada de la belleza. Detrás de Studio Shaddai hay una mujer que sigue aprendiendo, soñando y creciendo cada día.'**
+  String get landingAboutParagraph1;
+
+  /// No description provided for @landingAboutParagraph2.
+  ///
+  /// In es, this message translates to:
+  /// **'Las redes muestran el resultado final, pero detrás de cada diseño hay preparación, técnica y pasión por el detalle. Para mí, cada uña es una oportunidad de crear algo bello que también cuide la salud de tus manos.'**
+  String get landingAboutParagraph2;
+
+  /// No description provided for @landingAboutValue1.
+  ///
+  /// In es, this message translates to:
+  /// **'Técnica con fundamento, no solo tendencia'**
+  String get landingAboutValue1;
+
+  /// No description provided for @landingAboutValue2.
+  ///
+  /// In es, this message translates to:
+  /// **'Salud de la uña primero, siempre'**
+  String get landingAboutValue2;
+
+  /// No description provided for @landingAboutValue3.
+  ///
+  /// In es, this message translates to:
+  /// **'Espacio higienizado, trabajo impecable'**
+  String get landingAboutValue3;
+
+  /// No description provided for @landingAboutValue4.
+  ///
+  /// In es, this message translates to:
+  /// **'Atención en español y portugués'**
+  String get landingAboutValue4;
+
+  /// No description provided for @landingContactEyebrow.
+  ///
+  /// In es, this message translates to:
+  /// **'Hablemos'**
+  String get landingContactEyebrow;
+
+  /// No description provided for @landingContactTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Reserva tu'**
+  String get landingContactTitle;
+
+  /// No description provided for @landingContactTitleEm.
+  ///
+  /// In es, this message translates to:
+  /// **'cita'**
+  String get landingContactTitleEm;
+
+  /// No description provided for @landingContactDesc.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Lista para tener las uñas que siempre quisiste? Escríbeme y encontramos el momento perfecto para ti.'**
+  String get landingContactDesc;
+
+  /// No description provided for @landingContactCtaWhatsapp.
+  ///
+  /// In es, this message translates to:
+  /// **'Agenda por WhatsApp ♡'**
+  String get landingContactCtaWhatsapp;
+
+  /// No description provided for @landingContactPhoneLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Teléfono'**
+  String get landingContactPhoneLabel;
+
+  /// No description provided for @landingContactEmailLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Email'**
+  String get landingContactEmailLabel;
+
+  /// No description provided for @landingContactAddressLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Dirección'**
+  String get landingContactAddressLabel;
+
+  /// No description provided for @landingContactInstagramLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Instagram'**
+  String get landingContactInstagramLabel;
+
+  /// No description provided for @landingFooterTagline.
+  ///
+  /// In es, this message translates to:
+  /// **'La belleza también es cuidarte ♡'**
+  String get landingFooterTagline;
+
+  /// No description provided for @landingWhatsappFloatTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Reservar por WhatsApp'**
+  String get landingWhatsappFloatTitle;
+
+  /// Nombre de la técnica; no se traduce
+  ///
+  /// In es, this message translates to:
+  /// **'Soft Gel'**
+  String get landingSoftGelTitle;
+
+  /// No description provided for @landingCombosTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Combos'**
+  String get landingCombosTitle;
+
+  /// No description provided for @landingCombosTitleEm.
+  ///
+  /// In es, this message translates to:
+  /// **'Shaddai'**
+  String get landingCombosTitleEm;
+
+  /// Tercera línea de la insignia del hero; en shaddai-web estaba en el código
+  ///
+  /// In es, this message translates to:
+  /// **'1ª visita ♡'**
+  String get landingHeroBadgeLine3;
+
+  /// No description provided for @landingServices6RowBabyBoomer.
+  ///
+  /// In es, this message translates to:
+  /// **'Baby boomer'**
+  String get landingServices6RowBabyBoomer;
+
+  /// No description provided for @landingServices6RowReversa.
+  ///
+  /// In es, this message translates to:
+  /// **'Reversa'**
+  String get landingServices6RowReversa;
 }
 
 class _AppLocalizationsDelegate

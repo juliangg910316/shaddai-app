@@ -86,3 +86,15 @@ class FailingBookingRepository implements BookingRepository {
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
+
+/// Reservas en memoria: guarda las que se crean.
+class RecordingBookingRepository implements BookingRepository {
+  final created = <AppointmentModel>[];
+
+  @override
+  Future<void> createAppointment(AppointmentModel appointment) async =>
+      created.add(appointment);
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}

@@ -58,7 +58,8 @@ class MyApp extends ConsumerWidget {
     final language = ref.watch(languagePreferenceProvider);
 
     return MaterialApp.router(
-      title: 'Shaddai',
+      // Título de la pestaña del navegador, en el idioma activo (spec 002).
+      onGenerateTitle: (context) => AppLocalizations.of(context)!.webAppTitle,
 
       // Tema (RF-1 a RF-5). Sin animación, el cambio se ve en el siguiente
       // fotograma (RNF-2).

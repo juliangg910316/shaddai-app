@@ -24,6 +24,7 @@ dependencies:
   uuid: ^4.6.0
   shared_preferences: ^2.5.6
   flutter_svg: ^2.3.0
+  url_launcher: ^6.3.3
 
 dependency_overrides:
   # TEMP: pin older native Android plugin builds to avoid a Kotlin Build
@@ -51,6 +52,10 @@ flutter:
   # Logotipo de Studio Shaddai, el mismo sello que usa shaddai-web.
   assets:
   - assets/images/logo_monogram.svg
+  # Imágenes de la landing de Web, traídas de shaddai-web (spec 002).
+  - assets/images/landing/
+  - assets/images/landing/catalogo/
+  - assets/images/landing/galeria/
 
   # Tipografías de la identidad Shaddai, incluidas en la app (spec 001, RNF-5):
   # Cormorant Garamond para títulos, Inter para la UI.

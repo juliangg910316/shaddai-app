@@ -44,9 +44,14 @@ class GoogleBrandButton extends StatelessWidget {
                   const Icon(Icons.g_mobiledata, size: 22, color: _text),
             ),
             const SizedBox(width: 12),
-            Text(
-              l10n.continueWithGoogle,
-              style: AppText.sans(size: 16, color: _text),
+            // Con poco ancho o el texto grande, parte la línea en vez de
+            // desbordarse.
+            Flexible(
+              child: Text(
+                l10n.continueWithGoogle,
+                textAlign: TextAlign.center,
+                style: AppText.sans(size: 16, color: _text),
+              ),
             ),
           ],
         ),
