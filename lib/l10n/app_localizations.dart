@@ -161,7 +161,7 @@ abstract class AppLocalizations {
   /// No description provided for @brandFullName.
   ///
   /// In es, this message translates to:
-  /// **'Shaddai'**
+  /// **'Studio Shaddai'**
   String get brandFullName;
 
   /// No description provided for @brandLogoLabel.

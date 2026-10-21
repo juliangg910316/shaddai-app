@@ -41,7 +41,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get guestFallbackName => 'Invitada';
 
   @override
-  String get brandFullName => 'Shaddai';
+  String get brandFullName => 'Studio Shaddai';
 
   @override
   String get brandLogoLabel => 'Logotipo de Studio Shaddai';

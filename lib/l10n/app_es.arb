@@ -27,7 +27,7 @@
   "@guestFallbackName": {
     "description": "Nombre de respaldo cuando no hay usuario autenticado"
   },
-  "brandFullName": "Shaddai",
+  "brandFullName": "Studio Shaddai",
   "brandLogoLabel": "Logotipo de Studio Shaddai",
 
   "popularServicesTitle": "Servicios populares",

@@ -51,6 +51,7 @@ class LoginView extends ConsumerWidget {
                 const SizedBox(height: 34),
                 Text(
                   l10n.brandFullName,
+                  textAlign: TextAlign.center,
                   style: AppText.serif(
                     size: 46,
                     color: brand.inkStrong,

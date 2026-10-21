@@ -41,7 +41,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get guestFallbackName => 'Convidada';
 
   @override
-  String get brandFullName => 'Shaddai';
+  String get brandFullName => 'Studio Shaddai';
 
   @override
   String get brandLogoLabel => 'Logotipo do Studio Shaddai';

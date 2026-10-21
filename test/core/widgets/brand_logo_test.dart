@@ -53,6 +53,16 @@ void main() {
     expect(leftovers, isEmpty);
   });
 
+  for (final language in ['es', 'pt']) {
+    testWidgets('login muestra el nombre Studio Shaddai en $language', (
+      tester,
+    ) async {
+      await _pump(tester, const LoginView(), language: language);
+
+      expect(find.text('Studio Shaddai'), findsOneWidget);
+    });
+  }
+
   for (final MapEntry(key: name, value: build) in _screens.entries) {
     group(name, () {
       for (final (theme, brand) in [
