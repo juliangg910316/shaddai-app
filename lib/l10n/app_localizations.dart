@@ -164,6 +164,12 @@ abstract class AppLocalizations {
   /// **'Shaddai'**
   String get brandFullName;
 
+  /// No description provided for @brandLogoLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Logotipo de Studio Shaddai'**
+  String get brandLogoLabel;
+
   /// No description provided for @popularServicesTitle.
   ///
   /// In es, this message translates to:
@@ -853,6 +859,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'No pudimos iniciar sesión. Inténtalo de nuevo.'**
   String get authGenericError;
+
+  /// No description provided for @loginAppBarTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Autenticación'**
+  String get loginAppBarTitle;
 }
 
 class _AppLocalizationsDelegate

@@ -3,10 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/constants/theme_colors.dart';
+import '../../../core/theme/app_text.dart';
+import '../../../core/theme/brand_colors.dart';
+import '../../../core/widgets/brand_logo.dart';
 import '../../../l10n/app_localizations.dart';
 import '../providers/auth_failure.dart';
 import '../providers/auth_provider.dart';
+import 'widgets/google_brand_button.dart';
 import 'widgets/google_signin_button.dart';
 
 class LoginView extends ConsumerWidget {
@@ -26,16 +29,17 @@ class LoginView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final authState = ref.watch(authControllerProvider);
+    final brand = context.brand;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Autenticacion"),
+        title: Text(l10n.loginAppBarTitle),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios),
+          icon: const Icon(Icons.arrow_back_ios),
+          tooltip: MaterialLocalizations.of(context).backButtonTooltip,
           onPressed: () => context.go('/home'),
         ),
       ),
-      backgroundColor: ThemeColors.bone,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -43,31 +47,13 @@ class LoginView extends ConsumerWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Monograma dentro del aro dorado
-                Container(
-                  width: 96,
-                  height: 96,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: ThemeColors.gold),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    "D'S",
-                    style: AppText.serif(
-                      size: 34,
-                      color: ThemeColors.gold,
-                      spacing: 1,
-                      height: 1,
-                    ),
-                  ),
-                ),
+                const BrandLogo(size: 96),
                 const SizedBox(height: 34),
                 Text(
                   l10n.brandFullName,
                   style: AppText.serif(
                     size: 46,
-                    color: ThemeColors.darkGreen,
+                    color: brand.inkStrong,
                     height: 1,
                   ),
                 ),
@@ -77,16 +63,12 @@ class LoginView extends ConsumerWidget {
                   textAlign: TextAlign.center,
                   style: AppText.eyebrow(
                     size: 10,
-                    color: ThemeColors.gold,
+                    color: brand.accentText,
                     spacing: 3.4,
                   ),
                 ),
                 const SizedBox(height: 30),
-                Container(
-                  width: 34,
-                  height: 1,
-                  color: ThemeColors.gold.withValues(alpha: 0.6),
-                ),
+                Container(width: 34, height: 1, color: brand.goldHairline),
                 const SizedBox(height: 30),
                 SizedBox(
                   width: 250,
@@ -96,7 +78,7 @@ class LoginView extends ConsumerWidget {
                     style: AppText.sans(
                       size: 16,
                       weight: FontWeight.w300,
-                      color: ThemeColors.olive,
+                      color: brand.inkMuted,
                       height: 1.6,
                     ),
                   ),
@@ -106,10 +88,7 @@ class LoginView extends ConsumerWidget {
                   const SizedBox(
                     height: 56,
                     child: Center(
-                      child: CircularProgressIndicator(
-                        color: ThemeColors.darkGreen,
-                        strokeWidth: 2,
-                      ),
+                      child: CircularProgressIndicator(strokeWidth: 2),
                     ),
                   )
                 else if (kIsWeb)
@@ -117,7 +96,7 @@ class LoginView extends ConsumerWidget {
                   // allow a custom button to trigger sign-in imperatively.
                   SizedBox(height: 44, child: buildWebGoogleSignInButton())
                 else
-                  _GoogleSignInButton(
+                  GoogleBrandButton(
                     onPressed: () => ref
                         .read(authControllerProvider.notifier)
                         .signInWithGoogle(),
@@ -130,7 +109,7 @@ class LoginView extends ConsumerWidget {
                     textAlign: TextAlign.center,
                     style: AppText.sans(
                       size: 12,
-                      color: ThemeColors.danger,
+                      color: brand.danger,
                       height: 1.5,
                     ),
                   ),
@@ -138,55 +117,6 @@ class LoginView extends ConsumerWidget {
               ],
             ),
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _GoogleSignInButton extends StatelessWidget {
-  final VoidCallback onPressed;
-
-  const _GoogleSignInButton({required this.onPressed});
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
-    return SizedBox(
-      width: double.infinity,
-      child: OutlinedButton(
-        onPressed: onPressed,
-        style: OutlinedButton.styleFrom(
-          backgroundColor: ThemeColors.white,
-          foregroundColor: ThemeColors.black,
-          padding: const EdgeInsets.symmetric(vertical: 17, horizontal: 24),
-          side: BorderSide(
-            color: ThemeColors.darkGreen.withValues(alpha: 0.14),
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.network(
-              'https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg',
-              height: 20,
-              width: 20,
-              errorBuilder: (context, error, stack) => const Icon(
-                Icons.g_mobiledata,
-                size: 22,
-                color: ThemeColors.darkGreen,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Text(
-              l10n.continueWithGoogle,
-              style: AppText.sans(size: 16, color: ThemeColors.black),
-            ),
-          ],
         ),
       ),
     );

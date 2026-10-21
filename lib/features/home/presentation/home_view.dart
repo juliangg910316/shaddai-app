@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '/l10n/app_localizations.dart';
-import '../../../core/constants/theme_colors.dart';
+import '../../../core/theme/app_text.dart';
+import '../../../core/theme/brand_colors.dart';
 import '../../../core/widgets/app_widgets.dart';
 import '../../auth/providers/auth_provider.dart';
 import 'google_map_container.dart';
@@ -43,22 +44,26 @@ const _galleryPhotos = <String?>[
 ];
 
 class HomeView extends ConsumerWidget {
-  const HomeView({super.key});
+  const HomeView({super.key, this.map = const GoogleMapContainer()});
+
+  /// Mapa de la ubicación. Se puede sustituir en los tests, donde la vista
+  /// nativa de Google Maps no se pinta.
+  final Widget map;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
+    final brand = context.brand;
     final currentUser = ref.watch(currentUserProvider).value;
     final firstName =
         currentUser?.displayName.split(' ').first ?? l10n.guestFallbackName;
     final featuredServices = _featuredServices(l10n);
 
     return Scaffold(
-      backgroundColor: ThemeColors.bone,
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            backgroundColor: ThemeColors.bone,
+            backgroundColor: brand.background,
             surfaceTintColor: Colors.transparent,
             pinned: true,
             elevation: 0,
@@ -68,7 +73,7 @@ class HomeView extends ConsumerWidget {
               l10n.appTitle,
               style: AppText.serif(
                 size: 26,
-                color: ThemeColors.gold,
+                color: brand.accentText,
                 spacing: 0.5,
                 height: 1,
               ),
@@ -102,7 +107,7 @@ class HomeView extends ConsumerWidget {
                           text: firstName,
                           style: AppText.serif(
                             size: 22,
-                            color: ThemeColors.darkGreen,
+                            color: brand.inkStrong,
                             height: 1.2,
                           ),
                         ),
@@ -111,7 +116,7 @@ class HomeView extends ConsumerWidget {
                     style: AppText.serif(
                       size: 22,
                       weight: FontWeight.w400,
-                      color: ThemeColors.black,
+                      color: brand.ink,
                       height: 1.2,
                     ),
                   ),
@@ -161,10 +166,7 @@ class HomeView extends ConsumerWidget {
                   padding: const EdgeInsets.fromLTRB(20, 22, 20, 12),
                   child: Text(
                     l10n.ourWorkTitle,
-                    style: AppText.serif(
-                      size: 21,
-                      color: ThemeColors.darkGreen,
-                    ),
+                    style: AppText.serif(size: 21, color: brand.inkStrong),
                   ),
                 ),
                 Padding(
@@ -184,8 +186,8 @@ class HomeView extends ConsumerWidget {
                     itemBuilder: (context, index) {
                       final url = _galleryPhotos[index];
                       final tint = index.isEven
-                          ? ThemeColors.sand
-                          : ThemeColors.sandDark;
+                          ? brand.placeholder
+                          : brand.placeholderStrong;
                       if (url == null) {
                         return PhotoPlaceholder(
                           label: l10n.salonPhotoPlaceholder,
@@ -210,7 +212,7 @@ class HomeView extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 20),
                   child: FlatCard(
                     padding: const EdgeInsets.all(18),
-                    borderColor: ThemeColors.goldHairlineSoft,
+                    borderColor: brand.goldHairlineSoft,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -219,12 +221,12 @@ class HomeView extends ConsumerWidget {
                             Container(
                               padding: const EdgeInsets.all(11),
                               decoration: BoxDecoration(
-                                color: ThemeColors.bone,
+                                color: brand.background,
                                 borderRadius: BorderRadius.circular(12),
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.location_on_outlined,
-                                color: ThemeColors.darkGreen,
+                                color: brand.inkStrong,
                                 size: 20,
                               ),
                             ),
@@ -237,7 +239,7 @@ class HomeView extends ConsumerWidget {
                                     l10n.salonName,
                                     style: AppText.serif(
                                       size: 17,
-                                      color: ThemeColors.black,
+                                      color: brand.ink,
                                     ),
                                   ),
                                   const SizedBox(height: 2),
@@ -246,7 +248,7 @@ class HomeView extends ConsumerWidget {
                                     style: AppText.sans(
                                       size: 13,
                                       weight: FontWeight.w300,
-                                      color: ThemeColors.olive,
+                                      color: brand.inkMuted,
                                     ),
                                   ),
                                 ],
@@ -255,7 +257,7 @@ class HomeView extends ConsumerWidget {
                           ],
                         ),
                         const SizedBox(height: 18),
-                        GoogleMapContainer(),
+                        map,
                       ],
                     ),
                   ),
@@ -280,12 +282,13 @@ class _HeroCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final brand = context.brand;
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(22),
       child: Container(
         height: 250,
-        color: ThemeColors.darkGreen,
+        color: brand.brand,
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -303,10 +306,9 @@ class _HeroCard extends StatelessWidget {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  colors: [
-                    ThemeColors.black.withValues(alpha: 0.10),
-                    ThemeColors.black.withValues(alpha: 0.55),
-                  ],
+                  // Velo con el que el texto cumple el contraste aunque la
+                  // foto sea clara (RNF-1).
+                  colors: [brand.photoScrimStart, brand.photoScrimEnd],
                 ),
               ),
             ),
@@ -320,7 +322,7 @@ class _HeroCard extends StatelessWidget {
                     l10n.heroTitle,
                     style: AppText.serif(
                       size: 34,
-                      color: ThemeColors.white,
+                      color: brand.onPhoto,
                       height: 1.05,
                     ),
                   ),
@@ -330,7 +332,7 @@ class _HeroCard extends StatelessWidget {
                     style: AppText.sans(
                       size: 14,
                       weight: FontWeight.w300,
-                      color: ThemeColors.bone,
+                      color: brand.onPhoto,
                       spacing: 0.4,
                     ),
                   ),
@@ -354,13 +356,15 @@ class _ServiceTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final brand = context.brand;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: ThemeColors.white,
+          color: brand.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: ThemeColors.goldHairlineSoft),
+          border: Border.all(color: brand.goldHairlineSoft),
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -385,7 +389,7 @@ class _ServiceTile extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: AppText.serif(
                         size: 16,
-                        color: ThemeColors.darkGreen,
+                        color: brand.inkStrong,
                         height: 1.2,
                       ),
                     ),
@@ -400,14 +404,14 @@ class _ServiceTile extends StatelessWidget {
                           style: AppText.sans(
                             size: 11,
                             weight: FontWeight.w300,
-                            color: ThemeColors.olive,
+                            color: brand.inkMuted,
                           ),
                         ),
                         Text(
                           service.price,
                           style: AppText.serif(
                             size: 16,
-                            color: ThemeColors.gold,
+                            color: brand.accentText,
                           ),
                         ),
                       ],

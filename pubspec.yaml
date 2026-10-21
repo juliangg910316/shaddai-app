@@ -23,6 +23,7 @@ dependencies:
     sdk: flutter
   uuid: ^4.6.0
   shared_preferences: ^2.5.6
+  flutter_svg: ^2.3.0
 
 dependency_overrides:
   # TEMP: pin older native Android plugin builds to avoid a Kotlin Build
@@ -47,10 +48,13 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
+  # Logotipo de Studio Shaddai, el mismo sello que usa shaddai-web.
+  assets:
+  - assets/images/logo_monogram.svg
+
   # Tipografías de la identidad Shaddai, incluidas en la app (spec 001, RNF-5):
   # Cormorant Garamond para títulos, Inter para la UI.
   # Ambas son variables (eje wght), Flutter interpola los pesos.
-  # Jost es la fuente anterior: se quita en la tarea T14 de la spec 001.
   fonts:
   - family: Cormorant Garamond
     fonts:
@@ -58,6 +62,3 @@ flutter:
   - family: Inter
     fonts:
     - asset: assets/fonts/Inter-Variable.ttf
-  - family: Jost
-    fonts:
-    - asset: assets/fonts/Jost-Variable.ttf

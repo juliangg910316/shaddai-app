@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
-import '../../../core/constants/spanish_dates.dart';
-import '../../../core/constants/theme_colors.dart';
+import '../../../core/theme/app_text.dart';
+import '../../../core/theme/brand_colors.dart';
+import '../../../core/utils/capitalize.dart';
 import '../../../core/widgets/app_widgets.dart';
 import '../../../l10n/app_localizations.dart';
 import '../providers/booking_provider.dart';
@@ -48,18 +49,21 @@ class _BookingViewState extends ConsumerState<BookingView> {
   DateTime? _selectedSlot;
 
   Future<void> _confirmBooking(DateTime slot) async {
-    final l10n = AppLocalizations.of(context)!;
     final user = ref.read(currentUserProvider).value;
     if (user == null) return;
 
-    final dateStr = DateFormat('dd/MM/yyyy').format(slot);
-    final timeStr = DateFormat('HH:mm').format(slot);
     final settings = ref.read(calendarSettingsProvider).value;
     final slotDuration = settings?.globalSlotDurationMinutes ?? 60;
 
     final bool? confirm = await showDialog<bool>(
       context: context,
       builder: (context) {
+        // Textos y fecha dentro del builder: si cambia el idioma con el
+        // diálogo abierto, el diálogo también cambia (RF-10).
+        final l10n = AppLocalizations.of(context)!;
+        final brand = context.brand;
+        final dateStr = DateFormat.yMMMMEEEEd(l10n.localeName).format(slot);
+        final timeStr = DateFormat.Hm(l10n.localeName).format(slot);
         return AlertDialog(
           title: Text(l10n.confirmBookingDialogTitle),
           content: Text(l10n.confirmBookingDialogBody(dateStr, timeStr)),
@@ -73,7 +77,7 @@ class _BookingViewState extends ConsumerState<BookingView> {
                   size: 12,
                   weight: FontWeight.w500,
                   spacing: 1.2,
-                  color: ThemeColors.olive,
+                  color: brand.inkMuted,
                 ),
               ),
             ),
@@ -85,7 +89,7 @@ class _BookingViewState extends ConsumerState<BookingView> {
                   size: 12,
                   weight: FontWeight.w600,
                   spacing: 1.2,
-                  color: ThemeColors.gold,
+                  color: brand.onBrand,
                 ),
               ),
             ),
@@ -94,7 +98,8 @@ class _BookingViewState extends ConsumerState<BookingView> {
       },
     );
 
-    if (confirm == true) {
+    if (confirm == true && mounted) {
+      final l10n = AppLocalizations.of(context)!;
       setState(() => _isBooking = true);
 
       try {
@@ -127,7 +132,7 @@ class _BookingViewState extends ConsumerState<BookingView> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(l10n.bookingCreateError),
-              backgroundColor: ThemeColors.danger,
+              backgroundColor: context.brand.danger,
             ),
           );
         }
@@ -145,9 +150,12 @@ class _BookingViewState extends ConsumerState<BookingView> {
     final selectedDate = ref.watch(selectedDateProvider);
     final availableSlots = ref.watch(availableSlotsProvider);
     final serviceOptions = _serviceOptions(l10n);
+    final brand = context.brand;
+    final weekdayShort = capitalizeFirst(
+      DateFormat.E(l10n.localeName).format(selectedDate),
+    );
 
     return Scaffold(
-      backgroundColor: ThemeColors.bone,
       body: Stack(
         children: [
           ListView(
@@ -155,7 +163,7 @@ class _BookingViewState extends ConsumerState<BookingView> {
             children: [
               // Cabecera + pasos 1 y 2, sobre el fondo claro
               Container(
-                color: ThemeColors.white,
+                color: brand.surface,
                 padding: EdgeInsets.only(
                   top: MediaQuery.of(context).padding.top + 14,
                 ),
@@ -165,10 +173,7 @@ class _BookingViewState extends ConsumerState<BookingView> {
                     Center(
                       child: Text(
                         l10n.bookAppointment,
-                        style: AppText.serif(
-                          size: 24,
-                          color: ThemeColors.darkGreen,
-                        ),
+                        style: AppText.serif(size: 24, color: brand.inkStrong),
                       ),
                     ),
                     const SizedBox(height: 18),
@@ -176,7 +181,7 @@ class _BookingViewState extends ConsumerState<BookingView> {
                       padding: const EdgeInsets.symmetric(horizontal: 20),
                       child: Text(
                         l10n.stepServiceLabel,
-                        style: AppText.eyebrow(),
+                        style: AppText.eyebrow(color: brand.inkMuted),
                       ),
                     ),
                     const SizedBox(height: 9),
@@ -198,7 +203,10 @@ class _BookingViewState extends ConsumerState<BookingView> {
                     const SizedBox(height: 14),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Text(l10n.stepDateLabel, style: AppText.eyebrow()),
+                      child: Text(
+                        l10n.stepDateLabel,
+                        style: AppText.eyebrow(color: brand.inkMuted),
+                      ),
                     ),
                     _BookingCalendar(
                       selectedDate: selectedDate,
@@ -225,13 +233,13 @@ class _BookingViewState extends ConsumerState<BookingView> {
                           l10n.stepTimeLabel,
                           style: AppText.serif(
                             size: 21,
-                            color: ThemeColors.darkGreen,
+                            color: brand.inkStrong,
                           ),
                         ),
                         const Spacer(),
                         Flexible(
                           child: Text(
-                            '${SpanishDates.weekdayShort(selectedDate)} '
+                            '$weekdayShort '
                             '${selectedDate.day} · '
                             '${serviceOptions[_selectedService].summaryLabel}',
                             textAlign: TextAlign.right,
@@ -239,7 +247,7 @@ class _BookingViewState extends ConsumerState<BookingView> {
                             style: AppText.sans(
                               size: 12,
                               weight: FontWeight.w300,
-                              color: ThemeColors.olive,
+                              color: brand.inkMuted,
                             ),
                           ),
                         ),
@@ -250,10 +258,7 @@ class _BookingViewState extends ConsumerState<BookingView> {
                       loading: () => const Padding(
                         padding: EdgeInsets.symmetric(vertical: 40),
                         child: Center(
-                          child: CircularProgressIndicator(
-                            color: ThemeColors.darkGreen,
-                            strokeWidth: 2,
-                          ),
+                          child: CircularProgressIndicator(strokeWidth: 2),
                         ),
                       ),
                       error: (err, stack) {
@@ -262,10 +267,7 @@ class _BookingViewState extends ConsumerState<BookingView> {
                           padding: const EdgeInsets.symmetric(vertical: 30),
                           child: Text(
                             l10n.slotsLoadError,
-                            style: AppText.sans(
-                              size: 13,
-                              color: ThemeColors.danger,
-                            ),
+                            style: AppText.sans(size: 13, color: brand.danger),
                           ),
                         );
                       },
@@ -281,7 +283,9 @@ class _BookingViewState extends ConsumerState<BookingView> {
                       label: _selectedSlot == null
                           ? l10n.chooseTimeSlotAction
                           : l10n.confirmAtTimeAction(
-                              DateFormat('HH:mm').format(_selectedSlot!),
+                              DateFormat.Hm(
+                                l10n.localeName,
+                              ).format(_selectedSlot!),
                             ),
                       onPressed: _selectedSlot == null
                           ? null
@@ -298,7 +302,7 @@ class _BookingViewState extends ConsumerState<BookingView> {
                               style: AppText.sans(
                                 size: 11.5,
                                 weight: FontWeight.w300,
-                                color: ThemeColors.gold,
+                                color: brand.accentText,
                                 height: 1.5,
                               ),
                             ),
@@ -309,7 +313,7 @@ class _BookingViewState extends ConsumerState<BookingView> {
                         style: AppText.sans(
                           size: 11.5,
                           weight: FontWeight.w300,
-                          color: ThemeColors.olive,
+                          color: brand.inkMuted,
                           height: 1.5,
                         ),
                       ),
@@ -321,10 +325,10 @@ class _BookingViewState extends ConsumerState<BookingView> {
           ),
           if (_isBooking)
             Container(
-              color: ThemeColors.darkGreen.withValues(alpha: 0.45),
-              child: const Center(
+              color: brand.brand.withValues(alpha: 0.45),
+              child: Center(
                 child: CircularProgressIndicator(
-                  color: ThemeColors.gold,
+                  color: brand.onBrand,
                   strokeWidth: 2,
                 ),
               ),
@@ -348,17 +352,17 @@ class _ServiceChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final brand = context.brand;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
         decoration: BoxDecoration(
-          color: selected ? ThemeColors.darkGreen : Colors.transparent,
+          color: selected ? brand.brand : Colors.transparent,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: selected
-                ? ThemeColors.darkGreen
-                : ThemeColors.darkGreen.withValues(alpha: 0.20),
+            color: selected ? brand.brand : brand.hairlineStrong,
           ),
         ),
         child: Text(
@@ -366,7 +370,7 @@ class _ServiceChip extends StatelessWidget {
           style: AppText.sans(
             size: 12.5,
             weight: selected ? FontWeight.w500 : FontWeight.w400,
-            color: selected ? ThemeColors.gold : ThemeColors.olive,
+            color: selected ? brand.onBrand : brand.inkMuted,
           ),
         ),
       ),
@@ -388,10 +392,13 @@ class _BookingCalendar extends StatelessWidget {
     final now = DateTime.now();
     // Medianoche de hoy: `focusedDay` nunca puede quedar antes de `firstDay`.
     final firstDay = DateTime(now.year, now.month, now.day);
+    final brand = context.brand;
+    final locale = AppLocalizations.of(context)!.localeName;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(18, 4, 18, 14),
       child: TableCalendar(
+        locale: locale,
         firstDay: firstDay,
         lastDay: firstDay.add(const Duration(days: 90)),
         focusedDay: selectedDate,
@@ -404,64 +411,58 @@ class _BookingCalendar extends StatelessWidget {
           formatButtonVisible: false,
           titleCentered: true,
           headerPadding: const EdgeInsets.fromLTRB(6, 6, 6, 14),
-          leftChevronIcon: const Icon(
-            Icons.chevron_left,
-            color: ThemeColors.gold,
-          ),
-          rightChevronIcon: const Icon(
-            Icons.chevron_right,
-            color: ThemeColors.gold,
-          ),
+          leftChevronIcon: Icon(Icons.chevron_left, color: brand.accentIcon),
+          rightChevronIcon: Icon(Icons.chevron_right, color: brand.accentIcon),
           leftChevronPadding: EdgeInsets.zero,
           rightChevronPadding: EdgeInsets.zero,
-          titleTextFormatter: (date, locale) => SpanishDates.monthAndYear(date),
+          // "Octubre de 2026" / "Outubro de 2026" (RF-21).
+          titleTextFormatter: (date, locale) =>
+              capitalizeFirst(DateFormat.yMMMM(locale).format(date)),
           titleTextStyle: AppText.serif(
             size: 18,
-            color: ThemeColors.darkGreen,
+            color: brand.inkStrong,
             spacing: 0.5,
           ),
         ),
         daysOfWeekStyle: DaysOfWeekStyle(
-          dowTextFormatter: (date, locale) => SpanishDates.weekdayInitial(date),
+          // Inicial del día en el idioma activo: L M X… / S T Q…
+          dowTextFormatter: (date, locale) =>
+              DateFormat.E(locale).format(date)[0].toUpperCase(),
           weekdayStyle: AppText.sans(
             size: 10,
-            color: ThemeColors.olive,
+            color: brand.inkMuted,
             spacing: 0.8,
           ),
           weekendStyle: AppText.sans(
             size: 10,
-            color: ThemeColors.gold,
+            color: brand.accentText,
             spacing: 0.8,
           ),
         ),
         calendarStyle: CalendarStyle(
           cellMargin: const EdgeInsets.all(4),
-          defaultTextStyle: AppText.sans(size: 14, color: ThemeColors.black),
-          weekendTextStyle: AppText.sans(
-            size: 14,
-            color: ThemeColors.gold.withValues(alpha: 0.75),
-          ),
-          outsideTextStyle: AppText.sans(
-            size: 14,
-            color: ThemeColors.olive.withValues(alpha: 0.35),
-          ),
+          defaultTextStyle: AppText.sans(size: 14, color: brand.ink),
+          weekendTextStyle: AppText.sans(size: 14, color: brand.accentText),
+          // Días de otro mes y días pasados: más suaves, pero legibles.
+          outsideTextStyle: AppText.sans(size: 14, color: brand.inkMuted),
           disabledTextStyle: AppText.sans(
             size: 14,
-            color: ThemeColors.olive.withValues(alpha: 0.35),
+            weight: FontWeight.w300,
+            color: brand.inkMuted,
           ),
           todayDecoration: BoxDecoration(
-            color: ThemeColors.gold.withValues(alpha: 0.28),
+            color: brand.accent.withValues(alpha: 0.28),
             shape: BoxShape.circle,
           ),
-          todayTextStyle: AppText.sans(size: 14, color: ThemeColors.darkGreen),
-          selectedDecoration: const BoxDecoration(
-            color: ThemeColors.darkGreen,
+          todayTextStyle: AppText.sans(size: 14, color: brand.inkStrong),
+          selectedDecoration: BoxDecoration(
+            color: brand.brand,
             shape: BoxShape.circle,
           ),
           selectedTextStyle: AppText.sans(
             size: 14,
             weight: FontWeight.w500,
-            color: ThemeColors.gold,
+            color: brand.onBrand,
           ),
         ),
       ),
@@ -491,12 +492,15 @@ class _SlotSection extends StatelessWidget {
             style: AppText.sans(
               size: 13,
               weight: FontWeight.w300,
-              color: ThemeColors.olive,
+              color: context.brand.inkMuted,
             ),
           ),
         ),
       );
     }
+
+    final brand = context.brand;
+    final locale = AppLocalizations.of(context)!.localeName;
 
     return GridView.builder(
       shrinkWrap: true,
@@ -518,20 +522,18 @@ class _SlotSection extends StatelessWidget {
           child: Container(
             alignment: Alignment.center,
             decoration: BoxDecoration(
-              color: selected ? ThemeColors.darkGreen : ThemeColors.white,
+              color: selected ? brand.brand : brand.surface,
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: selected
-                    ? ThemeColors.darkGreen
-                    : ThemeColors.darkGreen.withValues(alpha: 0.35),
+                color: selected ? brand.brand : brand.hairlineStrong,
               ),
             ),
             child: Text(
-              DateFormat('HH:mm').format(slot),
+              DateFormat.Hm(locale).format(slot),
               style: AppText.sans(
                 size: 15,
                 weight: FontWeight.w500,
-                color: selected ? ThemeColors.gold : ThemeColors.darkGreen,
+                color: selected ? brand.onBrand : brand.inkStrong,
               ),
             ),
           ),

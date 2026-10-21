@@ -3,8 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import '../../../core/constants/spanish_dates.dart';
-import '../../../core/constants/theme_colors.dart';
+import '../../../core/theme/app_text.dart';
+import '../../../core/theme/brand_colors.dart';
+import '../../../core/theme/system_bars.dart';
+import '../../../core/utils/capitalize.dart';
 import '../../../core/widgets/app_widgets.dart';
 import '../../../l10n/app_localizations.dart';
 import '../providers/admin_provider.dart';
@@ -24,8 +26,9 @@ class AdminDashboardView extends ConsumerWidget {
         .where((a) => a.status == 'waiting_confirmation')
         .length;
 
+    final brand = context.brand;
+
     return Scaffold(
-      backgroundColor: ThemeColors.bone,
       body: Column(
         children: [
           _AdminHeader(
@@ -42,10 +45,7 @@ class AdminDashboardView extends ConsumerWidget {
           Expanded(
             child: appointmentsAsync.when(
               loading: () => const Center(
-                child: CircularProgressIndicator(
-                  color: ThemeColors.darkGreen,
-                  strokeWidth: 2,
-                ),
+                child: CircularProgressIndicator(strokeWidth: 2),
               ),
               error: (err, stack) {
                 debugPrint('Error al cargar la agenda: $err');
@@ -55,7 +55,7 @@ class AdminDashboardView extends ConsumerWidget {
                     child: Text(
                       l10n.adminAgendaLoadError,
                       textAlign: TextAlign.center,
-                      style: AppText.sans(size: 13, color: ThemeColors.danger),
+                      style: AppText.sans(size: 13, color: brand.danger),
                     ),
                   ),
                 );
@@ -68,7 +68,7 @@ class AdminDashboardView extends ConsumerWidget {
                       style: AppText.sans(
                         size: 13,
                         weight: FontWeight.w300,
-                        color: ThemeColors.olive,
+                        color: brand.inkMuted,
                       ),
                     ),
                   );
@@ -107,17 +107,18 @@ class _AdminHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final brand = context.brand;
+    final longDate = capitalizeFirst(
+      DateFormat.yMMMMEEEEd(l10n.localeName).format(selectedDate),
+    );
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      // Cabecera verde oscuro: la barra de estado necesita iconos claros.
-      value: SystemUiOverlayStyle.light.copyWith(
-        statusBarColor: ThemeColors.darkGreen,
-        statusBarIconBrightness: Brightness.light,
-        statusBarBrightness: Brightness.dark,
-      ),
+      // Cabecera verde de marca: iconos de la barra de estado según su fondo
+      // (RF-23).
+      value: systemBarsStyleFor(brand.brand),
       child: Container(
         width: double.infinity,
-        color: ThemeColors.darkGreen,
+        color: brand.brand,
         padding: EdgeInsets.only(
           top: MediaQuery.of(context).padding.top + 10,
           left: 20,
@@ -135,10 +136,10 @@ class _AdminHeader extends StatelessWidget {
                     padding: const EdgeInsets.only(right: 8),
                     child: GestureDetector(
                       onTap: () => context.pop(),
-                      child: const Icon(
+                      child: Icon(
                         Icons.arrow_back,
                         size: 22,
-                        color: ThemeColors.bone,
+                        color: brand.onBrand,
                       ),
                     ),
                   ),
@@ -148,7 +149,7 @@ class _AdminHeader extends StatelessWidget {
                     children: [
                       Text(
                         l10n.adminAgendaTitle,
-                        style: AppText.serif(size: 24, color: ThemeColors.gold),
+                        style: AppText.serif(size: 24, color: brand.onBrand),
                       ),
                       const SizedBox(height: 2),
                       Text(
@@ -156,7 +157,7 @@ class _AdminHeader extends StatelessWidget {
                         style: AppText.eyebrow(
                           size: 11,
                           weight: FontWeight.w300,
-                          color: ThemeColors.bone.withValues(alpha: 0.6),
+                          color: brand.onBrandMuted,
                         ),
                       ),
                     ],
@@ -164,19 +165,19 @@ class _AdminHeader extends StatelessWidget {
                 ),
                 GestureDetector(
                   onTap: () => context.push('/admin/users'),
-                  child: const Icon(
+                  child: Icon(
                     Icons.group_outlined,
                     size: 22,
-                    color: ThemeColors.bone,
+                    color: brand.onBrand,
                   ),
                 ),
                 const SizedBox(width: 18),
                 GestureDetector(
                   onTap: () => context.push('/admin/settings'),
-                  child: const Icon(
+                  child: Icon(
                     Icons.settings_outlined,
                     size: 22,
-                    color: ThemeColors.bone,
+                    color: brand.onBrand,
                   ),
                 ),
               ],
@@ -184,30 +185,26 @@ class _AdminHeader extends StatelessWidget {
             const SizedBox(height: 18),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              // Solo borde, sin relleno: el texto queda sobre el verde de
+              // marca y mantiene el contraste (RNF-1).
               decoration: BoxDecoration(
-                color: ThemeColors.bone.withValues(alpha: 0.08),
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(
-                  color: ThemeColors.gold.withValues(alpha: 0.4),
-                ),
+                border: Border.all(color: brand.goldHairline),
               ),
               child: Row(
                 children: [
                   IconButton(
                     onPressed: onPreviousDay,
                     visualDensity: VisualDensity.compact,
-                    icon: const Icon(
-                      Icons.chevron_left,
-                      color: ThemeColors.gold,
-                    ),
+                    icon: Icon(Icons.chevron_left, color: brand.onBrand),
                   ),
                   Expanded(
                     child: Text(
-                      SpanishDates.longDate(selectedDate),
+                      longDate,
                       textAlign: TextAlign.center,
                       style: AppText.serif(
                         size: 17,
-                        color: ThemeColors.bone,
+                        color: brand.onBrand,
                         spacing: 0.5,
                       ),
                     ),
@@ -215,10 +212,7 @@ class _AdminHeader extends StatelessWidget {
                   IconButton(
                     onPressed: onNextDay,
                     visualDensity: VisualDensity.compact,
-                    icon: const Icon(
-                      Icons.chevron_right,
-                      color: ThemeColors.gold,
-                    ),
+                    icon: Icon(Icons.chevron_right, color: brand.onBrand),
                   ),
                 ],
               ),
@@ -256,26 +250,26 @@ class _StatTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final brand = context.brand;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      // Solo borde, sin relleno, por el mismo motivo que el selector de día.
       decoration: BoxDecoration(
-        color: ThemeColors.bone.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: brand.goldHairlineSoft),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '$value',
-            style: AppText.serif(size: 22, color: ThemeColors.gold),
-          ),
+          Text('$value', style: AppText.serif(size: 22, color: brand.onBrand)),
           Text(
             label,
             style: AppText.eyebrow(
               size: 10,
               spacing: 1.2,
               weight: FontWeight.w300,
-              color: ThemeColors.bone.withValues(alpha: 0.7),
+              color: brand.onBrandMuted,
             ),
           ),
         ],
@@ -292,13 +286,19 @@ class _AppointmentCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final status = AppointmentStatusStyle.forAdmin(l10n, appointment.status);
+    final status = AppointmentStatusStyle.forAdmin(
+      l10n,
+      appointment.status,
+      context.brand,
+    );
+    final brand = context.brand;
     final waiting = appointment.status == 'waiting_confirmation';
-    final startStr = DateFormat('HH:mm').format(appointment.startTime);
-    final endStr = DateFormat('HH:mm').format(appointment.endTime);
+    final hours = DateFormat.Hm(l10n.localeName);
+    final startStr = hours.format(appointment.startTime);
+    final endStr = hours.format(appointment.endTime);
 
     return FlatCard(
-      borderColor: waiting ? ThemeColors.goldHairline : ThemeColors.hairline,
+      borderColor: waiting ? brand.goldHairline : brand.hairline,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -308,7 +308,7 @@ class _AppointmentCard extends ConsumerWidget {
             children: [
               Text(
                 '$startStr — $endStr',
-                style: AppText.serif(size: 19, color: ThemeColors.darkGreen),
+                style: AppText.serif(size: 19, color: brand.inkStrong),
               ),
               Text(
                 status.label,
@@ -323,7 +323,7 @@ class _AppointmentCard extends ConsumerWidget {
           Container(
             height: 1,
             margin: const EdgeInsets.symmetric(vertical: 14),
-            color: ThemeColors.hairline,
+            color: brand.hairline,
           ),
           Row(
             children: [
@@ -342,7 +342,7 @@ class _AppointmentCard extends ConsumerWidget {
                       style: AppText.sans(
                         size: 15,
                         weight: FontWeight.w500,
-                        color: ThemeColors.black,
+                        color: brand.ink,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -351,7 +351,7 @@ class _AppointmentCard extends ConsumerWidget {
                       style: AppText.sans(
                         size: 12,
                         weight: FontWeight.w300,
-                        color: ThemeColors.olive,
+                        color: brand.inkMuted,
                       ),
                     ),
                   ],
@@ -362,7 +362,7 @@ class _AppointmentCard extends ConsumerWidget {
                 height: 36,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: ThemeColors.hairlineStrong),
+                  border: Border.all(color: brand.hairlineStrong),
                 ),
                 alignment: Alignment.center,
                 child: const WhatsAppIcon(size: 18),
@@ -376,7 +376,7 @@ class _AppointmentCard extends ConsumerWidget {
                 Expanded(
                   child: OutlinePillButton(
                     label: l10n.cancelAction,
-                    color: ThemeColors.danger,
+                    color: brand.danger,
                     onPressed: () => ref
                         .read(adminControllerProvider)
                         .updateAppointmentStatus(appointment.id, 'cancelled'),
@@ -395,8 +395,8 @@ class _AppointmentCard extends ConsumerWidget {
                               'confirmed',
                             ),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: ThemeColors.darkGreen,
-                          foregroundColor: ThemeColors.gold,
+                          backgroundColor: brand.brand,
+                          foregroundColor: brand.onBrand,
                           elevation: 0,
                           padding: const EdgeInsets.symmetric(vertical: 15),
                           shape: RoundedRectangleBorder(
@@ -409,7 +409,7 @@ class _AppointmentCard extends ConsumerWidget {
                             size: 12,
                             weight: FontWeight.w500,
                             spacing: 1.2,
-                            color: ThemeColors.gold,
+                            color: brand.onBrand,
                           ),
                         ),
                       ),

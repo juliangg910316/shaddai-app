@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/theme_colors.dart';
+import '../../../core/theme/app_text.dart';
+import '../../../core/theme/brand_colors.dart';
 import '../../../core/widgets/app_widgets.dart';
 import '../../../l10n/app_localizations.dart';
 
@@ -74,7 +75,6 @@ class ServicesView extends StatelessWidget {
     final catalog = _catalog(AppLocalizations.of(context)!);
 
     return Scaffold(
-      backgroundColor: ThemeColors.bone,
       body: Column(
         children: [
           const _ServicesHeader(),
@@ -106,6 +106,7 @@ class _ServicesHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final brand = context.brand;
 
     return Container(
       width: double.infinity,
@@ -116,23 +117,21 @@ class _ServicesHeader extends StatelessWidget {
         right: 20,
       ),
       decoration: BoxDecoration(
-        color: ThemeColors.white,
-        border: Border(
-          bottom: BorderSide(color: ThemeColors.gold.withValues(alpha: 0.30)),
-        ),
+        color: brand.surface,
+        border: Border(bottom: BorderSide(color: brand.goldHairlineSoft)),
       ),
       child: Column(
         children: [
           Text(
             l10n.ourServicesTitle,
-            style: AppText.serif(size: 24, color: ThemeColors.darkGreen),
+            style: AppText.serif(size: 24, color: brand.inkStrong),
           ),
           const SizedBox(height: 4),
           Text(
             l10n.servicesMenuEyebrow,
             style: AppText.eyebrow(
               size: 11,
-              color: ThemeColors.gold,
+              color: brand.accentText,
               spacing: 2.6,
               weight: FontWeight.w300,
             ),
@@ -150,6 +149,8 @@ class _ServiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final brand = context.brand;
+
     return FlatCard(
       padding: const EdgeInsets.all(18),
       child: Column(
@@ -162,7 +163,7 @@ class _ServiceCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   service.name,
-                  style: AppText.serif(size: 19, color: ThemeColors.black),
+                  style: AppText.serif(size: 19, color: brand.ink),
                 ),
               ),
               const SizedBox(width: 12),
@@ -171,7 +172,7 @@ class _ServiceCard extends StatelessWidget {
                 style: AppText.serif(
                   size: 19,
                   weight: FontWeight.w600,
-                  color: ThemeColors.gold,
+                  color: brand.accentText,
                 ),
               ),
             ],
@@ -182,7 +183,7 @@ class _ServiceCard extends StatelessWidget {
             style: AppText.sans(
               size: 13,
               weight: FontWeight.w300,
-              color: ThemeColors.olive,
+              color: brand.inkMuted,
               height: 1.5,
             ),
           ),
@@ -192,18 +193,14 @@ class _ServiceCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  const Icon(
-                    Icons.schedule,
-                    size: 14,
-                    color: ThemeColors.olive,
-                  ),
+                  Icon(Icons.schedule, size: 14, color: brand.inkMuted),
                   const SizedBox(width: 6),
                   Text(
                     service.duration,
                     style: AppText.sans(
                       size: 12,
                       weight: FontWeight.w300,
-                      color: ThemeColors.olive,
+                      color: brand.inkMuted,
                     ),
                   ),
                 ],
@@ -211,8 +208,8 @@ class _ServiceCard extends StatelessWidget {
               ElevatedButton(
                 onPressed: () => context.go('/booking'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: ThemeColors.darkGreen,
-                  foregroundColor: ThemeColors.gold,
+                  backgroundColor: brand.brand,
+                  foregroundColor: brand.onBrand,
                   elevation: 0,
                   padding: const EdgeInsets.symmetric(
                     horizontal: 22,
@@ -228,7 +225,7 @@ class _ServiceCard extends StatelessWidget {
                     size: 12,
                     weight: FontWeight.w500,
                     spacing: 1.2,
-                    color: ThemeColors.gold,
+                    color: brand.onBrand,
                   ),
                 ),
               ),

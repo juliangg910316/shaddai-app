@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/constants/theme_colors.dart';
+import '../../../core/theme/app_text.dart';
+import '../../../core/theme/brand_colors.dart';
 import '../../../core/widgets/app_widgets.dart';
+import '../../../core/widgets/brand_logo.dart';
 import '../../../l10n/app_localizations.dart';
 import '../providers/auth_provider.dart';
 
@@ -41,41 +43,22 @@ class _PhoneCaptureViewState extends ConsumerState<PhoneCaptureView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final brand = context.brand;
 
     return Scaffold(
-      backgroundColor: ThemeColors.bone,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 34, vertical: 32),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Monograma, igual que en la pantalla de acceso
-              Center(
-                child: Container(
-                  width: 76,
-                  height: 76,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: ThemeColors.gold),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    "D'S",
-                    style: AppText.serif(
-                      size: 26,
-                      color: ThemeColors.gold,
-                      spacing: 1,
-                      height: 1,
-                    ),
-                  ),
-                ),
-              ),
+              // Sello de la marca, igual que en la pantalla de acceso
+              const Center(child: BrandLogo(size: 76)),
               const SizedBox(height: 26),
               Center(
                 child: Text(
                   l10n.completeProfileTitle,
-                  style: AppText.serif(size: 30, color: ThemeColors.darkGreen),
+                  style: AppText.serif(size: 30, color: brand.inkStrong),
                 ),
               ),
               const SizedBox(height: 10),
@@ -88,20 +71,23 @@ class _PhoneCaptureViewState extends ConsumerState<PhoneCaptureView> {
                     style: AppText.sans(
                       size: 15,
                       weight: FontWeight.w300,
-                      color: ThemeColors.olive,
+                      color: brand.inkMuted,
                       height: 1.6,
                     ),
                   ),
                 ),
               ),
               const SizedBox(height: 34),
-              Text(l10n.whatsappFieldLabel, style: AppText.eyebrow()),
+              Text(
+                l10n.whatsappFieldLabel,
+                style: AppText.eyebrow(color: brand.inkMuted),
+              ),
               const SizedBox(height: 8),
               TextField(
                 controller: _phoneController,
                 keyboardType: TextInputType.phone,
-                cursorColor: ThemeColors.gold,
-                style: AppText.sans(size: 16, color: ThemeColors.darkGreen),
+                cursorColor: brand.accentIcon,
+                style: AppText.sans(size: 16, color: brand.inkStrong),
                 decoration: InputDecoration(
                   hintText: l10n.phoneHintExample,
                   prefixIcon: const Padding(
@@ -122,7 +108,7 @@ class _PhoneCaptureViewState extends ConsumerState<PhoneCaptureView> {
                   style: AppText.sans(
                     size: 12,
                     weight: FontWeight.w300,
-                    color: ThemeColors.olive,
+                    color: brand.inkMuted,
                     height: 1.6,
                   ),
                 ),
@@ -132,10 +118,7 @@ class _PhoneCaptureViewState extends ConsumerState<PhoneCaptureView> {
                 const SizedBox(
                   height: 54,
                   child: Center(
-                    child: CircularProgressIndicator(
-                      color: ThemeColors.darkGreen,
-                      strokeWidth: 2,
-                    ),
+                    child: CircularProgressIndicator(strokeWidth: 2),
                   ),
                 )
               else

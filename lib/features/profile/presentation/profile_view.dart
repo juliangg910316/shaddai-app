@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/constants/spanish_dates.dart';
-import '../../../core/constants/theme_colors.dart';
+import 'package:intl/intl.dart';
+
+import '../../../core/theme/app_text.dart';
+import '../../../core/theme/brand_colors.dart';
+import '../../../core/utils/capitalize.dart';
 import '../../../core/widgets/app_widgets.dart';
 import '../../../data/models/appointment_model.dart';
 import '../../../l10n/app_localizations.dart';
@@ -27,18 +30,13 @@ class ProfileView extends ConsumerWidget {
 
     if (user == null) {
       return const Scaffold(
-        backgroundColor: ThemeColors.bone,
-        body: Center(
-          child: CircularProgressIndicator(
-            color: ThemeColors.darkGreen,
-            strokeWidth: 2,
-          ),
-        ),
+        body: Center(child: CircularProgressIndicator(strokeWidth: 2)),
       );
     }
 
+    final brand = context.brand;
+
     return Scaffold(
-      backgroundColor: ThemeColors.bone,
       body: SafeArea(
         child: Column(
           children: [
@@ -52,20 +50,13 @@ class ProfileView extends ConsumerWidget {
                     child: Text(
                       l10n.myProfileTitle,
                       textAlign: TextAlign.center,
-                      style: AppText.serif(
-                        size: 24,
-                        color: ThemeColors.darkGreen,
-                      ),
+                      style: AppText.serif(size: 24, color: brand.inkStrong),
                     ),
                   ),
                   GestureDetector(
                     onTap: () =>
                         ref.read(authControllerProvider.notifier).signOut(),
-                    child: const Icon(
-                      Icons.logout,
-                      size: 22,
-                      color: ThemeColors.olive,
-                    ),
+                    child: Icon(Icons.logout, size: 22, color: brand.inkMuted),
                   ),
                 ],
               ),
@@ -87,10 +78,7 @@ class ProfileView extends ConsumerWidget {
                   Text(
                     user.displayName,
                     textAlign: TextAlign.center,
-                    style: AppText.serif(
-                      size: 26,
-                      color: ThemeColors.darkGreen,
-                    ),
+                    style: AppText.serif(size: 26, color: brand.inkStrong),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -98,7 +86,7 @@ class ProfileView extends ConsumerWidget {
                     style: AppText.sans(
                       size: 14,
                       weight: FontWeight.w300,
-                      color: ThemeColors.olive,
+                      color: brand.inkMuted,
                     ),
                   ),
                 ],
@@ -113,9 +101,9 @@ class ProfileView extends ConsumerWidget {
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     onPressed: () => context.push('/admin'),
-                    icon: const Icon(
+                    icon: Icon(
                       Icons.admin_panel_settings_outlined,
-                      color: ThemeColors.gold,
+                      color: brand.onBrand,
                       size: 18,
                     ),
                     label: Text(
@@ -124,7 +112,7 @@ class ProfileView extends ConsumerWidget {
                         size: 12,
                         weight: FontWeight.w500,
                         spacing: 2,
-                        color: ThemeColors.gold,
+                        color: brand.onBrand,
                       ),
                     ),
                   ),
@@ -140,10 +128,7 @@ class ProfileView extends ConsumerWidget {
             Expanded(
               child: appointmentsAsync.when(
                 loading: () => const Center(
-                  child: CircularProgressIndicator(
-                    color: ThemeColors.darkGreen,
-                    strokeWidth: 2,
-                  ),
+                  child: CircularProgressIndicator(strokeWidth: 2),
                 ),
                 error: (err, stack) {
                   debugPrint('Error al cargar mis reservas: $err');
@@ -153,10 +138,7 @@ class ProfileView extends ConsumerWidget {
                       child: Text(
                         l10n.myAppointmentsLoadError,
                         textAlign: TextAlign.center,
-                        style: AppText.sans(
-                          size: 13,
-                          color: ThemeColors.danger,
-                        ),
+                        style: AppText.sans(size: 13, color: brand.danger),
                       ),
                     ),
                   );
@@ -173,7 +155,7 @@ class ProfileView extends ConsumerWidget {
                             style: AppText.sans(
                               size: 13,
                               weight: FontWeight.w300,
-                              color: ThemeColors.olive,
+                              color: brand.inkMuted,
                             ),
                           ),
                         ),
@@ -245,21 +227,25 @@ class _AppointmentCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final status = AppointmentStatusStyle.forClient(l10n, appointment.status);
+    final status = AppointmentStatusStyle.forClient(
+      l10n,
+      appointment.status,
+      context.brand,
+    );
+    final brand = context.brand;
+    final locale = l10n.localeName;
     final cancelled = appointment.status == 'cancelled';
     final start = appointment.startTime;
-    final timeStr =
-        '${start.hour.toString().padLeft(2, '0')}:'
-        '${start.minute.toString().padLeft(2, '0')}';
+    final timeStr = DateFormat.Hm(locale).format(start);
+    // Un turno cancelado se distingue por el tono suave y su etiqueta, sin
+    // bajar la opacidad: su texto tiene que seguir leyéndose (RNF-1).
+    final dateInk = cancelled ? brand.inkMuted : brand.inkStrong;
 
-    final card = FlatCard(
-      color: cancelled
-          ? ThemeColors.white.withValues(alpha: 0.55)
-          : ThemeColors.white,
+    return FlatCard(
+      color: cancelled ? brand.background : brand.surface,
       borderColor: switch (appointment.status) {
-        'waiting_confirmation' => ThemeColors.goldHairline,
-        'cancelled' => ThemeColors.darkGreen.withValues(alpha: 0.08),
-        _ => ThemeColors.hairline,
+        'waiting_confirmation' => brand.goldHairline,
+        _ => brand.hairline,
       },
       child: Row(
         children: [
@@ -268,32 +254,24 @@ class _AppointmentCard extends StatelessWidget {
             width: 52,
             height: 52,
             decoration: BoxDecoration(
-              color: ThemeColors.bone,
+              color: brand.background,
               borderRadius: BorderRadius.circular(12),
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  SpanishDates.monthShort(start),
+                  DateFormat.MMM(locale).format(start).toUpperCase(),
                   style: AppText.eyebrow(
                     size: 9,
                     spacing: 1,
                     weight: FontWeight.w300,
-                    color: cancelled
-                        ? ThemeColors.olive
-                        : ThemeColors.darkGreen,
+                    color: dateInk,
                   ),
                 ),
                 Text(
                   start.day.toString().padLeft(2, '0'),
-                  style: AppText.serif(
-                    size: 20,
-                    height: 1,
-                    color: cancelled
-                        ? ThemeColors.olive
-                        : ThemeColors.darkGreen,
-                  ),
+                  style: AppText.serif(size: 20, height: 1, color: dateInk),
                 ),
               ],
             ),
@@ -304,10 +282,11 @@ class _AppointmentCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '${SpanishDates.weekday(start)} · $timeStr',
+                  '${capitalizeFirst(DateFormat.EEEE(locale).format(start))}'
+                  ' · $timeStr',
                   style: AppText.serif(
                     size: 17,
-                    color: cancelled ? ThemeColors.olive : ThemeColors.black,
+                    color: cancelled ? brand.inkMuted : brand.ink,
                   ),
                 ),
                 const SizedBox(height: 5),
@@ -336,7 +315,5 @@ class _AppointmentCard extends StatelessWidget {
         ],
       ),
     );
-
-    return cancelled ? Opacity(opacity: 0.72, child: card) : card;
   }
 }

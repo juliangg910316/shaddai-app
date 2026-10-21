@@ -44,6 +44,9 @@ class AppLocalizationsEs extends AppLocalizations {
   String get brandFullName => 'Shaddai';
 
   @override
+  String get brandLogoLabel => 'Logotipo de Studio Shaddai';
+
+  @override
   String get popularServicesTitle => 'Servicios populares';
 
   @override
@@ -407,4 +410,7 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get authGenericError =>
       'No pudimos iniciar sesión. Inténtalo de nuevo.';
+
+  @override
+  String get loginAppBarTitle => 'Autenticación';
 }

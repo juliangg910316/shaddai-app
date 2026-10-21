@@ -1,5 +1,5 @@
 # Spec 001 — Design system: tema, tipografía e idioma
-Estado: aprobada
+Estado: implementada
 
 ## Contexto y objetivo
 La app y la web de Studio Shaddai se unifican en un solo producto. La web ya tiene la identidad visual de la marca (paleta de verde oscuro, dorado y crema; títulos en Cormorant Garamond y texto de interfaz en Inter; tema claro y oscuro) y un selector de idioma ES/PT. La app móvil usa colores y fuentes propios, sin tema oscuro ni selector de idioma.

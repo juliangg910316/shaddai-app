@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/constants/theme_colors.dart';
+import '../../../core/theme/app_text.dart';
+import '../../../core/theme/brand_colors.dart';
 import '../../../core/widgets/app_widgets.dart';
 import '../../../l10n/app_localizations.dart';
 import '../providers/admin_provider.dart';
@@ -12,17 +13,13 @@ class AdminUsersView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final usersAsync = ref.watch(adminUsersProvider);
+    final brand = context.brand;
 
     return Scaffold(
-      backgroundColor: ThemeColors.bone,
       appBar: AppBar(title: Text(l10n.adminClientsTitle)),
       body: usersAsync.when(
-        loading: () => const Center(
-          child: CircularProgressIndicator(
-            color: ThemeColors.darkGreen,
-            strokeWidth: 2,
-          ),
-        ),
+        loading: () =>
+            const Center(child: CircularProgressIndicator(strokeWidth: 2)),
         error: (err, stack) {
           debugPrint('Error al cargar las clientas: $err');
           return Center(
@@ -31,7 +28,7 @@ class AdminUsersView extends ConsumerWidget {
               child: Text(
                 l10n.adminClientsLoadError,
                 textAlign: TextAlign.center,
-                style: AppText.sans(size: 13, color: ThemeColors.danger),
+                style: AppText.sans(size: 13, color: brand.danger),
               ),
             ),
           );
@@ -44,7 +41,7 @@ class AdminUsersView extends ConsumerWidget {
                 style: AppText.sans(
                   size: 13,
                   weight: FontWeight.w300,
-                  color: ThemeColors.olive,
+                  color: brand.inkMuted,
                 ),
               ),
             );
@@ -58,8 +55,8 @@ class AdminUsersView extends ConsumerWidget {
 
               return FlatCard(
                 borderColor: user.isBlocked
-                    ? ThemeColors.danger.withValues(alpha: 0.4)
-                    : ThemeColors.hairline,
+                    ? brand.danger.withValues(alpha: 0.4)
+                    : brand.hairline,
                 child: Row(
                   children: [
                     InitialsAvatar(
@@ -77,7 +74,7 @@ class AdminUsersView extends ConsumerWidget {
                             style: AppText.sans(
                               size: 15,
                               weight: FontWeight.w500,
-                              color: ThemeColors.black,
+                              color: brand.ink,
                             ),
                           ),
                           const SizedBox(height: 2),
@@ -86,7 +83,7 @@ class AdminUsersView extends ConsumerWidget {
                             style: AppText.sans(
                               size: 12,
                               weight: FontWeight.w300,
-                              color: ThemeColors.olive,
+                              color: brand.inkMuted,
                             ),
                           ),
                           const SizedBox(height: 5),
@@ -98,8 +95,8 @@ class AdminUsersView extends ConsumerWidget {
                               size: 10,
                               spacing: 1.6,
                               color: user.isBlocked
-                                  ? ThemeColors.danger
-                                  : ThemeColors.darkGreen,
+                                  ? brand.danger
+                                  : brand.inkStrong,
                             ),
                           ),
                         ],
@@ -107,8 +104,8 @@ class AdminUsersView extends ConsumerWidget {
                     ),
                     Switch(
                       value: user.isBlocked,
-                      activeThumbColor: ThemeColors.danger,
-                      inactiveThumbColor: ThemeColors.olive,
+                      activeThumbColor: brand.danger,
+                      inactiveThumbColor: brand.inkMuted,
                       onChanged: (val) => ref
                           .read(adminControllerProvider)
                           .toggleUserBlock(user.uid, val),

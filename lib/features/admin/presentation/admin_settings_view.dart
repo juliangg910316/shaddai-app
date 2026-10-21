@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/constants/theme_colors.dart';
+import '../../../core/theme/app_text.dart';
+import '../../../core/theme/brand_colors.dart';
 import '../../../core/widgets/app_widgets.dart';
 import '../../../data/models/calendar_settings_model.dart';
 import '../../../l10n/app_localizations.dart';
@@ -82,21 +83,15 @@ class _AdminSettingsViewState extends ConsumerState<AdminSettingsView> {
 
     if (_tempHours.isEmpty) {
       return Scaffold(
-        backgroundColor: ThemeColors.bone,
         appBar: AppBar(title: Text(l10n.scheduleSettingsTitle)),
-        body: const Center(
-          child: CircularProgressIndicator(
-            color: ThemeColors.darkGreen,
-            strokeWidth: 2,
-          ),
-        ),
+        body: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
       );
     }
 
     final dayNames = _dayNames(l10n);
+    final brand = context.brand;
 
     return Scaffold(
-      backgroundColor: ThemeColors.bone,
       appBar: AppBar(
         title: Text(l10n.scheduleSettingsTitle),
         actions: [
@@ -107,16 +102,13 @@ class _AdminSettingsViewState extends ConsumerState<AdminSettingsView> {
                 child: SizedBox(
                   width: 20,
                   height: 20,
-                  child: CircularProgressIndicator(
-                    color: ThemeColors.darkGreen,
-                    strokeWidth: 2,
-                  ),
+                  child: CircularProgressIndicator(strokeWidth: 2),
                 ),
               ),
             )
           else
             IconButton(
-              icon: const Icon(Icons.check, color: ThemeColors.darkGreen),
+              icon: Icon(Icons.check, color: brand.inkStrong),
               onPressed: _saveSettings,
             ),
         ],
@@ -132,8 +124,8 @@ class _AdminSettingsViewState extends ConsumerState<AdminSettingsView> {
           return FlatCard(
             padding: const EdgeInsets.fromLTRB(18, 14, 12, 18),
             borderColor: schedule.isClosed
-                ? ThemeColors.hairline
-                : ThemeColors.goldHairlineSoft,
+                ? brand.hairline
+                : brand.goldHairlineSoft,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -142,10 +134,7 @@ class _AdminSettingsViewState extends ConsumerState<AdminSettingsView> {
                   children: [
                     Text(
                       dayNames[dayKey]!,
-                      style: AppText.serif(
-                        size: 19,
-                        color: ThemeColors.darkGreen,
-                      ),
+                      style: AppText.serif(size: 19, color: brand.inkStrong),
                     ),
                     Row(
                       children: [
@@ -155,14 +144,14 @@ class _AdminSettingsViewState extends ConsumerState<AdminSettingsView> {
                             size: 10,
                             spacing: 1.6,
                             color: schedule.isClosed
-                                ? ThemeColors.danger
-                                : ThemeColors.olive,
+                                ? brand.danger
+                                : brand.inkMuted,
                           ),
                         ),
                         Switch(
                           value: schedule.isClosed,
-                          activeThumbColor: ThemeColors.danger,
-                          inactiveThumbColor: ThemeColors.olive,
+                          activeThumbColor: brand.danger,
+                          inactiveThumbColor: brand.inkMuted,
                           onChanged: (val) {
                             setState(() {
                               _tempHours[dayKey] = DaySchedule(
@@ -188,7 +177,7 @@ class _AdminSettingsViewState extends ConsumerState<AdminSettingsView> {
                             initialValue: schedule.open,
                             style: AppText.sans(
                               size: 15,
-                              color: ThemeColors.darkGreen,
+                              color: brand.inkStrong,
                             ),
                             decoration: InputDecoration(
                               labelText: l10n.openingTimeLabel,
@@ -208,7 +197,7 @@ class _AdminSettingsViewState extends ConsumerState<AdminSettingsView> {
                             initialValue: schedule.close,
                             style: AppText.sans(
                               size: 15,
-                              color: ThemeColors.darkGreen,
+                              color: brand.inkStrong,
                             ),
                             decoration: InputDecoration(
                               labelText: l10n.closingTimeLabel,

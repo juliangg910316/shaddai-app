@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/constants/theme_colors.dart';
 import '../../../core/platform/platform_provider.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../preferences/presentation/language_switch.dart';
@@ -44,10 +43,7 @@ class MainScaffold extends ConsumerWidget {
         currentIndex: navigationShell.currentIndex,
         onTap: (index) => _onTap(context, index),
         type: BottomNavigationBarType.fixed,
-        backgroundColor: ThemeColors.darkGreen,
-        selectedItemColor: ThemeColors.gold,
-        unselectedItemColor: ThemeColors.bone.withValues(alpha: 0.6),
-        // El diseño usa iconos de trazo y etiquetas pequeñas, siempre visibles.
+        // Colores del tema (bottomNavigationBarTheme). El diseño usa iconos de trazo y etiquetas pequeñas, siempre visibles.
         elevation: 0,
         iconSize: 22,
         selectedFontSize: 10,

@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+import '../../../core/theme/brand_colors.dart';
+
+/// Mapa del salón. El mapa en sí es una *excepción de color* de la spec 001:
+/// se ve claro también en el tema oscuro. Solo su borde sigue el tema.
 class GoogleMapContainer extends StatelessWidget {
   const GoogleMapContainer({super.key});
 
@@ -10,7 +14,7 @@ class GoogleMapContainer extends StatelessWidget {
       padding: const EdgeInsets.all(8),
       height: MediaQuery.of(context).size.height * 0.25,
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.grey, width: 1),
+        border: Border.all(color: context.brand.hairlineStrong, width: 1),
         borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(10),
           bottomRight: Radius.circular(10),

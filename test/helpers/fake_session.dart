@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shaddai/data/models/appointment_model.dart';
+import 'package:shaddai/data/models/calendar_settings_model.dart';
 import 'package:shaddai/data/models/user_model.dart';
 import 'package:shaddai/features/auth/providers/auth_provider.dart';
+import 'package:shaddai/features/booking/providers/booking_provider.dart';
 import 'package:shaddai/features/navigation/presentation/main_scaffold.dart';
 import 'package:shaddai/features/profile/presentation/profile_view.dart';
 import 'package:shaddai/features/profile/providers/profile_provider.dart';
@@ -15,10 +19,51 @@ final testClient = UserModel(
   phoneNumber: '+55 41 99999-0000',
 );
 
-/// Overrides de sesión sin Firebase: sin sesión si [user] es `null`.
-List<Override> sessionOverrides({UserModel? user}) => [
+/// Turno de prueba de [testClient] que empieza en [start].
+AppointmentModel testAppointment(
+  DateTime start, {
+  String status = 'confirmed',
+  String id = 'a1',
+}) => AppointmentModel(
+  id: id,
+  clientId: testClient.uid,
+  clientName: testClient.displayName,
+  clientPhone: testClient.phoneNumber ?? '',
+  startTime: start,
+  endTime: start.add(const Duration(hours: 1)),
+  status: status,
+  createdAt: DateTime(2026, 10, 1),
+);
+
+/// Overrides de sesión sin Firebase: sin sesión si [user] es `null`. Sus
+/// turnos son [appointments] (ninguno por defecto).
+List<Override> sessionOverrides({
+  UserModel? user,
+  List<AppointmentModel> appointments = const [],
+}) => [
   currentUserProvider.overrideWith((ref) async => user),
-  clientAppointmentsProvider.overrideWith((ref) => Stream.value(const [])),
+  clientAppointmentsProvider.overrideWith((ref) => Stream.value(appointments)),
+];
+
+/// Mañana a las 0:00: un día que el calendario de Reservas siempre deja
+/// elegir (no admite días pasados).
+DateTime tomorrow() {
+  final now = DateTime.now();
+  return DateTime(now.year, now.month, now.day + 1);
+}
+
+/// Overrides de Reservas sin Firebase: sesión con [testClient], día elegido
+/// [day] y los huecos libres [slots].
+List<Override> bookingOverrides({
+  required DateTime day,
+  required AsyncValue<List<DateTime>> slots,
+}) => [
+  ...sessionOverrides(user: testClient),
+  calendarSettingsProvider.overrideWith(
+    (ref) => Stream.value(CalendarSettingsModel.defaultSettings()),
+  ),
+  selectedDateProvider.overrideWith((ref) => day),
+  availableSlotsProvider.overrideWithValue(slots),
 ];
 
 /// Router con la barra inferior real ([MainScaffold]) y Perfil real, que

@@ -11,6 +11,7 @@
 
   "guestFallbackName": "Convidada",
   "brandFullName": "Shaddai",
+  "brandLogoLabel": "Logotipo do Studio Shaddai",
 
   "popularServicesTitle": "Serviços populares",
   "viewAllAction": "VER TUDO",
@@ -138,5 +139,6 @@
   "profileGuestTitle": "Perfil",
   "profileGuestLoginButton": "Entrar",
   "authBlockedError": "Sua conta está bloqueada. Fale conosco pelo WhatsApp se achar que é um erro.",
-  "authGenericError": "Não foi possível entrar. Tente novamente."
+  "authGenericError": "Não foi possível entrar. Tente novamente.",
+  "loginAppBarTitle": "Autenticação"
 }

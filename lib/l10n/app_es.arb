@@ -28,6 +28,7 @@
     "description": "Nombre de respaldo cuando no hay usuario autenticado"
   },
   "brandFullName": "Shaddai",
+  "brandLogoLabel": "Logotipo de Studio Shaddai",
 
   "popularServicesTitle": "Servicios populares",
   "viewAllAction": "VER TODO",
@@ -187,5 +188,6 @@
   "profileGuestTitle": "Perfil",
   "profileGuestLoginButton": "Iniciar sesión",
   "authBlockedError": "Tu cuenta está bloqueada. Escríbenos por WhatsApp si crees que es un error.",
-  "authGenericError": "No pudimos iniciar sesión. Inténtalo de nuevo."
+  "authGenericError": "No pudimos iniciar sesión. Inténtalo de nuevo.",
+  "loginAppBarTitle": "Autenticación"
 }

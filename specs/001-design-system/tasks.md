@@ -143,43 +143,71 @@ Cada tarea:
 - Cambia `ThemeColors.*`, `Colors.*`, `Color(0x…)` y el `AppText` antiguo por `context.brand`, el tema y el `AppText` nuevo, según la tabla de §5.
 - Añade sus archivos a `no_hardcoded_style_test` y sus pantallas a `screens_theme_test`. Este último pinta cada pantalla en claro y en oscuro, con sus estados vacío, de carga y de error, y comprueba que el fondo es `brand.background` y que se cumple `textContrastGuideline`.
 
-- [ ] **T9. Migrar los widgets compartidos, la barra inferior, Login y la captura de WhatsApp.** RF-15, RF-16
+- [x] **T9. Migrar los widgets compartidos, la barra inferior, Login y la captura de WhatsApp.** RF-15, RF-16
   - Archivos: `app_widgets.dart` (34 referencias), `main_scaffold.dart`, `login_view.dart` (19) y `phone_capture_view.dart` (13).
   - Tests: Login y PhoneCapture en las dos listas. El botón de Google va en la lista blanca. Test de los widgets compartidos en los dos temas.
   - Hecho cuando: los tests pasan en claro y en oscuro.
+  - Hecha el 2026-10-20: 22 tests nuevos en verde (`no_hardcoded_style_test`, `screens_theme_test` y `app_widgets_theme_test`).
+    - El botón de Google móvil sale de `login_view.dart` a `widgets/google_brand_button.dart`, con los colores de la guía de Google. Es la primera entrada de la lista blanca.
+    - Los colores de los widgets compartidos pasan a ser opcionales (con `null` se usa el tema), así las pantallas aún no migradas siguen compilando.
+    - `AppointmentStatusStyle.forClient/forAdmin` reciben `BrandColors`: se ajustaron sus dos llamadas (perfil y admin).
+    - El título literal "Autenticacion" de Login pasa a la clave `loginAppBarTitle` (ES "Autenticación", PT "Autenticação").
 
-- [ ] **T10. Migrar Inicio y Servicios.** RF-15, RF-16, RNF-1 (texto sobre foto)
+- [x] **T10. Migrar Inicio y Servicios.** RF-15, RF-16, RNF-1 (texto sobre foto)
   - Archivos: `home_view.dart` (35), `google_map_container.dart` y `services_view.dart` (18).
   - Tests: Home (con el mapa sustituido, §11) y Services en las dos listas. El mapa va en la lista blanca, y el bloque principal usa `photoScrim`.
   - Hecho cuando: los tests pasan y el velo del bloque principal es `brand.photoScrim`.
+  - Hecha el 2026-10-20: 12 tests nuevos en verde (Inicio con y sin sesión y Servicios en `screens_theme_test`, más `home_hero_test`).
+    - `HomeView` recibe el mapa por constructor (`map`, por defecto `GoogleMapContainer`) para poder sustituirlo en los tests.
+    - El mapa no necesitó entrar en la lista blanca: en el código solo tiene su borde, que ya usa un token.
+    - El velo usa `photoScrimStart`/`photoScrimEnd` y el texto sobre la foto, `onPhoto`.
 
-- [ ] **T11. Migrar Reservas con fechas localizadas y estado conservado.** RF-5, RF-10, RF-15, RF-16, RF-21
+- [x] **T11. Migrar Reservas con fechas localizadas y estado conservado.** RF-5, RF-10, RF-15, RF-16, RF-21
   - Archivos: `booking_view.dart` (59).
   - Tests:
     - Booking en las dos listas.
     - `localized_dates_test`: cabecera "Outubro de 2026" / "Octubre de 2026", semana desde el lunes, horas `HH:mm` y fecha larga del diálogo en el idioma activo.
     - `state_preserved_test`: con una fecha y una hora elegidas y el diálogo de confirmación abierto, cambiar el tema y el idioma no pierde nada.
   - Hecho cuando: los tests pasan y `booking_view` ya no usa `SpanishDates`.
+  - Hecha el 2026-10-20: 20 tests nuevos en verde (`localized_dates_test`, `state_preserved_test`, Reservas en 4 estados en `screens_theme_test` y `capitalize_test`).
+    - Nuevo `lib/core/utils/capitalize.dart`, porque `intl` da los meses en minúscula. Su test se escribió a la vez que la función, no antes.
+    - Los textos y la fecha del diálogo de confirmación se calculan dentro de su `builder`: si cambia el idioma con el diálogo abierto, el diálogo también cambia.
+    - El `GoldPillButton` deshabilitado pasa a fondo `placeholder` y texto `inkMuted`, legible (la guía de contraste del test no exime lo deshabilitado).
+    - Los días pasados y los de otro mes del calendario usan `inkMuted` (legibles) en lugar de un oliva al 35 %.
+    - Los tests usan como día elegido "mañana", porque el calendario no admite días pasados.
 
-- [ ] **T12. Migrar Perfil.** RF-10, RF-15, RF-16, RF-21
+- [x] **T12. Migrar Perfil.** RF-10, RF-15, RF-16, RF-21
   - Archivos: `profile_view.dart` (34).
   - Tests: Profile, con y sin sesión, en las dos listas. Las fechas de "mis turnos" salen en el idioma activo.
   - Hecho cuando: los tests pasan y `profile_view` ya no usa `SpanishDates`.
+  - Hecha el 2026-10-20: 12 tests nuevos en verde (Perfil sin sesión, con turnos en los tres estados, de admin y con error en `screens_theme_test`, más `profile_dates_test`).
+    - Los turnos cancelados ya no van al 72 % de opacidad: su texto quedaba en 3,02:1 en claro y 4,05:1 en oscuro. Se distinguen por el tono suave y la etiqueta "CANCELADA".
+    - `textContrastGuideline` no tiene en cuenta la opacidad, así que un test aparte comprueba que no hay `Opacity` (se vio fallar con ella puesta).
 
-- [ ] **T13. Migrar las tres pantallas de administración.** RF-10, RF-15, RF-16, RF-21, RF-23
+- [x] **T13. Migrar las tres pantallas de administración.** RF-10, RF-15, RF-16, RF-21, RF-23
   - Archivos: `admin_dashboard_view.dart` (38), `admin_users_view.dart` (16) y `admin_settings_view.dart` (18).
   - Tests:
     - AdminDashboard, AdminUsers y AdminSettings en las dos listas.
     - La fecha del panel sale en el idioma activo.
     - El `AnnotatedRegion` de la cabecera usa `systemBarsStyleFor(brand.brand)`.
   - Hecho cuando: los tests pasan y ningún archivo usa `SpanishDates`.
+  - Hecha el 2026-10-20: 18 tests nuevos en verde (6 estados de admin en `screens_theme_test`, más `admin_header_test`).
+    - La cabecera usa solo `brand`, `onBrand` y `onBrandMuted`, como fija §5 del plan: la fecha y los iconos pasan de crema a dorado.
+    - Las cajas de la fecha y de los contadores pierden su relleno crema al 8 %, que bajaba el contraste a 4,08:1 y 4,15:1. Quedan solo con borde dorado.
+    - `screens_theme_test` usa dos `pump()` en vez de `pumpAndSettle`, porque los indicadores de carga giran sin fin.
+    - Fallo previo, fuera de esta spec: Ajustes del calendario lee la configuración con `ref.read` una sola vez. Si nadie la tiene cargada (no se pasó por Reservas), se queda cargando para siempre. En el test se mantiene escuchada.
 
-- [ ] **T14. Cierre: borrar lo antiguo y actualizar la documentación.** RF-15, criterios de finalización
+- [x] **T14. Cierre: borrar lo antiguo y actualizar la documentación.** RF-15, criterios de finalización
   - Tests: `no_hardcoded_style_test` pasa a revisar `lib/features/**` y `lib/core/widgets/**` enteros, con su lista blanca.
   - Código:
     - Se borran `theme_colors.dart`, `spanish_dates.dart`, `Jost-Variable.ttf` y `OFL-Jost.txt`, y se quita Jost de `pubspec.yaml`.
     - Se actualizan `CLAUDE.md` (selector de idioma, `lib/core/theme/` y fin del aviso de `DateFormat('EEEE')`) y `MEMORY.md`.
   - Hecho cuando: la puerta está en verde, `grep -rE "ThemeColors|SpanishDates|Jost" lib pubspec.yaml` no devuelve nada y la spec está lista para `/sdd-validate`.
+  - Hecha el 2026-10-20: 257 tests en verde.
+    - `no_hardcoded_style_test` revisa `lib/features` y `lib/core/widgets` enteros (24 archivos, más la excepción del botón de Google).
+    - Test nuevo `legacy_cleanup_test`: lo antiguo no existe y Cormorant e Inter siguen incluidas.
+    - Borrados `theme_colors.dart`, `spanish_dates.dart`, `Jost-Variable.ttf` y `OFL-Jost.txt` (sin preparar en git), y Jost quitada de `pubspec.yaml`.
+    - `CLAUDE.md` actualizado (tests, tema y colores, idioma, `weekdayKey`). `MEMORY.md` resumido.
 
 ## Propuesta de división
 

@@ -26,14 +26,16 @@ flutter pub get
 flutter run                      # device/emulator
 flutter analyze                  # lint (flutter_lints)
 flutter test                     # all tests
-flutter test test/widget_test.dart --plain-name "some test name"   # single test
+flutter test test/app/app_locale_test.dart --plain-name "some test name"   # single test
 flutter gen-l10n                 # regenerate lib/l10n/app_localizations*.dart from the .arb files
 flutter build apk / flutter build ios
 ```
 
 The author works on more than one machine. On the current Mac (macOS 27, SDK at `/Users/juliangg/develop/flutter`, Flutter 3.47.7) `flutter`/`dart` run normally: build, analyze and test here. On an older Mac with macOS 13 (SDK at `/Users/macbookpro/Development/flutter`) Flutter fails with `VM initialization failed`, because it needs macOS 14+. If `flutter --version` fails, write the code carefully and let the author verify it on a supported machine.
 
-`test/widget_test.dart` is still the untouched Flutter counter template and does not match this app (it pumps `MyApp` without a `ProviderScope` or Firebase init). Replace it rather than extending it.
+Run `dart format lib test` rather than `dart format .`: the latter also reformats the git-ignored `build/` folder.
+
+Tests never touch Firebase. Screen tests use `pumpApp` (`test/helpers/pump_app.dart`), which mounts the real `MyApp` with `goRouterProvider` replaced and in-memory preferences; `test/helpers/fake_session.dart` and `fake_auth.dart` hold the session overrides and hand-written fake repositories. `test/core/no_hardcoded_style_test.dart` fails on any hard-coded color or font under `lib/features` and `lib/core/widgets`; brand-mandated exceptions (e.g. the Google button) live in their own file and are listed there.
 
 ## Architecture
 
@@ -41,7 +43,11 @@ Feature-first layering. Three layers, strictly one-directional (`features → da
 
 - **`lib/data/`** — the only place that touches Firebase. `models/` hold `fromMap`/`toMap`/`copyWith` mapping; `repositories/` (`auth`, `user`, `booking`, `config`) wrap Firestore/Auth calls. Every repository takes an optional `FirebaseFirestore`/`FirebaseAuth` constructor arg defaulting to `.instance` — this is the seam for injecting fakes in tests. Never call `FirebaseFirestore.instance` from a feature/view.
 - **`lib/features/<feature>/`** — `providers/` (Riverpod state + controllers) and `presentation/` (widgets). Views read providers; providers own repositories.
-- **`lib/core/`** — `router/app_router.dart` and `constants/theme_colors.dart`.
+- **`lib/core/`** — `router/app_router.dart`; `theme/` (`AppTheme.light/dark`, `BrandColors` tokens read with `context.brand`, `AppText`, WCAG contrast helpers, system bar style); `preferences/` (pure theme/language rules); `utils/` (`weekdayKey`, `capitalizeFirst`); `platform/` (`isWebProvider`, use it instead of reading `kIsWeb` in views); `widgets/` (shared widgets, including `BrandLogo`, the Studio Shaddai SVG seal shared with shaddai-web).
+
+### Theme and colors
+
+Views never hard-code colors or fonts: they use `context.brand` tokens and `AppText`, so both light and dark themes work. Text and icons must meet WCAG AA in both themes (`brand_colors_contrast_test`). In the light theme the brand gold `#C7A86D` fails contrast on cream: use `accentText` for gold text, `accentIcon` for meaningful gold icons, and `accent` only for decoration. `textContrastGuideline` ignores `Opacity`, so don't fade informative text.
 
 ### State (Riverpod 3)
 
@@ -51,7 +57,7 @@ Live data is `StreamProvider` over Firestore snapshots. Mutations go through con
 
 ### Derived availability logic
 
-`availableSlotsProvider` (`lib/features/booking/providers/booking_provider.dart`) is the core business rule and is a pure `Provider` composing three sources: calendar settings, that day's active appointments, and the selected date. It walks from `open` to `close` in `globalSlotDurationMinutes` steps, dropping blocked dates, closed weekdays, past times, and slots overlapping an existing appointment. Weekday keys in `openingHours` are lowercase English (`monday`…), produced by `DateFormat('EEEE')` — locale-dependent formatting here would break the lookup, so keep that format call unlocalized.
+`availableSlotsProvider` (`lib/features/booking/providers/booking_provider.dart`) is the core business rule and is a pure `Provider` composing three sources: calendar settings, that day's active appointments, and the selected date. It walks from `open` to `close` in `globalSlotDurationMinutes` steps, dropping blocked dates, closed weekdays, past times, and slots overlapping an existing appointment. Weekday keys in `openingHours` are lowercase English (`monday`…), produced by the pure `weekdayKey()` (`lib/core/utils/weekday_key.dart`), not by `DateFormat`, so the lookup never depends on the UI language.
 
 ### Routing & auth gating
 
@@ -71,7 +77,7 @@ Blocked clients are rejected at sign-in (`AuthController.signInWithGoogle` signs
 
 ### Localization
 
-Spanish (`app_es.arb`, the template) and Portuguese (`app_pt.arb`), auto-selected from the OS locale — there is no in-app language switcher. Generated `app_localizations*.dart` files are **committed** under `lib/l10n/`; after editing an `.arb`, run `flutter gen-l10n` and commit the regenerated output. Import paths are inconsistent across views (`/l10n/app_localizations.dart` vs relative) — either works; match the file you are editing.
+Spanish (`app_es.arb`, the template) and Portuguese (`app_pt.arb`). The user picks the language (Profile → Preferences on Android/iOS, top bar on Web) and it is stored on the device with `shared_preferences`, never in Firestore; with no stored choice the app follows the device language live (Spanish if it is neither). Theme works the same way: light, dark or system (default). Dates and times use `intl` with `AppLocalizations.of(context)!.localeName`; read localized strings inside dialog builders so an open dialog also switches language. Generated `app_localizations*.dart` files are **committed** under `lib/l10n/`; after editing an `.arb`, run `flutter gen-l10n` and commit the regenerated output. Import paths are inconsistent across views (`/l10n/app_localizations.dart` vs relative) — either works; match the file you are editing.
 
 ### Not yet implemented
 

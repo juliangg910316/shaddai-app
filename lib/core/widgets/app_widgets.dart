@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
-import '../constants/theme_colors.dart';
+import '../theme/app_text.dart';
+import '../theme/brand_colors.dart';
 
 /// Iniciales de un nombre ("Ana Herrera" -> "AH").
 String initialsOf(String? name) {
@@ -31,11 +32,13 @@ class SectionHeading extends StatelessWidget {
           style: AppText.serif(
             size: size,
             weight: FontWeight.w500,
-            color: ThemeColors.darkGreen,
+            color: context.brand.inkStrong,
           ),
         ),
         const SizedBox(width: 12),
-        Expanded(child: Container(height: 1, color: ThemeColors.goldHairline)),
+        Expanded(
+          child: Container(height: 1, color: context.brand.goldHairline),
+        ),
       ],
     );
   }
@@ -66,7 +69,7 @@ class SectionHeadingWithAction extends StatelessWidget {
           style: AppText.serif(
             size: 21,
             weight: FontWeight.w500,
-            color: ThemeColors.darkGreen,
+            color: context.brand.inkStrong,
           ),
         ),
         GestureDetector(
@@ -75,7 +78,7 @@ class SectionHeadingWithAction extends StatelessWidget {
             actionLabel,
             style: AppText.eyebrow(
               size: 11,
-              color: ThemeColors.gold,
+              color: context.brand.accentText,
               spacing: 1.4,
             ),
           ),
@@ -86,12 +89,14 @@ class SectionHeadingWithAction extends StatelessWidget {
 }
 
 /// Avatar circular verde con iniciales doradas; usa la foto si existe.
+///
+/// Sin [background] ni [foreground], usa los colores de marca del tema.
 class InitialsAvatar extends StatelessWidget {
   final String? photoUrl;
   final String? name;
   final double size;
-  final Color background;
-  final Color foreground;
+  final Color? background;
+  final Color? foreground;
   final bool goldBorder;
   final bool serifInitials;
 
@@ -100,8 +105,8 @@ class InitialsAvatar extends StatelessWidget {
     this.photoUrl,
     this.name,
     this.size = 40,
-    this.background = ThemeColors.darkGreen,
-    this.foreground = ThemeColors.gold,
+    this.background,
+    this.foreground,
     this.goldBorder = false,
     this.serifInitials = false,
   });
@@ -109,14 +114,16 @@ class InitialsAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final initials = initialsOf(name);
+    final brand = context.brand;
+    final foreground = this.foreground ?? brand.onBrand;
 
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
-        color: background,
+        color: background ?? brand.brand,
         shape: BoxShape.circle,
-        border: goldBorder ? Border.all(color: ThemeColors.gold) : null,
+        border: goldBorder ? Border.all(color: brand.accent) : null,
         image: photoUrl != null
             ? DecorationImage(image: NetworkImage(photoUrl!), fit: BoxFit.cover)
             : null,
@@ -148,16 +155,20 @@ class GoldPillButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final enabled = onPressed != null;
+    final brand = context.brand;
+    // Verde sobre dorado: el mismo par en los dos temas (5,1:1).
+    final ink = brand.brand;
 
     return SizedBox(
       width: double.infinity,
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: ThemeColors.gold,
-          foregroundColor: ThemeColors.darkGreen,
-          disabledBackgroundColor: ThemeColors.gold.withValues(alpha: 0.35),
-          disabledForegroundColor: ThemeColors.darkGreen.withValues(alpha: 0.4),
+          backgroundColor: brand.accent,
+          foregroundColor: ink,
+          // Deshabilitado sigue siendo legible ("ELIGE UN HORARIO").
+          disabledBackgroundColor: brand.placeholder,
+          disabledForegroundColor: brand.inkMuted,
           elevation: 0,
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: RoundedRectangleBorder(
@@ -170,9 +181,7 @@ class GoldPillButton extends StatelessWidget {
             size: 12,
             weight: FontWeight.w600,
             spacing: 2,
-            color: enabled
-                ? ThemeColors.darkGreen
-                : ThemeColors.darkGreen.withValues(alpha: 0.4),
+            color: enabled ? ink : brand.inkMuted,
           ),
         ),
       ),
@@ -180,23 +189,26 @@ class GoldPillButton extends StatelessWidget {
   }
 }
 
-/// Botón secundario: solo contorno verde, sin relleno.
+/// Botón secundario: solo contorno, sin relleno. Sin [color], usa la tinta de
+/// títulos del tema.
 class OutlinePillButton extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
-  final Color color;
+  final Color? color;
   final IconData? icon;
 
   const OutlinePillButton({
     super.key,
     required this.label,
     this.onPressed,
-    this.color = ThemeColors.darkGreen,
+    this.color,
     this.icon,
   });
 
   @override
   Widget build(BuildContext context) {
+    final color = this.color ?? context.brand.inkStrong;
+
     return SizedBox(
       width: double.infinity,
       child: OutlinedButton(
@@ -237,33 +249,31 @@ class PhotoPlaceholder extends StatelessWidget {
   final String? label;
   final double? height;
   final double radius;
-  final Color color;
+  final Color? color;
 
   const PhotoPlaceholder({
     super.key,
     this.label,
     this.height,
     this.radius = 14,
-    this.color = ThemeColors.sand,
+    this.color,
   });
 
   @override
   Widget build(BuildContext context) {
+    final brand = context.brand;
+
     return Container(
       height: height,
       width: double.infinity,
       decoration: BoxDecoration(
-        color: color,
+        color: color ?? brand.placeholder,
         borderRadius: BorderRadius.circular(radius),
       ),
       alignment: Alignment.center,
       child: Text(
         label ?? AppLocalizations.of(context)!.photoPlaceholderDefault,
-        style: AppText.eyebrow(
-          size: 9,
-          spacing: 1.6,
-          color: ThemeColors.olive.withValues(alpha: 0.75),
-        ),
+        style: AppText.eyebrow(size: 9, spacing: 1.6, color: brand.inkMuted),
       ),
     );
   }
@@ -275,7 +285,7 @@ class NetworkPhoto extends StatelessWidget {
   final double? height;
   final double radius;
   final String? placeholderLabel;
-  final Color placeholderColor;
+  final Color? placeholderColor;
 
   const NetworkPhoto({
     super.key,
@@ -283,7 +293,7 @@ class NetworkPhoto extends StatelessWidget {
     this.height,
     this.radius = 14,
     this.placeholderLabel,
-    this.placeholderColor = ThemeColors.sand,
+    this.placeholderColor,
   });
 
   @override
@@ -315,7 +325,7 @@ class FlatCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;
   final Color? borderColor;
-  final Color color;
+  final Color? color;
   final double radius;
 
   const FlatCard({
@@ -323,18 +333,20 @@ class FlatCard extends StatelessWidget {
     required this.child,
     this.padding = const EdgeInsets.all(16),
     this.borderColor,
-    this.color = ThemeColors.white,
+    this.color,
     this.radius = 16,
   });
 
   @override
   Widget build(BuildContext context) {
+    final brand = context.brand;
+
     return Container(
       padding: padding,
       decoration: BoxDecoration(
-        color: color,
+        color: color ?? brand.surface,
         borderRadius: BorderRadius.circular(radius),
-        border: Border.all(color: borderColor ?? ThemeColors.hairline),
+        border: Border.all(color: borderColor ?? brand.hairline),
       ),
       child: child,
     );
@@ -345,20 +357,18 @@ class FlatCard extends StatelessWidget {
 /// depender de un paquete de iconos extra.
 class WhatsAppIcon extends StatelessWidget {
   final double size;
-  final Color color;
+  final Color? color;
 
-  const WhatsAppIcon({
-    super.key,
-    this.size = 19,
-    this.color = ThemeColors.darkGreen,
-  });
+  const WhatsAppIcon({super.key, this.size = 19, this.color});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: size,
       height: size,
-      child: CustomPaint(painter: _WhatsAppPainter(color)),
+      child: CustomPaint(
+        painter: _WhatsAppPainter(color ?? context.brand.inkStrong),
+      ),
     );
   }
 }
@@ -421,43 +431,42 @@ class AppointmentStatusStyle {
   static AppointmentStatusStyle forClient(
     AppLocalizations l10n,
     String status,
+    BrandColors brand,
   ) {
     switch (status) {
       case 'confirmed':
         return AppointmentStatusStyle(
           l10n.statusConfirmedClient,
-          ThemeColors.darkGreen,
+          brand.inkStrong,
         );
       case 'cancelled':
-        return AppointmentStatusStyle(
-          l10n.statusCancelledClient,
-          ThemeColors.danger,
-        );
+        return AppointmentStatusStyle(l10n.statusCancelledClient, brand.danger);
       default:
         return AppointmentStatusStyle(
           l10n.statusWaitingConfirmationClient,
-          ThemeColors.gold,
+          brand.accentText,
         );
     }
   }
 
   /// Etiquetas del panel admin ("CONFIRMADO" / "POR CONFIRMAR").
-  static AppointmentStatusStyle forAdmin(AppLocalizations l10n, String status) {
+  static AppointmentStatusStyle forAdmin(
+    AppLocalizations l10n,
+    String status,
+    BrandColors brand,
+  ) {
     switch (status) {
       case 'confirmed':
         return AppointmentStatusStyle(
           l10n.statusConfirmedAdmin,
-          ThemeColors.darkGreen,
+          brand.inkStrong,
         );
       case 'cancelled':
-        return AppointmentStatusStyle(
-          l10n.statusCancelledAdmin,
-          ThemeColors.danger,
-        );
+        return AppointmentStatusStyle(l10n.statusCancelledAdmin, brand.danger);
       default:
         return AppointmentStatusStyle(
           l10n.pendingConfirmationLabel,
-          ThemeColors.gold,
+          brand.accentText,
         );
     }
   }
