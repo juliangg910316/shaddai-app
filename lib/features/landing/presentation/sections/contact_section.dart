@@ -6,20 +6,29 @@ import '../../../../core/platform/external_links.dart';
 import '../../../../core/theme/app_text.dart';
 import '../../../../core/theme/brand_colors.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../../navigation/presentation/web_shell.dart';
 import '../../landing_content.dart';
+import '../landing_layout.dart';
 import 'section_header.dart';
 
 /// Contacto: "Reservar cita" (RF-32), "Agenda por WhatsApp" y los datos del
 /// salón, cada uno con su enlace (RF-9, RF-10, RF-12).
+///
+/// En Android/iOS, que no tienen pie, añade las redes sociales y el mapa del
+/// salón (spec 003, RF-10, RF-11).
 class ContactSection extends ConsumerWidget {
-  const ContactSection({super.key});
+  const ContactSection({super.key, this.map, this.showSocialLinks = false});
+
+  /// Mapa con la ubicación, debajo de los datos y las redes.
+  final Widget? map;
+
+  /// Muestra las redes del pie (Instagram, TikTok, Facebook y YouTube).
+  final bool showSocialLinks;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final brand = context.brand;
-    final wide = WebShell.isWide(context);
+    final wide = landingIsWide(context);
     void open(String url) =>
         ref.read(externalLinkLauncherProvider)(Uri.parse(url));
 
@@ -141,6 +150,35 @@ class ContactSection extends ConsumerWidget {
               ),
             ),
           ),
+        if (showSocialLinks) ...[
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            children: [
+              for (final (name, url) in LandingContent.socialLinks)
+                TextButton(
+                  onPressed: () => open(url),
+                  style: TextButton.styleFrom(
+                    foregroundColor: brand.ink,
+                    minimumSize: const Size(48, 48),
+                  ),
+                  child: Text(
+                    name.toUpperCase(),
+                    style: AppText.eyebrow(
+                      size: 11,
+                      spacing: 1.2,
+                      color: brand.inkMuted,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
+        if (map case final map?) ...[
+          const SizedBox(height: 24),
+          Semantics(container: true, label: l10n.salonMapLabel, child: map),
+        ],
       ],
     );
 

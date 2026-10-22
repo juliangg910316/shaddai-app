@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_text.dart';
 import '../../../../core/theme/brand_colors.dart';
-import '../../../navigation/presentation/web_shell.dart';
+import '../landing_layout.dart';
 
 /// Encabezado de sección de la landing: rótulo pequeño, título en serif con
 /// una parte en cursiva y, opcionalmente, una nota (a la derecha en ancho
@@ -34,7 +34,7 @@ class LandingSectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final brand = context.brand;
-    final wide = WebShell.isWide(context);
+    final wide = landingIsWide(context);
     final ink = onBrandSurface ? brand.onBrandSurface : brand.inkStrong;
     final gold = onBrandSurface ? brand.onBrandSurfaceAccent : brand.accentText;
     final muted = onBrandSurface ? brand.onBrandSurfaceMuted : brand.inkMuted;

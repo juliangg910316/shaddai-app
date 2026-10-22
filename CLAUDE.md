@@ -37,7 +37,7 @@ Run `dart format lib test` rather than `dart format .`: the latter also reformat
 
 Tests never touch Firebase. Screen tests use `pumpApp` (`test/helpers/pump_app.dart`), which mounts the real `MyApp` with `goRouterProvider` replaced and in-memory preferences; `test/helpers/fake_session.dart` and `fake_auth.dart` hold the session overrides and hand-written fake repositories. `test/core/no_hardcoded_style_test.dart` fails on any hard-coded color or font under `lib/features` and `lib/core/widgets`; brand-mandated exceptions (e.g. the Google button) live in their own file and are listed there.
 
-Web tests use `pumpWebApp` (`test/helpers/pump_web_app.dart`): the real router with `isWebProvider` = `true`, a `FakeWebSession` that can sign in and out during the test, the window width, and the app's real fonts (`loadAppFonts`; the default test font makes text almost twice as wide). It asks the system to reduce motion by default, so the landing's animated strip stops and `pumpAndSettle` can finish. External links go through `externalLinkLauncherProvider`; `RecordingLinkLauncher` records them instead of opening them.
+Web and mobile tests that need the real router use `pumpWebApp` and `pumpMobileApp` (`test/helpers/pump_web_app.dart`). Both start the app directly at the requested location (`defaultRouteNameTestValue`). `pumpMobileApp` replaces the native Google map through `salonMapProvider`. Both use the real router with `isWebProvider` set, a `FakeWebSession` that can sign in and out during the test, the window width, and the app's real fonts (`loadAppFonts`; the default test font makes text almost twice as wide). It asks the system to reduce motion by default, so the landing's animated strip stops and `pumpAndSettle` can finish. External links go through `externalLinkLauncherProvider`; `RecordingLinkLauncher` records them instead of opening them.
 
 ## Architecture
 
@@ -65,7 +65,11 @@ Live data is `StreamProvider` over Firestore snapshots. Mutations go through con
 
 `goRouterProvider` builds one of two route tables, depending on `isWebProvider`. `RouterNotifier` listens to `authStateProvider` and `currentUserProvider` and drives `refreshListenable`.
 
-- **Android/iOS:** a `StatefulShellRoute.indexedStack` for the four bottom-nav branches (`/home`, `/services`, `/booking`, `/profile`) inside `MainScaffold`, plus top-level `/login`, `/capture_phone`, `/admin`, `/admin/users` and `/admin/settings`.
+- **Android/iOS (spec 003):** a `StatefulShellRoute.indexedStack` for the four bottom-nav branches (`/home`, `/services`, `/booking`, `/profile`) inside `MainScaffold`, plus top-level `/login`, `/capture_phone`, `/admin`, `/admin/users` and `/admin/settings`.
+  - **Bar:** `MainScaffold` uses Material 3 `NavigationBar` (destinations ≥ 48 px, selected state announced). Above 1.3× text scale it shows icons only, with names in tooltips and semantics.
+  - **Scroll:** each tab's main scroll view uses `tabScrollControllerProvider(MobileTab.x)`. Tapping the active tab scrolls it to the top, and Inicio's "Ver lista de precios" opens Servicios at the top.
+  - **Content:** Inicio (`HomeView`) and Servicios (`ServicesView`) are built from the landing sections (see "Web landing"). Inicio's contact adds the map (`salonMapProvider`) and the social links.
+  - **Reservas without a session:** shows `BookingSignInPrompt` inside the tab. `GoogleSignInControls` (button, spinner, `authErrorMessage`) is shared with `LoginView`.
 - **Web (spec 002):** a `ShellRoute` whose `WebShell` holds the fixed `WebTopBar` (logo, section links, theme and language selectors, "Reservar", `AccountButton`; below 900 px the links and selectors move to `WebMenuDrawer`).
   - `/` is the `LandingPage`; `/?section=prices` opens it at a section (`LandingSection`).
   - Account pages (`/login`, `/capture_phone`, `/booking`, `/profile`, `/admin…`) are wrapped in `WebAccountPage` per route, which centers them at 640 px. Don't constrain the shell's nested navigator instead: the outgoing landing would be laid out narrow during the transition.
@@ -73,17 +77,17 @@ Live data is `StreamProvider` over Firestore snapshots. Mutations go through con
   - Section links use `goToLandingSection`/`goToLandingTop`: they scroll the landing in place if it is showing (`landingPageKey`), otherwise they go to `/?section=…`.
 
 All redirect rules live in the pure `resolveRedirect` (`lib/core/router/redirect_logic.dart`, fully table-tested):
-- **Mobile, unchanged:** unauthenticated users hitting `/booking` go to `/login`; authenticated users without a `phoneNumber` are forced to `/capture_phone`.
+- **Mobile (spec 003):** no redirect without a session, because the Reservas tab shows its own sign-in prompt. Authenticated users without a `phoneNumber` are sent to `/capture_phone?next=<where they were>`, and come back there after saving it. `/login` and `/capture_phone` with a complete user go to `safeNext(next, isWeb: false)`, which defaults to `/home`.
 - **Web:** account pages require a session (`/login?next=…`) and a WhatsApp number (`/capture_phone?next=…`), while the landing stays visible without them. After sign-in, `safeNext` sends the user to the requested internal page or to `/`; it rejects external or unknown targets. Non-admins on `/admin…` go to `/`.
 
 Both return `null` while `currentUserProvider.isLoading`, to avoid redirecting on incomplete data. Preserve that guard when editing.
 
 Admin routes are only cosmetically guarded (hidden entry points, plus the Web redirect above). Real enforcement is expected to live in Firestore security rules (spec 009, see `.ia/technical_architecture.md`). Treat any client-side role check as cosmetic.
 
-### Web landing
+### Web landing (also Inicio and Servicios on mobile)
 
 `lib/features/landing/`:
-- **Content:** ten sections in order (`LandingSection`), each in a `LandingSectionFrame`, under `presentation/sections/`. Texts come from the `.arb` files with the `landing` prefix. Non-translatable data (links, contact, prices, combos, image paths) lives in `LandingContent` (`landing_content.dart`); spec 004 replaces prices and combos with Firestore.
+- **Content:** ten sections in order (`LandingSection`), each in a `LandingSectionFrame`, under `presentation/sections/`. Sections pick their wide or narrow layout with `landingIsWide(context)`, which reads the nearest `LandingLayout`: `LandingPage` sets it from the window width (≥ 900 px), and the mobile tabs set none, so they are always narrow, also on landscape tablets. Texts come from the `.arb` files with the `landing` prefix. Non-translatable data (links, contact, prices, combos, image paths) lives in `LandingContent` (`landing_content.dart`); spec 004 replaces prices and combos with Firestore.
 - **Images:** they live in `assets/images/landing/` and are shown with `LandingImage`, which provides a screen-reader description and a fallback box.
 - **WhatsApp button:** the floating button sits in its own `FocusTraversalGroup`, so Tab doesn't keep returning to it while the page scrolls. Contrast tests hide it with `showLandingFloatButtonProvider`, because `textContrastGuideline` reads the colours of whatever covers a text as its background.
 

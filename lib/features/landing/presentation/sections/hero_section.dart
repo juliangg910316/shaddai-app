@@ -8,9 +8,9 @@ import '../../../../core/platform/external_links.dart';
 import '../../../../core/theme/app_text.dart';
 import '../../../../core/theme/brand_colors.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../../navigation/presentation/web_shell.dart';
 import '../../../navigation/presentation/web_top_bar.dart';
 import '../../landing_content.dart';
+import '../landing_layout.dart';
 import '../widgets/landing_image.dart';
 
 /// Hero de la landing: presentación del salón, "Reservar cita", "Ver lista de
@@ -23,7 +23,7 @@ class HeroSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final wide = WebShell.isWide(context);
+    final wide = landingIsWide(context);
     final left = _HeroText(onPricesTap: onPricesTap);
 
     return ColoredBox(
@@ -58,7 +58,7 @@ class _HeroText extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final brand = context.brand;
-    final wide = WebShell.isWide(context);
+    final wide = landingIsWide(context);
     final titleStyle = AppText.serif(
       size: wide ? 56 : 40,
       color: brand.onBrandSurface,

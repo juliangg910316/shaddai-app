@@ -64,12 +64,19 @@ void main() {
         expect(theme.dialogTheme.backgroundColor, brand.background);
         expect(theme.snackBarTheme.backgroundColor, brand.brand);
         expect(theme.inputDecorationTheme.fillColor, brand.surface);
-        expect(theme.bottomNavigationBarTheme.backgroundColor, brand.brand);
-        expect(theme.bottomNavigationBarTheme.selectedItemColor, brand.onBrand);
+        // Barra inferior de Android/iOS (spec 003).
+        final bar = theme.navigationBarTheme;
+        expect(bar.backgroundColor, brand.brand);
         expect(
-          theme.bottomNavigationBarTheme.unselectedItemColor,
-          brand.onBrandMuted,
+          bar.iconTheme!.resolve({WidgetState.selected})!.color,
+          brand.onBrand,
         );
+        expect(bar.iconTheme!.resolve({})!.color, brand.onBrandMuted);
+        expect(
+          bar.labelTextStyle!.resolve({WidgetState.selected})!.color,
+          brand.onBrand,
+        );
+        expect(bar.labelTextStyle!.resolve({})!.color, brand.onBrandMuted);
         expect(theme.progressIndicatorTheme.color, brand.inkStrong);
 
         final elevated = theme.elevatedButtonTheme.style!;

@@ -48,7 +48,7 @@ void main() {
     ) async {
       await pumpWebApp(tester, user: testClient);
 
-      expect(find.byType(BottomNavigationBar), findsNothing);
+      expect(find.byType(NavigationBar), findsNothing);
       expect(find.byType(AppBar), findsNothing);
     });
 
@@ -109,7 +109,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.byType(BottomNavigationBar), findsOneWidget);
+    expect(find.byType(NavigationBar), findsOneWidget);
     expect(find.byType(WebShell), findsNothing);
     expect(find.byType(WebTopBar), findsNothing);
   });

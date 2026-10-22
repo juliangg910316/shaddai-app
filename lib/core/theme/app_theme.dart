@@ -134,18 +134,33 @@ class AppTheme {
           height: 1.5,
         ),
       ),
-      bottomNavigationBarTheme: BottomNavigationBarThemeData(
+      // Barra inferior de Android/iOS (spec 003): verde de marca, la pestaña
+      // activa en dorado sobre un indicador y la inactiva en crema atenuada.
+      navigationBarTheme: NavigationBarThemeData(
         backgroundColor: b.brand,
-        selectedItemColor: b.onBrand,
-        unselectedItemColor: b.onBrandMuted,
-        selectedLabelStyle: AppText.sans(
-          size: 10,
-          weight: FontWeight.w500,
-          spacing: 0.6,
-        ),
-        unselectedLabelStyle: AppText.sans(size: 10),
-        type: BottomNavigationBarType.fixed,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
+        indicatorColor: b.onBrand.withValues(alpha: 0.16),
+        iconTheme: WidgetStateProperty.resolveWith(
+          (states) => IconThemeData(
+            size: 24,
+            color: states.contains(WidgetState.selected)
+                ? b.onBrand
+                : b.onBrandMuted,
+          ),
+        ),
+        labelTextStyle: WidgetStateProperty.resolveWith(
+          (states) => AppText.sans(
+            size: 12,
+            weight: states.contains(WidgetState.selected)
+                ? FontWeight.w600
+                : FontWeight.w400,
+            spacing: 0.4,
+            color: states.contains(WidgetState.selected)
+                ? b.onBrand
+                : b.onBrandMuted,
+          ),
+        ),
       ),
       progressIndicatorTheme: ProgressIndicatorThemeData(color: b.inkStrong),
       // Selectores de Preferencias: la opción activa va rellena de verde y con

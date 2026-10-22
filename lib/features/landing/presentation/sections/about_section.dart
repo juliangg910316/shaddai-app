@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/app_text.dart';
 import '../../../../core/theme/brand_colors.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../../navigation/presentation/web_shell.dart';
 import '../../landing_content.dart';
+import '../landing_layout.dart';
 import 'section_header.dart';
 
 /// Sobre mí: la cita de Beidis, su historia y sus valores.
@@ -15,7 +15,7 @@ class AboutSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final brand = context.brand;
-    final wide = WebShell.isWide(context);
+    final wide = landingIsWide(context);
 
     final quote = Container(
       constraints: const BoxConstraints(minHeight: 340),

@@ -9,18 +9,7 @@ class AppLocalizationsEs extends AppLocalizations {
   AppLocalizationsEs([String locale = 'es']) : super(locale);
 
   @override
-  String get appTitle => 'Shaddai';
-
-  @override
   String get bookAppointment => 'Reservar Turno';
-
-  @override
-  String welcomeBack(String name) {
-    return 'Bienvenida, $name';
-  }
-
-  @override
-  String get welcomeGreeting => 'Bienvenida,';
 
   @override
   String get homeTab => 'Inicio';
@@ -38,119 +27,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String get adminTab => 'Admin';
 
   @override
-  String get guestFallbackName => 'Invitada';
-
-  @override
   String get brandFullName => 'Studio Shaddai';
 
   @override
   String get brandLogoLabel => 'Logotipo de Studio Shaddai';
 
   @override
-  String get popularServicesTitle => 'Servicios populares';
-
-  @override
-  String get viewAllAction => 'VER TODO';
-
-  @override
-  String get ourWorkTitle => 'Nuestros trabajos';
-
-  @override
-  String get salonPhotoPlaceholder => 'FOTO DEL SALÓN';
-
-  @override
-  String get findUsTitle => 'Encuéntranos';
-
-  @override
-  String get salonName => 'Shaddai Studio';
-
-  @override
-  String get salonAddress =>
-      'Rua Prof. Nivaldo Braga 1108, Capão da Imbuia, Curitiba - PR';
-
-  @override
-  String get heroTitle => 'Shaddai\nNail Salon';
-
-  @override
-  String get heroSubtitle => 'Cuidado de lujo para tus uñas';
-
-  @override
   String get photoPlaceholderDefault => 'FOTO';
-
-  @override
-  String get serviceManicureClassicName => 'Manicure Clásica';
-
-  @override
-  String get serviceManicureClassicDesc =>
-      'Limpieza, exfoliación, masaje y esmaltado tradicional.';
-
-  @override
-  String get serviceManicureSemipermName => 'Manicure Semipermanente';
-
-  @override
-  String get serviceManicureSemipermDesc =>
-      'Limpieza profunda y esmaltado de larga duración (Gel).';
-
-  @override
-  String get serviceAcrylicSetName => 'Set Nuevo Acrílicas';
-
-  @override
-  String get serviceAcrylicSetDesc =>
-      'Uñas acrílicas con molde o tip, largo medio. Incluye esmaltado.';
-
-  @override
-  String get serviceAcrylicFullName => 'Acrílicas Full';
-
-  @override
-  String get serviceAcrylicTouchupName => 'Retoque Acrílico';
-
-  @override
-  String get serviceAcrylicTouchupDesc =>
-      'Relleno de crecimiento (hasta 3 semanas).';
-
-  @override
-  String get servicePedicureSpaName => 'Pedicure Spa';
-
-  @override
-  String get servicePedicureSpaDesc =>
-      'Limpieza profunda, remoción de callosidades, exfoliación, mascarilla y esmaltado.';
-
-  @override
-  String get serviceJellyPedicureName => 'Jelly Pedicure';
-
-  @override
-  String get serviceJellyPedicureDesc =>
-      'Terapia de hidratación profunda con textura gelatinosa relajante.';
-
-  @override
-  String get duration45Min => '45 min';
-
-  @override
-  String get duration60Min => '60 min';
-
-  @override
-  String get duration75Min => '75 min';
-
-  @override
-  String get duration90Min => '90 min';
-
-  @override
-  String get categoryManicure => 'Manicure';
-
-  @override
-  String get categoryAcrylicGel => 'Acrílicas & Gel';
-
-  @override
-  String get categoryPedicure => 'Pedicure';
-
-  @override
-  String get ourServicesTitle => 'Nuestros Servicios';
-
-  @override
-  String get servicesMenuEyebrow => 'CARTA SHADDAI';
-
-  @override
-  String get bookAction => 'RESERVAR';
 
   @override
   String get cancelAction => 'CANCELAR';
@@ -891,4 +774,14 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get landingServices6RowReversa => 'Reversa';
+
+  @override
+  String get salonMapLabel => 'Mapa con la ubicación del estudio';
+
+  @override
+  String get bookingSignInTitle => 'Inicia sesión para reservar';
+
+  @override
+  String get bookingSignInBody =>
+      'Usamos tu cuenta de Google para guardar tus turnos y que Beidis pueda confirmarlos por WhatsApp.';
 }

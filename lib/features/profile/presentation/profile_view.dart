@@ -13,6 +13,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../preferences/presentation/preferences_section.dart';
 import '../providers/profile_provider.dart';
+import '../../navigation/providers/tab_scroll_provider.dart';
 
 class ProfileView extends ConsumerWidget {
   const ProfileView({super.key});
@@ -150,6 +151,9 @@ class ProfileView extends ConsumerWidget {
                   );
                 },
                 data: (appointments) => ListView(
+                  controller: ref.watch(
+                    tabScrollControllerProvider(MobileTab.profile),
+                  ),
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
                   children: [
                     if (appointments.isEmpty)
@@ -195,16 +199,17 @@ class ProfileView extends ConsumerWidget {
 
 /// Perfil sin sesión: solo Preferencias y el botón para iniciar sesión
 /// (RF-25, RF-26).
-class _GuestProfile extends StatelessWidget {
+class _GuestProfile extends ConsumerWidget {
   const _GuestProfile();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
 
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
+          controller: ref.watch(tabScrollControllerProvider(MobileTab.profile)),
           padding: const EdgeInsets.fromLTRB(20, 6, 20, 28),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,

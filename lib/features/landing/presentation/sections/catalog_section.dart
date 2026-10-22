@@ -5,8 +5,8 @@ import '../../../../core/platform/external_links.dart';
 import '../../../../core/theme/app_text.dart';
 import '../../../../core/theme/brand_colors.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../../navigation/presentation/web_shell.dart';
 import '../../landing_content.dart';
+import '../landing_layout.dart';
 import '../widgets/landing_image.dart';
 import 'section_header.dart';
 
@@ -22,7 +22,7 @@ class CatalogSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final brand = context.brand;
-    final wide = WebShell.isWide(context);
+    final wide = landingIsWide(context);
     final sidePadding = wide ? 80.0 : 24.0;
 
     return ColoredBox(

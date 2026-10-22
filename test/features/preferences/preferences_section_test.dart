@@ -34,7 +34,7 @@ void main() {
     testWidgets('la barra inferior muestra Perfil (RF-24)', (tester) async {
       await _pumpProfile(tester);
 
-      final bar = find.byType(BottomNavigationBar);
+      final bar = find.byType(NavigationBar);
       expect(
         find.descendant(of: bar, matching: find.text('Perfil')),
         findsOneWidget,

@@ -39,29 +39,37 @@ String? _redirect(
 }
 
 void main() {
-  group('móvil: igual que el redirect de antes de la spec 002', () {
+  group('móvil (spec 003)', () {
     final cases = <(String, _Session, String?)>[
-      // Sin sesión: solo la reserva pide iniciar sesión.
+      // Sin sesión no se redirige: Reservas muestra su aviso de inicio de
+      // sesión dentro de la pestaña (RF-16).
       ('/home', _Session.none, null),
       ('/services', _Session.none, null),
       ('/profile', _Session.none, null),
-      ('/booking', _Session.none, '/login'),
+      ('/booking', _Session.none, null),
       ('/login', _Session.none, null),
       ('/admin', _Session.none, null),
       // Ficha cargando: no se redirige con datos incompletos.
       ('/login', _Session.loading, null),
       ('/booking', _Session.loading, null),
-      // Sin WhatsApp: siempre a la captura.
-      ('/home', _Session.noPhone, '/capture_phone'),
-      ('/booking', _Session.noPhone, '/capture_phone'),
-      ('/login', _Session.noPhone, '/capture_phone'),
+      // Sin WhatsApp: a la captura, y después de vuelta a donde estaba
+      // (RF-17).
+      ('/home', _Session.noPhone, '/capture_phone?next=%2Fhome'),
+      ('/booking', _Session.noPhone, '/capture_phone?next=%2Fbooking'),
+      ('/profile', _Session.noPhone, '/capture_phone?next=%2Fprofile'),
+      ('/login', _Session.noPhone, '/capture_phone?next=%2Fhome'),
       ('/capture_phone', _Session.noPhone, null),
-      // Con sesión completa: login y captura llevan a Inicio.
+      ('/capture_phone?next=/booking', _Session.noPhone, null),
+      // Con sesión completa: login y captura llevan al destino pedido o a
+      // Inicio.
       ('/login', _Session.client, '/home'),
       ('/capture_phone', _Session.client, '/home'),
+      ('/capture_phone?next=/booking', _Session.client, '/booking'),
+      ('/login?next=/profile', _Session.client, '/profile'),
+      ('/capture_phone?next=https://x.com', _Session.client, '/home'),
       ('/booking', _Session.client, null),
       ('/profile', _Session.client, null),
-      // Sin guarda de admin en móvil (D-10).
+      // Sin guarda de admin en móvil (spec 002, D-10).
       ('/admin', _Session.client, null),
       ('/admin', _Session.admin, null),
     ];
@@ -69,6 +77,26 @@ void main() {
     for (final (location, session, expected) in cases) {
       test('$location (${session.name}) → $expected', () {
         expect(_redirect(location, isWeb: false, session: session), expected);
+      });
+    }
+
+    for (final next in [
+      '/home',
+      '/services',
+      '/booking',
+      '/profile',
+      '/admin',
+      '/admin/users',
+      '/admin/settings',
+    ]) {
+      test('safeNext acepta $next en móvil', () {
+        expect(safeNext(next, isWeb: false), next);
+      });
+    }
+
+    for (final next in [null, '', '/', '/login', '//x.com', 'https://x.com']) {
+      test('safeNext cambia ${next ?? 'null'} por /home en móvil', () {
+        expect(safeNext(next, isWeb: false), '/home');
       });
     }
   });
@@ -222,7 +250,7 @@ void main() {
     });
   });
 
-  group('safeNext (D-4)', () {
+  group('safeNext en Web (spec 002, D-4)', () {
     for (final next in [
       '/',
       '/booking',
@@ -231,7 +259,7 @@ void main() {
       '/admin/users',
       '/admin/settings',
     ]) {
-      test('$next se acepta', () => expect(safeNext(next), next));
+      test('$next se acepta', () => expect(safeNext(next, isWeb: true), next));
     }
 
     for (final next in [
@@ -245,7 +273,7 @@ void main() {
       '/capture_phone',
     ]) {
       test('${next ?? 'null'} se cambia por /', () {
-        expect(safeNext(next), '/');
+        expect(safeNext(next, isWeb: true), '/');
       });
     }
 

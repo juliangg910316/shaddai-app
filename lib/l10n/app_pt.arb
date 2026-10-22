@@ -1,53 +1,15 @@
 {
-  "appTitle": "Shaddai",
   "bookAppointment": "Agendar Horário",
-  "welcomeBack": "Bem-vinda, {name}",
-  "welcomeGreeting": "Bem-vinda,",
   "homeTab": "Início",
   "servicesTab": "Serviços",
   "appointmentsTab": "Horários",
   "profileTab": "Perfil",
   "adminTab": "Admin",
 
-  "guestFallbackName": "Convidada",
   "brandFullName": "Studio Shaddai",
   "brandLogoLabel": "Logotipo do Studio Shaddai",
 
-  "popularServicesTitle": "Serviços populares",
-  "viewAllAction": "VER TUDO",
-  "ourWorkTitle": "Nossos trabalhos",
-  "salonPhotoPlaceholder": "FOTO DO SALÃO",
-  "findUsTitle": "Encontre-nos",
-  "salonName": "Shaddai Studio",
-  "salonAddress": "Rua Prof. Nivaldo Braga 1108, Capão da Imbuia, Curitiba - PR",
-  "heroTitle": "Shaddai\nNail Salon",
-  "heroSubtitle": "Cuidado de luxo para suas unhas",
   "photoPlaceholderDefault": "FOTO",
-
-  "serviceManicureClassicName": "Manicure Clássica",
-  "serviceManicureClassicDesc": "Limpeza, esfoliação, massagem e esmaltação tradicional.",
-  "serviceManicureSemipermName": "Manicure Semipermanente",
-  "serviceManicureSemipermDesc": "Limpeza profunda e esmaltação de longa duração (Gel).",
-  "serviceAcrylicSetName": "Novo Set de Acrílicas",
-  "serviceAcrylicSetDesc": "Unhas acrílicas com molde ou tip, comprimento médio. Inclui esmaltação.",
-  "serviceAcrylicFullName": "Acrílicas Full",
-  "serviceAcrylicTouchupName": "Retoque Acrílico",
-  "serviceAcrylicTouchupDesc": "Preenchimento de crescimento (até 3 semanas).",
-  "servicePedicureSpaName": "Pedicure Spa",
-  "servicePedicureSpaDesc": "Limpeza profunda, remoção de calosidades, esfoliação, máscara e esmaltação.",
-  "serviceJellyPedicureName": "Jelly Pedicure",
-  "serviceJellyPedicureDesc": "Terapia de hidratação profunda com textura gelatinosa relaxante.",
-  "duration45Min": "45 min",
-  "duration60Min": "60 min",
-  "duration75Min": "75 min",
-  "duration90Min": "90 min",
-
-  "categoryManicure": "Manicure",
-  "categoryAcrylicGel": "Acrílicas & Gel",
-  "categoryPedicure": "Pedicure",
-  "ourServicesTitle": "Nossos Serviços",
-  "servicesMenuEyebrow": "CARTA SHADDAI",
-  "bookAction": "AGENDAR",
 
   "cancelAction": "CANCELAR",
   "confirmAction": "CONFIRMAR",
@@ -309,5 +271,10 @@
   "landingCombosTitleEm": "Shaddai",
   "landingHeroBadgeLine3": "1ª visita ♡",
   "landingServices6RowBabyBoomer": "Baby boomer",
-  "landingServices6RowReversa": "Reversa"
+  "landingServices6RowReversa": "Reversa",
+
+  "salonMapLabel": "Mapa com a localização do estúdio",
+
+  "bookingSignInTitle": "Entre para agendar",
+  "bookingSignInBody": "Usamos sua conta Google para guardar seus horários e para que Beidis possa confirmá-los pelo WhatsApp."
 }

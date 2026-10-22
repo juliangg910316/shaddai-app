@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
@@ -14,6 +15,7 @@ import 'package:shaddai/data/repositories/auth_repository.dart';
 import 'package:shaddai/data/repositories/preferences_repository.dart';
 import 'package:shaddai/data/repositories/user_repository.dart';
 import 'package:shaddai/features/auth/providers/auth_provider.dart';
+import 'package:shaddai/features/home/presentation/google_map_container.dart';
 import 'package:shaddai/features/preferences/providers/preferences_provider.dart';
 import 'package:shaddai/features/profile/providers/profile_provider.dart';
 import 'package:shaddai/main.dart';
@@ -124,6 +126,69 @@ Future<FakeWebSession> pumpWebApp(
   double height = 900,
   bool reduceMotion = true,
   List<Override> overrides = const [],
+}) => _pumpRealApp(
+  tester,
+  isWeb: true,
+  location: location,
+  user: user,
+  session: session,
+  authRepository: authRepository,
+  userRepository: userRepository,
+  stored: stored,
+  width: width,
+  height: height,
+  reduceMotion: reduceMotion,
+  overrides: overrides,
+);
+
+/// Como [pumpWebApp], pero en Android/iOS: la barra inferior y sus pestañas
+/// (spec 003). El mapa nativo de Google, que no se pinta en los tests, se
+/// sustituye por un recuadro.
+Future<FakeWebSession> pumpMobileApp(
+  WidgetTester tester, {
+  String location = '/home',
+  UserModel? user,
+  FakeWebSession? session,
+  AuthRepository? authRepository,
+  UserRepository? userRepository,
+  Map<String, Object> stored = const {'language': 'es'},
+  double width = 412,
+  double height = 900,
+  bool reduceMotion = true,
+  List<Override> overrides = const [],
+}) => _pumpRealApp(
+  tester,
+  isWeb: false,
+  location: location,
+  user: user,
+  session: session,
+  authRepository: authRepository,
+  userRepository: userRepository,
+  stored: stored,
+  width: width,
+  height: height,
+  reduceMotion: reduceMotion,
+  overrides: [
+    salonMapProvider.overrideWithValue(
+      const SizedBox(key: Key('salon-map'), height: 220),
+    ),
+    ...overrides,
+  ],
+);
+
+Future<FakeWebSession> _pumpRealApp(
+  WidgetTester tester, {
+  required bool isWeb,
+  required String location,
+  required UserModel? user,
+  required FakeWebSession? session,
+  required AuthRepository? authRepository,
+  required UserRepository? userRepository,
+  required Map<String, Object> stored,
+  required double width,
+  required double height,
+  required bool reduceMotion,
+  required List<Override> overrides,
 }) async {
   await loadAppFonts();
   if (reduceMotion) {
@@ -134,6 +199,10 @@ Future<FakeWebSession> pumpWebApp(
   tester.view.devicePixelRatio = 1;
   tester.view.physicalSize = Size(width, height);
   addTearDown(tester.view.reset);
+  // La app arranca directamente en [location], como al abrirla con un enlace
+  // a esa dirección: así no se llega a construir la página de entrada.
+  tester.binding.platformDispatcher.defaultRouteNameTestValue = location;
+  addTearDown(tester.binding.platformDispatcher.clearDefaultRouteNameTestValue);
 
   final webSession = session ?? FakeWebSession(user);
   addTearDown(webSession.dispose);
@@ -147,7 +216,7 @@ Future<FakeWebSession> pumpWebApp(
         preferencesRepositoryProvider.overrideWithValue(
           PreferencesRepository(store),
         ),
-        isWebProvider.overrideWithValue(true),
+        isWebProvider.overrideWithValue(isWeb),
         authRepositoryProvider.overrideWithValue(
           authRepository ?? _SessionAuthRepository(webSession),
         ),
@@ -169,7 +238,9 @@ Future<FakeWebSession> pumpWebApp(
   );
   await settleWeb(tester);
 
-  if (location != '/') {
+  // Si la ruta inicial no se tomó (p. ej., redirecciones), se navega a ella.
+  if (webLocation(tester).toString() != location &&
+      webLocation(tester).path == (isWeb ? '/' : '/home')) {
     webRouter(tester).go(location);
     await settleWeb(tester);
   }

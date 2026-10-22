@@ -6,8 +6,8 @@ import '../../../../core/theme/app_text.dart';
 import '../../../../core/theme/brand_colors.dart';
 import '../../../../core/widgets/brand_logo.dart';
 import '../../../../l10n/app_localizations.dart';
-import '../../../navigation/presentation/web_shell.dart';
 import '../../landing_content.dart';
+import '../landing_layout.dart';
 
 /// Pie de la landing: marca, lema, redes sociales (RF-10) y copyright.
 class FooterSection extends ConsumerWidget {
@@ -17,7 +17,7 @@ class FooterSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final brand = context.brand;
-    final wide = WebShell.isWide(context);
+    final wide = landingIsWide(context);
 
     final identity = Row(
       mainAxisSize: MainAxisSize.min,

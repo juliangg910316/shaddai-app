@@ -10,9 +10,11 @@ import '../../../core/utils/capitalize.dart';
 import '../../../core/widgets/app_widgets.dart';
 import '../../../l10n/app_localizations.dart';
 import '../providers/booking_provider.dart';
+import 'booking_sign_in_prompt.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../data/models/appointment_model.dart';
 import 'package:uuid/uuid.dart';
+import '../../navigation/providers/tab_scroll_provider.dart';
 
 /// Opciones del paso "1 · Servicio". Por ahora son fijas y solo decorativas:
 /// la duración real del turno la sigue definiendo `globalSlotDurationMinutes`.
@@ -199,6 +201,19 @@ class _BookingViewState extends ConsumerState<BookingView> {
 
   @override
   Widget build(BuildContext context) {
+    // Sin sesión, la pestaña muestra el aviso para iniciarla (spec 003,
+    // RF-16). En Web no se llega aquí sin sesión: la redirección pide antes
+    // iniciarla.
+    final userAsync = ref.watch(currentUserProvider);
+    if (userAsync.value == null) {
+      if (userAsync.isLoading) {
+        return const Scaffold(
+          body: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+        );
+      }
+      return const BookingSignInPrompt();
+    }
+
     final l10n = AppLocalizations.of(context)!;
     final selectedDate = ref.watch(selectedDateProvider);
     final availableSlots = ref.watch(availableSlotsProvider);
@@ -212,6 +227,9 @@ class _BookingViewState extends ConsumerState<BookingView> {
       body: Stack(
         children: [
           ListView(
+            controller: ref.watch(
+              tabScrollControllerProvider(MobileTab.booking),
+            ),
             padding: EdgeInsets.zero,
             children: [
               // Cabecera + pasos 1 y 2, sobre el fondo claro

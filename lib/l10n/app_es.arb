@@ -1,70 +1,15 @@
 {
-  "appTitle": "Shaddai",
-  "@appTitle": {
-    "description": "El nombre de la aplicación"
-  },
   "bookAppointment": "Reservar Turno",
-  "welcomeBack": "Bienvenida, {name}",
-  "@welcomeBack": {
-    "placeholders": {
-      "name": {
-        "type": "String",
-        "example": "María"
-      }
-    }
-  },
-  "welcomeGreeting": "Bienvenida,",
-  "@welcomeGreeting": {
-    "description": "Saludo del inicio, el nombre se muestra aparte y con otro color"
-  },
   "homeTab": "Inicio",
   "servicesTab": "Servicios",
   "appointmentsTab": "Turnos",
   "profileTab": "Perfil",
   "adminTab": "Admin",
 
-  "guestFallbackName": "Invitada",
-  "@guestFallbackName": {
-    "description": "Nombre de respaldo cuando no hay usuario autenticado"
-  },
   "brandFullName": "Studio Shaddai",
   "brandLogoLabel": "Logotipo de Studio Shaddai",
 
-  "popularServicesTitle": "Servicios populares",
-  "viewAllAction": "VER TODO",
-  "ourWorkTitle": "Nuestros trabajos",
-  "salonPhotoPlaceholder": "FOTO DEL SALÓN",
-  "findUsTitle": "Encuéntranos",
-  "salonName": "Shaddai Studio",
-  "salonAddress": "Rua Prof. Nivaldo Braga 1108, Capão da Imbuia, Curitiba - PR",
-  "heroTitle": "Shaddai\nNail Salon",
-  "heroSubtitle": "Cuidado de lujo para tus uñas",
   "photoPlaceholderDefault": "FOTO",
-
-  "serviceManicureClassicName": "Manicure Clásica",
-  "serviceManicureClassicDesc": "Limpieza, exfoliación, masaje y esmaltado tradicional.",
-  "serviceManicureSemipermName": "Manicure Semipermanente",
-  "serviceManicureSemipermDesc": "Limpieza profunda y esmaltado de larga duración (Gel).",
-  "serviceAcrylicSetName": "Set Nuevo Acrílicas",
-  "serviceAcrylicSetDesc": "Uñas acrílicas con molde o tip, largo medio. Incluye esmaltado.",
-  "serviceAcrylicFullName": "Acrílicas Full",
-  "serviceAcrylicTouchupName": "Retoque Acrílico",
-  "serviceAcrylicTouchupDesc": "Relleno de crecimiento (hasta 3 semanas).",
-  "servicePedicureSpaName": "Pedicure Spa",
-  "servicePedicureSpaDesc": "Limpieza profunda, remoción de callosidades, exfoliación, mascarilla y esmaltado.",
-  "serviceJellyPedicureName": "Jelly Pedicure",
-  "serviceJellyPedicureDesc": "Terapia de hidratación profunda con textura gelatinosa relajante.",
-  "duration45Min": "45 min",
-  "duration60Min": "60 min",
-  "duration75Min": "75 min",
-  "duration90Min": "90 min",
-
-  "categoryManicure": "Manicure",
-  "categoryAcrylicGel": "Acrílicas & Gel",
-  "categoryPedicure": "Pedicure",
-  "ourServicesTitle": "Nuestros Servicios",
-  "servicesMenuEyebrow": "CARTA SHADDAI",
-  "bookAction": "RESERVAR",
 
   "cancelAction": "CANCELAR",
   "confirmAction": "CONFIRMAR",
@@ -376,5 +321,13 @@
   "landingHeroBadgeLine3": "1ª visita ♡",
   "@landingHeroBadgeLine3": { "description": "Tercera línea de la insignia del hero; en shaddai-web estaba en el código" },
   "landingServices6RowBabyBoomer": "Baby boomer",
-  "landingServices6RowReversa": "Reversa"
+  "landingServices6RowReversa": "Reversa",
+
+  "salonMapLabel": "Mapa con la ubicación del estudio",
+  "@salonMapLabel": { "description": "Nombre accesible del mapa incrustado del contacto en Android/iOS" },
+
+  "bookingSignInTitle": "Inicia sesión para reservar",
+  "@bookingSignInTitle": { "description": "Título del aviso de la pestaña Reservas sin sesión (Android/iOS)" },
+  "bookingSignInBody": "Usamos tu cuenta de Google para guardar tus turnos y que Beidis pueda confirmarlos por WhatsApp.",
+  "@bookingSignInBody": { "description": "Texto del aviso de la pestaña Reservas sin sesión" }
 }

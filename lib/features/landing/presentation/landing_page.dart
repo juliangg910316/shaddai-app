@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/brand_colors.dart';
 import '../landing_section.dart';
+import '../../navigation/presentation/web_shell.dart';
+import 'landing_layout.dart';
 import 'sections/about_section.dart';
 import 'sections/catalog_section.dart';
 import 'sections/combos_section.dart';
@@ -94,38 +96,43 @@ class LandingPageState extends ConsumerState<LandingPage> {
 
   @override
   Widget build(BuildContext context) {
-    return ColoredBox(
-      color: context.brand.background,
-      child: Stack(
-        children: [
-          // Dos grupos de foco: con Tab se recorre todo el contenido y después
-          // el botón flotante. Sin ellos, el botón, fijo en pantalla, volvía a
-          // quedar "a continuación" cada vez que la landing se desplazaba
-          // (RNF-2).
-          FocusTraversalGroup(
-            child: SingleChildScrollView(
-              controller: _scrollController,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  for (final section in LandingSection.values)
-                    LandingSectionFrame(
-                      key: _sectionKeys[section],
-                      section: section,
-                      child: _sectionBody(section),
-                    ),
-                ],
+    // En Web, las secciones van en ancho desde 900 px (spec 002); en
+    // Android/iOS, que no ponen LandingLayout, siempre en estrecho.
+    return LandingLayout(
+      wide: WebShell.isWide(context),
+      child: ColoredBox(
+        color: context.brand.background,
+        child: Stack(
+          children: [
+            // Dos grupos de foco: con Tab se recorre todo el contenido y después
+            // el botón flotante. Sin ellos, el botón, fijo en pantalla, volvía a
+            // quedar "a continuación" cada vez que la landing se desplazaba
+            // (RNF-2).
+            FocusTraversalGroup(
+              child: SingleChildScrollView(
+                controller: _scrollController,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (final section in LandingSection.values)
+                      LandingSectionFrame(
+                        key: _sectionKeys[section],
+                        section: section,
+                        child: _sectionBody(section),
+                      ),
+                  ],
+                ),
               ),
             ),
-          ),
-          // Siempre visible sobre la landing, también al final (RF-11).
-          if (ref.watch(showLandingFloatButtonProvider))
-            Positioned(
-              right: 24,
-              bottom: 24,
-              child: FocusTraversalGroup(child: const WhatsappFloatButton()),
-            ),
-        ],
+            // Siempre visible sobre la landing, también al final (RF-11).
+            if (ref.watch(showLandingFloatButtonProvider))
+              Positioned(
+                right: 24,
+                bottom: 24,
+                child: FocusTraversalGroup(child: const WhatsappFloatButton()),
+              ),
+          ],
+        ),
       ),
     );
   }

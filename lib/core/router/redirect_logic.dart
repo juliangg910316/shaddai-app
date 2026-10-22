@@ -28,15 +28,18 @@ class RedirectInput {
   final bool isAdmin;
 }
 
-/// Destinos a los que se puede volver tras el login (`?next=`).
+/// Destinos a los que se puede volver tras el login (`?next=`), además de
+/// la página de entrada de cada plataforma.
 const _allowedNext = {
-  '/',
   '/booking',
   '/profile',
   '/admin',
   '/admin/users',
   '/admin/settings',
 };
+
+/// En Android/iOS también se vuelve a las pestañas Inicio y Servicios.
+const _allowedNextMobile = {..._allowedNext, '/home', '/services'};
 
 /// Páginas de cuenta de Web: piden sesión y WhatsApp.
 bool _isAccountPage(String path) =>
@@ -48,9 +51,13 @@ bool _isAccountPage(String path) =>
 bool _isAdminPage(String path) =>
     path == '/admin' || path.startsWith('/admin/');
 
-/// [next] si es un destino interno conocido; si no, la landing. Así un
-/// enlace manipulado no saca a la persona de la web tras el login (D-4).
-String safeNext(String? next) => _allowedNext.contains(next) ? next! : '/';
+/// [next] si es un destino interno conocido; si no, la página de entrada: la
+/// landing en Web, Inicio en Android/iOS. Así un enlace manipulado no saca a
+/// la persona de la app tras el login (spec 002, D-4).
+String safeNext(String? next, {required bool isWeb}) {
+  if (isWeb) return next == '/' || _allowedNext.contains(next) ? next! : '/';
+  return _allowedNextMobile.contains(next) ? next! : '/home';
+}
 
 String _withNext(String path, String next) =>
     Uri(path: path, queryParameters: {'next': next}).toString();
@@ -59,20 +66,24 @@ String _withNext(String path, String next) =>
 String? resolveRedirect(RedirectInput input) =>
     input.isWeb ? _web(input) : _mobile(input);
 
-/// Android/iOS: el comportamiento de antes de la spec 002, sin cambios.
+/// Android/iOS (spec 003). Sin sesión no se redirige: la pestaña Reservas
+/// muestra su propio aviso de inicio de sesión (RF-16). La captura de
+/// WhatsApp devuelve a la pestaña de origen (RF-17).
 String? _mobile(RedirectInput input) {
   final path = input.path;
 
-  if (!input.isLoggedIn) {
-    return path.startsWith('/booking') ? '/login' : null;
-  }
+  if (!input.isLoggedIn) return null;
   // Con la ficha cargando no se redirige con datos incompletos.
   if (input.isUserLoading) return null;
 
   if (input.needsPhone) {
-    return path == '/capture_phone' ? null : '/capture_phone';
+    if (path == '/capture_phone') return null;
+    final next = safeNext(input.query['next'] ?? path, isWeb: false);
+    return _withNext('/capture_phone', next);
   }
-  if (path == '/login' || path == '/capture_phone') return '/home';
+  if (path == '/login' || path == '/capture_phone') {
+    return safeNext(input.query['next'], isWeb: false);
+  }
   return null;
 }
 
@@ -97,7 +108,10 @@ String? _web(RedirectInput input) {
   if (input.needsPhone) {
     if (path == '/capture_phone') return null;
     if (isAccountPage || path == '/login') {
-      return _withNext('/capture_phone', safeNext(input.query['next'] ?? path));
+      return _withNext(
+        '/capture_phone',
+        safeNext(input.query['next'] ?? path, isWeb: true),
+      );
     }
     return null;
   }
@@ -108,7 +122,7 @@ String? _web(RedirectInput input) {
 
   // Tras el login o la captura, al destino pedido o a la landing (RF-20, RF-24).
   if (path == '/login' || path == '/capture_phone') {
-    return safeNext(input.query['next']);
+    return safeNext(input.query['next'], isWeb: true);
   }
   return null;
 }
