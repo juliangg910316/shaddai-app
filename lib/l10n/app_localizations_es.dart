@@ -784,4 +784,208 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get bookingSignInBody =>
       'Usamos tu cuenta de Google para guardar tus turnos y que Beidis pueda confirmarlos por WhatsApp.';
+
+  @override
+  String get pricesLoading => 'Cargando precios';
+
+  @override
+  String get pricesLoadError => 'No se pudieron cargar los precios.';
+
+  @override
+  String get pricesRetry => 'Reintentar';
+
+  @override
+  String get pricesEmpty => 'Consulta los precios por WhatsApp.';
+
+  @override
+  String priceFrom(String price) {
+    return 'desde $price';
+  }
+
+  @override
+  String get priceDetailOpenHint => 'Ver detalle';
+
+  @override
+  String priceLineSemantics(String name, String price) {
+    return '$name, $price';
+  }
+
+  @override
+  String get pricesCatalogDisclaimer =>
+      'Los precios vigentes son los de la lista de precios.';
+
+  @override
+  String get priceDetailDuration => 'Duración';
+
+  @override
+  String get priceDetailBackToPrices => 'Volver a la lista de precios';
+
+  @override
+  String get priceDetailUnavailable => 'Este servicio ya no está disponible.';
+
+  @override
+  String get adminServicesTitle => 'Servicios';
+
+  @override
+  String get adminServicesEmpty => 'Todavía no hay servicios.';
+
+  @override
+  String get adminServicesSeed => 'Cargar la lista de precios actual';
+
+  @override
+  String get adminServicesSeedConfirmTitle =>
+      '¿Cargar la lista de precios actual?';
+
+  @override
+  String get adminServicesSeedConfirmBody =>
+      'Se crearán las categorías, servicios y combos de hoy. Después podrás editarlos.';
+
+  @override
+  String get adminServicesSeedConfirmAction => 'Cargar';
+
+  @override
+  String get adminServicesCombos => 'Combos';
+
+  @override
+  String get adminServicesSaved => 'Cambios guardados';
+
+  @override
+  String get adminServicesSaveError => 'No se pudieron guardar los cambios.';
+
+  @override
+  String get adminServicesHidden => 'Oculto';
+
+  @override
+  String get adminServicesMoveUp => 'Subir';
+
+  @override
+  String get adminServicesMoveDown => 'Bajar';
+
+  @override
+  String get adminServicesHide => 'Ocultar';
+
+  @override
+  String get adminServicesShow => 'Mostrar';
+
+  @override
+  String get adminServicesDelete => 'Borrar';
+
+  @override
+  String adminServicesDeleteTitle(String name) {
+    return '¿Borrar «$name»?';
+  }
+
+  @override
+  String get adminServicesDeleteBody => 'No se puede deshacer.';
+
+  @override
+  String get adminServicesCategoryNotEmpty =>
+      'Esta categoría tiene servicios o adicionales. Bórralos o muévelos a otra categoría antes de borrarla.';
+
+  @override
+  String get adminServicesUnderstood => 'Entendido';
+
+  @override
+  String get adminServicesItemGone => 'Este elemento ya no existe.';
+
+  @override
+  String get adminServicesEdit => 'Editar';
+
+  @override
+  String get adminServicesAddCategory => 'Añadir categoría';
+
+  @override
+  String get adminServicesNewCategory => 'Nueva categoría';
+
+  @override
+  String get adminServicesEditCategory => 'Editar categoría';
+
+  @override
+  String get adminFieldNameEs => 'Nombre en español';
+
+  @override
+  String get adminFieldNamePt => 'Nombre en portugués';
+
+  @override
+  String get adminFieldSubtitleEs => 'Subtítulo en español';
+
+  @override
+  String get adminFieldSubtitlePt => 'Subtítulo en portugués';
+
+  @override
+  String get adminFieldNoteEs => 'Nota en español';
+
+  @override
+  String get adminFieldNotePt => 'Nota en portugués';
+
+  @override
+  String get adminFieldRequired => 'Obligatorio';
+
+  @override
+  String get adminFieldMissingTranslation => 'Escríbelo también en este idioma';
+
+  @override
+  String get adminFieldInvalidPrice => 'Precio no válido (hasta 2 decimales)';
+
+  @override
+  String get adminFieldInvalidDuration => 'Entre 5 y 480 minutos';
+
+  @override
+  String adminFieldTooLong(int max) {
+    return 'Máximo $max caracteres';
+  }
+
+  @override
+  String get adminSave => 'Guardar';
+
+  @override
+  String get adminServicesAddService => 'Añadir servicio';
+
+  @override
+  String get adminServicesAddAddon => 'Añadir adicional';
+
+  @override
+  String get adminServicesNewService => 'Nuevo servicio';
+
+  @override
+  String get adminServicesEditService => 'Editar servicio';
+
+  @override
+  String get adminServicesNewAddon => 'Nuevo adicional';
+
+  @override
+  String get adminServicesEditAddon => 'Editar adicional';
+
+  @override
+  String get adminFieldDescriptionEs => 'Descripción en español';
+
+  @override
+  String get adminFieldDescriptionPt => 'Descripción en portugués';
+
+  @override
+  String get adminFieldGroupEs => 'Grupo en español';
+
+  @override
+  String get adminFieldGroupPt => 'Grupo en portugués';
+
+  @override
+  String get adminFieldPrice => 'Precio (R\$)';
+
+  @override
+  String get adminFieldPriceFrom => 'Precio «desde»';
+
+  @override
+  String get adminFieldDuration => 'Duración (minutos)';
+
+  @override
+  String get adminFieldCategory => 'Categoría';
+
+  @override
+  String get adminServicesAddCombo => 'Añadir combo';
+
+  @override
+  String get adminServicesNewCombo => 'Nuevo combo';
+
+  @override
+  String get adminServicesEditCombo => 'Editar combo';
 }

@@ -9,7 +9,14 @@ import '../../features/auth/providers/auth_provider.dart';
 import '../../features/booking/presentation/booking_view.dart';
 import '../../features/admin/presentation/admin_dashboard_view.dart';
 import '../../features/admin/presentation/admin_users_view.dart';
+import '../../features/admin/presentation/admin_category_form_view.dart';
+import '../../features/admin/presentation/admin_combo_form_view.dart';
+import '../../features/admin/presentation/admin_price_item_form_view.dart';
+import '../../features/admin/presentation/admin_services_view.dart';
 import '../../features/admin/presentation/admin_settings_view.dart';
+import '../../data/models/price_list_model.dart';
+import '../../features/services/logic/price_list_view_logic.dart';
+import '../../features/services/presentation/price_detail_view.dart';
 import '../../features/services/presentation/services_view.dart';
 import '../../features/profile/presentation/profile_view.dart';
 import '../../features/landing/landing_section.dart';
@@ -81,6 +88,13 @@ final goRouterProvider = Provider<GoRouter>((ref) {
   );
 });
 
+/// Formulario de servicio o adicional; `?kind=addon` al crear un adicional.
+Widget _priceItemForm(GoRouterState state) => AdminPriceItemFormView(
+  categoryId: state.pathParameters['categoryId']!,
+  itemId: state.pathParameters['id']!,
+  kind: PriceItemKind.fromName(state.uri.queryParameters['kind']),
+);
+
 /// Web: todas las páginas dentro de [WebShell], con la barra superior
 /// (spec 002, RF-13). La landing es la entrada.
 List<RouteBase> _webRoutes() => [
@@ -95,6 +109,19 @@ List<RouteBase> _webRoutes() => [
             state.uri.queryParameters['section'],
           ),
         ),
+        routes: [
+          // Detalle de un servicio o combo: público, con su dirección propia
+          // (`/services/service/:id`). Es hija de la landing para que esta
+          // siga debajo: "atrás" vuelve a ella en la misma posición (spec
+          // 004, RF-43, D-7).
+          GoRoute(
+            path: 'services/:kind/:id',
+            builder: (context, state) => WebPriceDetailPage(
+              kind: DetailKind.fromPath(state.pathParameters['kind']),
+              id: state.pathParameters['id']!,
+            ),
+          ),
+        ],
       ),
       GoRoute(
         path: '/login',
@@ -128,6 +155,28 @@ List<RouteBase> _webRoutes() => [
         builder: (context, state) =>
             const WebAccountPage(child: AdminSettingsView()),
       ),
+      GoRoute(
+        path: '/admin/services',
+        builder: (context, state) =>
+            const WebAccountPage(child: AdminServicesView()),
+      ),
+      GoRoute(
+        path: '/admin/services/category/:id',
+        builder: (context, state) => WebAccountPage(
+          child: AdminCategoryFormView(categoryId: state.pathParameters['id']!),
+        ),
+      ),
+      GoRoute(
+        path: '/admin/services/category/:categoryId/item/:id',
+        builder: (context, state) =>
+            WebAccountPage(child: _priceItemForm(state)),
+      ),
+      GoRoute(
+        path: '/admin/services/combo/:id',
+        builder: (context, state) => WebAccountPage(
+          child: AdminComboFormView(comboId: state.pathParameters['id']!),
+        ),
+      ),
       // Direcciones de las pestañas móviles: `resolveRedirect` las lleva a
       // la landing antes de que se muestren (RF-29).
       GoRoute(path: '/home', builder: (context, state) => const SizedBox()),
@@ -149,6 +198,24 @@ List<RouteBase> _mobileRoutes() => [
   GoRoute(
     path: '/admin/settings',
     builder: (context, state) => const AdminSettingsView(),
+  ),
+  GoRoute(
+    path: '/admin/services',
+    builder: (context, state) => const AdminServicesView(),
+  ),
+  GoRoute(
+    path: '/admin/services/category/:id',
+    builder: (context, state) =>
+        AdminCategoryFormView(categoryId: state.pathParameters['id']!),
+  ),
+  GoRoute(
+    path: '/admin/services/category/:categoryId/item/:id',
+    builder: (context, state) => _priceItemForm(state),
+  ),
+  GoRoute(
+    path: '/admin/services/combo/:id',
+    builder: (context, state) =>
+        AdminComboFormView(comboId: state.pathParameters['id']!),
   ),
   GoRoute(path: '/login', builder: (context, state) => const LoginView()),
   GoRoute(
@@ -172,6 +239,18 @@ List<RouteBase> _mobileRoutes() => [
           GoRoute(
             path: '/services',
             builder: (context, state) => const ServicesView(),
+            routes: [
+              // Detalle de un servicio o combo, dentro de la pestaña: la
+              // barra inferior sigue visible y la lista, debajo (spec 004,
+              // D-7).
+              GoRoute(
+                path: ':kind/:id',
+                builder: (context, state) => PriceDetailView(
+                  kind: DetailKind.fromPath(state.pathParameters['kind']),
+                  id: state.pathParameters['id']!,
+                ),
+              ),
+            ],
           ),
         ],
       ),

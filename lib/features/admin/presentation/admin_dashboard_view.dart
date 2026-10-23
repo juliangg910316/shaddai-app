@@ -163,6 +163,17 @@ class _AdminHeader extends StatelessWidget {
                     ],
                   ),
                 ),
+                // Gestión de servicios y precios (spec 004, RF-19).
+                IconButton(
+                  tooltip: l10n.adminServicesTitle,
+                  onPressed: () => context.push('/admin/services'),
+                  icon: Icon(
+                    Icons.spa_outlined,
+                    size: 22,
+                    color: brand.onBrand,
+                  ),
+                ),
+                const SizedBox(width: 6),
                 GestureDetector(
                   onTap: () => context.push('/admin/users'),
                   child: Icon(

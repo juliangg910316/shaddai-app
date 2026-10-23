@@ -25,11 +25,17 @@ List<String> _shownPrices(WidgetTester tester) => tester
     .where(_amount.hasMatch)
     .toList();
 
-/// Los mismos importes que la landing de Web: misma fuente (RF-21).
-final _landingPrices = [
-  for (final card in LandingContent.priceCards)
-    for (final line in card.lines)
-      if (line is PriceItem) line.price,
+/// Los importes de la lista inicial, en orden: los mismos que la landing de
+/// Web, porque las dos leen la misma lista (RF-21; spec 004).
+const _landingPrices = [
+  'R\$ 30', 'R\$ 55', 'R\$ 60', 'R\$ 100', 'R\$ 120', // Manos
+  'R\$ 40', 'R\$ 60', 'R\$ 110', 'R\$ 130', 'R\$ 70', // Pies
+  'R\$ 150', 'R\$ 165', 'R\$ 185', 'R\$ 220', // Alargamientos: nueva
+  'R\$ 120', 'R\$ 130', 'R\$ 145', 'R\$ 165', // y mantenimiento
+  'R\$ 130', 'R\$ 145', 'R\$ 110', // Soft Gel
+  'R\$ 20', 'R\$ 30', 'R\$ 30', 'R\$ 40', // Retiradas
+  '+R\$ 10', '+R\$ 15', '+R\$ 15', '+R\$ 20', '+R\$ 5', // Decoración
+  '+R\$ 10', '+R\$ 15', '+R\$ 6', '+R\$ 20',
 ];
 
 ScrollController _services(WidgetTester tester) =>

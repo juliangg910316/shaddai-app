@@ -884,277 +884,277 @@ abstract class AppLocalizations {
   /// **'Precios en reales. Cada cita empieza con el diagnóstico de tus uñas: duración y acabado los decidimos juntas.'**
   String get landingServicesNote;
 
-  /// No description provided for @landingServices1Title.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Manos'**
   String get landingServices1Title;
 
-  /// No description provided for @landingServices1Subtitle.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Cuidado y elegancia siempre'**
   String get landingServices1Subtitle;
 
-  /// No description provided for @landingServices1Row1.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Manicure tradicional'**
   String get landingServices1Row1;
 
-  /// No description provided for @landingServices1Row2.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Spa de manos'**
   String get landingServices1Row2;
 
-  /// No description provided for @landingServices1Row3.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Esmaltado en gel · manos'**
   String get landingServices1Row3;
 
-  /// No description provided for @landingServices1Row4.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Baño de gel (corto a medio)'**
   String get landingServices1Row4;
 
-  /// No description provided for @landingServices1Row5.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Baño de gel (largo)'**
   String get landingServices1Row5;
 
-  /// No description provided for @landingServices1Note.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'El baño de gel incluye preparación, cutículas, esmaltado en gel de un color y decoración simple.'**
   String get landingServices1Note;
 
-  /// No description provided for @landingServices2Title.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Pies'**
   String get landingServices2Title;
 
-  /// No description provided for @landingServices2Subtitle.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Confort y bienestar'**
   String get landingServices2Subtitle;
 
-  /// No description provided for @landingServices2Row1.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Pedicura tradicional'**
   String get landingServices2Row1;
 
-  /// No description provided for @landingServices2Row2.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Pedicura + Mini Spa'**
   String get landingServices2Row2;
 
-  /// No description provided for @landingServices2Row3.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Pedicura Spa'**
   String get landingServices2Row3;
 
-  /// No description provided for @landingServices2Row4.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Plástica de pies + Pedicura'**
   String get landingServices2Row4;
 
-  /// No description provided for @landingServices2Row5.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Esmaltado en gel · pies'**
   String get landingServices2Row5;
 
-  /// No description provided for @landingServices2Note.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Mini Spa: cuidado localizado de callosidades. Spa: exfoliación, hidratación y cuidado completo de los pies.'**
   String get landingServices2Note;
 
-  /// No description provided for @landingServices3Title.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Alargamientos'**
   String get landingServices3Title;
 
-  /// No description provided for @landingServices3Subtitle.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Gel, Polygel y Acrílico'**
   String get landingServices3Subtitle;
 
-  /// No description provided for @landingServices3GroupNew.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Nueva aplicación'**
   String get landingServices3GroupNew;
 
-  /// No description provided for @landingServices3GroupMaintenance.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Mantenimiento'**
   String get landingServices3GroupMaintenance;
 
-  /// No description provided for @landingServices3RowShort.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Corto'**
   String get landingServices3RowShort;
 
-  /// No description provided for @landingServices3RowMedium.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Medio'**
   String get landingServices3RowMedium;
 
-  /// No description provided for @landingServices3RowLong.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Largo'**
   String get landingServices3RowLong;
 
-  /// No description provided for @landingServices3RowExtraLong.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Extra largo'**
   String get landingServices3RowExtraLong;
 
-  /// No description provided for @landingServices3Note.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Mismo precio por técnica; solo varía el largo. El precio base incluye preparación, cutículas, estructura, esmaltado en gel de un color y decoración simple en 1 uña. Mantenimiento hasta 30 días.'**
   String get landingServices3Note;
 
-  /// No description provided for @landingServices4Subtitle.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Practicidad y ligereza'**
   String get landingServices4Subtitle;
 
-  /// No description provided for @landingServices4Row1.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Corto / Medio'**
   String get landingServices4Row1;
 
-  /// No description provided for @landingServices4Row2.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Largo'**
   String get landingServices4Row2;
 
-  /// No description provided for @landingServices4Row3.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Mantenimiento / reaplicación · desde'**
   String get landingServices4Row3;
 
-  /// No description provided for @landingServices4Note.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Mantenimiento según el crecimiento y el estado de la estructura.'**
   String get landingServices4Note;
 
-  /// No description provided for @landingServices5Title.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Retiradas'**
   String get landingServices5Title;
 
-  /// No description provided for @landingServices5Subtitle.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Salud de la uña primero'**
   String get landingServices5Subtitle;
 
-  /// No description provided for @landingServices5Row1.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Esmaltado en gel'**
   String get landingServices5Row1;
 
-  /// No description provided for @landingServices5Row2.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Baño de gel'**
   String get landingServices5Row2;
 
-  /// No description provided for @landingServices5Row3.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Alargamiento'**
   String get landingServices5Row3;
 
-  /// No description provided for @landingServices5Note.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Retirada + nueva aplicación en la misma cita: R\$ 30.'**
   String get landingServices5Note;
 
-  /// No description provided for @landingServices6Title.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Decoración y adicionales'**
   String get landingServices6Title;
 
-  /// No description provided for @landingServices6Subtitle.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Detalles que marcan la diferencia'**
   String get landingServices6Subtitle;
 
-  /// No description provided for @landingServices6Row1.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Francesa elaborada'**
   String get landingServices6Row1;
 
-  /// No description provided for @landingServices6Row2.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Cromado / ojo de gato'**
   String get landingServices6Row2;
 
-  /// No description provided for @landingServices6Row3.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Encapsulado'**
   String get landingServices6Row3;
 
-  /// No description provided for @landingServices6Row4.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Nail art simple'**
   String get landingServices6Row4;
 
-  /// No description provided for @landingServices6Row5.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Nail art intermedia'**
   String get landingServices6Row5;
 
-  /// No description provided for @landingServices6Row6.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Nail art elaborada'**
   String get landingServices6Row6;
 
-  /// No description provided for @landingServices6Row7.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Pedrería'**
   String get landingServices6Row7;
 
-  /// No description provided for @landingServices6Note.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Adhesivos, composiciones con varias técnicas y diseños personalizados se valoran según cantidad de uñas, dificultad y tiempo.'**
@@ -1172,37 +1172,37 @@ abstract class AppLocalizations {
   /// **'Los combos no son acumulables con otras promociones.'**
   String get landingCombosNote;
 
-  /// No description provided for @landingCombo1Name.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Manos y Pies Tradicional'**
   String get landingCombo1Name;
 
-  /// No description provided for @landingCombo1Desc.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Manicura tradicional + Pedicura tradicional'**
   String get landingCombo1Desc;
 
-  /// No description provided for @landingCombo2Name.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Gel Completo'**
   String get landingCombo2Name;
 
-  /// No description provided for @landingCombo2Desc.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Esmaltado en gel manos + pies'**
   String get landingCombo2Desc;
 
-  /// No description provided for @landingCombo3Name.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Momento Shaddai'**
   String get landingCombo3Name;
 
-  /// No description provided for @landingCombo3Desc.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Manicura + Spa de manos + Pedicura Spa'**
@@ -1550,13 +1550,13 @@ abstract class AppLocalizations {
   /// **'1ª visita ♡'**
   String get landingHeroBadgeLine3;
 
-  /// No description provided for @landingServices6RowBabyBoomer.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Baby boomer'**
   String get landingServices6RowBabyBoomer;
 
-  /// No description provided for @landingServices6RowReversa.
+  /// Solo para la carga inicial de la lista de precios (spec 004)
   ///
   /// In es, this message translates to:
   /// **'Reversa'**
@@ -1579,6 +1579,390 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Usamos tu cuenta de Google para guardar tus turnos y que Beidis pueda confirmarlos por WhatsApp.'**
   String get bookingSignInBody;
+
+  /// Etiqueta para el lector de pantalla del indicador de carga de la lista de precios (spec 004, RF-7)
+  ///
+  /// In es, this message translates to:
+  /// **'Cargando precios'**
+  String get pricesLoading;
+
+  /// Aviso cuando la lista de precios no se puede cargar (RF-8)
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudieron cargar los precios.'**
+  String get pricesLoadError;
+
+  /// Botón para volver a cargar la lista de precios (RF-9)
+  ///
+  /// In es, this message translates to:
+  /// **'Reintentar'**
+  String get pricesRetry;
+
+  /// Aviso cuando no hay ninguna categoría que mostrar (RF-10)
+  ///
+  /// In es, this message translates to:
+  /// **'Consulta los precios por WhatsApp.'**
+  String get pricesEmpty;
+
+  /// Precio «desde» de un servicio
+  ///
+  /// In es, this message translates to:
+  /// **'desde {price}'**
+  String priceFrom(String price);
+
+  /// Pista del lector de pantalla en cada servicio y combo de la lista (RNF-5)
+  ///
+  /// In es, this message translates to:
+  /// **'Ver detalle'**
+  String get priceDetailOpenHint;
+
+  /// Lo que anuncia el lector de pantalla en cada servicio y combo de la lista (RNF-5)
+  ///
+  /// In es, this message translates to:
+  /// **'{name}, {price}'**
+  String priceLineSemantics(String name, String price);
+
+  /// Aviso bajo el catálogo: sus páginas son imágenes fijas (spec 004, RF-42)
+  ///
+  /// In es, this message translates to:
+  /// **'Los precios vigentes son los de la lista de precios.'**
+  String get pricesCatalogDisclaimer;
+
+  /// Etiqueta de la duración en el detalle de un servicio o combo (spec 004, RF-14)
+  ///
+  /// In es, this message translates to:
+  /// **'Duración'**
+  String get priceDetailDuration;
+
+  /// Botón del detalle que vuelve a la lista de precios (RF-17, RF-44)
+  ///
+  /// In es, this message translates to:
+  /// **'Volver a la lista de precios'**
+  String get priceDetailBackToPrices;
+
+  /// Aviso del detalle de un servicio o combo borrado, oculto o que no existe (RF-17)
+  ///
+  /// In es, this message translates to:
+  /// **'Este servicio ya no está disponible.'**
+  String get priceDetailUnavailable;
+
+  /// Título de la gestión de servicios y precios de la admin, y tooltip de su icono en el panel (spec 004, RF-19)
+  ///
+  /// In es, this message translates to:
+  /// **'Servicios'**
+  String get adminServicesTitle;
+
+  /// Gestión de servicios sin ningún elemento guardado (RF-35)
+  ///
+  /// In es, this message translates to:
+  /// **'Todavía no hay servicios.'**
+  String get adminServicesEmpty;
+
+  /// Botón de la carga inicial de la lista de precios (RF-35)
+  ///
+  /// In es, this message translates to:
+  /// **'Cargar la lista de precios actual'**
+  String get adminServicesSeed;
+
+  /// Título de la confirmación de la carga inicial (RF-36)
+  ///
+  /// In es, this message translates to:
+  /// **'¿Cargar la lista de precios actual?'**
+  String get adminServicesSeedConfirmTitle;
+
+  /// Texto de la confirmación de la carga inicial (RF-36)
+  ///
+  /// In es, this message translates to:
+  /// **'Se crearán las categorías, servicios y combos de hoy. Después podrás editarlos.'**
+  String get adminServicesSeedConfirmBody;
+
+  /// Botón que confirma la carga inicial (RF-36)
+  ///
+  /// In es, this message translates to:
+  /// **'Cargar'**
+  String get adminServicesSeedConfirmAction;
+
+  /// Título de la lista de combos en la gestión de servicios
+  ///
+  /// In es, this message translates to:
+  /// **'Combos'**
+  String get adminServicesCombos;
+
+  /// Aviso breve tras guardar un cambio en la gestión de servicios (RF-34)
+  ///
+  /// In es, this message translates to:
+  /// **'Cambios guardados'**
+  String get adminServicesSaved;
+
+  /// Aviso cuando un cambio de la gestión de servicios no se puede guardar (RF-33)
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudieron guardar los cambios.'**
+  String get adminServicesSaveError;
+
+  /// Etiqueta de un elemento oculto en la gestión de servicios (RF-20)
+  ///
+  /// In es, this message translates to:
+  /// **'Oculto'**
+  String get adminServicesHidden;
+
+  /// Tooltip del botón que sube un elemento en la gestión de servicios (RF-26)
+  ///
+  /// In es, this message translates to:
+  /// **'Subir'**
+  String get adminServicesMoveUp;
+
+  /// Tooltip del botón que baja un elemento en la gestión de servicios (RF-26)
+  ///
+  /// In es, this message translates to:
+  /// **'Bajar'**
+  String get adminServicesMoveDown;
+
+  /// Tooltip del botón que oculta un elemento de la lista de precios (RF-27)
+  ///
+  /// In es, this message translates to:
+  /// **'Ocultar'**
+  String get adminServicesHide;
+
+  /// Tooltip del botón que vuelve a mostrar un elemento oculto (RF-27)
+  ///
+  /// In es, this message translates to:
+  /// **'Mostrar'**
+  String get adminServicesShow;
+
+  /// Tooltip del botón de borrar un elemento, y botón que confirma el borrado (RF-29, RF-31)
+  ///
+  /// In es, this message translates to:
+  /// **'Borrar'**
+  String get adminServicesDelete;
+
+  /// Título de la confirmación de borrado; {name} es el nombre del elemento en el idioma activo (RF-29, RF-31)
+  ///
+  /// In es, this message translates to:
+  /// **'¿Borrar «{name}»?'**
+  String adminServicesDeleteTitle(String name);
+
+  /// Texto de la confirmación de borrado (RF-29, RF-31)
+  ///
+  /// In es, this message translates to:
+  /// **'No se puede deshacer.'**
+  String get adminServicesDeleteBody;
+
+  /// Diálogo informativo al intentar borrar una categoría con elementos (RF-30)
+  ///
+  /// In es, this message translates to:
+  /// **'Esta categoría tiene servicios o adicionales. Bórralos o muévelos a otra categoría antes de borrarla.'**
+  String get adminServicesCategoryNotEmpty;
+
+  /// Botón que cierra el diálogo informativo de una categoría con elementos (RF-30)
+  ///
+  /// In es, this message translates to:
+  /// **'Entendido'**
+  String get adminServicesUnderstood;
+
+  /// Aviso cuando otra admin ya borró el elemento que se quiere cambiar
+  ///
+  /// In es, this message translates to:
+  /// **'Este elemento ya no existe.'**
+  String get adminServicesItemGone;
+
+  /// Tooltip del botón que abre el formulario de un elemento (RF-21)
+  ///
+  /// In es, this message translates to:
+  /// **'Editar'**
+  String get adminServicesEdit;
+
+  /// Botón de la gestión que abre el formulario de una categoría nueva (RF-21)
+  ///
+  /// In es, this message translates to:
+  /// **'Añadir categoría'**
+  String get adminServicesAddCategory;
+
+  /// Título del formulario de una categoría nueva
+  ///
+  /// In es, this message translates to:
+  /// **'Nueva categoría'**
+  String get adminServicesNewCategory;
+
+  /// Título del formulario de una categoría existente
+  ///
+  /// In es, this message translates to:
+  /// **'Editar categoría'**
+  String get adminServicesEditCategory;
+
+  /// Campo del nombre en español de un formulario de la gestión (RF-21)
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre en español'**
+  String get adminFieldNameEs;
+
+  /// Campo del nombre en portugués (RF-21)
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre en portugués'**
+  String get adminFieldNamePt;
+
+  /// Campo del subtítulo de una categoría en español (RF-21)
+  ///
+  /// In es, this message translates to:
+  /// **'Subtítulo en español'**
+  String get adminFieldSubtitleEs;
+
+  /// Campo del subtítulo de una categoría en portugués (RF-21)
+  ///
+  /// In es, this message translates to:
+  /// **'Subtítulo en portugués'**
+  String get adminFieldSubtitlePt;
+
+  /// Campo de la nota de una categoría en español (RF-21)
+  ///
+  /// In es, this message translates to:
+  /// **'Nota en español'**
+  String get adminFieldNoteEs;
+
+  /// Campo de la nota de una categoría en portugués (RF-21)
+  ///
+  /// In es, this message translates to:
+  /// **'Nota en portugués'**
+  String get adminFieldNotePt;
+
+  /// Error de un nombre que falta en un idioma (RF-22)
+  ///
+  /// In es, this message translates to:
+  /// **'Obligatorio'**
+  String get adminFieldRequired;
+
+  /// Error de un texto opcional escrito solo en el otro idioma (RF-23)
+  ///
+  /// In es, this message translates to:
+  /// **'Escríbelo también en este idioma'**
+  String get adminFieldMissingTranslation;
+
+  /// Error del precio (RF-24)
+  ///
+  /// In es, this message translates to:
+  /// **'Precio no válido (hasta 2 decimales)'**
+  String get adminFieldInvalidPrice;
+
+  /// Error de la duración (RF-25)
+  ///
+  /// In es, this message translates to:
+  /// **'Entre 5 y 480 minutos'**
+  String get adminFieldInvalidDuration;
+
+  /// Error de un texto demasiado largo; {max} es la longitud máxima
+  ///
+  /// In es, this message translates to:
+  /// **'Máximo {max} caracteres'**
+  String adminFieldTooLong(int max);
+
+  /// Botón que guarda un formulario de la gestión; se muestra en mayúsculas
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar'**
+  String get adminSave;
+
+  /// Botón de cada categoría que abre el formulario de un servicio nuevo (RF-21)
+  ///
+  /// In es, this message translates to:
+  /// **'Añadir servicio'**
+  String get adminServicesAddService;
+
+  /// Botón de cada categoría que abre el formulario de un adicional nuevo (RF-21)
+  ///
+  /// In es, this message translates to:
+  /// **'Añadir adicional'**
+  String get adminServicesAddAddon;
+
+  /// Título del formulario de un servicio nuevo
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo servicio'**
+  String get adminServicesNewService;
+
+  /// Título del formulario de un servicio existente
+  ///
+  /// In es, this message translates to:
+  /// **'Editar servicio'**
+  String get adminServicesEditService;
+
+  /// Título del formulario de un adicional nuevo
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo adicional'**
+  String get adminServicesNewAddon;
+
+  /// Título del formulario de un adicional existente
+  ///
+  /// In es, this message translates to:
+  /// **'Editar adicional'**
+  String get adminServicesEditAddon;
+
+  /// Campo de la descripción en español de un servicio o combo (RF-21)
+  ///
+  /// In es, this message translates to:
+  /// **'Descripción en español'**
+  String get adminFieldDescriptionEs;
+
+  /// Campo de la descripción en portugués de un servicio o combo (RF-21)
+  ///
+  /// In es, this message translates to:
+  /// **'Descripción en portugués'**
+  String get adminFieldDescriptionPt;
+
+  /// Campo del grupo de un servicio en español; vacío = sin grupo (RF-21)
+  ///
+  /// In es, this message translates to:
+  /// **'Grupo en español'**
+  String get adminFieldGroupEs;
+
+  /// Campo del grupo de un servicio en portugués (RF-21)
+  ///
+  /// In es, this message translates to:
+  /// **'Grupo en portugués'**
+  String get adminFieldGroupPt;
+
+  /// Campo del precio en reales (RF-24)
+  ///
+  /// In es, this message translates to:
+  /// **'Precio (R\$)'**
+  String get adminFieldPrice;
+
+  /// Casilla del servicio cuyo precio es «desde» (RF-21)
+  ///
+  /// In es, this message translates to:
+  /// **'Precio «desde»'**
+  String get adminFieldPriceFrom;
+
+  /// Campo de la duración en minutos de un servicio o combo (RF-25)
+  ///
+  /// In es, this message translates to:
+  /// **'Duración (minutos)'**
+  String get adminFieldDuration;
+
+  /// Desplegable de la categoría de un servicio o adicional (RF-32)
+  ///
+  /// In es, this message translates to:
+  /// **'Categoría'**
+  String get adminFieldCategory;
+
+  /// Botón de la gestión que abre el formulario de un combo nuevo (RF-21)
+  ///
+  /// In es, this message translates to:
+  /// **'Añadir combo'**
+  String get adminServicesAddCombo;
+
+  /// Título del formulario de un combo nuevo
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo combo'**
+  String get adminServicesNewCombo;
+
+  /// Título del formulario de un combo existente
+  ///
+  /// In es, this message translates to:
+  /// **'Editar combo'**
+  String get adminServicesEditCombo;
 }
 
 class _AppLocalizationsDelegate

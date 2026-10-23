@@ -1,21 +1,16 @@
 # MEMORY.md — Studio Shaddai (shaddai-app)
 
-## Estado actual (2026-10-21)
-- Se unifica `shaddai-app` (Firebase, reservas, admin) con `../shaddai-web` (landing y design system). SDD instalado (`.claude/skills/`). **Constitución** y **mapa de 10 specs** aprobados (2026-10-20).
-- **Spec 001-design-system: implementada** (2026-10-21; recorrido del autor en móvil y Chrome correcto).
-- **Spec 002-landing-web: implementada** (2026-10-21; recorrido del autor en Chrome correcto). Decisiones del autor:
-  - "Reservar" va a la reserva de la app; WhatsApp queda como contacto; contacto tiene "Reservar cita" (RF-32);
-  - botón de cuenta en la barra; en estrecho, tema e idioma van en el menú lateral (RF-15);
-  - precios fijos hasta la 004; mapa como enlace; `url_launcher` aprobado.
-- **Spec 003-navegacion-movil: implementada** (validada 2026-10-21; recorrido del autor en Android/iOS correcto). 10 tareas, 640 tests. Decisiones del autor:
-  - Inicio: presentación, galería, sobre mí y contacto con mapa;
-  - Servicios: precios, combos, catálogo y atención;
-  - fuera el contenido de ejemplo; sin WhatsApp flotante;
-  - aviso de inicio de sesión dentro de Reservas;
-  - el detalle de servicio con "Reservar" ya elegido va en las specs 004 y 005.
-  Siguiente spec del mapa: 004-servicios-firestore.
+## Estado actual (2026-10-23)
+- Se unifica `shaddai-app` (Firebase, reservas, admin) con `../shaddai-web` (landing y design system). SDD instalado (`.claude/skills/`). Constitución y mapa de 10 specs aprobados (2026-10-20).
+- **Implementadas** (con recorrido manual del autor): 001-design-system y 002-landing-web (2026-10-21), 003-navegacion-movil (2026-10-21), **004-servicios-firestore (2026-10-23)**, 16 tareas, 895 tests.
+- Decisiones de la 004 que siguen vigentes:
+  - documento único `settings/priceList`, precios en céntimos, escrituras en transacción; la admin edita desde la app (Perfil → Panel → Servicios en móvil);
+  - textos ES y PT obligatorios; detalle por servicio y combo (adicionales sin detalle), como ruta hija con `go`;
+  - sin datos: aviso + Reintentar + WhatsApp, sin precios fijos en el código; sin conexión se ven los últimos datos;
+  - `firestore.rules`: reglas de la lista de precios; para users, appointments y settings/calendar, regla provisional con sesión hasta la 009. Las reglas se comprueban a mano en la consola.
+- Siguiente spec del mapa: **005-reservas** (la duración de cada servicio se usa para los huecos; "Reservar" desde el detalle con el servicio ya elegido).
 - Requisitos comunes RC-1 a RC-4: propuesta, pendiente de revisión del autor.
-- Sin implementar: token FCM y permisos, Cloud Functions, `firestore.rules`.
+- Sin implementar: token FCM y permisos, Cloud Functions.
 
 ## Decisiones (y por qué)
 - Nombre comercial **Studio Shaddai**; marca = sello SVG de shaddai-web (`BrandLogo`, `flutter_svg` aprobado). Identificadores `com.juliangg.shaddai` sin cambiar.
@@ -27,7 +22,6 @@
 - Sin cuentas de desarrollador, política de privacidad ni fecha de publicación todavía.
 
 ## Pendientes que se resuelven en las specs
-- 004: esquema de servicios en Firestore, si la admin los edita, y vista de detalle de servicio.
 - 005: el turno no guarda el servicio elegido (`AppointmentModel`); reservar desde el detalle con el servicio ya elegido.
 - 007: Ajustes del calendario se queda cargando si `calendarSettingsProvider` no estaba cargado (`ref.read` en `initState`).
 - 010: `firebase.json` sin la entrada de Web (sí está en `firebase_options.dart`; volver a ejecutar `flutterfire configure`); `web/manifest.json` es la plantilla de Flutter; clave de Google Maps para web; nombre bajo el icono "shaddai"/"Shaddai" (Android/iOS).
@@ -35,6 +29,9 @@
 
 ## Errores a evitar
 - Las reglas de tema, colores, tests, rutas y landing están en `CLAUDE.md`: leerlas antes de tocar esas partes.
+- Cada Mac tiene su propia clave de depuración de Android: si el inicio de sesión con Google falla con `[16] Account reauth failed` / `canceled`, falta su SHA-1 en Firebase (app Android → Agregar huella digital) y hay que volver a descargar `google-services.json`. Ver la SHA-1 con el `keytool` de Android Studio (`/Applications/Android Studio.app/Contents/jbr/Contents/Home/bin/keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android`).
+- `currentUserProvider` es un `FutureProvider`: lee la ficha una vez cuando cambia la sesión. Firebase Auth avisa antes de que `AuthController` cree la ficha de una cuenta nueva, así que hay que invalidarlo después de `saveUser` (arreglado el 2026-10-22, `test/features/auth/new_user_profile_test.dart`). Si no, no se pide el WhatsApp hasta reiniciar la app. Hacerlo `StreamProvider` sobre la ficha queda para la 009.
+- `textContrastGuideline` falla con un texto pequeño dentro de un `Container` con borde ajustado (lee el borde como fondo): la etiqueta "Oculto" va sin borde. Y no leas `adminServicesControllerProvider` en `build`: crea `ConfigRepository` con Firebase real y rompe los tests; léelo al pulsar.
 - Los errores nunca se muestran en crudo: textos `.arb` sin `{error}` y el detalle a `debugPrint`. El login emite `AuthFailure`.
 - Riverpod 3: `Override` viene de `flutter_riverpod/misc.dart`. `containsSemantics` está obsoleto: usar `isSemantics`. `final x = a ?? ref.watch(p)` puede inferirse nullable: anotar el tipo.
 - Editar `.arb` como texto (añadir al final, borrar línea a línea), no con `json.dump`: quita las líneas en blanco que agrupan las claves.
@@ -46,6 +43,9 @@
 - Lo que tiene que caber con el texto grande: dejar que crezca o pase a otra fila, no reducirlo (baja de 48 px).
 - `textContrastGuideline` toma como fondo lo que tapa a medias un texto (barra superior o inferior, botón flotante): medir el contenido sin ellos (la página o la pestaña sola).
 - Elementos fijos sobre un scroll (botón flotante) en su propio `FocusTraversalGroup`.
+- go_router en Web: `push` no cambia la dirección del navegador. Para una página con dirección propia y la de debajo conservada, usar una ruta hija y `go`. Una página tapada por otra no tiene tamaño: desplazarla en el fotograma siguiente a quitar la de encima.
+- Contenido que llega de Firestore después del primer fotograma cambia la altura de la landing: lo que salta a una sección debe volver a colocarse al llegar (`LandingPage._reopenWhenPricesLoad`); los tests que montan secciones a mano necesitan un `pump()` extra.
+- Riverpod 3: al invalidar un `StreamProvider`, `.value` conserva el dato anterior mientras recarga; comprobar `isLoading` si hay que mostrar la carga (p. ej. tras "Reintentar").
 - Los tests con el router real (`pumpWebApp`, `pumpMobileApp`):
   - arrancan en la dirección pedida (`defaultRouteNameTestValue`);
   - cargan las fuentes reales;

@@ -8,6 +8,7 @@ import 'package:shaddai/features/landing/presentation/landing_page.dart';
 import 'package:shaddai/features/landing/presentation/widgets/landing_image.dart';
 import 'package:shaddai/l10n/app_localizations.dart';
 
+import '../../helpers/fake_price_list.dart';
 import '../../helpers/pump_web_app.dart';
 import '../../helpers/recording_link_launcher.dart';
 
@@ -99,7 +100,82 @@ void main() {
     });
   });
 
+  group('combos desde la base de datos (spec 004)', () {
+    testWidgets('solo los visibles, con flecha y anunciados como botón '
+        '(RF-3, RF-41, RNF-5)', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await pumpWebApp(
+        tester,
+        location: '/?section=combos',
+        priceListRepository: FakePriceListRepository(stored: testPriceList()),
+      );
+
+      expect(
+        _in(LandingSection.combos, find.text('Gel Completo')),
+        findsOneWidget,
+      );
+      expect(_in(LandingSection.combos, find.text('R\$ 120')), findsOneWidget);
+      expect(
+        _in(LandingSection.combos, find.text('Combo oculto')),
+        findsNothing,
+      );
+      expect(
+        _in(LandingSection.combos, find.byIcon(Icons.chevron_right)),
+        findsOneWidget,
+      );
+      expect(
+        tester.getSemantics(find.bySemanticsLabel('Gel Completo, R\$ 120')),
+        isSemantics(isButton: true, hasTapAction: true, hint: 'Ver detalle'),
+      );
+      semantics.dispose();
+    });
+
+    testWidgets('sin combos visibles no hay sección de combos (RF-11)', (
+      tester,
+    ) async {
+      final list = testPriceList();
+      await pumpWebApp(
+        tester,
+        priceListRepository: FakePriceListRepository(
+          stored: list.copyWith(
+            combos: [for (final c in list.combos) c.copyWith(visible: false)],
+          ),
+        ),
+      );
+
+      expect(find.text('Combos Shaddai'), findsNothing);
+      expect(find.text('Gel Completo'), findsNothing);
+    });
+
+    testWidgets('mientras carga o si falla, la sección de combos no se ve: '
+        'el aviso va en la lista de precios', (tester) async {
+      final repository = FakePriceListRepository(autoEmit: false);
+      await pumpWebApp(tester, priceListRepository: repository);
+      expect(find.text('Combos Shaddai'), findsNothing);
+
+      repository.emitError(Exception('unavailable'));
+      await tester.pump();
+      await tester.pump();
+      expect(find.text('Combos Shaddai'), findsNothing);
+      expect(find.text('REINTENTAR'), findsOneWidget);
+    });
+  });
+
   group('catálogo', () {
+    for (final (language, disclaimer) in [
+      ('es', 'Los precios vigentes son los de la lista de precios.'),
+      ('pt', 'Os preços vigentes são os da lista de preços.'),
+    ]) {
+      testWidgets('bajo el catálogo, aviso de que los precios vigentes son '
+          'los de la lista, en $language (RF-42)', (tester) async {
+        await pumpWebApp(tester, stored: {'language': language});
+        expect(
+          _in(LandingSection.catalog, find.text(disclaimer)),
+          findsOneWidget,
+        );
+      });
+    }
+
     testWidgets('las nueve páginas, cada una con su descripción en español '
         '(RNF-3)', (tester) async {
       final semantics = tester.ensureSemantics();

@@ -27,4 +27,28 @@ void main() {
     expect(File('assets/fonts/OFL-CormorantGaramond.txt').existsSync(), isTrue);
     expect(File('assets/fonts/OFL-Inter.txt').existsSync(), isTrue);
   });
+
+  test('no quedan precios fijos en el código: vienen de la base de datos '
+      '(spec 004, RF-12)', () {
+    // Un importe "R$ 30" (en Dart, también "R\$ 30") fuera de los
+    // comentarios. Los únicos permitidos están en la carga inicial y en los
+    // textos de los .arb que solo usa la carga inicial (lib/l10n).
+    final amount = RegExp(r'R\\?\$ ?\d');
+    final problems = <String>[];
+    for (final entity in Directory('lib').listSync(recursive: true)) {
+      final path = entity.path;
+      if (entity is! File || !path.endsWith('.dart')) continue;
+      if (path.startsWith('lib/l10n/') ||
+          path == 'lib/features/admin/initial_price_list.dart') {
+        continue;
+      }
+      final lines = entity.readAsLinesSync();
+      for (var i = 0; i < lines.length; i++) {
+        final code = lines[i].trimLeft();
+        if (code.startsWith('//')) continue;
+        if (amount.hasMatch(code)) problems.add('$path:${i + 1}');
+      }
+    }
+    expect(problems, isEmpty);
+  });
 }

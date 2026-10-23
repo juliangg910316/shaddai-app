@@ -70,6 +70,19 @@ class CatalogSection extends StatelessWidget {
                 ),
               ),
             ),
+            // Las páginas son imágenes fijas y pueden tener precios antiguos
+            // (spec 004, RF-42).
+            Padding(
+              padding: EdgeInsets.fromLTRB(sidePadding, 20, sidePadding, 0),
+              child: Text(
+                l10n.pricesCatalogDisclaimer,
+                style: AppText.sans(
+                  size: 13,
+                  color: brand.inkMuted,
+                  height: 1.6,
+                ),
+              ),
+            ),
           ],
         ),
       ),

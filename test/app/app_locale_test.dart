@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shaddai/core/preferences/preferences_logic.dart';
@@ -16,7 +19,41 @@ String _appText(WidgetTester tester) =>
 String _materialText(WidgetTester tester) =>
     tester.widget<Text>(find.byKey(const Key('material'))).data!;
 
+/// Textos de un `.arb`, sin las descripciones (`@…`).
+Map<String, String> _arbTexts(String path) => {
+  for (final entry
+      in (jsonDecode(File(path).readAsStringSync()) as Map<String, dynamic>)
+          .entries)
+    if (!entry.key.startsWith('@')) entry.key: entry.value as String,
+};
+
+/// Prefijos de las claves de la spec 004.
+const _spec004Prefixes = ['price', 'adminServices', 'adminField', 'adminSave'];
+
 void main() {
+  test('los textos de la spec 004 existen en español y en portugués y no '
+      'están vacíos (RNF-3, RC-1)', () {
+    final es = _arbTexts('lib/l10n/app_es.arb');
+    final pt = _arbTexts('lib/l10n/app_pt.arb');
+    final keys = es.keys
+        .where((key) => _spec004Prefixes.any(key.startsWith))
+        .toList();
+
+    // Los del formulario de combo, los últimos en llegar.
+    expect(
+      keys,
+      containsAll([
+        'adminServicesAddCombo',
+        'adminServicesNewCombo',
+        'adminServicesEditCombo',
+      ]),
+    );
+    for (final key in keys) {
+      expect(es[key]!.trim(), isNotEmpty, reason: 'es: $key');
+      expect(pt[key]?.trim(), isNotEmpty, reason: 'pt: $key');
+    }
+  });
+
   group('sin preferencia guardada (RF-9)', () {
     testWidgets('dispositivo en portugués de Brasil → portugués', (
       tester,

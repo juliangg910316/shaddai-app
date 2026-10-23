@@ -25,13 +25,22 @@ final currentUserProvider = FutureProvider<UserModel?>((ref) async {
   return await userRepo.getUser(authUser.uid);
 });
 
+void _noop() {}
+
 class AuthController extends StateNotifier<AsyncValue<void>> {
   final AuthRepository _authRepo;
   final UserRepository _userRepo;
   StreamSubscription<GoogleSignInAuthenticationEvent>? _webAuthSubscription;
 
-  AuthController(this._authRepo, this._userRepo)
-    : super(const AsyncData(null)) {
+  /// Vuelve a leer la ficha de la usuaria con sesión.
+  final void Function() _reloadCurrentUser;
+
+  AuthController(
+    this._authRepo,
+    this._userRepo, {
+    void Function()? reloadCurrentUser,
+  }) : _reloadCurrentUser = reloadCurrentUser ?? _noop,
+       super(const AsyncData(null)) {
     // Web has no imperative sign-in call: the user completes sign-in by
     // interacting with the GIS button rendered via renderButton(), and the
     // result arrives on this stream instead of a returned credential.
@@ -95,6 +104,10 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
           photoUrl: fbUser.photoURL,
         );
         await _userRepo.saveUser(newUser);
+        // La sesión se avisa antes de crear la ficha, así que
+        // `currentUserProvider` la leyó vacía: sin esto no se pide el
+        // WhatsApp hasta reiniciar la app.
+        _reloadCurrentUser();
       } else if (existingUser.isBlocked) {
         await _authRepo.signOut();
         state = AsyncError(AuthFailure.blocked, StackTrace.current);
@@ -120,5 +133,6 @@ final authControllerProvider =
       return AuthController(
         ref.read(authRepositoryProvider),
         ref.read(userRepositoryProvider),
+        reloadCurrentUser: () => ref.invalidate(currentUserProvider),
       );
     });

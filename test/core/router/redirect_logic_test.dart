@@ -88,6 +88,7 @@ void main() {
       '/admin',
       '/admin/users',
       '/admin/settings',
+      '/admin/services',
     ]) {
       test('safeNext acepta $next en móvil', () {
         expect(safeNext(next, isWeb: false), next);
@@ -114,6 +115,20 @@ void main() {
             '/?section=prices',
           );
         });
+      }
+    });
+
+    group('detalle de un servicio o combo: público (spec 004, RF-43)', () {
+      for (final session in _Session.values) {
+        for (final path in [
+          '/services/service/spa',
+          '/services/combo/full-gel',
+          '/services/service/no-existe',
+        ]) {
+          test('$path sin redirección (${session.name})', () {
+            expect(_redirect(path, isWeb: true, session: session), isNull);
+          });
+        }
       }
     });
 
@@ -258,6 +273,7 @@ void main() {
       '/admin',
       '/admin/users',
       '/admin/settings',
+      '/admin/services',
     ]) {
       test('$next se acepta', () => expect(safeNext(next, isWeb: true), next));
     }

@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -10,6 +11,7 @@ import 'core/router/app_router.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/brand_colors.dart';
 import 'core/theme/system_bars.dart';
+import 'data/firestore_cache.dart';
 import 'data/repositories/preferences_repository.dart';
 import 'features/preferences/providers/preferences_provider.dart';
 import 'firebase_options.dart';
@@ -25,6 +27,10 @@ void main() async {
   } catch (e) {
     debugPrint('Firebase ya estaba inicializado o falta configuración: $e');
   }
+
+  // En Web, la lista de precios se ve sin conexión con los datos de la última
+  // visita (spec 004, RF-40).
+  configureFirestoreCache(isWeb: kIsWeb);
 
   // Las preferencias se cargan antes de arrancar para que el primer fotograma
   // ya use el tema y el idioma guardados (RF-7, RF-12). Si el almacenamiento

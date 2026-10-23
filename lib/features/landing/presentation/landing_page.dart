@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/brand_colors.dart';
+import '../../services/logic/price_list_view_logic.dart';
+import '../../services/providers/price_list_provider.dart';
 import '../landing_section.dart';
 import '../../navigation/presentation/web_shell.dart';
 import 'landing_layout.dart';
@@ -44,6 +46,11 @@ class LandingPageState extends ConsumerState<LandingPage> {
     for (final section in LandingSection.values) section: GlobalKey(),
   };
 
+  /// Sección en la que se abrió la landing mientras la lista de precios aún
+  /// cargaba. Al llegar la lista, las secciones de abajo se desplazan: se
+  /// vuelve a saltar a ella (spec 004).
+  LandingSection? _reopenWhenPricesLoad;
+
   @override
   void initState() {
     super.initState();
@@ -60,6 +67,8 @@ class LandingPageState extends ConsumerState<LandingPage> {
   /// salta a [section] sin animación.
   void _openAt(LandingSection? section) {
     if (section == null) return;
+    _reopenWhenPricesLoad =
+        ref.read(currentPriceListProvider) is PriceListLoading ? section : null;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final sectionContext = _sectionKeys[section]?.currentContext;
       if (!mounted || sectionContext == null) return;
@@ -75,6 +84,7 @@ class LandingPageState extends ConsumerState<LandingPage> {
 
   /// Vuelve al comienzo de la landing (RF-14).
   void scrollToTop() {
+    _reopenWhenPricesLoad = null;
     if (!_scrollController.hasClients) return;
     _scrollController.animateTo(
       0,
@@ -85,6 +95,7 @@ class LandingPageState extends ConsumerState<LandingPage> {
 
   /// Desplaza la landing hasta el comienzo de [section] (RF-4, RF-16).
   void scrollToSection(LandingSection section) {
+    _reopenWhenPricesLoad = null;
     final sectionContext = _sectionKeys[section]?.currentContext;
     if (sectionContext == null) return;
     Scrollable.ensureVisible(
@@ -96,6 +107,11 @@ class LandingPageState extends ConsumerState<LandingPage> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen(currentPriceListProvider, (_, next) {
+      final section = _reopenWhenPricesLoad;
+      if (section != null && next is! PriceListLoading) _openAt(section);
+    });
+
     // En Web, las secciones van en ancho desde 900 px (spec 002); en
     // Android/iOS, que no ponen LandingLayout, siempre en estrecho.
     return LandingLayout(

@@ -1,0 +1,43 @@
+rules_version = '2';
+
+// Reglas de seguridad de Firestore de Studio Shaddai.
+//
+// - settings/priceList: definitivas (spec 004, RNF-2).
+// - users, appointments y settings/calendar: PROVISIONALES hasta la spec 009,
+//   con lo mínimo que la app necesita hoy (todo se lee y escribe con sesión).
+//
+// Lo que no aparece aquí queda denegado. Se comprueban a mano en el
+// simulador de la consola: specs/004-servicios-firestore/rules-check.md.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // La admin tiene el rol 'admin' en su ficha (se asigna a mano).
+    function isAdmin() {
+      return request.auth != null &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Lista de precios: la ve cualquiera, también sin sesión; solo la admin
+    // la crea (carga inicial) y la cambia; el documento nunca se borra.
+    match /settings/priceList {
+      allow read: if true;
+      allow create, update: if isAdmin();
+      allow delete: if false;
+    }
+
+    match /users/{userId} {
+      // PROVISIONAL hasta la spec 009: usuarias con sesión.
+      allow read, write: if request.auth != null;
+    }
+
+    match /appointments/{appointmentId} {
+      // PROVISIONAL hasta la spec 009: turnos con sesión.
+      allow read, write: if request.auth != null;
+    }
+
+    match /settings/calendar {
+      // PROVISIONAL hasta la spec 009: calendario con sesión.
+      allow read, write: if request.auth != null;
+    }
+  }
+}

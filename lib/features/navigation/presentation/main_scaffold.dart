@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../../l10n/app_localizations.dart';
 import '../providers/tab_scroll_provider.dart';
+import '../tab_tap_logic.dart';
 
 /// Estructura de Android/iOS: la pestaña activa y la barra inferior con
 /// Inicio, Servicios, Reservas y Perfil, con y sin sesión (spec 003, RF-1).
@@ -17,22 +18,38 @@ class MainScaffold extends ConsumerWidget {
   /// nombres siguen en el tooltip y en el lector de pantalla (RNF-4, D-3).
   static const _iconsOnlyTextScale = 1.3;
 
-  void _onSelected(WidgetRef ref, int index) {
-    final isActive = index == navigationShell.currentIndex;
-    if (isActive) {
-      // Tocar la pestaña activa la devuelve a su comienzo (RF-4).
-      final controller = ref.read(
-        tabScrollControllerProvider(MobileTab.values[index]),
-      );
-      if (controller.hasClients) {
-        controller.animateTo(
-          0,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
+  /// Dirección de la página principal de cada pestaña, en su orden.
+  static const _tabRoots = ['/home', '/services', '/booking', '/profile'];
+
+  void _onSelected(BuildContext context, WidgetRef ref, int index) {
+    final path = GoRouter.of(
+      context,
+    ).routerDelegate.currentConfiguration.uri.path;
+    final action = tabTapAction(
+      isActive: index == navigationShell.currentIndex,
+      isAtBranchRoot: path == _tabRoots[index],
+    );
+    switch (action) {
+      case TabTapAction.switchTab:
+        navigationShell.goBranch(index);
+      case TabTapAction.popToRoot:
+        // Con un detalle abierto, se cierra y la lista sigue donde estaba
+        // (spec 004, RF-45).
+        navigationShell.goBranch(index, initialLocation: true);
+      case TabTapAction.scrollToTop:
+        // Tocar la pestaña activa la devuelve a su comienzo (RF-4).
+        final controller = ref.read(
+          tabScrollControllerProvider(MobileTab.values[index]),
         );
-      }
+        if (controller.hasClients) {
+          controller.animateTo(
+            0,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeOut,
+          );
+        }
+        navigationShell.goBranch(index, initialLocation: true);
     }
-    navigationShell.goBranch(index, initialLocation: isActive);
   }
 
   @override
@@ -46,7 +63,7 @@ class MainScaffold extends ConsumerWidget {
       // 48 px y anuncia si está seleccionado (RF-2, RNF-1).
       bottomNavigationBar: NavigationBar(
         selectedIndex: navigationShell.currentIndex,
-        onDestinationSelected: (index) => _onSelected(ref, index),
+        onDestinationSelected: (index) => _onSelected(context, ref, index),
         labelBehavior: textScale > _iconsOnlyTextScale
             ? NavigationDestinationLabelBehavior.alwaysHide
             : NavigationDestinationLabelBehavior.alwaysShow,

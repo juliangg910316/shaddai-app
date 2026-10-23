@@ -5,21 +5,27 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shaddai/core/router/app_router.dart';
 import 'package:shaddai/data/repositories/preferences_repository.dart';
+import 'package:shaddai/data/repositories/price_list_repository.dart';
 import 'package:shaddai/features/preferences/providers/preferences_provider.dart';
+import 'package:shaddai/features/services/providers/price_list_provider.dart';
 import 'package:shaddai/l10n/app_localizations.dart';
 import 'package:shaddai/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'fake_price_list.dart';
+
 /// Monta la app real ([MyApp]) sin Firebase: el router se sustituye por
 /// [router] o, si no se pasa, por una sola ruta con [home]. Las preferencias
 /// usan un almacenamiento en memoria con los valores [stored], y [overrides]
-/// sustituye los providers que tocarían Firebase.
+/// sustituye los providers que tocarían Firebase. La lista de precios es
+/// [priceListRepository] o, si no se pasa, la de la carga inicial.
 Future<void> pumpApp(
   WidgetTester tester, {
   Map<String, Object> stored = const {},
   Widget home = const ProbePage(),
   GoRouter? router,
   List<Override> overrides = const [],
+  PriceListRepository? priceListRepository,
 }) async {
   SharedPreferences.setMockInitialValues(stored);
   final store = await SharedPreferences.getInstance();
@@ -37,6 +43,10 @@ Future<void> pumpApp(
           PreferencesRepository(store),
         ),
         goRouterProvider.overrideWithValue(appRouter),
+        priceListRepositoryProvider.overrideWithValue(
+          priceListRepository ??
+              FakePriceListRepository(stored: initialTestPriceList()),
+        ),
         ...overrides,
       ],
       child: const MyApp(),

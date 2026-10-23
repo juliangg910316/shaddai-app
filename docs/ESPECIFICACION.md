@@ -80,7 +80,7 @@ Mapa aprobado el 2026-10-20, en orden. Varias funcionalidades (reservas, perfil,
 | 001-design-system | Tema claro/oscuro, tipografía y selector de idioma | implementada (2026-10-21) |
 | 002-landing-web | Landing de una página en Web | implementada (2026-10-21) |
 | 003-navegacion-movil | Barra de navegación inferior en Android/iOS | implementada (2026-10-21) |
-| 004-servicios-firestore | Servicios y precios en Firestore, y vista de detalle de cada servicio (Web y Android/iOS) | sin empezar |
+| 004-servicios-firestore | Servicios y precios en Firestore, y vista de detalle de cada servicio (Web y Android/iOS) | implementada (2026-10-23) |
 | 005-reservas | Reserva de turnos (rediseño y servicio del turno), con "Reservar" desde el detalle de un servicio con ese servicio ya elegido | sin empezar |
 | 006-perfil | Perfil y mis turnos | sin empezar |
 | 007-admin | Panel de administración | sin empezar |

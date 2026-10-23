@@ -4,8 +4,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shaddai/core/theme/app_theme.dart';
 import 'package:shaddai/features/landing/presentation/landing_layout.dart';
 import 'package:shaddai/features/landing/presentation/sections/prices_section.dart';
+import 'package:shaddai/features/services/providers/price_list_provider.dart';
 import 'package:shaddai/l10n/app_localizations.dart';
 
+import '../../helpers/fake_price_list.dart';
 import '../../helpers/pump_web_app.dart';
 
 /// La lista de precios sola, en una ventana de 1280 px (como una tableta en
@@ -19,6 +21,11 @@ Future<void> _pumpPrices(WidgetTester tester, {bool? wide}) async {
   const prices = PricesSection();
   await tester.pumpWidget(
     ProviderScope(
+      overrides: [
+        priceListRepositoryProvider.overrideWithValue(
+          FakePriceListRepository(stored: initialTestPriceList()),
+        ),
+      ],
       child: MaterialApp(
         theme: AppTheme.light,
         locale: const Locale('es'),
@@ -34,6 +41,9 @@ Future<void> _pumpPrices(WidgetTester tester, {bool? wide}) async {
       ),
     ),
   );
+  // La lista de precios llega de la base de datos (falsa) tras el primer
+  // fotograma (spec 004).
+  await tester.pump();
 }
 
 /// Los tres primeros bloques ("01", "02" y "03"), en la misma fila.

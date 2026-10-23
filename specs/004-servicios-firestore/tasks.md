@@ -1,0 +1,333 @@
+# Tareas 004 — Servicios y precios en Firestore
+Estado: aprobada
+
+Spec: `spec.md` (aprobada) · Plan: `plan.md` (aprobado). En cada tarea, los tests se escriben primero y se ven en rojo. La tarea termina con `dart format lib test` sin cambios, `flutter analyze` sin avisos y `flutter test` en verde. Si una tarea añade textos, los añade en `app_es.arb` y `app_pt.arb` y ejecuta `flutter gen-l10n`.
+
+Salen 16 tareas, en dos bloques. El bloque A deja la app publicable por sí solo: las clientas ven los precios de la base de datos, y la admin solo puede cargar la lista inicial. El bloque B añade la edición.
+
+## Bloque A — Lista de precios y detalle desde la base de datos
+
+- [x] **T1. Modelo de la lista de precios con lectura tolerante.** RF-1 a RF-5 (datos), principio 5
+  - Tests: `test/data/models/price_list_model_test.dart`:
+    - `fromMap`/`toMap` de ida y vuelta, con categorías, servicios, adicionales y combos;
+    - `BilingualText.of('es'|'pt')`, con respaldo al otro idioma si uno está vacío;
+    - un campo que falta usa su valor por defecto (`visible` → `true`, `kind` → `service`, `durationMinutes` → 60);
+    - un elemento sin nombre en ningún idioma, o con un precio que no es un entero ≥ 0, se omite;
+    - los campos desconocidos se conservan al volver a guardar.
+  - Hecho cuando: `lib/data/models/price_list_model.dart` pasa los tests y no importa Flutter.
+  - Hecha (2026-10-22):
+    - `BilingualText`, `PriceItemKind`, `PriceItemModel`, `PriceCategoryModel`, `ComboModel` y `PriceListModel`, con `fromMap`, `toMap` y `copyWith`;
+    - los elementos inválidos se omiten y se avisa con `onInvalid` (el repositorio pasará `debugPrint` en T3, para que el modelo no importe Flutter);
+    - un adicional solo guarda sus campos propios;
+    - el precio se acepta también como decimal sin parte fraccionaria (la consola a veces lo guarda así);
+    - 19 tests;
+    - suite completa: 659 en verde.
+
+- [x] **T2. Lógica pura de lo que ve la clienta.** RF-1, RF-3, RF-4, RF-7, RF-8, RF-10, RF-11, RF-14, RF-15, RF-17, RF-18, RF-28, RF-40
+  - Tests: `test/features/services/logic/price_list_view_logic_test.dart`:
+    - la tabla de `resolvePriceListState` (documento, documento de caché, sin documento del servidor, sin documento de caché con y sin tiempo agotado, sin snapshot);
+    - `visiblePriceList`: categorías ocultas y vacías fuera, numeración "01…" sin huecos, bloques por grupo, combos ocultos fuera, `isEmpty` también si todas las categorías visibles están vacías;
+    - `findDetail`: servicio visible, servicio oculto, servicio con la categoría oculta, servicio borrado, adicional (no disponible), combo visible y combo oculto;
+    - `formatPrice` ("R$ 30", "R$ 30,50", "+R$ 15", "R$ 0", "desde R$ 110") y `formatDuration` ("45 min", "1 h", "1 h 30 min").
+  - Hecho cuando: `lib/features/services/logic/price_list_view_logic.dart` pasa los tests y no importa Flutter ni Firebase.
+  - Hecha (2026-10-22):
+    - `resolvePriceListState` (`PriceListLoading`, `PriceListUnavailable`, `PriceListReady`);
+    - `visiblePriceList` (`PublicPriceList`, `PublicCategory`, `PriceBlock`), con la numeración entre las categorías mostradas y los bloques por grupo en el idioma activo;
+    - `findDetail` (`ServiceDetail`, `ComboDetail`, `DetailNotAvailable`) y `DetailKind.fromPath`;
+    - `formatPrice`, con los miles con punto ("R$ 1.200"), y `formatDuration`;
+    - `PriceListSnapshot` va en el modelo de datos, porque lo devolverá el repositorio en T3;
+    - el único import es el modelo de datos;
+    - 32 tests;
+    - suite completa: 692 en verde.
+
+- [x] **T3. Repositorio, caché de Web y providers.** RF-6, RF-7, RF-8, RF-9, RF-40, RNF-6
+  - Tests:
+    - `test/helpers/fake_price_list.dart`: `FakePriceListRepository`, con stream controlable, `update`/`seed` en memoria, `failNext` y `testPriceList()`;
+    - `test/features/services/price_list_provider_test.dart`:
+      - un documento emitido da `Ready`;
+      - un cambio posterior se propaga sin volver a suscribirse (RF-6);
+      - sin documento de caché y sin respuesta tras el tiempo límite (sustituido por uno corto), `Unavailable`;
+      - un error del stream da `Unavailable`;
+      - `ref.invalidate` vuelve a suscribirse (RF-9);
+      - `publicPriceListProvider` y `priceDetailProvider` derivan del estado.
+  - Hecho cuando: existen `PriceListRepository` (`watch`, `update` y `seed` en transacción, con `FirebaseFirestore?` en el constructor), `configureFirestoreCache` llamada desde `main.dart`, y los providers del plan § 5. Los tests pasan con el fake.
+  - Hecha (2026-10-22):
+    - `PriceListRepository` (`lib/data/repositories/`):
+      - `watch` escucha también los cambios de metadatos, para que llegue la confirmación del servidor de un documento que no existe;
+      - `update` y `seed` usan transacciones; `seed` lanza `PriceListAlreadySeeded` y `update`, `PriceListMissing`;
+    - `configureFirestoreCache` (`lib/data/firestore_cache.dart`), llamada en `main.dart`;
+    - providers (`lib/features/services/providers/price_list_provider.dart`):
+      - `priceListRepositoryProvider` y `priceListLoadTimeoutProvider` (8 s);
+      - `priceListStateProvider` (stream con tiempo límite; un error da `Unavailable`);
+      - `currentPriceListProvider` (sin `AsyncValue`; al reintentar muestra la carga, no el error anterior);
+      - `publicPriceListProvider` y `priceDetailProvider`, que devuelven `PriceView` (cargando / no disponible / listo);
+    - `test/helpers/fake_price_list.dart`: `FakePriceListRepository` y `testPriceList()`;
+    - 15 tests;
+    - suite completa: 708 en verde.
+
+- [x] **T4. Datos de la carga inicial.** RF-36, RF-37, RNF-1 (datos), RF-12 (excepción)
+  - Tests: `test/features/admin/initial_price_list_test.dart`:
+    - 6 categorías y 3 combos, en el orden de hoy;
+    - para cada línea, los textos ES y PT son los de los `.arb` y el precio en céntimos es el de `LandingContent` de hoy (escrito como tabla en el test);
+    - Alargamientos tiene sus dos grupos, Decoración solo adicionales y Retiradas su nota con R$ 30;
+    - la duración es la que se pasa y las descripciones están vacías;
+    - todos los ids son distintos.
+  - Hecho cuando: `buildInitialPriceList` pasa los tests.
+  - Hecha (2026-10-22):
+    - `buildInitialPriceList` (`lib/features/admin/initial_price_list.dart`): 6 categorías (36 líneas) y 3 combos;
+    - los textos se leen de los `.arb` en ES y PT y los precios están en céntimos;
+    - "Mantenimiento / reaplicación · desde" se carga sin la marca "desde", como hoy;
+    - el test compara con una tabla escrita a mano de la lista actual;
+    - 10 tests;
+    - suite completa: 719 en verde.
+
+- [x] **T5. Lista de precios desde la base de datos.** RF-1, RF-2, RF-5, RF-6, RF-7, RF-8, RF-9, RF-10, RF-41, RNF-1, RNF-4, RNF-5, RNF-6
+  - Tests:
+    - `pumpWebApp` y `pumpMobileApp` aceptan `priceList` (por defecto, la lista inicial con `FakePriceListRepository`);
+    - `test/features/services/prices_section_test.dart`:
+      - pinta categorías, grupos, servicios y adicionales del fake;
+      - cambia de idioma sin recargar;
+      - un cambio emitido se ve al momento;
+      - la flecha sale solo en los servicios;
+      - el lector de pantalla anuncia "nombre, precio" como botón;
+    - `prices_section_states_test.dart`:
+      - carga con su etiqueta;
+      - error con "Reintentar" (vuelve a escuchar) y WhatsApp (`RecordingLinkLauncher`), sin el texto de la excepción;
+      - vacío con WhatsApp;
+      - con datos de caché, se muestran;
+    - `landing_hero_prices_test.dart` y `mobile_services_test.dart` siguen en verde con la lista inicial;
+    - contraste en claro y oscuro, objetivos de 48 px, y escala de texto 2,0 sin desbordes.
+  - Hecho cuando: `PricesSection` no usa `LandingContent.priceCards` y los tests de Web y de Android/iOS pasan.
+  - Hecha (2026-10-22):
+    - `PricesSection` lee `publicPriceListProvider`:
+      - filas de 3 bloques en ancho (la última fila incompleta mantiene el ancho);
+      - cada servicio es un `InkWell` de 48 px como mínimo, con flecha y `Semantics` de botón (`priceLineSemantics`);
+      - los adicionales no se pueden abrir;
+      - abre `/services/service/<id>`, ruta que llega en T7/T8;
+    - avisos compartidos (`lib/features/services/presentation/price_list_notices.dart`): carga, no disponible con "Reintentar" y WhatsApp, y vacío;
+    - textos nuevos: `pricesLoading`, `pricesLoadError`, `pricesRetry`, `pricesEmpty`, `priceFrom`, `priceDetailOpenHint` y `priceLineSemantics`;
+    - `pumpApp`, `pumpWebApp` y `pumpMobileApp` usan por defecto la lista inicial (`initialTestPriceList`); `landing_layout_scope_test` usa el fake y espera un fotograma;
+    - corrección fuera del plan: `LandingPage` abierta en una sección (`/?section=…`) mientras la lista carga vuelve a saltar a la sección cuando la lista llega, porque la lista crece y desplaza las de abajo (spec 002, RF-17/RF-29; punto 39 de la revisión QA);
+    - 18 tests nuevos; los de accesibilidad de la landing y de las pestañas (contraste, 48 px y texto al 200 %) ya recorren la lista nueva;
+    - suite completa: 738 en verde.
+
+- [x] **T6. Combos, aviso del catálogo y limpieza de los datos fijos.** RF-3, RF-11, RF-12, RF-13 (combos), RF-41, RF-42, RNF-5
+  - Tests:
+    - `landing_combos_catalog_info_test.dart` (ampliado):
+      - combos del fake con flecha y semántica de botón;
+      - sin combos visibles no hay sección;
+      - mientras carga o con error, tampoco;
+      - el aviso de RF-42 bajo el catálogo, en ES y PT;
+    - `legacy_cleanup_test.dart` (ampliado): ningún archivo de `lib/` salvo `initial_price_list.dart` contiene `R$` seguido de un número.
+  - Hecho cuando: `LandingContent` ya no tiene `priceCards`, `combos` ni sus tipos. Las claves `landingServices*` y `landingCombo1…3*` llevan la descripción "Solo para la carga inicial (spec 004)".
+  - Hecha (2026-10-22):
+    - `CombosSection` lee los combos visibles; cada uno se puede abrir (`/services/combo/<id>`, ruta en T7/T8), con flecha y `Semantics` de botón;
+    - sin combos visibles, o mientras carga o si falla, la sección no se pinta;
+    - bajo el catálogo, el aviso `pricesCatalogDisclaimer` (ES/PT);
+    - `LandingContent` ya no tiene `priceCards`, `combos`, `PriceCard`, `PriceLine`, `PriceItem`, `PriceGroup` ni `Combo`;
+    - las 54 claves `landingServices1…6*` y `landingCombo1…3*` del `.arb` español llevan la descripción "Solo para la carga inicial de la lista de precios (spec 004)";
+    - `legacy_cleanup_test`: ningún archivo de `lib/` fuera de `lib/l10n/` e `initial_price_list.dart` tiene un importe en R$ en el código (los comentarios no cuentan);
+    - `mobile_services_test` compara con la lista de importes escrita a mano, como `landing_hero_prices_test`;
+    - 7 tests nuevos;
+    - suite completa: 744 en verde.
+
+- [x] **T7. Detalle en Web.** RF-13 a RF-17, RF-43, RF-44, RNF-4, RNF-6
+  - Tests:
+    - `redirect_logic_test.dart`: `/services/service/x` y `/services/combo/x`, sin sesión y con ella, sin redirección; `/services` sigue yendo a `/?section=prices`;
+    - `test/features/services/price_detail_web_test.dart` con `pumpWebApp`:
+      - tocar un servicio abre su detalle (nombre, categoría, precio, duración, descripción y nota) y "atrás" vuelve a la landing en la misma posición;
+      - abrir un combo;
+      - abrir la dirección directamente sin sesión;
+      - "Volver a la lista de precios" desde una dirección abierta directamente;
+      - botón flotante de WhatsApp;
+      - "Reservar cita" sin sesión → login;
+      - borrar el servicio en el fake con el detalle abierto → aviso de RF-17 con su botón;
+      - id inexistente → aviso de RF-17;
+      - a 600 y a 1280 px sin desbordes;
+      - contraste en los dos temas.
+  - Hecho cuando: las rutas de Web y `PriceDetailView` pasan los tests.
+  - Hecha (2026-10-22):
+    - **cambio de D-7, aprobado por el autor:** el detalle es una ruta hija de `/` (`services/:kind/:id`) y se abre con `go`, no con `push`. Con `push`, go_router no cambia la dirección del navegador. La landing queda debajo, también al abrir el enlace directo;
+    - `PriceDetailView` (`lib/features/services/presentation/price_detail_view.dart`):
+      - muestra categoría, nombre, precio (con "desde"), duración, descripción, nota, "Reservar cita" y, en Web, "Volver a la lista de precios";
+      - estados de carga y no disponible (avisos de T5) y el aviso de RF-17;
+      - un tipo de detalle desconocido en la dirección cuenta como no disponible;
+    - `WebPriceDetailPage`: `WebAccountPage` y el botón flotante de WhatsApp en su grupo de foco;
+    - "Volver a la lista de precios" cierra el detalle y desplaza la landing a la lista en el fotograma siguiente, porque la landing tapada no tiene tamaño;
+    - textos nuevos: `priceDetailDuration`, `priceDetailBackToPrices` y `priceDetailUnavailable`;
+    - 18 tests del detalle y 15 casos nuevos de redirección;
+    - suite completa: 778 en verde.
+
+- [x] **T8. Detalle en Android/iOS y barra inferior.** RF-13 a RF-17, RF-45, RF-46, RF-47
+  - Tests:
+    - `test/features/navigation/tab_tap_logic_test.dart`: tabla de `tabTapAction`;
+    - `test/features/services/price_detail_mobile_test.dart` con `pumpMobileApp`:
+      - el detalle se abre con la barra inferior visible;
+      - tocar Servicios lo cierra y la lista sigue en su posición;
+      - un segundo toque sube al comienzo;
+      - "Ver lista de precios" en Inicio cierra el detalle y abre la lista desde el comienzo;
+      - cambiar a Perfil y volver mantiene el detalle;
+      - "Reservar cita" abre la pestaña Reservas;
+      - el aviso de RF-17 vuelve a la lista;
+    - los tests de la barra de la spec 003 siguen en verde.
+  - Hecho cuando: las rutas hijas de `/services` y `MainScaffold._onSelected` con `tabTapAction` pasan los tests.
+  - Hecha (2026-10-22):
+    - ruta hija `:kind/:id` de `/services` en la rama Servicios: `PriceDetailView` con su `AppBar` y la flecha atrás, y la barra inferior visible;
+    - `tabTapAction` (`lib/features/navigation/tab_tap_logic.dart`): `switchTab`, `popToRoot` o `scrollToTop`;
+    - `MainScaffold._onSelected` decide con la dirección actual si la pestaña está en su página principal;
+    - RF-46 y RF-47 ya se cumplían (`go('/services')` sustituye la pila de la rama; `indexedStack` la conserva), y ahora tienen tests;
+    - 4 casos de `tabTapAction` y 12 tests del detalle (texto al 200 % en ES y PT, y contraste en los dos temas);
+    - suite completa: 795 en verde.
+
+- [x] **T9. Gestión de servicios: entrada y carga inicial.** RF-19, RF-35, RF-36, RF-38, RF-39, RNF-6
+  - Tests: `test/features/admin/admin_services_seed_test.dart`:
+    - el icono "Servicios" de la cabecera del panel abre `/admin/services` (Android/iOS y Web);
+    - una no admin en Web es redirigida;
+    - sin documento: el botón de carga aparece y pide confirmación;
+    - al cancelar, no se carga nada;
+    - al confirmar, se ejecuta `seed` con la duración global del calendario del fake y se ve la lista;
+    - con documento, no hay botón;
+    - `seed` con `AlreadySeeded` no duplica nada;
+    - un fallo muestra un error con "Reintentar" y deja el fake sin datos;
+    - `safeNext` acepta `/admin/services`.
+  - Hecho cuando: existen `AdminServicesView` (estados y carga inicial, y una lista de solo lectura de categorías y combos) y `AdminServicesController.seedInitialList`, y los tests pasan.
+  - Hecha (2026-10-22):
+    - icono "Servicios" (`IconButton` con tooltip) en la cabecera del panel; se abre con `push`, como Usuarias y Ajustes, así que en Web la dirección sigue siendo `/admin`;
+    - rutas `/admin/services` en Web (`WebAccountPage`) y en Android/iOS; `safeNext` la acepta;
+    - `AdminServicesView`:
+      - carga, aviso de no disponible y la carga inicial cuando no hay ningún elemento guardado, con confirmación;
+      - aviso breve al guardar, y error con "Reintentar" si falla;
+      - lista de solo lectura de categorías, líneas y combos;
+    - `AdminServicesController.seedInitialList`: duración global del calendario (60 si no responde en 5 s); `PriceListAlreadySeeded` se da por hecho;
+    - **ajuste dentro de RF-35/RF-38:** la carga se rechaza solo si hay algún elemento guardado (`PriceListModel.hasContent`), no si el documento existe vacío. Así, si la admin borra todo, puede volver a cargar;
+    - textos nuevos: `adminServicesTitle`, `adminServicesEmpty`, `adminServicesSeed`, `adminServicesSeedConfirmTitle`, `adminServicesSeedConfirmBody`, `adminServicesSeedConfirmAction`, `adminServicesCombos`, `adminServicesSaved` y `adminServicesSaveError`;
+    - 10 tests de la gestión, 2 del modelo y 2 de `safeNext`;
+    - suite completa: 811 en verde.
+
+- [x] **T10. Reglas de seguridad de la lista de precios.** RNF-2
+  - Tests: no hay tests automáticos (A-1). Se escriben en esta tarea los pasos manuales del Rules Playground del plan § 9.
+  - Hecho cuando:
+    - existe `firestore.rules`, con `settings/priceList` (lectura pública, crear y actualizar solo la admin, borrar nunca) y la regla provisional con sesión para `users`, `appointments` y `settings/calendar`, marcada para la spec 009;
+    - `firebase.json` tiene la entrada `firestore`;
+    - el autor ha guardado una copia de las reglas de la consola, ha desplegado y ha comprobado los 6 casos y que la app sigue funcionando.
+  - Hecha (2026-10-22). El autor creó Firestore en la consola, publicó las reglas y comprobó los 6 casos del simulador y el recorrido de la app.
+    - `firestore.rules`:
+      - `settings/priceList`: lectura pública, `create`/`update` con `isAdmin()` y `delete` denegado;
+      - `users/{userId}`, `appointments/{appointmentId}` y `settings/calendar`: provisional con sesión, marcada para la spec 009;
+      - sin comodines, así que la provisional no abre la lista de precios;
+    - `firebase.json` con `"firestore": {"rules": "firestore.rules"}`;
+    - pasos manuales en `specs/004-servicios-firestore/rules-check.md`: copia previa, publicar desde la consola o con la CLI (no instalada en este Mac), los 6 casos del simulador y el recorrido de la app;
+    - `test/core/firestore_rules_test.dart` (5 tests): fija la estructura del archivo, no lo que permite cada regla;
+    - suite completa: 816 en verde.
+
+## Bloque B — Edición de la admin
+
+- [x] **T11. Lógica pura de los cambios de la admin.** RF-26, RF-27, RF-29, RF-30, RF-31, RF-32
+  - Tests: `test/features/services/logic/price_list_edit_logic_test.dart`:
+    - crear al final;
+    - editar en su sitio;
+    - cambiar de categoría (al final de la nueva);
+    - subir y bajar, sin hacer nada en los extremos;
+    - ocultar y mostrar sin perder datos;
+    - borrar un elemento;
+    - `canDeleteCategory` (`HasItems` y `Empty`), y `deleteCategory` con elementos lanza un error;
+    - un id que no existe lanza `ItemGone`.
+  - Hecho cuando: `price_list_edit_logic.dart` pasa los tests sin importar Flutter ni Firebase.
+  - Hecha (2026-10-22):
+    - `lib/features/services/logic/price_list_edit_logic.dart`, solo importa el modelo;
+    - `upsertCategory`, `upsertItem` y `upsertCombo` reciben `isNew`: con `true` el elemento va al final; con `false` se edita en su sitio, y si no existe lanza `ItemGone`. Al editar una categoría se conservan sus elementos;
+    - `moveCategory`, `moveItem` y `moveCombo`; `setCategoryVisible`, `setItemVisible` y `setComboVisible`; `deleteItem` y `deleteCombo`;
+    - `canDeleteCategory` devuelve `CategoryDeleteCheck.hasItems` o `.empty`, y `deleteCategory` con elementos lanza `CategoryNotEmpty`;
+    - 18 tests; suite completa: 835 en verde.
+
+- [x] **T12. Validaciones de los formularios.** RF-21 a RF-25
+  - Tests: `test/features/services/logic/price_list_form_logic_test.dart`:
+    - `parsePriceCents`: "30", "30,5", "30,50", "30.50", " 30 ", "", "-1", "30,505", "abc" y "100000";
+    - `parseDuration`: 4, 5, 480, 481, "45,5" y "";
+    - los validadores: nombre que falta en un idioma, nombre con solo espacios, texto opcional en un solo idioma, longitudes máximas, adicional sin duración, precio 0 válido.
+  - Hecho cuando: `price_list_form_logic.dart` pasa los tests sin importar Flutter ni Firebase.
+  - Hecha (2026-10-22):
+    - `lib/features/services/logic/price_list_form_logic.dart`, sin imports;
+    - `parsePriceCents` (máximo `maxPriceCents`, R$ 99.999,99) y `parseDuration` (de 5 a 480 minutos);
+    - `PriceForm` guarda lo escrito tal cual. `validateCategory`, `validateService`, `validateAddon` y `validateCombo` devuelven `Map<PriceFormField, PriceFormError>`, vacío si no hay errores. El campo se llama `PriceFormField` para no chocar con el `FormField` de Flutter;
+    - los errores van por idioma, `nameEs`/`namePt`, para marcar el campo exacto;
+    - 14 tests; suite completa: 850 en verde.
+
+- [x] **T13. Gestión: listado, ordenar, ocultar y borrar.** RF-20, RF-26 a RF-31, RF-33, RF-34, RNF-4, RNF-6
+  - Tests: `test/features/admin/admin_services_test.dart`:
+    - se ven también las categorías, servicios, adicionales y combos ocultos, con la etiqueta "Oculto";
+    - subir y bajar llaman a `update`, y los botones de los extremos están desactivados;
+    - ocultar y mostrar;
+    - borrar pide confirmación con el nombre, y al cancelar no se borra;
+    - una categoría con elementos muestra el diálogo informativo, sin opción de borrar;
+    - un fallo muestra un `SnackBar` de error con "Reintentar";
+    - `ItemGone` muestra su aviso;
+    - un cambio guardado muestra el `SnackBar` de confirmación;
+    - los botones tienen tooltip y 48 px, con contraste en los dos temas.
+  - Hecho cuando: `AdminServicesView` tiene todas las acciones y pasa los tests.
+  - Hecha (2026-10-22):
+    - `AdminServicesView` muestra cada categoría, servicio, adicional y combo, también los ocultos, con "Oculto". Cada fila tiene `IconButton`s con tooltip para subir, bajar, ocultar o mostrar y borrar, debajo del nombre para que quepan con el texto grande;
+    - borrar pide confirmación con el nombre. Una categoría con elementos solo muestra el diálogo informativo, con "Entendido";
+    - `AdminServicesController`: `moveCategory`, `moveItem`, `moveCombo`, `setCategoryVisible`, `setItemVisible`, `setComboVisible`, `deleteCategory`, `deleteItem` y `deleteCombo`, cada uno con `update` y la función pura de T11. Devuelven `ok`, `failed`, `itemGone` o `categoryNotEmpty`; este último sale si otra admin añadió elementos entre medias;
+    - los avisos son `SnackBar`: guardado, error con "Reintentar", "ya no existe" y categoría con elementos;
+    - **"Editar" y "Añadir…" no están todavía:** sus rutas no existen, así que cada botón llega con su formulario (T14 categoría, T15 servicio y adicional, T16 combo);
+    - textos nuevos: `adminServicesHidden`, `adminServicesMoveUp`, `adminServicesMoveDown`, `adminServicesHide`, `adminServicesShow`, `adminServicesDelete`, `adminServicesDeleteTitle`, `adminServicesDeleteBody`, `adminServicesCategoryNotEmpty`, `adminServicesUnderstood` (nuevo, botón del diálogo informativo) y `adminServicesItemGone`;
+    - 12 tests en `admin_services_test.dart`; suite completa: 863 en verde.
+
+- [x] **T14. Formulario de categoría.** RF-21, RF-22, RF-23, RF-33, RF-34
+  - Tests: `test/features/admin/admin_category_form_test.dart`:
+    - crear y editar (campos ES/PT de nombre, subtítulo y nota);
+    - los errores por campo de T12 se muestran y no se guarda;
+    - al guardar bien, `SnackBar` y vuelta a la gestión;
+    - si falla, se conserva lo escrito y sale un error con "Reintentar";
+    - "Cancelar" no guarda;
+    - escala de texto 2,0 sin desbordes.
+  - Hecho cuando: la ruta `/admin/services/category/:id` y su formulario pasan los tests en Web y en Android/iOS.
+  - Hecha (2026-10-22):
+    - `AdminCategoryFormView` en la ruta `/admin/services/category/:id`, con `new` para crear, en Web con `WebAccountPage` y en Android/iOS;
+    - en la gestión, "Editar" en cada categoría y "Añadir categoría" debajo de ellas, las dos con `push`;
+    - el formulario tiene seis campos, nombre, subtítulo y nota en ES y PT. Valida con `validateCategory` (T12) y marca el error en cada campo. Guarda los textos recortados;
+    - los campos se rellenan una sola vez, con la primera versión que llega, y un cambio posterior no pisa lo escrito. Si la categoría ya no existe, sale "Este elemento ya no existe.";
+    - `AdminServicesController.saveCategory` aplica los textos sobre la versión guardada, así que conserva sus elementos, si está oculta y sus campos desconocidos;
+    - al guardar bien, vuelve atrás; si se abrió la dirección directamente, va a `/admin/services`. Si falla, el formulario conserva lo escrito y sale el aviso con "Reintentar";
+    - nuevo `admin_services_widgets.dart`, compartido con T15 y T16: `runAdminServicesAction` (los avisos, que antes estaban dentro de la gestión), `closeAdminServicesForm`, `adminFieldErrorText`, `AdminTextField` y `AdminFormActions`;
+    - la gestión tiene 96 px de margen abajo, para que el último elemento quede por encima del aviso y se pueda pulsar;
+    - textos nuevos: `adminServicesEdit`, `adminServicesAddCategory`, `adminServicesNewCategory`, `adminServicesEditCategory`, `adminFieldNameEs/Pt`, `adminFieldSubtitleEs/Pt`, `adminFieldNoteEs/Pt`, `adminFieldRequired`, `adminFieldMissingTranslation`, `adminFieldInvalidPrice`, `adminFieldInvalidDuration`, `adminFieldTooLong` y `adminSave`. Los de precio y duración se adelantan porque el mapa de errores es exhaustivo;
+    - 9 tests en `admin_category_form_test.dart`; suite completa: 874 en verde.
+
+- [x] **T15. Formulario de servicio y de adicional.** RF-21 a RF-25, RF-32, RF-33, RF-34
+  - Tests: `test/features/admin/admin_price_item_form_test.dart`:
+    - servicio: todos los campos, "Precio «desde»" y el desplegable de categoría;
+    - adicional: sin descripción, grupo, duración ni "desde";
+    - errores de precio y de duración;
+    - cambiar de categoría lo coloca al final de la nueva;
+    - guardar bien y guardar con fallo, como en T14.
+  - Hecho cuando: la ruta `/admin/services/category/:categoryId/item/:id` y su formulario pasan los tests.
+  - Hecha (2026-10-22):
+    - `AdminPriceItemFormView` en `/admin/services/category/:categoryId/item/:id`, con `new` y `?kind=service|addon` para crear. Al editar, el tipo es el del elemento guardado;
+    - en la gestión, "Editar" en cada servicio y adicional, y "Añadir servicio" y "Añadir adicional" bajo cada categoría;
+    - campos:
+      - servicio: categoría (desplegable), nombre, descripción y grupo en ES y PT, precio, "Precio «desde»" y duración;
+      - adicional: categoría, nombre y precio;
+    - valida con `validateService` y `validateAddon` (T12). El precio guardado se muestra como "30" o "30,50" (`priceCentsToInput`). Un servicio nuevo empieza con la duración vacía, y la admin la escribe;
+    - `AdminServicesController.saveItem` aplica los cambios sobre la versión guardada, así que conserva si está oculto y sus campos desconocidos. Si cambia la categoría, el elemento va al final de la nueva (RF-32). Un adicional no guarda descripción, grupo, duración ni "desde";
+    - `newElementId` (`'new'`) pasa a `admin_services_widgets.dart`, compartido por los formularios;
+    - textos nuevos: `adminServicesAddService`, `adminServicesAddAddon`, `adminServicesNewService`, `adminServicesEditService`, `adminServicesNewAddon`, `adminServicesEditAddon`, `adminFieldDescriptionEs/Pt`, `adminFieldGroupEs/Pt`, `adminFieldPrice`, `adminFieldPriceFrom`, `adminFieldDuration` y `adminFieldCategory`;
+    - 9 tests en `admin_price_item_form_test.dart`; suite completa: 884 en verde.
+
+- [x] **T16. Formulario de combo y repaso final.** RF-21 a RF-25, RF-33, RF-34, RNF-3, RC-1
+  - Tests:
+    - `test/features/admin/admin_combo_form_test.dart`: crear, editar, errores, guardar bien y con fallo;
+    - `app_locale_test.dart` (ampliado): todas las claves nuevas existen en ES y PT y no están vacías.
+  - Hecho cuando: la ruta `/admin/services/combo/:id` pasa los tests y la suite completa está en verde.
+  - Hecha (2026-10-22):
+    - `AdminComboFormView` en `/admin/services/combo/:id`, con `new` para crear, en Web y en Android/iOS;
+    - campos: nombre y descripción en ES y PT, precio y duración, validados con `validateCombo` (T12);
+    - `AdminServicesController.saveCombo` aplica los cambios sobre la versión guardada, así que conserva si está oculto y sus campos desconocidos;
+    - en la gestión, "Editar" en cada combo. La sección Combos se ve siempre, también vacía, con "Añadir combo" al final;
+    - textos nuevos: `adminServicesAddCombo`, `adminServicesNewCombo` y `adminServicesEditCombo`;
+    - `app_locale_test.dart`: todas las claves de la spec 004 (prefijos `price`, `adminServices`, `adminField` y `adminSave`) existen en ES y PT y no están vacías;
+    - 9 tests en `admin_combo_form_test.dart` y 1 en `app_locale_test.dart`; suite completa: 895 en verde.
+
+## Decisión sobre el tamaño
+Son 16 tareas, más de las 10 que recomienda la skill. El autor decidió el 2026-10-22 mantener una sola spec: los dos bloques se implementan seguidos y la spec se valida al terminar el bloque B.
