@@ -73,7 +73,7 @@
 
 Cada funcionalidad se define con `/sdd-spec NNN-nombre <idea>` y se lista aquí.
 
-Mapa aprobado el 2026-10-20, en orden. Varias funcionalidades (reservas, perfil, admin) ya existen en el código: su plan parte de lo que hay.
+Mapa aprobado el 2026-10-20, en orden. El 2026-10-24 el autor dividió las reservas en 005, 006-editar-turno y 007-reserva-admin, añadió 008-agenda-admin y las siguientes se renumeraron. Las specs 001 a 004 citan la numeración original (perfil 006, admin 007, push 008, reglas 009, publicación 010). Varias funcionalidades (reservas, perfil, admin) ya existen en el código: su plan parte de lo que hay.
 
 | Spec | Nombre | Estado |
 | --- | --- | --- |
@@ -81,9 +81,12 @@ Mapa aprobado el 2026-10-20, en orden. Varias funcionalidades (reservas, perfil,
 | 002-landing-web | Landing de una página en Web | implementada (2026-10-21) |
 | 003-navegacion-movil | Barra de navegación inferior en Android/iOS | implementada (2026-10-21) |
 | 004-servicios-firestore | Servicios y precios en Firestore, y vista de detalle de cada servicio (Web y Android/iOS) | implementada (2026-10-23) |
-| 005-reservas | Reserva de turnos (rediseño y servicio del turno), con "Reservar" desde el detalle de un servicio con ese servicio ya elegido | sin empezar |
-| 006-perfil | Perfil y mis turnos | sin empezar |
-| 007-admin | Panel de administración | sin empezar |
-| 008-notificaciones-push | Aviso push a la admin con cada cita nueva | sin empezar |
-| 009-reglas-seguridad | Reglas de seguridad de Firestore | sin empezar |
-| 010-publicacion | Publicación en tiendas y web en Hostinger | sin empezar |
+| 005-reservas | Reserva de la clienta: una vista con fecha, hora y servicio de Firestore (con adicionales), un turno activo, "Reservar" desde el detalle con el servicio elegido, hora de Curitiba y reglas de seguridad de turnos y usuarias | spec en borrador (2026-10-24, tras la revisión QA) |
+| 006-editar-turno | La clienta edita su turno activo (día, hora, servicio) fuera del margen de edición; vuelve a esperar confirmación | spec en borrador (2026-10-24) |
+| 007-reserva-admin | La admin reserva para una clienta con cuenta o una persona sin cuenta (nombre y WhatsApp) | spec en borrador (2026-10-24) |
+| 008-agenda-admin | Agenda de la admin: cerrar franjas de horas o días enteros (descanso, enfermedad), editar cualquier turno (día, hora, servicio y clienta) y cambiar el margen de edición | sin empezar |
+| 009-perfil | Perfil y mis turnos (incluido cancelar el turno) | sin empezar |
+| 010-admin | Panel de administración | sin empezar |
+| 011-notificaciones-push | Aviso push a la admin con cada cita nueva | sin empezar |
+| 012-reglas-seguridad | Reglas de seguridad de Firestore (lo que no cubren las specs anteriores, como solapes y un turno activo en el servidor) | sin empezar |
+| 013-publicacion | Publicación en tiendas y web en Hostinger | sin empezar |

@@ -3,20 +3,20 @@ description: "A new Flutter project."
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.12.2
+  sdk: ^3.13.7
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.8
-  firebase_core: ^4.13.0
-  firebase_auth: ^6.5.7
-  cloud_firestore: ^6.8.0
-  firebase_messaging: ^16.5.0
-  google_maps_flutter: ^2.18.0
+  cupertino_icons: ^2.0.0
+  firebase_core: ^5.1.0
+  firebase_auth: ^7.0.1
+  cloud_firestore: ^7.1.0
+  firebase_messaging: ^17.0.1
+  google_maps_flutter: ^2.19.0
   google_sign_in: ^7.2.0
   google_sign_in_web: ^1.1.3
   flutter_riverpod: ^3.4.2
-  go_router: ^17.5.0
+  go_router: ^18.1.1
   table_calendar: ^3.2.1
   intl: ^0.20.2
   flutter_localizations:
@@ -32,14 +32,14 @@ dependency_overrides:
   # ("Storage ... is already registered") hit by the latest
   # google_maps_flutter_android/google_sign_in_android Gradle scripts.
   # Remove once upstream ships a fix.
-  google_maps_flutter_android: 2.19.6
-  google_sign_in_android: 7.2.0
+  google_maps_flutter_android: 2.21.0
+  google_sign_in_android: 7.2.18
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
-  build_runner: ^2.15.1
+  build_runner: ^2.17.1
 
 flutter:
   generate: true
@@ -56,7 +56,6 @@ flutter:
   - assets/images/landing/
   - assets/images/landing/catalogo/
   - assets/images/landing/galeria/
-
   # Tipografías de la identidad Shaddai, incluidas en la app (spec 001, RNF-5):
   # Cormorant Garamond para títulos, Inter para la UI.
   # Ambas son variables (eje wght), Flutter interpola los pesos.

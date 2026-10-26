@@ -82,7 +82,7 @@ All redirect rules live in the pure `resolveRedirect` (`lib/core/router/redirect
 
 Both return `null` while `currentUserProvider.isLoading`, to avoid redirecting on incomplete data. Preserve that guard when editing.
 
-Admin routes are only cosmetically guarded (hidden entry points, plus the Web redirect above). Real enforcement is expected to live in Firestore security rules (spec 009, see `.ia/technical_architecture.md`). Treat any client-side role check as cosmetic.
+Admin routes are only cosmetically guarded (hidden entry points, plus the Web redirect above). Real enforcement is expected to live in Firestore security rules (spec 012, see `.ia/technical_architecture.md`). Treat any client-side role check as cosmetic.
 
 ### Web landing (also Inicio and Servicios on mobile)
 

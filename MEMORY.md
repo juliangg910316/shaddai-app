@@ -7,8 +7,10 @@
   - documento único `settings/priceList`, precios en céntimos, escrituras en transacción; la admin edita desde la app (Perfil → Panel → Servicios en móvil);
   - textos ES y PT obligatorios; detalle por servicio y combo (adicionales sin detalle), como ruta hija con `go`;
   - sin datos: aviso + Reintentar + WhatsApp, sin precios fijos en el código; sin conexión se ven los últimos datos;
-  - `firestore.rules`: reglas de la lista de precios; para users, appointments y settings/calendar, regla provisional con sesión hasta la 009. Las reglas se comprueban a mano en la consola.
-- Siguiente spec del mapa: **005-reservas** (la duración de cada servicio se usa para los huecos; "Reservar" desde el detalle con el servicio ya elegido).
+  - `firestore.rules`: reglas de la lista de precios; para users, appointments y settings/calendar, regla provisional con sesión hasta la 012. Las reglas se comprueban a mano en la consola.
+- **Reservas divididas (2026-10-24, decisión del autor), las tres en borrador tras la revisión QA**: 005-reservas (clienta + reglas de turnos/usuarias), 006-editar-turno, 007-reserva-admin. Mapa: 008 agenda admin, 009 perfil, 010 admin, 011 push, 012 reglas, 013 publicación (las specs 001-004 citan la numeración original). Siguiente: aprobar las tres specs y luego /sdd-plan 005-reservas.
+- Decisiones clave de reservas: una vista (calendario, horas cada 30 min fijas, servicios desactivados si no caben, "Agendar turno" siempre activo); 1 turno activo y 60 días (admin 365); todo en hora de Curitiba; las clientas solo ven inicio/fin de turnos ajenos; margen de edición global (0 por defecto); WhatsApp comparado por dígitos sin 55.
+- Pendiente: "spec 009" → 012 en comentarios de `firestore.rules`, `redirect_logic.dart` y `test/core/firestore_rules_test.dart` (refactor sin cambio de comportamiento).
 - Requisitos comunes RC-1 a RC-4: propuesta, pendiente de revisión del autor.
 - Sin implementar: token FCM y permisos, Cloud Functions.
 
@@ -23,8 +25,8 @@
 
 ## Pendientes que se resuelven en las specs
 - 005: el turno no guarda el servicio elegido (`AppointmentModel`); reservar desde el detalle con el servicio ya elegido.
-- 007: Ajustes del calendario se queda cargando si `calendarSettingsProvider` no estaba cargado (`ref.read` en `initState`).
-- 010: `firebase.json` sin la entrada de Web (sí está en `firebase_options.dart`; volver a ejecutar `flutterfire configure`); `web/manifest.json` es la plantilla de Flutter; clave de Google Maps para web; nombre bajo el icono "shaddai"/"Shaddai" (Android/iOS).
+- 010: Ajustes del calendario se queda cargando si `calendarSettingsProvider` no estaba cargado (`ref.read` en `initState`).
+- 013: `firebase.json` sin la entrada de Web (sí está en `firebase_options.dart`; volver a ejecutar `flutterfire configure`); `web/manifest.json` es la plantilla de Flutter; clave de Google Maps para web; nombre bajo el icono "shaddai"/"Shaddai" (Android/iOS).
 - Sin spec asignada: claves `.arb` sin uso `adminTab` y `selectedOption`. `AuthRepository.signInWithGoogle` devuelve `null` también ante errores de Google, y no se ve ningún aviso.
 
 ## Errores a evitar
