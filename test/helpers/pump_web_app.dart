@@ -18,7 +18,7 @@ import 'package:shaddai/data/repositories/user_repository.dart';
 import 'package:shaddai/features/auth/providers/auth_provider.dart';
 import 'package:shaddai/features/home/presentation/google_map_container.dart';
 import 'package:shaddai/features/preferences/providers/preferences_provider.dart';
-import 'package:shaddai/features/profile/providers/profile_provider.dart';
+import 'package:shaddai/features/booking/providers/booking_provider.dart';
 import 'package:shaddai/features/services/providers/price_list_provider.dart';
 import 'package:shaddai/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -235,11 +235,11 @@ Future<FakeWebSession> _pumpRealApp(
           userRepository ?? _SessionUserRepository(webSession),
         ),
         authStateProvider.overrideWith((ref) => webSession.authState()),
-        currentUserProvider.overrideWith((ref) async {
+        currentUserProvider.overrideWith((ref) {
           ref.watch(authStateProvider);
-          return webSession.user;
+          return Stream.value(webSession.user);
         }),
-        clientAppointmentsProvider.overrideWith(
+        myAppointmentsProvider.overrideWith(
           (ref) => Stream.value(const <AppointmentModel>[]),
         ),
         priceListRepositoryProvider.overrideWithValue(

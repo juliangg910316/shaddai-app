@@ -12,7 +12,6 @@ import 'package:shaddai/features/auth/providers/auth_provider.dart';
 import 'package:shaddai/features/booking/presentation/booking_view.dart';
 import 'package:shaddai/features/booking/providers/booking_provider.dart';
 import 'package:shaddai/features/profile/presentation/profile_view.dart';
-import 'package:shaddai/features/profile/providers/profile_provider.dart';
 
 import '../../helpers/fake_auth.dart';
 import '../../helpers/fake_session.dart';
@@ -215,10 +214,8 @@ void main() {
         stored: {'language': 'es'},
         home: const ProfileView(),
         overrides: [
-          currentUserProvider.overrideWith((ref) async => testClient),
-          clientAppointmentsProvider.overrideWith(
-            (ref) => Stream.error(technical),
-          ),
+          currentUserProvider.overrideWith((ref) => Stream.value(testClient)),
+          myAppointmentsProvider.overrideWith((ref) => Stream.error(technical)),
         ],
       );
       await tester.pumpAndSettle();
@@ -236,7 +233,7 @@ void main() {
         stored: {'language': 'es'},
         home: const BookingView(),
         overrides: [
-          currentUserProvider.overrideWith((ref) async => testClient),
+          currentUserProvider.overrideWith((ref) => Stream.value(testClient)),
           availableSlotsProvider.overrideWithValue(
             AsyncError(technical, StackTrace.empty),
           ),
@@ -261,7 +258,7 @@ void main() {
         stored: {'language': 'es'},
         home: const BookingView(),
         overrides: [
-          currentUserProvider.overrideWith((ref) async => testClient),
+          currentUserProvider.overrideWith((ref) => Stream.value(testClient)),
           calendarSettingsProvider.overrideWith(
             (ref) => Stream.value(CalendarSettingsModel.defaultSettings()),
           ),

@@ -16,6 +16,14 @@ class UserRepository {
     return null;
   }
 
+  /// La ficha de [uid] y cada cambio, o `null` si no existe (spec 005,
+  /// RF-38).
+  Stream<UserModel?> watchUser(String uid) =>
+      _firestore.collection('users').doc(uid).snapshots().map((doc) {
+        final data = doc.data();
+        return doc.exists && data != null ? UserModel.fromMap(data, uid) : null;
+      });
+
   Future<void> saveUser(UserModel user) async {
     await _firestore
         .collection('users')

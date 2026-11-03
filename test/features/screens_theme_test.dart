@@ -17,7 +17,6 @@ import 'package:shaddai/features/admin/providers/admin_provider.dart';
 import 'package:shaddai/features/booking/providers/booking_provider.dart';
 import 'package:shaddai/features/home/presentation/home_view.dart';
 import 'package:shaddai/features/profile/presentation/profile_view.dart';
-import 'package:shaddai/features/profile/providers/profile_provider.dart';
 import 'package:shaddai/features/services/presentation/services_view.dart';
 
 import '../helpers/fake_auth.dart';
@@ -157,8 +156,8 @@ final _screens = <_Screen>[
     'Perfil con error al cargar los turnos',
     () => const ProfileView(),
     overrides: [
-      currentUserProvider.overrideWith((ref) async => testClient),
-      clientAppointmentsProvider.overrideWith(
+      currentUserProvider.overrideWith((ref) => Stream.value(testClient)),
+      myAppointmentsProvider.overrideWith(
         (ref) => Stream.error(Exception('permission-denied')),
       ),
     ],

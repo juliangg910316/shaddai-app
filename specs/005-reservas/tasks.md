@@ -132,7 +132,7 @@ La vista antigua y sus providers (`availableSlotsProvider`, `selectedDateProvide
     - 27 tests;
     - suite completa: 1043 en verde.
 
-- [ ] **T6. Modelos y repositorios.** RF-6, RF-27, RF-28, RF-31, RF-51, RF-56
+- [x] **T6. Modelos y repositorios.** RF-6, RF-27, RF-28, RF-31, RF-51, RF-56
   - Tests:
     - `test/data/models/appointment_model_test.dart`: ida y vuelta con `booked`, un turno sin `booked`, y `DateTime` en `fromMap`/`toMap`;
     - `test/data/models/busy_slot_model_test.dart`.
@@ -148,8 +148,25 @@ La vista antigua y sus providers (`availableSlotsProvider`, `selectedDateProvide
     - `UserRepository.watchUser`.
     - Los repositorios no tienen tests propios, como en la 004: no hay un Firestore falso. Se prueban a través de los fakes y en el recorrido manual.
   - Hecho cuando: los tests de los modelos pasan, `grep cloud_firestore lib/data/models` no encuentra nada y `flutter analyze` está limpio.
+  - Hecha (2026-11-03):
+    - `AppointmentModel`:
+      - sin `cloud_firestore`, con fechas `DateTime`;
+      - `booked` opcional (`null` si falta o no se puede leer);
+      - una fecha que falta se lee como 1970-01-01 UTC, en lugar de romper la lectura;
+    - `BusySlot`: solo `start`/`end`; se lee como `null` sin alguno de los dos o con el fin no posterior al inicio;
+    - `lib/data/firestore_dates.dart` (nuevo): `decodeDates`/`encodeDates`, la conversión `Timestamp` ↔ `DateTime` de primer nivel. Va en su propio archivo para poder probarla sin Firebase real;
+      - `decodeDates` da **hora local**, como `Timestamp.toDate()` hasta ahora. Así Perfil y la lista de la admin siguen mostrando las mismas horas hasta que pasen a hora del salón (T11, T16);
+    - `BookingRepository`:
+      - `createAppointment`: lote con el turno y su turno ocupado, y límite `saveTimeout` (15 s; se puede cambiar en el constructor);
+      - `watchBusySlots(from, to)`;
+      - `fetchBookingCheck(clientId, from, to)`: `Source.server`, devuelve `BookingCheckData` (turnos ocupados y mis turnos). Mis turnos se leen sin `orderBy`, así que no necesitan índice;
+      - `updateAppointmentStatus('cancelled')`: lote que borra el turno ocupado;
+    - `UserRepository.watchUser`;
+    - `getActiveAppointmentsForDate` se queda hasta T17, porque la vista antigua todavía lo usa (las tareas lo borran allí);
+    - 13 tests;
+    - suite completa: 1056 en verde.
 
-- [ ] **T7. La ficha de la usuaria en vivo.** RF-38, RF-58
+- [x] **T7. La ficha de la usuaria en vivo.** RF-38, RF-58
   - Tests:
     - `test/features/auth/current_user_live_test.dart`: un cambio de `isBlocked` o de `role` en la ficha llega a `currentUserProvider` sin invalidarlo;
     - la ficha nueva tras el primer inicio de sesión llega sola (`new_user_profile_test` sigue en verde).
@@ -157,8 +174,18 @@ La vista antigua y sus providers (`availableSlotsProvider`, `selectedDateProvide
     - `currentUserProvider` pasa a `StreamProvider` sobre `watchUser`;
     - se adaptan `fake_session.sessionOverrides`, `pump_web_app` y los tests que lo sobreescriben (`error_messages_test`, `screens_theme_test`, `new_user_profile_test` y los de reserva).
   - Hecho cuando: toda la suite pasa sin más cambios de comportamiento y las redirecciones siguen esperando con `isLoading`.
+  - Hecha (2026-11-03):
+    - `currentUserProvider` es un `StreamProvider` sobre `UserRepository.watchUser`. Sin sesión, `Stream.value(null)`;
+    - la invalidación tras crear la ficha (`AuthController`) y tras guardar el WhatsApp se mantiene, como dice el plan: es inofensiva;
+    - las redirecciones no cambian: siguen esperando con `isLoading`, y `resolveRedirect` no se toca;
+    - tests adaptados:
+      - `FakeUserRepository.watchUser` (`stored` o `error`);
+      - `_MemoryUserRepository.watchUser` en `new_user_profile_test`, que avisa al guardar;
+      - las sobrescrituras pasan a `Stream.value(...)` en `fake_session`, `pump_web_app`, `screens_theme_test` y `error_messages_test`;
+    - `current_user_live_test.dart`: 6 tests (escucha la ficha de la cuenta, bloqueo y rol en vivo sin volver a suscribirse, ficha creada después, cierre de sesión, error);
+    - suite completa: 1062 en verde.
 
-- [ ] **T8. Providers de lectura y fakes.** RF-1, RF-5, RF-6, RF-9, RF-33, RF-35, RF-43, RF-47 a RF-49
+- [x] **T8. Providers de lectura y fakes.** RF-1, RF-5, RF-6, RF-9, RF-33, RF-35, RF-43, RF-47 a RF-49
   - Tests: `test/features/booking/booking_providers_test.dart` (`ProviderContainer`):
     - `busySlotsProvider` pide la ventana de hoy y se actualiza al cambiar los datos;
     - `bookableCatalogProvider` refleja la carga, el error y los datos de la lista de precios;
@@ -170,8 +197,25 @@ La vista antigua y sus providers (`availableSlotsProvider`, `selectedDateProvide
     - Perfil pasa de `clientAppointmentsProvider` a `myAppointmentsProvider`;
     - `test/helpers/fake_booking.dart` (`FakeBookingRepository` con `StreamController`, comprobación previa y errores programables) y `bookingOverrides` nuevo.
   - Hecho cuando: los tests pasan y Perfil sigue mostrando los turnos (`profile_dates_test`, `web_profile_test`).
+  - Hecha (2026-11-03):
+    - providers nuevos en `booking_provider.dart`, junto a los antiguos, que siguen hasta T17:
+      - `clockProvider` y `salonNowProvider`: da un valor al empezar y otro cada 30 s;
+      - `deviceUtcOffsetProvider`;
+      - `busySlotsProvider`: solo vuelve a pedir la ventana cuando cambia el día del salón, gracias a `select`; antes del primer valor usa el día del reloj, para no pedirla dos veces;
+      - `busyRangesProvider` (añadido, el plan no lo nombra): los turnos ocupados en hora del salón, que es lo que recibe la lógica;
+      - `bookableCatalogProvider`;
+      - `myAppointmentsProvider`: escucha solo el `uid`, así que un cambio en la ficha en vivo (T7) no vuelve a pedir los turnos;
+      - `bookingScreenProvider`;
+    - Perfil usa `myAppointmentsProvider`. Se borra `lib/features/profile/providers/profile_provider.dart` (`clientAppointmentsProvider`) y se adaptan las sobrescrituras de los tests;
+    - `test/helpers/fake_booking.dart`: `FakeBookingRepository`:
+      - turnos ocupados y mis turnos en vivo (`emitBusy`, `emitMine`, `failBusy`, `failMine`);
+      - registra las ventanas y las clientas pedidas;
+      - comprobación previa y guardado programables;
+    - `bookingDataOverrides` en `fake_session.dart`, el `bookingOverrides` nuevo. El antiguo sigue para la vista antigua. Fija "ahora" (`bookingTestNow`, martes 10/11/2026 a las 7:00 en Curitiba) sin el temporizador de 30 s, y fija la zona del dispositivo;
+    - 21 tests en `booking_providers_test.dart`;
+    - suite completa: 1082 en verde, con `profile_dates_test` y `web_profile_test`.
 
-- [ ] **T9. Controladores de lo elegido y del guardado.** RF-1, RF-8, RF-9, RF-12 a RF-21, RF-26 a RF-31, RF-36, RF-40, RF-43, RF-44
+- [x] **T9. Controladores de lo elegido y del guardado.** RF-1, RF-8, RF-9, RF-12 a RF-21, RF-26 a RF-31, RF-36, RF-40, RF-43, RF-44
   - Tests: `test/features/booking/booking_controllers_test.dart`:
     - `BookingSelectionController`:
       - empieza con el día de `initialDay`;
@@ -184,6 +228,18 @@ La vista antigua y sus providers (`availableSlotsProvider`, `selectedDateProvide
       - devuelve `slotTaken`, `doesNotFit` y `alreadyActive` sin guardar;
       - `failed` si la comprobación previa o el guardado fallan, o si se agota el tiempo.
   - Hecho cuando: los tests pasan con los fakes de T8.
+  - Hecha (2026-11-03):
+    - en `booking_provider.dart`:
+      - `bookingSelectionProvider` (`Notifier`, no `autoDispose`) con `BookingSelectionState{selection, notices}`;
+      - escucha catálogo, ajustes, ocupados y "ahora", y aplica `reconcile`;
+      - los avisos se acumulan hasta `consumeNotices()`;
+      - además, `dropSlot()` (RF-29, RF-30) y `clear()` (tras guardar, conserva el día);
+    - `bookingSubmitProvider` → `BookingSubmitter.confirm()` con los cinco resultados del plan:
+      - una selección incompleta (sin hora, sin servicio, o sin ficha o ajustes aún) devuelve `failed` sin pedir nada; el botón ya está desactivado (RF-24);
+      - la comprobación cubre el día del salón de la hora elegida;
+      - el guardado usa `saveTimeout` del repositorio;
+    - las funciones puras con el mismo nombre que los métodos se importan con el prefijo `pick`;
+    - 21 tests; suite completa, 1103 en verde.
 
 ## Bloque B — Vista de reserva y rutas
 

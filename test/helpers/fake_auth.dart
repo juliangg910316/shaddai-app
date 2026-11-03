@@ -67,6 +67,11 @@ class FakeUserRepository implements UserRepository {
     return stored;
   }
 
+  /// La ficha en vivo: [stored], o [error].
+  @override
+  Stream<UserModel?> watchUser(String uid) =>
+      error != null ? Stream.error(error!) : Stream.value(stored);
+
   @override
   Future<void> saveUser(UserModel user) async => saved.add(user);
 
