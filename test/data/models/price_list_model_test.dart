@@ -268,9 +268,11 @@ void main() {
 
   group('copyWith', () {
     test('de un servicio cambia solo lo indicado', () {
-      final item = PriceListModel.fromMap(
-        fullDocument(),
-      ).categories.single.items.first;
+      final item = PriceListModel.fromMap(fullDocument())
+          .categories
+          .single
+          .items
+          .first;
       final changed = item.copyWith(priceCents: 6000, visible: false);
 
       expect(changed.priceCents, 6000);

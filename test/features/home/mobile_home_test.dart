@@ -90,9 +90,8 @@ void main() {
   testWidgets('"Ver lista de precios" abre Servicios desde su comienzo '
       '(RF-7)', (tester) async {
     await pumpMobileApp(tester, location: '/services');
-    final services = appContainer(
-      tester,
-    ).read(tabScrollControllerProvider(MobileTab.services));
+    final services = appContainer(tester)
+        .read(tabScrollControllerProvider(MobileTab.services));
     if (services.hasClients) services.jumpTo(200);
     await tester.tap(find.text('Inicio'));
     await settleWeb(tester);

@@ -21,9 +21,9 @@ String _materialText(WidgetTester tester) =>
 
 /// Textos de un `.arb`, sin las descripciones (`@…`).
 Map<String, String> _arbTexts(String path) => {
-  for (final entry
-      in (jsonDecode(File(path).readAsStringSync()) as Map<String, dynamic>)
-          .entries)
+  for (final entry in (jsonDecode(
+    File(path).readAsStringSync(),
+  ) as Map<String, dynamic>).entries)
     if (!entry.key.startsWith('@')) entry.key: entry.value as String,
 };
 
@@ -105,9 +105,9 @@ void main() {
     await pumpApp(tester);
     expect(_materialText(tester), 'ACEPTAR');
 
-    await appContainer(
-      tester,
-    ).read(languagePreferenceProvider.notifier).select(AppLanguage.pt);
+    await appContainer(tester)
+        .read(languagePreferenceProvider.notifier)
+        .select(AppLanguage.pt);
     await tester.pump();
 
     expect(_appText(tester), 'Início');
@@ -142,9 +142,9 @@ void main() {
     await pumpApp(tester);
     await tester.enterText(find.byKey(const Key('field')), 'Ana');
 
-    await appContainer(
-      tester,
-    ).read(languagePreferenceProvider.notifier).select(AppLanguage.pt);
+    await appContainer(tester)
+        .read(languagePreferenceProvider.notifier)
+        .select(AppLanguage.pt);
     await tester.pump();
 
     expect(find.text('Ana'), findsOneWidget);

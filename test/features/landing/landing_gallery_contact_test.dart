@@ -288,9 +288,11 @@ void main() {
       overrides: [
         externalLinkLauncherProvider.overrideWithValue(
           externalLinkLauncher(
-            launch:
-                (url, {mode = LaunchMode.platformDefault, webOnlyWindowName}) =>
-                    throw Exception('pestaña bloqueada'),
+            launch: (
+              url, {
+              mode = LaunchMode.platformDefault,
+              webOnlyWindowName,
+            }) => throw Exception('pestaña bloqueada'),
           ),
         ),
       ],

@@ -140,9 +140,8 @@ class _CatalogPage extends StatelessWidget {
               top: 8,
               right: 8,
               child: IconButton.filled(
-                tooltip: MaterialLocalizations.of(
-                  dialogContext,
-                ).closeButtonTooltip,
+                tooltip: MaterialLocalizations.of(dialogContext)
+                    .closeButtonTooltip,
                 onPressed: () => Navigator.of(dialogContext).pop(),
                 style: IconButton.styleFrom(
                   backgroundColor: brand.surface,

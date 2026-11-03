@@ -29,9 +29,9 @@ void main() {
 
   test('existe firestore.rules y firebase.json lo usa', () {
     expect(rulesFile.existsSync(), isTrue);
-    final firebase =
-        jsonDecode(File('firebase.json').readAsStringSync())
-            as Map<String, dynamic>;
+    final firebase = jsonDecode(
+      File('firebase.json').readAsStringSync(),
+    ) as Map<String, dynamic>;
     expect((firebase['firestore'] as Map)['rules'], 'firestore.rules');
   });
 

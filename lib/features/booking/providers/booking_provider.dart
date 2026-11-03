@@ -1,10 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+
 import '../../../data/models/appointment_model.dart';
 import '../../../data/models/calendar_settings_model.dart';
 import '../../../data/repositories/booking_repository.dart';
 import '../../../data/repositories/config_repository.dart';
 import '../../../core/utils/weekday_key.dart';
+
 import 'package:intl/intl.dart';
 
 final bookingRepositoryProvider = Provider((ref) => BookingRepository());

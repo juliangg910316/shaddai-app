@@ -6,12 +6,11 @@ import 'package:url_launcher/url_launcher.dart';
 typedef ExternalLinkLauncher = Future<void> Function(Uri url);
 
 /// Firma de `launchUrl`, para poder sustituirla en los tests.
-typedef LaunchUrl =
-    Future<bool> Function(
-      Uri url, {
-      LaunchMode mode,
-      String? webOnlyWindowName,
-    });
+typedef LaunchUrl = Future<bool> Function(
+  Uri url, {
+  LaunchMode mode,
+  String? webOnlyWindowName,
+});
 
 /// Esquemas que abre el sistema (llamada, correo) sin salir de la página.
 const _sameTabSchemes = {'tel', 'mailto'};

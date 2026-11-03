@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
+
 import '../../../core/platform/platform_provider.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/brand_colors.dart';
@@ -13,7 +14,9 @@ import '../providers/booking_provider.dart';
 import 'booking_sign_in_prompt.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../../data/models/appointment_model.dart';
+
 import 'package:uuid/uuid.dart';
+
 import '../../navigation/providers/tab_scroll_provider.dart';
 
 /// Opciones del paso "1 · Servicio". Por ahora son fijas y solo decorativas:
@@ -354,9 +357,8 @@ class _BookingViewState extends ConsumerState<BookingView> {
                       label: _selectedSlot == null
                           ? l10n.chooseTimeSlotAction
                           : l10n.confirmAtTimeAction(
-                              DateFormat.Hm(
-                                l10n.localeName,
-                              ).format(_selectedSlot!),
+                              DateFormat.Hm(l10n.localeName)
+                                  .format(_selectedSlot!),
                             ),
                       onPressed: _selectedSlot == null
                           ? null
