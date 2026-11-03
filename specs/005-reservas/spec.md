@@ -1,5 +1,5 @@
 # Spec 005 — Reservas
-Estado: borrador
+Estado: aprobada
 
 ## Contexto y objetivo
 La reserva ofrece hoy tres opciones fijas (Clásica, Semipermanente, Acrílico), que no son la lista de precios real y no se guardan en el turno. Todos los turnos duran lo mismo, la duración global del calendario, aunque cada servicio tiene ya su propia duración (spec 004). Desde el detalle de un servicio, "Reservar cita" abre la reserva sin nada elegido.
@@ -24,7 +24,7 @@ Esta spec es la primera de tres sobre reservas (división decidida por el autor 
 
 ## Usuarios
 - **Visitante** sin sesión: empieza una reserva (también desde un detalle) y se le pide iniciar sesión.
-- **Cliente** con sesión y WhatsApp: reserva un turno para sí misma y ve el que tiene activo.
+- **Clienta** con sesión y WhatsApp: reserva un turno para sí misma y ve el que tiene activo.
 - **Clienta bloqueada**: no puede reservar.
 - **Admin**: no reserva a su nombre (reservar para otra persona llega con la spec 007). Ve lo reservado en su lista de turnos.
 
@@ -50,17 +50,17 @@ Esta spec es la primera de tres sobre reservas (división decidida por el autor 
 - **Hora libre**: hora de la rejilla estrictamente posterior a "ahora", anterior al cierre y que no cae dentro de un turno ocupado (desde su inicio hasta antes de su fin). Ejemplo: con un turno ocupado de 8:00 a 9:10, las primeras horas libres son 9:30, 10:00…
 - **Cobertura de una hora libre**: minutos desde esa hora hasta el inicio del siguiente turno ocupado del día o, si no hay ninguno, hasta el cierre. Ejemplo: hora 9:30 con un turno ocupado a las 10:00 → 30 minutos.
 - **Servicio que cabe**: servicio cuya duración es menor o igual que la cobertura de la hora elegida.
-- **Turno activo de una clienta**: turno a su nombre que empieza después de "ahora" y que está esperando confirmación o confirmado.
+- **Turno activo de una clienta**: turno a su nombre que termina después de "ahora" (también mientras está en curso) y que está esperando confirmación o confirmado.
 - **Ventana de reserva**: desde hoy hasta 60 días después de hoy, los dos incluidos.
 
 ## Requisitos funcionales
 
 ### Fecha y hora
-- RF-1: CUANDO se abre la reserva, EL SISTEMA muestra el calendario con hoy elegido y, debajo, las horas libres de hoy. Si hoy no se puede elegir (RF-3), elige el primer día que se pueda.
+- RF-1: CUANDO se abre la reserva, EL SISTEMA muestra el calendario con el primer día de la ventana de reserva que se puede elegir (RF-3) y tiene alguna hora libre y, debajo, sus horas libres. Si ningún día que se puede elegir tiene horas libres, elige el primero que se pueda elegir y aplica RF-7.
 - RF-2: SI ningún día de la ventana de reserva se puede elegir, ENTONCES EL SISTEMA lo indica con un texto y el enlace a WhatsApp del salón, en lugar del calendario.
 - RF-3: EL SISTEMA solo deja elegir fechas dentro de la ventana de reserva, y no deja elegir los días que el calendario tiene cerrados ni las fechas bloqueadas.
 - RF-4: EL SISTEMA muestra, para la fecha elegida, todas sus horas libres en orden, en hora del salón.
-- RF-5: MIENTRAS la zona horaria del dispositivo no es la del salón, EL SISTEMA indica junto a las horas que son hora de Curitiba.
+- RF-5: MIENTRAS la diferencia del dispositivo con UTC no es la del salón (−3 h), EL SISTEMA indica junto a las horas que son hora de Curitiba.
 - RF-6: CUANDO otra persona reserva o se cancela un turno de la fecha elegida, EL SISTEMA actualiza las horas libres y su cobertura sin recargar.
 - RF-7: SI una fecha no tiene ninguna hora libre, ENTONCES EL SISTEMA lo indica con un texto, en lugar de una lista vacía.
 - RF-8: CUANDO se cambia de fecha, EL SISTEMA quita la hora elegida y conserva lo reservado.
@@ -85,7 +85,7 @@ Esta spec es la primera de tres sobre reservas (división decidida por el autor 
 - RF-23: EL SISTEMA muestra al final de la vista el botón "Agendar turno", siempre activo.
 - RF-24: SI se toca "Agendar turno" sin hora o sin servicio elegidos, ENTONCES EL SISTEMA no agenda, indica qué falta y marca cada parte sin elegir.
 - RF-25: CUANDO se toca "Agendar turno" con todo elegido, EL SISTEMA muestra el resumen, indica que el turno queda esperando confirmación de la admin y pide que se confirme.
-- RF-26: CUANDO se confirma, EL SISTEMA comprueba otra vez, antes de guardar, que la hora sigue libre, que el servicio sigue cabiendo en ella y que la clienta no tiene ya un turno activo.
+- RF-26: CUANDO se confirma, EL SISTEMA comprueba otra vez, antes de guardar, que la hora sigue libre, que el servicio sigue cabiendo en ella y que la clienta no tiene ya un turno activo. Esta comprobación tiene en cuenta los turnos ya guardados; no impide dos confirmaciones exactamente simultáneas, que se impiden en el servidor con la spec 012.
 - RF-27: CUANDO se confirma y las comprobaciones de RF-26 se cumplen, EL SISTEMA guarda un turno esperando confirmación a nombre de la clienta, con su inicio, su fin (inicio más la duración del turno) y una copia de lo reservado:
   - el nombre del servicio o combo en español y en portugués;
   - si es servicio o combo;
@@ -104,7 +104,7 @@ Esta spec es la primera de tres sobre reservas (división decidida por el autor 
   - el precio total;
   - si está esperando confirmación o confirmado.
 - RF-34: MIENTRAS la clienta tiene un turno activo, EL SISTEMA no le deja pedir otro y le explica que solo puede tener un turno pendiente a la vez.
-- RF-35: CUANDO el turno activo de la clienta se cancela o empieza, EL SISTEMA vuelve a mostrarle la vista de reserva sin recargar.
+- RF-35: CUANDO el turno activo de la clienta se cancela o termina, EL SISTEMA vuelve a mostrarle la vista de reserva sin recargar.
 - RF-36: SI al confirmar la clienta ya tiene un turno activo (por ejemplo, reservado desde otro dispositivo), ENTONCES EL SISTEMA no guarda el nuevo turno y le muestra el que ya tiene.
 
 ### Clienta bloqueada y admin
@@ -122,13 +122,13 @@ Esta spec es la primera de tres sobre reservas (división decidida por el autor 
 - RF-46: MIENTRAS la clienta tiene un turno activo, EL SISTEMA muestra ese turno (RF-33) también cuando llega desde el detalle de un servicio.
 
 ### Errores de carga
-- RF-47: SI la lista de precios no está disponible, ENTONCES EL SISTEMA muestra en lugar de los servicios el mismo aviso que la lista de precios (spec 004), con "Reintentar" y el enlace a WhatsApp, y no deja agendar.
-- RF-48: SI no se puede cargar el calendario o los turnos ocupados de la fecha elegida, ENTONCES EL SISTEMA muestra en lugar de las horas un aviso con "Reintentar" y el enlace a WhatsApp, y no deja agendar.
+- RF-47: SI la lista de precios no está disponible, ENTONCES EL SISTEMA muestra en lugar de los servicios el mismo aviso que la lista de precios (spec 004), con "Reintentar" y el enlace a WhatsApp, y no deja agendar: "Agendar turno" sigue activo y aplica RF-24.
+- RF-48: SI no se puede cargar el calendario o los turnos ocupados de la fecha elegida, ENTONCES EL SISTEMA muestra en lugar de las horas un aviso con "Reintentar" y el enlace a WhatsApp, y no deja agendar: "Agendar turno" sigue activo y aplica RF-24.
 - RF-49: SI no se puede saber si la clienta tiene un turno activo o si está bloqueada, ENTONCES EL SISTEMA muestra en lugar de la vista de reserva un aviso con "Reintentar" y el enlace a WhatsApp.
 
 ### Idioma, turnos antiguos y lista de la admin
 - RF-50: EL SISTEMA muestra lo reservado, en la reserva, en sus avisos y en sus diálogos abiertos, en el idioma de la interfaz, y lo cambia al cambiar de idioma.
-- RF-51: EL SISTEMA sigue leyendo los turnos guardados antes de esta spec, que no tienen lo reservado, y los tiene en cuenta como turnos ocupados con su inicio y su fin. Donde se muestre su servicio, muestra "Servicio sin indicar".
+- RF-51: EL SISTEMA no tiene que leer los turnos guardados antes de esta spec. La app está en desarrollo: antes de publicar las reglas nuevas se borran los turnos de prueba (o la base de datos entera), y el modelo de datos de los turnos puede cambiar sin compatibilidad con el anterior.
 - RF-52: EL SISTEMA muestra a la admin, en su lista de turnos de cada día, lo reservado en cada turno, con los adicionales.
 
 ### Privacidad y seguridad
@@ -142,11 +142,11 @@ Esta spec es la primera de tres sobre reservas (división decidida por el autor 
 ## Requisitos no funcionales
 - RNF-1: Son reglas puras, que reciben "ahora" como dato y están probadas con tablas de casos:
   - el cálculo de las horas libres y su cobertura, en hora del salón;
-  - la ventana de reserva y el primer día que se puede elegir;
+  - la ventana de reserva y el día que se elige al abrir la reserva;
   - el precio total;
   - la comprobación de turno activo.
 
-  Los casos incluyen el ejemplo de 8:00 a 9:10, una cobertura que llega justo al cierre, un servicio que cabe justo, una hora igual a "ahora", la rejilla que no coincide con el fin de un turno, una apertura que no cae en media hora exacta, un cierre no posterior a la apertura, el cambio de día y un dispositivo en otra zona horaria.
+  Los casos incluyen el ejemplo de 8:00 a 9:10, una cobertura que llega justo al cierre, un servicio que cabe justo, una hora igual a "ahora", la rejilla que no coincide con el fin de un turno, una apertura que no cae en media hora exacta, un cierre no posterior a la apertura, el cambio de día, hoy sin horas libres al abrir, un turno activo en curso y un dispositivo en otra zona horaria.
 - RNF-2: Toda la reserva cumple contraste WCAG AA en tema claro y oscuro. Sus controles miden al menos 48 px y tienen nombre para el lector de pantalla, incluidos los servicios, los adicionales marcados y las horas. Los servicios y las horas desactivados se anuncian como no disponibles, y su texto también cumple el contraste. Los avisos se anuncian al lector de pantalla.
 - RNF-3: La reserva funciona sin desbordes con el texto al 200 % y a 320 px de ancho, en español y en portugués.
 - RNF-4: Todos los textos nuevos de la interfaz están en español y en portugués.
@@ -171,13 +171,14 @@ Esta spec es la primera de tres sobre reservas (división decidida por el autor 
 - Una hora libre en la que no cabe ningún servicio (p. ej., 30 minutos antes del cierre y todos los servicios duran más): se muestra, y todos los servicios quedan desactivados (RF-12, RF-13).
 - Un turno que acaba justo cuando empieza una hora de la rejilla: esa hora es libre (p. ej., turno de 8:00 a 9:00 → 9:00 libre).
 - Apertura que no cae en media hora exacta (p. ej., 8:15): la rejilla parte de la apertura (8:15, 8:45…).
-- Hoy, con horas que ya pasaron: solo se ofrecen las futuras. Si hoy ya no le quedan horas libres, sigue elegido hoy y se aplica RF-7.
+- Hoy, con horas que ya pasaron: solo se ofrecen las futuras. Si al abrir la reserva hoy ya no le quedan horas libres, se elige el siguiente día con horas libres (RF-1). Si la clienta vuelve a elegir hoy, se aplica RF-7.
+- Turno activo en curso (la clienta está en el salón): sigue siendo su turno activo hasta su fin, y no puede reservar otro hasta entonces.
 - La reserva abierta pasa la medianoche del salón o el día 60 deja de estar dentro de la ventana: la fecha se ajusta a la ventana nueva.
 - Dispositivo en otra zona horaria (p. ej., una clienta de visita en Lisboa): ve las horas de Curitiba, con la indicación de RF-5.
 - Clienta bloqueada al iniciar sesión: se la saca, como hoy. Con la sesión ya abierta: RF-37 y RF-38.
 - Turnos pasados que se quedaron esperando confirmación: no son activos ni ocupan horas futuras.
 - Una clienta pasa a admin con un turno activo: como admin, la reserva le muestra RF-39; su turno sigue en la lista de la admin.
-- Dos dispositivos de la misma clienta confirman a la vez: el segundo no se guarda (RF-36). La garantía en el servidor llega con la spec 012.
+- Dos dispositivos de la misma clienta confirman uno después del otro: el segundo no se guarda porque el primero ya está guardado (RF-36). Lo mismo con dos clientas y la misma hora (RF-29). Si las dos confirmaciones llegan exactamente a la vez, la app no lo puede impedir: lo impide el servidor con la spec 012.
 - Sesión cerrada con la reserva a medias: en Android/iOS vuelve al aviso de inicio de sesión (spec 003). En Web pide iniciar sesión, y la dirección conserva el servicio.
 - Sin conexión: se ven los últimos datos conocidos de la lista de precios (spec 004), pero la reserva no deja agendar (RF-31, RF-48, RF-49).
 
@@ -203,12 +204,12 @@ Esta spec es la primera de tres sobre reservas (división decidida por el autor 
   - reservar un servicio con adicionales y un combo;
   - "Agendar turno" con algo sin elegir;
   - reservar desde el detalle sin sesión;
-  - el choque de una misma hora desde dos dispositivos;
+  - el choque de una misma hora desde dos dispositivos, confirmando uno después del otro;
   - el bloqueo por turno activo;
   - una clienta bloqueada con la sesión abierta;
   - el dispositivo en otra zona horaria;
   - ver el turno en la lista de la admin.
-- Los turnos antiguos se siguen viendo en la app y ocupan su hora.
+- El autor borra los turnos de prueba (o la base de datos) antes de publicar las reglas nuevas (RF-51).
 
 ## Dudas abiertas
 Ninguna. Resueltas con el autor (2026-10-23 y 2026-10-24):
@@ -224,4 +225,11 @@ Ninguna. Resueltas con el autor (2026-10-23 y 2026-10-24):
   - si falla la carga del calendario, de los turnos o del turno activo: aviso, "Reintentar" y WhatsApp, sin agendar;
   - clienta bloqueada con la sesión abierta: no reserva, sigue viendo su turno, no se cierra la sesión;
   - la spec se divide en 005, 006-editar-turno y 007-reserva-admin.
-- Por defecto, para que el autor lo revise: "servicio" incluye combos; categorías solo con adicionales no se muestran; el resumen aparece con hora o servicio; el turno activo sustituye a la vista; una hora igual a "ahora" no es libre; un día con cierre no posterior a la apertura se trata como cerrado; los avisos de choque distinguen "ocupada" y "ya no cabe".
+- Revisión del autor (2026-11-02):
+  - la comprobación al confirmar cubre los turnos ya guardados; las confirmaciones exactamente simultáneas se impiden en el servidor con la 012;
+  - el modelo de datos de los turnos puede cambiar sin compatibilidad: la app está en desarrollo y se borran los turnos (o la base de datos) antes de publicar las reglas;
+  - RF-38 exige leer la ficha de la usuaria en vivo: se hace en esta spec, aunque estaba prevista para la 009;
+  - el turno activo lo sigue siendo hasta su fin, también en curso;
+  - al abrir la reserva se elige el primer día con horas libres;
+  - "otra zona horaria" se decide por la diferencia con UTC (−3 h).
+- Confirmado por el autor (2026-11-02): "servicio" incluye combos; categorías solo con adicionales no se muestran; el resumen aparece con hora o servicio; el turno activo sustituye a la vista; una hora igual a "ahora" no es libre; un día con cierre no posterior a la apertura se trata como cerrado; los avisos de choque distinguen "ocupada" y "ya no cabe".
