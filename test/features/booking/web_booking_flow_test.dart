@@ -183,6 +183,12 @@ void main() {
     testWidgets('en Android/iOS sigue el aviso de antes, sin diálogo', (
       tester,
     ) async {
+      // Alto de sobra: un mes de 6 semanas en el calendario no debe dejar las
+      // horas fuera de la pantalla.
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(800, 2400);
+      addTearDown(tester.view.reset);
+
       final day = tomorrow();
       await pumpApp(
         tester,

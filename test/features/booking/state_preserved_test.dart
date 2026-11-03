@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:intl/intl.dart';
 import 'package:shaddai/core/preferences/preferences_logic.dart';
 import 'package:shaddai/features/auth/providers/auth_provider.dart';
 import 'package:shaddai/features/booking/presentation/booking_view.dart';
@@ -52,7 +53,11 @@ void main() {
         Theme.of(tester.element(find.byType(AlertDialog))).brightness,
         Brightness.dark,
       );
-      expect(find.textContaining('outubro'), findsWidgets);
+      // El mes de mañana en portugués, sea cual sea el día de hoy.
+      expect(
+        find.textContaining(DateFormat.MMMM('pt').format(day)),
+        findsWidgets,
+      );
 
       // Al cerrarlo, la fecha y la hora elegidas siguen ahí.
       await tester.tap(find.text('CANCELAR'));
