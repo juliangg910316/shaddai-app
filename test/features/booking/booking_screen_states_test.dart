@@ -14,6 +14,7 @@ import 'package:shaddai/features/booking/presentation/booking_view.dart';
 import 'package:shaddai/features/landing/landing_content.dart';
 
 import '../../helpers/fake_booking.dart';
+import '../../helpers/fake_price_list.dart';
 import '../../helpers/fake_session.dart';
 import '../../helpers/pump_app.dart';
 import '../../helpers/recording_link_launcher.dart';
@@ -77,11 +78,13 @@ void main() {
     Stream<UserModel?> Function()? userStream,
     Stream<DateTime> Function()? nowStream,
     String language = 'es',
+    FakePriceListRepository? priceList,
   }) async {
     await pumpApp(
       tester,
       stored: {'language': language},
       home: const BookingView(),
+      priceListRepository: priceList,
       overrides: [
         ...bookingDataOverrides(
           bookings: bookings,
@@ -130,6 +133,43 @@ void main() {
       expect(find.text('Manicure russa'), findsOneWidget);
       expect(find.textContaining('Decoração'), findsOneWidget);
       expect(find.text('CONFIRMADA'), findsOneWidget);
+    });
+
+    testWidgets('muestra lo reservado tal como se guardó, aunque la admin '
+        'lo cambie después en la lista de precios (RF-28)', (tester) async {
+      // El mismo servicio y adicional, con otro nombre y otro precio.
+      final changed = PriceListModel(
+        categories: [
+          PriceCategoryModel(
+            id: 'hands',
+            name: const BilingualText(es: 'Manos', pt: 'Mãos'),
+            items: const [
+              PriceItemModel(
+                id: 's1',
+                kind: PriceItemKind.service,
+                name: BilingualText(es: 'Manicura nueva', pt: 'Manicure nova'),
+                priceCents: 9900,
+                durationMinutes: 120,
+              ),
+              PriceItemModel(
+                id: 'a1',
+                kind: PriceItemKind.addon,
+                name: BilingualText(es: 'Piedras', pt: 'Pedras'),
+                priceCents: 3000,
+              ),
+            ],
+          ),
+        ],
+      );
+      bookings.mine = [active()];
+      await pump(tester, priceList: FakePriceListRepository(stored: changed));
+
+      expect(find.text('Manicura rusa'), findsOneWidget);
+      expect(find.textContaining('Decoración'), findsOneWidget);
+      expect(find.text('R\$ 80'), findsOneWidget);
+      expect(find.textContaining('Manicura nueva'), findsNothing);
+      expect(find.textContaining('Piedras'), findsNothing);
+      expect(find.text('R\$ 129'), findsNothing);
     });
 
     testWidgets('desaparece al cancelarse', (tester) async {

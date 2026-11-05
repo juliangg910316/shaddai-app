@@ -1,5 +1,5 @@
 # Spec 005 — Reservas
-Estado: aprobada
+Estado: implementada
 
 ## Contexto y objetivo
 La reserva ofrece hoy tres opciones fijas (Clásica, Semipermanente, Acrílico), que no son la lista de precios real y no se guardan en el turno. Todos los turnos duran lo mismo, la duración global del calendario, aunque cada servicio tiene ya su propia duración (spec 004). Desde el detalle de un servicio, "Reservar cita" abre la reserva sin nada elegido.
