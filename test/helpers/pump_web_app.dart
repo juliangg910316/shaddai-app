@@ -18,7 +18,7 @@ import 'package:shaddai/data/repositories/user_repository.dart';
 import 'package:shaddai/features/auth/providers/auth_provider.dart';
 import 'package:shaddai/features/home/presentation/google_map_container.dart';
 import 'package:shaddai/features/preferences/providers/preferences_provider.dart';
-import 'package:shaddai/features/profile/providers/profile_provider.dart';
+import 'package:shaddai/features/booking/providers/booking_provider.dart';
 import 'package:shaddai/features/services/providers/price_list_provider.dart';
 import 'package:shaddai/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -116,7 +116,7 @@ class _SessionUserRepository extends FakeUserRepository {
 /// sesión, para cambiarla en el test.
 ///
 /// La lista de precios es [priceListRepository] o, si no se pasa, la de la
-/// carga inicial (spec 004).
+/// carga inicial (spec 004). Los turnos de la clienta son [appointments].
 ///
 /// Con [reduceMotion] (por defecto), el sistema pide reducir las animaciones:
 /// la franja animada de la landing se para y `pumpAndSettle` puede terminar.
@@ -133,6 +133,7 @@ Future<FakeWebSession> pumpWebApp(
   bool reduceMotion = true,
   List<Override> overrides = const [],
   PriceListRepository? priceListRepository,
+  List<AppointmentModel> appointments = const [],
 }) => _pumpRealApp(
   tester,
   isWeb: true,
@@ -147,6 +148,7 @@ Future<FakeWebSession> pumpWebApp(
   reduceMotion: reduceMotion,
   overrides: overrides,
   priceListRepository: priceListRepository,
+  appointments: appointments,
 );
 
 /// Como [pumpWebApp], pero en Android/iOS: la barra inferior y sus pestañas
@@ -165,6 +167,7 @@ Future<FakeWebSession> pumpMobileApp(
   bool reduceMotion = true,
   List<Override> overrides = const [],
   PriceListRepository? priceListRepository,
+  List<AppointmentModel> appointments = const [],
 }) => _pumpRealApp(
   tester,
   isWeb: false,
@@ -178,6 +181,7 @@ Future<FakeWebSession> pumpMobileApp(
   height: height,
   reduceMotion: reduceMotion,
   priceListRepository: priceListRepository,
+  appointments: appointments,
   overrides: [
     salonMapProvider.overrideWithValue(
       const SizedBox(key: Key('salon-map'), height: 220),
@@ -200,6 +204,7 @@ Future<FakeWebSession> _pumpRealApp(
   required bool reduceMotion,
   required List<Override> overrides,
   required PriceListRepository? priceListRepository,
+  required List<AppointmentModel> appointments,
 }) async {
   await loadAppFonts();
   if (reduceMotion) {
@@ -235,12 +240,12 @@ Future<FakeWebSession> _pumpRealApp(
           userRepository ?? _SessionUserRepository(webSession),
         ),
         authStateProvider.overrideWith((ref) => webSession.authState()),
-        currentUserProvider.overrideWith((ref) async {
+        currentUserProvider.overrideWith((ref) {
           ref.watch(authStateProvider);
-          return webSession.user;
+          return Stream.value(webSession.user);
         }),
-        clientAppointmentsProvider.overrideWith(
-          (ref) => Stream.value(const <AppointmentModel>[]),
+        myAppointmentsProvider.overrideWith(
+          (ref) => Stream.value(appointments),
         ),
         priceListRepositoryProvider.overrideWithValue(
           priceListRepository ??

@@ -30,15 +30,26 @@ class _SessionAuthRepository extends FakeAuthRepository {
   }
 }
 
-/// Fichas en memoria: `getUser` devuelve lo que se ha guardado.
+/// Fichas en memoria: `getUser` devuelve lo que se ha guardado y `watchUser`
+/// avisa de cada ficha que se guarda.
 class _MemoryUserRepository extends FakeUserRepository {
   final docs = <String, UserModel>{};
+  final _saved = StreamController<UserModel>.broadcast();
 
   @override
   Future<UserModel?> getUser(String uid) async => docs[uid];
 
   @override
-  Future<void> saveUser(UserModel user) async => docs[user.uid] = user;
+  Stream<UserModel?> watchUser(String uid) async* {
+    yield docs[uid];
+    yield* _saved.stream.where((user) => user.uid == uid);
+  }
+
+  @override
+  Future<void> saveUser(UserModel user) async {
+    docs[user.uid] = user;
+    _saved.add(user);
+  }
 }
 
 void main() {

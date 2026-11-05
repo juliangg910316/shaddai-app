@@ -72,9 +72,9 @@ void main() {
     _setDeviceBrightness(tester, Brightness.light);
     await pumpApp(tester);
 
-    await appContainer(
-      tester,
-    ).read(themePreferenceProvider.notifier).select(ThemePreference.dark);
+    await appContainer(tester)
+        .read(themePreferenceProvider.notifier)
+        .select(ThemePreference.dark);
     await tester.pump();
 
     expect(probeBrightness(tester), Brightness.dark);
@@ -84,9 +84,9 @@ void main() {
     await pumpApp(tester);
     await tester.enterText(find.byKey(const Key('field')), 'Ana');
 
-    await appContainer(
-      tester,
-    ).read(themePreferenceProvider.notifier).select(ThemePreference.dark);
+    await appContainer(tester)
+        .read(themePreferenceProvider.notifier)
+        .select(ThemePreference.dark);
     await tester.pump();
 
     expect(find.text('Ana'), findsOneWidget);

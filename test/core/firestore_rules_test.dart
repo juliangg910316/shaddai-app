@@ -3,12 +3,14 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-/// Estructura de `firestore.rules` (spec 004, RNF-2). Lo que permite cada
-/// regla se comprueba a mano en el simulador de la consola (plan, A-1;
-/// `specs/004-servicios-firestore/rules-check.md`); aquí se fija qué cubre
-/// cada `match` para que un cambio no lo rompa sin querer.
+/// Estructura de `firestore.rules` (spec 004, RNF-2; spec 005, RNF-5). Lo
+/// que permite cada regla se comprueba a mano en el simulador de la consola
+/// (`specs/004-servicios-firestore/rules-check.md` y
+/// `specs/005-reservas/rules-check.md`); aquí se fija qué cubre cada `match`
+/// para que un cambio no lo rompa sin querer.
 void main() {
   final rulesFile = File('firestore.rules');
+  String rules() => rulesFile.readAsStringSync();
 
   /// Cuerpo del bloque `match <path> { … }`, o `null` si no está.
   String? block(String rules, String path) {
@@ -27,20 +29,30 @@ void main() {
     return null;
   }
 
+  /// Las líneas del bloque [path] que empiezan por `allow <action>`, unidas
+  /// hasta el `;` que las cierra.
+  String allow(String path, String action) {
+    final body = block(rules(), path);
+    expect(body, isNotNull, reason: path);
+    final start = body!.indexOf('allow $action');
+    expect(start, isNot(-1), reason: '$path: allow $action');
+    return body.substring(start, body.indexOf(';', start) + 1);
+  }
+
+  Map<String, dynamic> json(String path) =>
+      jsonDecode(File(path).readAsStringSync()) as Map<String, dynamic>;
+
   test('existe firestore.rules y firebase.json lo usa', () {
     expect(rulesFile.existsSync(), isTrue);
-    final firebase =
-        jsonDecode(File('firebase.json').readAsStringSync())
-            as Map<String, dynamic>;
-    expect((firebase['firestore'] as Map)['rules'], 'firestore.rules');
+    expect(
+      (json('firebase.json')['firestore'] as Map)['rules'],
+      'firestore.rules',
+    );
   });
 
   test('la lista de precios: lectura pública, escritura de la admin y sin '
       'borrado (RNF-2)', () {
-    final priceList = block(
-      rulesFile.readAsStringSync(),
-      '/settings/priceList',
-    );
+    final priceList = block(rules(), '/settings/priceList');
     expect(priceList, isNotNull);
     expect(priceList, contains('allow read: if true;'));
     expect(priceList, contains('allow create, update: if isAdmin();'));
@@ -48,42 +60,172 @@ void main() {
   });
 
   test('isAdmin lee el rol de la ficha de la usuaria con sesión', () {
-    final rules = rulesFile.readAsStringSync();
-    expect(rules, contains('function isAdmin()'));
-    expect(rules, contains('request.auth != null'));
+    final text = rules();
+    expect(text, contains('function isAdmin()'));
+    expect(text, contains('request.auth != null'));
+    expect(text, contains('function myProfile()'));
     expect(
-      rules,
+      text,
       contains(
         "get(/databases/\$(database)/documents/users/\$(request.auth.uid))"
-        ".data.role == 'admin'",
+        '.data',
       ),
     );
+    expect(text, contains("myProfile().role == 'admin'"));
+    expect(text, contains("myProfile().get('isBlocked', false) == true"));
   });
 
-  test('el resto de datos de la app tiene la regla provisional con sesión, '
-      'marcada para la spec 009', () {
-    final rules = rulesFile.readAsStringSync();
-    for (final path in [
-      '/users/{userId}',
-      '/appointments/{appointmentId}',
-      '/settings/calendar',
-    ]) {
-      final rule = block(rules, path);
-      expect(rule, isNotNull, reason: path);
+  group('users (RF-57, RF-58)', () {
+    const path = '/users/{userId}';
+
+    test('cada una lee su ficha, y la admin todas', () {
+      final read = allow(path, 'get, list');
+      expect(read, contains('isAdmin()'));
+      expect(read, contains('request.auth.uid == userId'));
+    });
+
+    test('se crea con su propio uid, como clienta y sin bloquear', () {
+      final create = allow(path, 'create');
+      expect(create, contains('request.auth.uid == userId'));
+      expect(create, contains("get('role', 'cliente') == 'cliente'"));
+      expect(create, contains("get('isBlocked', false) == false"));
+    });
+
+    test('la clienta no cambia su rol ni su bloqueo; la admin sí', () {
+      final update = allow(path, 'update');
+      expect(update, contains('isAdmin()'));
       expect(
-        rule,
-        contains('allow read, write: if request.auth != null;'),
-        reason: path,
+        update,
+        contains(
+          "diff(resource.data).affectedKeys().hasAny(['role', 'isBlocked'])",
+        ),
       );
-      expect(rule, contains('PROVISIONAL'), reason: path);
-      expect(rule, contains('spec 009'), reason: path);
-    }
+      expect(allow(path, 'delete'), contains('if false'));
+    });
+  });
+
+  group('appointments (RF-53 a RF-56)', () {
+    const path = '/appointments/{id}';
+
+    test('la clienta solo lee los suyos; la admin, todos', () {
+      final read = allow(path, 'get, list');
+      expect(read, contains('isAdmin()'));
+      expect(read, contains('resource.data.clientId == request.auth.uid'));
+    });
+
+    test('se crea a su nombre, esperando confirmación, sin estar bloqueada '
+        'y con su turno ocupado en el mismo lote', () {
+      final create = allow(path, 'create');
+      expect(create, contains('!isBlocked()'));
+      expect(
+        create,
+        contains(
+          'request.resource.data.clientId == '
+          'request.auth.uid',
+        ),
+      );
+      expect(create, contains("status == 'waiting_confirmation'"));
+      expect(create, contains('endTime > request.resource.data.startTime'));
+      expect(
+        create,
+        contains(
+          'getAfter(/databases/\$(database)/documents/busySlots/'
+          '\$(id)).data.start == request.resource.data.startTime',
+        ),
+      );
+      expect(
+        create,
+        contains(
+          'getAfter(/databases/\$(database)/documents/busySlots/'
+          '\$(id)).data.end == request.resource.data.endTime',
+        ),
+      );
+    });
+
+    test('solo la admin cambia el estado, y nadie lo borra', () {
+      final update = allow(path, 'update');
+      expect(update, contains('isAdmin()'));
+      expect(update, contains("affectedKeys().hasOnly(['status'])"));
+      expect(allow(path, 'delete'), contains('if false'));
+    });
+  });
+
+  group('busySlots (RF-53, RF-56)', () {
+    const path = '/busySlots/{id}';
+
+    test('lo lee cualquiera con sesión', () {
+      expect(allow(path, 'get, list'), contains('signedIn()'));
+    });
+
+    test('se crea solo con inicio y fin, junto a un turno propio con las '
+        'mismas horas', () {
+      final create = allow(path, 'create');
+      expect(create, contains("keys().hasOnly(['start', 'end'])"));
+      for (final check in [
+        'data.clientId == request.auth.uid',
+        'data.startTime == request.resource.data.start',
+        'data.endTime == request.resource.data.end',
+      ]) {
+        expect(
+          create,
+          contains(
+            'getAfter(/databases/\$(database)/documents/appointments/'
+            '\$(id)).$check',
+          ),
+          reason: check,
+        );
+      }
+    });
+
+    test('solo la admin lo borra, al cancelar, y nadie lo cambia', () {
+      expect(allow(path, 'delete'), contains('isAdmin()'));
+      expect(allow(path, 'update'), contains('if false'));
+    });
+  });
+
+  test('el calendario sigue con la regla provisional, marcada para la spec '
+      '012', () {
+    final rule = block(rules(), '/settings/calendar');
+    expect(rule, isNotNull);
+    expect(rule, contains('allow read, write: if request.auth != null;'));
+    expect(rule, contains('PROVISIONAL'));
+    expect(rule, contains('spec 012'));
+  });
+
+  test('ya no se cita la spec 009 en las reglas ni en la redirección', () {
+    expect(rules(), isNot(contains('spec 009')));
+    expect(
+      File('lib/core/router/redirect_logic.dart').readAsStringSync(),
+      isNot(contains('spec 009')),
+    );
   });
 
   test('no hay un comodín que abra la lista de precios a cualquier persona '
       'con sesión', () {
-    final rules = rulesFile.readAsStringSync();
-    expect(rules, isNot(contains('{document=**}')));
-    expect(rules, isNot(contains('match /settings/{')));
+    final text = rules();
+    expect(text, isNot(contains('{document=**}')));
+    expect(text, isNot(contains('match /settings/{')));
+  });
+
+  test('firebase.json apunta a firestore.indexes.json (plan § 2)', () {
+    expect(
+      (json('firebase.json')['firestore'] as Map)['indexes'],
+      'firestore.indexes.json',
+    );
+  });
+
+  test('el índice de "mis turnos" está declarado: clientId y startTime '
+      'descendente', () {
+    final indexes = json('firestore.indexes.json')['indexes'] as List;
+    final mine = indexes.cast<Map<String, dynamic>>().where(
+      (index) =>
+          index['collectionGroup'] == 'appointments' &&
+          index['queryScope'] == 'COLLECTION',
+    );
+    expect(mine, hasLength(1));
+    expect(mine.single['fields'], [
+      {'fieldPath': 'clientId', 'order': 'ASCENDING'},
+      {'fieldPath': 'startTime', 'order': 'DESCENDING'},
+    ]);
   });
 }

@@ -12,7 +12,7 @@ import '../../../data/models/appointment_model.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../preferences/presentation/preferences_section.dart';
-import '../providers/profile_provider.dart';
+import '../../booking/providers/booking_provider.dart';
 import '../../navigation/providers/tab_scroll_provider.dart';
 
 class ProfileView extends ConsumerWidget {
@@ -23,7 +23,7 @@ class ProfileView extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final userAsync = ref.watch(currentUserProvider);
     final user = userAsync.value;
-    final appointmentsAsync = ref.watch(clientAppointmentsProvider);
+    final appointmentsAsync = ref.watch(myAppointmentsProvider);
     final isWeb = ref.watch(isWebProvider);
 
     // Sin sesión: Preferencias y acceso al inicio de sesión (RF-25).

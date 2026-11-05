@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
 import '../../features/navigation/presentation/main_scaffold.dart';
 import '../../features/home/presentation/home_view.dart';
 import '../../features/auth/presentation/login_view.dart';
 import '../../features/auth/presentation/phone_capture_view.dart';
 import '../../features/auth/providers/auth_provider.dart';
+import '../../features/booking/logic/booking_request.dart';
 import '../../features/booking/presentation/booking_view.dart';
 import '../../features/admin/presentation/admin_dashboard_view.dart';
 import '../../features/admin/presentation/admin_users_view.dart';
@@ -134,7 +136,11 @@ List<RouteBase> _webRoutes() => [
       ),
       GoRoute(
         path: '/booking',
-        builder: (context, state) => const WebAccountPage(child: BookingView()),
+        builder: (context, state) => WebAccountPage(
+          child: BookingView(
+            request: bookingRequestOf(state.uri.queryParameters),
+          ),
+        ),
       ),
       GoRoute(
         path: '/profile',
@@ -259,7 +265,9 @@ List<RouteBase> _mobileRoutes() => [
         routes: [
           GoRoute(
             path: '/booking',
-            builder: (context, state) => const BookingView(),
+            builder: (context, state) => BookingView(
+              request: bookingRequestOf(state.uri.queryParameters),
+            ),
           ),
         ],
       ),

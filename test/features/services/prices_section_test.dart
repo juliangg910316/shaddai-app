@@ -89,9 +89,9 @@ void main() {
       final repository = FakePriceListRepository(stored: testPriceList());
       await _pumpWebPrices(tester, repository);
 
-      await appContainer(
-        tester,
-      ).read(languagePreferenceProvider.notifier).select(AppLanguage.pt);
+      await appContainer(tester)
+          .read(languagePreferenceProvider.notifier)
+          .select(AppLanguage.pt);
       await settleWeb(tester);
 
       expect(_inPrices(find.text('Spa das mãos')), findsOneWidget);

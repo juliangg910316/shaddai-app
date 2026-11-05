@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+
 import '../../../data/models/appointment_model.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/models/calendar_settings_model.dart';

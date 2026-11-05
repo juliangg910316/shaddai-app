@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+
 import '../../../data/repositories/user_repository.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/models/user_model.dart';
@@ -17,12 +18,13 @@ final authStateProvider = StreamProvider((ref) {
   return ref.watch(authRepositoryProvider).authStateChanges;
 });
 
-final currentUserProvider = FutureProvider<UserModel?>((ref) async {
+/// La ficha de la usuaria con sesión, en vivo: un bloqueo o un cambio de rol
+/// llegan sin recargar (spec 005, RF-38, D-5). `null` sin sesión o sin ficha.
+final currentUserProvider = StreamProvider<UserModel?>((ref) {
   final authUser = ref.watch(authStateProvider).value;
-  if (authUser == null) return null;
+  if (authUser == null) return Stream.value(null);
 
-  final userRepo = ref.read(userRepositoryProvider);
-  return await userRepo.getUser(authUser.uid);
+  return ref.read(userRepositoryProvider).watchUser(authUser.uid);
 });
 
 void _noop() {}

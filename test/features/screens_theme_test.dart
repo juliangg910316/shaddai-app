@@ -8,6 +8,7 @@ import 'package:shaddai/features/auth/presentation/phone_capture_view.dart';
 import 'package:shaddai/features/auth/providers/auth_failure.dart';
 import 'package:shaddai/features/auth/providers/auth_provider.dart';
 import 'package:shaddai/features/booking/presentation/booking_view.dart';
+import 'package:shaddai/data/models/busy_slot_model.dart';
 import 'package:shaddai/data/models/calendar_settings_model.dart';
 import 'package:shaddai/data/models/user_model.dart';
 import 'package:shaddai/features/admin/presentation/admin_dashboard_view.dart';
@@ -17,10 +18,10 @@ import 'package:shaddai/features/admin/providers/admin_provider.dart';
 import 'package:shaddai/features/booking/providers/booking_provider.dart';
 import 'package:shaddai/features/home/presentation/home_view.dart';
 import 'package:shaddai/features/profile/presentation/profile_view.dart';
-import 'package:shaddai/features/profile/providers/profile_provider.dart';
 import 'package:shaddai/features/services/presentation/services_view.dart';
 
 import '../helpers/fake_auth.dart';
+import '../helpers/fake_booking.dart';
 import '../helpers/fake_session.dart';
 import '../helpers/pump_app.dart';
 
@@ -33,6 +34,16 @@ class _Screen {
   final String name;
   final Widget Function() build;
   final List<Override> overrides;
+}
+
+/// Turnos ocupados que siguen cargando o fallan, según [stream].
+class _BusyStreamRepository extends FakeBookingRepository {
+  _BusyStreamRepository(this.stream);
+
+  final Stream<List<BusySlot>> stream;
+
+  @override
+  Stream<List<BusySlot>> watchBusySlots(DateTime from, DateTime to) => stream;
 }
 
 class _StubAuthController extends AuthController {
@@ -92,27 +103,38 @@ final _screens = <_Screen>[
   _Screen(
     'Reservas con huecos',
     () => const BookingView(),
-    overrides: bookingOverrides(
-      day: tomorrow(),
-      slots: AsyncData([tomorrow().add(const Duration(hours: 10))]),
-    ),
+    overrides: bookingDataOverrides(bookings: FakeBookingRepository()),
   ),
   _Screen(
     'Reservas sin huecos',
     () => const BookingView(),
-    overrides: bookingOverrides(day: tomorrow(), slots: const AsyncData([])),
+    overrides: bookingDataOverrides(
+      bookings: FakeBookingRepository(
+        busy: [
+          // Todo ocupado desde "ahora" hasta pasado el plazo de reserva.
+          BusySlot(
+            id: 'x',
+            start: bookingTestNow,
+            end: bookingTestNow.add(const Duration(days: 400)),
+          ),
+        ],
+      ),
+    ),
   ),
   _Screen(
     'Reservas cargando',
     () => const BookingView(),
-    overrides: bookingOverrides(day: tomorrow(), slots: const AsyncLoading()),
+    overrides: bookingDataOverrides(
+      bookings: _BusyStreamRepository(const Stream.empty()),
+    ),
   ),
   _Screen(
     'Reservas con error',
     () => const BookingView(),
-    overrides: bookingOverrides(
-      day: tomorrow(),
-      slots: AsyncError(Exception('permission-denied'), StackTrace.empty),
+    overrides: bookingDataOverrides(
+      bookings: _BusyStreamRepository(
+        Stream.error(Exception('permission-denied')),
+      ),
     ),
   ),
   _Screen(
@@ -157,8 +179,8 @@ final _screens = <_Screen>[
     'Perfil con error al cargar los turnos',
     () => const ProfileView(),
     overrides: [
-      currentUserProvider.overrideWith((ref) async => testClient),
-      clientAppointmentsProvider.overrideWith(
+      currentUserProvider.overrideWith((ref) => Stream.value(testClient)),
+      myAppointmentsProvider.overrideWith(
         (ref) => Stream.error(Exception('permission-denied')),
       ),
     ],

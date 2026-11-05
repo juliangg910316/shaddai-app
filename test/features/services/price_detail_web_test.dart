@@ -212,7 +212,12 @@ void main() {
 
       await _tapVisible(tester, _inDetail(find.text('RESERVAR CITA')));
 
-      expect(webLocation(tester).toString(), '/login?next=%2Fbooking');
+      // Con el servicio pedido, para elegirlo tras el login (spec 005, RF-41).
+      expect(webLocation(tester).path, '/login');
+      expect(
+        webLocation(tester).queryParameters['next'],
+        '/booking?service=spa',
+      );
     });
   });
 

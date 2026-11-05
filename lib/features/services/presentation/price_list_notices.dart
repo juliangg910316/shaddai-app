@@ -38,14 +38,14 @@ class PriceListUnavailableNotice extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
 
-    return _Notice(
+    return AppNotice(
       message: l10n.pricesLoadError,
       actions: [
-        _NoticeButton(
+        AppNoticeButton(
           label: l10n.pricesRetry,
           onPressed: () => ref.invalidate(priceListStateProvider),
         ),
-        const _WhatsappButton(),
+        const WhatsappNoticeButton(),
       ],
     );
   }
@@ -58,15 +58,17 @@ class PriceListEmptyNotice extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _Notice(
+    return AppNotice(
       message: AppLocalizations.of(context)!.pricesEmpty,
-      actions: const [_WhatsappButton()],
+      actions: const [WhatsappNoticeButton()],
     );
   }
 }
 
-class _Notice extends StatelessWidget {
-  const _Notice({required this.message, required this.actions});
+/// Aviso con un texto y sus botones, debajo o al lado según el ancho. Lo
+/// comparten la lista de precios y la reserva (spec 005).
+class AppNotice extends StatelessWidget {
+  const AppNotice({super.key, required this.message, required this.actions});
 
   final String message;
   final List<Widget> actions;
@@ -94,8 +96,13 @@ class _Notice extends StatelessWidget {
   }
 }
 
-class _NoticeButton extends StatelessWidget {
-  const _NoticeButton({required this.label, required this.onPressed});
+/// Botón de un [AppNotice], de al menos 48 px.
+class AppNoticeButton extends StatelessWidget {
+  const AppNoticeButton({
+    super.key,
+    required this.label,
+    required this.onPressed,
+  });
 
   final String label;
   final VoidCallback onPressed;
@@ -122,12 +129,12 @@ class _NoticeButton extends StatelessWidget {
 }
 
 /// "Agenda por WhatsApp", como en la sección de contacto.
-class _WhatsappButton extends ConsumerWidget {
-  const _WhatsappButton();
+class WhatsappNoticeButton extends ConsumerWidget {
+  const WhatsappNoticeButton({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return _NoticeButton(
+    return AppNoticeButton(
       label: AppLocalizations.of(context)!.landingContactCtaWhatsapp,
       onPressed: () => ref.read(externalLinkLauncherProvider)(
         Uri.parse(LandingContent.whatsappUrl),

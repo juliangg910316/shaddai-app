@@ -81,7 +81,7 @@ Mapa aprobado el 2026-10-20, en orden. El 2026-10-24 el autor dividió las reser
 | 002-landing-web | Landing de una página en Web | implementada (2026-10-21) |
 | 003-navegacion-movil | Barra de navegación inferior en Android/iOS | implementada (2026-10-21) |
 | 004-servicios-firestore | Servicios y precios en Firestore, y vista de detalle de cada servicio (Web y Android/iOS) | implementada (2026-10-23) |
-| 005-reservas | Reserva de la clienta: una vista con fecha, hora y servicio de Firestore (con adicionales), un turno activo, "Reservar" desde el detalle con el servicio elegido, hora de Curitiba y reglas de seguridad de turnos y usuarias | spec en borrador (2026-10-24, tras la revisión QA) |
+| 005-reservas | Reserva de la clienta: una vista con fecha, hora y servicio de Firestore (con adicionales), un turno activo, "Reservar" desde el detalle con el servicio elegido, hora de Curitiba y reglas de seguridad de turnos y usuarias | spec, plan y tareas aprobados (2026-11-02) |
 | 006-editar-turno | La clienta edita su turno activo (día, hora, servicio) fuera del margen de edición; vuelve a esperar confirmación | spec en borrador (2026-10-24) |
 | 007-reserva-admin | La admin reserva para una clienta con cuenta o una persona sin cuenta (nombre y WhatsApp) | spec en borrador (2026-10-24) |
 | 008-agenda-admin | Agenda de la admin: cerrar franjas de horas o días enteros (descanso, enfermedad), editar cualquier turno (día, hora, servicio y clienta) y cambiar el margen de edición | sin empezar |

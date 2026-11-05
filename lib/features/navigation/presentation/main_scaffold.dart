@@ -22,9 +22,11 @@ class MainScaffold extends ConsumerWidget {
   static const _tabRoots = ['/home', '/services', '/booking', '/profile'];
 
   void _onSelected(BuildContext context, WidgetRef ref, int index) {
-    final path = GoRouter.of(
-      context,
-    ).routerDelegate.currentConfiguration.uri.path;
+    final path = GoRouter.of(context)
+        .routerDelegate
+        .currentConfiguration
+        .uri
+        .path;
     final action = tabTapAction(
       isActive: index == navigationShell.currentIndex,
       isAtBranchRoot: path == _tabRoots[index],

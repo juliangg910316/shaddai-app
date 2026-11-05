@@ -42,9 +42,9 @@ Future<void> _pumpShell(
 Brightness _brightness(WidgetTester tester) =>
     Theme.of(tester.element(find.byType(ThemeMenuButton))).brightness;
 
-String _language(WidgetTester tester) => Localizations.localeOf(
-  tester.element(find.byType(LanguageSwitch)),
-).languageCode;
+String _language(WidgetTester tester) =>
+    Localizations.localeOf(tester.element(find.byType(LanguageSwitch)))
+        .languageCode;
 
 /// Si el foco del teclado está en [finder] o dentro de él.
 bool _hasFocus(WidgetTester tester, Finder finder) {

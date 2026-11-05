@@ -5,7 +5,10 @@ import 'package:go_router/go_router.dart';
 import '../../../core/platform/platform_provider.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/brand_colors.dart';
+import '../../../data/models/booked_service_model.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../booking/logic/bookable_catalog.dart';
+import '../../booking/logic/booking_request.dart';
 import '../../landing/landing_section.dart';
 import '../../landing/presentation/landing_navigation.dart';
 import '../../landing/presentation/landing_page.dart';
@@ -183,7 +186,17 @@ class _DetailBody extends StatelessWidget {
           spacing: 16,
           runSpacing: 12,
           children: [
-            const _ReserveButton(),
+            _ReserveButton(
+              location: switch (result) {
+                ServiceDetail(:final item) => bookingLocationOf(
+                  BookableRef(BookedKind.service, item.id),
+                ),
+                ComboDetail(:final combo) => bookingLocationOf(
+                  BookableRef(BookedKind.combo, combo.id),
+                ),
+                DetailNotAvailable() => '/booking',
+              },
+            ),
             if (isWeb) _BackToPricesButton(isWeb: isWeb),
           ],
         ),
@@ -192,10 +205,14 @@ class _DetailBody extends StatelessWidget {
   }
 }
 
-/// "Reservar cita": abre la reserva como el resto de botones "Reservar
-/// cita" de cada plataforma (RF-16).
+/// "Reservar cita": abre la reserva con este servicio o combo ya elegido
+/// (spec 004, RF-16; spec 005, RF-40). En Android/iOS cambia a la pestaña
+/// Reservas.
 class _ReserveButton extends StatelessWidget {
-  const _ReserveButton();
+  const _ReserveButton({required this.location});
+
+  /// `/booking?service=<id>` o `/booking?combo=<id>`.
+  final String location;
 
   @override
   Widget build(BuildContext context) {
@@ -203,7 +220,7 @@ class _ReserveButton extends StatelessWidget {
     final brand = context.brand;
 
     return ElevatedButton(
-      onPressed: () => context.go('/booking'),
+      onPressed: () => context.go(location),
       style: ElevatedButton.styleFrom(
         // Verde sobre dorado: el mismo par en los dos temas (5,1:1).
         backgroundColor: brand.accent,

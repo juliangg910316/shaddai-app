@@ -34,9 +34,8 @@ void main() {
   });
 
   test('la spec 002 no añade excepciones de color', () {
-    final styleTest = File(
-      'test/core/no_hardcoded_style_test.dart',
-    ).readAsStringSync();
+    final styleTest = File('test/core/no_hardcoded_style_test.dart')
+        .readAsStringSync();
     final exceptions = styleTest.substring(
       styleTest.indexOf('_colorExceptions = {'),
       styleTest.indexOf('};', styleTest.indexOf('_colorExceptions = {')),
