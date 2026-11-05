@@ -422,7 +422,7 @@ La vista antigua y sus providers (`availableSlotsProvider`, `selectedDateProvide
     - `specs/005-reservas/rules-check.md`, con los casos del simulador, el borrado de la base de datos antes de publicar (RF-51) y el recorrido de RF-58.
     - la tarjeta de la admin (`_AppointmentCard`) muestra la hora del dispositivo, no la de Curitiba: pasarla a hora del salón con `toSalon`, con un test en un dispositivo en otra zona (pendiente de T16, decisión del autor, 2026-11-03).
   - Hecho cuando: los tests pasan y el autor confirma los casos del simulador y el recorrido manual (criterios de finalización).
-  - Hecha (2026-11-03), salvo la confirmación del autor:
+  - Hecha (2026-11-03):
     - `firestore.rules` con las reglas de `users`, `appointments` y `busySlots` del plan § 2 (`signedIn`, `myProfile`, `isBlocked`; `isAdmin` usa `myProfile`); `settings/calendar` sigue provisional, marcada para la spec 012;
     - `firestore.indexes.json` con el índice de "mis turnos" (`clientId` ascendente, `startTime` descendente) y `firebase.json` apuntando a él;
     - "spec 009" → "spec 012" en `firestore.rules` y `redirect_logic.dart`;
@@ -430,7 +430,7 @@ La vista antigua y sus providers (`availableSlotsProvider`, `selectedDateProvide
     - `specs/005-reservas/rules-check.md`: borrado de `appointments` y `busySlots` antes de publicar (RF-51), 20 casos del simulador y el recorrido de RF-58;
     - CLAUDE.md ya no dice que no hay reglas;
     - 13 tests nuevos (12 de reglas y 1 de la tarjeta); suite completa, 1236 en verde, también con `TZ=Europe/Lisbon`.
-  - **Pendiente:** el autor publica las reglas y el índice y marca el resultado de `rules-check.md`.
+  - El autor publicó las reglas y el índice y comprobó `rules-check.md` y el recorrido manual (2026-11-05): todo correcto.
 
 ## Cambio del 2026-11-05 (RF-59, decisión del autor)
 

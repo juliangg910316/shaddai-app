@@ -73,10 +73,10 @@ Si algo falla, vuelve a publicar la copia del paso 1.2 y avisa.
 
 ## Resultado
 
-Pendiente de comprobar por el autor.
+Comprobado por el autor el 2026-11-05.
 
-- [ ] Copia de las reglas anteriores guardada.
-- [ ] Turnos de prueba borrados (RF-51).
-- [ ] Reglas e índice publicados.
-- [ ] Casos 1 a 20 del simulador correctos.
-- [ ] La app sigue funcionando (paso 4).
+- [x] Copia de las reglas anteriores guardada.
+- [x] Turnos de prueba borrados (RF-51).
+- [x] Reglas e índice publicados.
+- [x] Casos 1 a 20 del simulador correctos.
+- [x] La app sigue funcionando (paso 4).
