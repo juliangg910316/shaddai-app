@@ -3,18 +3,33 @@ rules_version = '2';
 // Reglas de seguridad de Firestore de Studio Shaddai.
 //
 // - settings/priceList: definitivas (spec 004, RNF-2).
-// - users, appointments y settings/calendar: PROVISIONALES hasta la spec 009,
-//   con lo mínimo que la app necesita hoy (todo se lee y escribe con sesión).
+// - users, appointments y busySlots: las de la reserva (spec 005, plan § 2).
+//   Los solapes y un segundo turno activo los comprueba la app antes de
+//   guardar; las reglas que los impiden llegan en la spec 012.
+// - settings/calendar: PROVISIONAL hasta la spec 012 (todo con sesión).
 //
 // Lo que no aparece aquí queda denegado. Se comprueban a mano en el
-// simulador de la consola: specs/004-servicios-firestore/rules-check.md.
+// simulador de la consola: specs/004-servicios-firestore/rules-check.md y
+// specs/005-reservas/rules-check.md.
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // La ficha de la usuaria con sesión.
+    function myProfile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
     // La admin tiene el rol 'admin' en su ficha (se asigna a mano).
     function isAdmin() {
-      return request.auth != null &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      return request.auth != null && myProfile().role == 'admin';
+    }
+
+    function isBlocked() {
+      return myProfile().get('isBlocked', false) == true;
     }
 
     // Lista de precios: la ve cualquiera, también sin sesión; solo la admin
@@ -25,18 +40,52 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // Fichas (RF-57): cada una lee y cambia la suya, sin tocar su rol ni su
+    // bloqueo; la admin las lee y cambia todas. Nadie las borra.
     match /users/{userId} {
-      // PROVISIONAL hasta la spec 009: usuarias con sesión.
-      allow read, write: if request.auth != null;
+      allow get, list: if isAdmin() || (signedIn() && request.auth.uid == userId);
+      allow create: if signedIn() && request.auth.uid == userId
+        && request.resource.data.get('role', 'cliente') == 'cliente'
+        && request.resource.data.get('isBlocked', false) == false;
+      allow update: if isAdmin() || (signedIn() && request.auth.uid == userId
+        && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'isBlocked']));
+      allow delete: if false;
     }
 
-    match /appointments/{appointmentId} {
-      // PROVISIONAL hasta la spec 009: turnos con sesión.
-      allow read, write: if request.auth != null;
+    // Turnos: la clienta solo ve los suyos (RF-53) y los crea a su nombre,
+    // sin estar bloqueada (RF-54) y con su turno ocupado en el mismo lote,
+    // con las mismas horas. Solo la admin cambia el estado (RF-55, RF-56).
+    match /appointments/{id} {
+      allow get, list: if isAdmin()
+        || (signedIn() && resource.data.clientId == request.auth.uid);
+      allow create: if signedIn() && !isBlocked()
+        && request.resource.data.clientId == request.auth.uid
+        && request.resource.data.status == 'waiting_confirmation'
+        && request.resource.data.endTime > request.resource.data.startTime
+        && getAfter(/databases/$(database)/documents/busySlots/$(id)).data.start == request.resource.data.startTime
+        && getAfter(/databases/$(database)/documents/busySlots/$(id)).data.end == request.resource.data.endTime;
+      allow update: if isAdmin()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']);
+      allow delete: if false;
+    }
+
+    // Turnos ocupados: solo inicio y fin, con el mismo id que su turno. Los
+    // lee cualquiera con sesión para ver las horas libres (RF-53); se crean
+    // junto a un turno propio con las mismas horas, y la admin los borra al
+    // cancelar (RF-56).
+    match /busySlots/{id} {
+      allow get, list: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['start', 'end'])
+        && getAfter(/databases/$(database)/documents/appointments/$(id)).data.clientId == request.auth.uid
+        && getAfter(/databases/$(database)/documents/appointments/$(id)).data.startTime == request.resource.data.start
+        && getAfter(/databases/$(database)/documents/appointments/$(id)).data.endTime == request.resource.data.end;
+      allow delete: if isAdmin();
+      allow update: if false;
     }
 
     match /settings/calendar {
-      // PROVISIONAL hasta la spec 009: calendario con sesión.
+      // PROVISIONAL hasta la spec 012: calendario con sesión.
       allow read, write: if request.auth != null;
     }
   }
