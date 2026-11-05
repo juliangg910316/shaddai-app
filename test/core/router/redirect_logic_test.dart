@@ -304,4 +304,82 @@ void main() {
       );
     });
   });
+
+  group('reservar un servicio desde su detalle (spec 005, RF-40 a RF-42)', () {
+    for (final isWeb in [true, false]) {
+      final platform = isWeb ? 'Web' : 'móvil';
+
+      for (final next in [
+        '/booking?service=gel-short',
+        '/booking?combo=full_gel-2',
+      ]) {
+        test('$platform: safeNext conserva $next', () {
+          expect(safeNext(next, isWeb: isWeb), next);
+        });
+      }
+
+      for (final next in [
+        '/booking?service=',
+        '/booking?service=a%20b',
+        '/booking?service=${'x' * 65}',
+        '/booking?other=x',
+        '/booking?service=a&combo=b',
+        '/booking?service=a&service=b',
+        '/booking?service=a&utm=x',
+      ]) {
+        test('$platform: safeNext cambia $next por /booking', () {
+          expect(safeNext(next, isWeb: isWeb), '/booking');
+        });
+      }
+
+      test('$platform: safeNext no deja salir con /booking?…', () {
+        final home = isWeb ? '/' : '/home';
+        expect(safeNext('/bookingx?service=a', isWeb: isWeb), home);
+        expect(safeNext('https://x.com/booking?service=a', isWeb: isWeb), home);
+      });
+
+      test('$platform: sin WhatsApp, la captura conserva el servicio', () {
+        final redirect = _redirect(
+          '/booking?service=gel-short',
+          isWeb: isWeb,
+          session: _Session.noPhone,
+        );
+        expect(Uri.parse(redirect!).path, '/capture_phone');
+        expect(
+          Uri.parse(redirect).queryParameters['next'],
+          '/booking?service=gel-short',
+        );
+      });
+
+      test('$platform: tras la captura vuelve al servicio', () {
+        expect(
+          _redirect(
+            '/capture_phone?next=${Uri.encodeQueryComponent('/booking?combo=c1')}',
+            isWeb: isWeb,
+            session: _Session.client,
+          ),
+          '/booking?combo=c1',
+        );
+      });
+    }
+
+    test('Web: sin sesión, el login conserva el servicio (RF-41)', () {
+      final redirect = _redirect('/booking?service=gel-short', isWeb: true);
+      expect(Uri.parse(redirect!).path, '/login');
+      expect(
+        Uri.parse(redirect).queryParameters['next'],
+        '/booking?service=gel-short',
+      );
+    });
+
+    test('Web: con un id no válido, el login vuelve a /booking', () {
+      final redirect = _redirect('/booking?service=a%20b', isWeb: true);
+      expect(Uri.parse(redirect!).queryParameters['next'], '/booking');
+    });
+
+    test('Web: otras páginas no llevan su query al login', () {
+      final redirect = _redirect('/profile?x=1', isWeb: true);
+      expect(Uri.parse(redirect!).queryParameters['next'], '/profile');
+    });
+  });
 }

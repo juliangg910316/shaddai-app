@@ -10,7 +10,7 @@ import 'package:shaddai/data/repositories/booking_repository.dart';
 /// envían a quien escucha; [failBusy] y [failMine] envían un error. La
 /// comprobación previa devuelve [checkData] (por defecto, lo que hay en
 /// [busy] y [mine]) o lanza [checkError]; el guardado lanza [saveError] o
-/// guarda en [created].
+/// guarda en [created] y lo envía como uno más de [mine].
 class FakeBookingRepository implements BookingRepository {
   FakeBookingRepository({this.busy = const [], this.mine = const []});
 
@@ -96,6 +96,8 @@ class FakeBookingRepository implements BookingRepository {
     final error = saveError;
     if (error != null) throw error;
     created.add(appointment);
+    // Como Firestore, el turno guardado llega a quien escucha los turnos.
+    emitMine([...mine, appointment]);
   }
 
   @override

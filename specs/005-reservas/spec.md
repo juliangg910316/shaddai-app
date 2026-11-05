@@ -79,6 +79,7 @@ Esta spec es la primera de tres sobre reservas (división decidida por el autor 
 - RF-19: CUANDO se elige un combo, EL SISTEMA no muestra adicionales.
 - RF-20: CUANDO se cambia de servicio, EL SISTEMA desmarca los adicionales elegidos.
 - RF-21: SI un adicional marcado deja de estar disponible, ENTONCES EL SISTEMA lo desmarca.
+- RF-59: CUANDO se toca la hora o el servicio o combo que ya está elegido, EL SISTEMA lo quita de la selección (el servicio, con sus adicionales) y conserva lo demás. Así, sin hora vuelven a poder elegirse todos los servicios (RF-14) y sin servicio vuelven a activarse todas las horas libres. (Añadido el 2026-11-05, decisión del autor.)
 
 ### Agendar
 - RF-22: MIENTRAS hay una hora o un servicio elegidos, EL SISTEMA muestra un resumen con lo que haya elegido: la fecha, la hora de inicio y de fin, lo reservado, los adicionales marcados, la duración del turno y el precio total.

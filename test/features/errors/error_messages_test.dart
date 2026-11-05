@@ -1,7 +1,7 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shaddai/data/models/calendar_settings_model.dart';
 import 'package:shaddai/data/models/user_model.dart';
 import 'package:shaddai/features/admin/presentation/admin_dashboard_view.dart';
 import 'package:shaddai/features/admin/presentation/admin_users_view.dart';
@@ -13,7 +13,9 @@ import 'package:shaddai/features/booking/presentation/booking_view.dart';
 import 'package:shaddai/features/booking/providers/booking_provider.dart';
 import 'package:shaddai/features/profile/presentation/profile_view.dart';
 
+import '../../helpers/booking_steps.dart';
 import '../../helpers/fake_auth.dart';
+import '../../helpers/fake_booking.dart';
 import '../../helpers/fake_session.dart';
 import '../../helpers/pump_app.dart';
 
@@ -233,18 +235,13 @@ void main() {
         stored: {'language': 'es'},
         home: const BookingView(),
         overrides: [
-          currentUserProvider.overrideWith((ref) => Stream.value(testClient)),
-          availableSlotsProvider.overrideWithValue(
-            AsyncError(technical, StackTrace.empty),
-          ),
+          ...bookingDataOverrides(bookings: FakeBookingRepository()),
+          busySlotsProvider.overrideWith((ref) => Stream.error(technical)),
         ],
       );
       await tester.pumpAndSettle();
 
-      expect(
-        find.text('No pudimos cargar los horarios. Inténtalo de nuevo.'),
-        findsOneWidget,
-      );
+      expect(find.text('No se pudo cargar la agenda.'), findsOneWidget);
       expect(find.textContaining(_technical), findsNothing);
     });
 
@@ -252,31 +249,24 @@ void main() {
       tester.view.devicePixelRatio = 1;
       tester.view.physicalSize = const Size(800, 2400);
       addTearDown(tester.view.reset);
-      final slot = DateTime(2026, 10, 21, 10);
       await pumpApp(
         tester,
         stored: {'language': 'es'},
         home: const BookingView(),
-        overrides: [
-          currentUserProvider.overrideWith((ref) => Stream.value(testClient)),
-          calendarSettingsProvider.overrideWith(
-            (ref) => Stream.value(CalendarSettingsModel.defaultSettings()),
-          ),
-          availableSlotsProvider.overrideWithValue(AsyncData([slot])),
-          bookingRepositoryProvider.overrideWithValue(
-            FailingBookingRepository(),
-          ),
-        ],
+        overrides: bookingDataOverrides(
+          bookings: FakeBookingRepository()
+            ..saveError = FirebaseException(
+              plugin: 'cloud_firestore',
+              code: 'permission-denied',
+            ),
+        ),
       );
       // En la app, el router escucha siempre a la usuaria actual; aquí no
       // hay router, así que se escucha a mano para que esté cargada.
       appContainer(tester).listen(currentUserProvider, (_, _) {});
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('10:00'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('CONFIRMAR 10:00'));
-      await tester.pumpAndSettle();
+      await openBookingConfirmation(tester);
       await tester.tap(find.text('CONFIRMAR'));
       await tester.pumpAndSettle();
 

@@ -10,6 +10,7 @@ import '../../../core/theme/system_bars.dart';
 import '../../../core/utils/capitalize.dart';
 import '../../../core/widgets/app_widgets.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../booking/logic/salon_time.dart';
 import '../providers/admin_provider.dart';
 import '../../../data/models/appointment_model.dart';
 
@@ -305,9 +306,10 @@ class _AppointmentCard extends ConsumerWidget {
     );
     final brand = context.brand;
     final waiting = appointment.status == 'waiting_confirmation';
+    // En hora del salón, esté donde esté el dispositivo (spec 005).
     final hours = DateFormat.Hm(l10n.localeName);
-    final startStr = hours.format(appointment.startTime);
-    final endStr = hours.format(appointment.endTime);
+    final startStr = hours.format(toSalon(appointment.startTime));
+    final endStr = hours.format(toSalon(appointment.endTime));
 
     return FlatCard(
       borderColor: waiting ? brand.goldHairline : brand.hairline,
@@ -381,6 +383,21 @@ class _AppointmentCard extends ConsumerWidget {
               ),
             ],
           ),
+          // Lo reservado y sus adicionales, en el idioma activo (spec 005,
+          // RF-52). Los turnos sin esa copia no la muestran.
+          if (appointment.booked case final booked?) ...[
+            const SizedBox(height: 12),
+            Text(
+              [
+                booked.name.of(l10n.localeName),
+                if (booked.addons.isNotEmpty)
+                  booked.addons
+                      .map((addon) => addon.name.of(l10n.localeName))
+                      .join(', '),
+              ].join(' · '),
+              style: AppText.sans(size: 14, color: brand.ink, height: 1.4),
+            ),
+          ],
           if (appointment.status != 'cancelled') ...[
             const SizedBox(height: 16),
             Row(

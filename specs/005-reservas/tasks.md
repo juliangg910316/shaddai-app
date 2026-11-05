@@ -243,14 +243,19 @@ La vista antigua y sus providers (`availableSlotsProvider`, `selectedDateProvide
 
 ## Bloque B — Vista de reserva y rutas
 
-- [ ] **T10. Textos nuevos.** RNF-4, RC-1
+- [x] **T10. Textos nuevos.** RNF-4, RC-1
   - Tests: `test/features/booking/booking_texts_test.dart`:
     - las claves de § 6 del plan existen en ES y en PT;
     - en PT se usa "horário" y en ES, "la confirmación de Beidis".
   - Código: las claves de § 6 del plan en `app_es.arb` y `app_pt.arb`, añadidas al final como texto, y `flutter gen-l10n`.
   - Hecho cuando: `lib/l10n/` está regenerado y los tests pasan.
+  - Hecha (2026-11-03):
+    - las 32 claves de § 6 del plan, con la redacción del plan, al final de `app_es.arb` (con su descripción) y de `app_pt.arb`;
+    - `bookingServiceNeedsLongerSlot`/`bookingSlotTooShortFor` reciben `duration` y `bookingTimeRange` recibe `start` y `end`, como `String` ya formateados;
+    - `flutter gen-l10n` regenerado;
+    - 5 tests; suite completa, 1108 en verde.
 
-- [ ] **T11. Estados de la pantalla de reserva.** RF-33, RF-34, RF-37 a RF-39, RF-46, RF-49
+- [x] **T11. Estados de la pantalla de reserva.** RF-33, RF-34, RF-37 a RF-39, RF-46, RF-49
   - Tests: `test/features/booking/booking_screen_states_test.dart` (`pumpApp`):
     - un turno activo, con lo reservado, los adicionales, las horas, el total, el estado y el texto de "solo uno";
     - el turno desaparece al cancelarse o al terminar;
@@ -264,8 +269,17 @@ La vista antigua y sus providers (`availableSlotsProvider`, `selectedDateProvide
     - `_Notice` pasa a ser `AppNotice` público (refactor).
     - Lo que no es un estado de pantalla sigue mostrando la vista actual hasta T12.
   - Hecho cuando: los tests pasan y los de spec 003 (`mobile_booking_sign_in_test`) siguen en verde.
+  - Hecha (2026-11-03):
+    - `BookingView` elige con `switch (bookingScreenProvider)`; el estado de reserva sigue mostrando el formulario antiguo hasta T12;
+    - `active_appointment_view.dart` y `booking_notices.dart`, con los avisos de bloqueo, admin y error de carga;
+    - "Reintentar" invalida `currentUserProvider` y `myAppointmentsProvider`;
+    - refactor: `_Notice` pasa a `AppNotice`, y también se hacen públicos su botón (`AppNoticeButton`) y el de WhatsApp (`WhatsappNoticeButton`), que los avisos de la reserva necesitan;
+    - corrección de T8: Riverpod 3 reintenta solo tras un error y deja el valor "cargando" con el error dentro; `bookingScreenProvider` ya no lo trata como carga, sino como error (RF-49);
+    - `bookingDataOverrides` acepta `userStream` y `nowStream`, para cambiar la sesión y "ahora" durante el test;
+    - dos tests antiguos de `error_messages_test` usan `sessionOverrides`, que también sustituye los turnos;
+    - 10 tests; suite completa, 1120 en verde.
 
-- [ ] **T12. Calendario y horas.** RF-1 a RF-9, RF-15, RF-48
+- [x] **T12. Calendario y horas.** RF-1 a RF-9, RF-15, RF-48
   - Tests: `test/features/booking/booking_form_slots_test.dart`:
     - abre en el día inicial;
     - sin días que se puedan elegir, muestra el texto y WhatsApp;
@@ -283,8 +297,19 @@ La vista antigua y sus providers (`availableSlotsProvider`, `selectedDateProvide
     - `SlotGrid`, con un `Wrap` en lugar de la rejilla de 3 columnas;
     - los avisos de la selección se muestran en un `SnackBar` que traduce en su `build` y se anuncian al lector de pantalla.
   - Hecho cuando: los tests pasan y `localized_dates_test` está adaptado y en verde.
+  - Hecha (2026-11-03):
+    - `booking_form.dart`: título, calendario y horas; un error del calendario muestra un solo aviso en lugar de los dos;
+    - `booking_calendar.dart`: conversión del día del salón a fecha local y de vuelta; sin días que se puedan elegir, el texto y WhatsApp;
+    - `slot_grid.dart`: `Wrap` con horas de 48 px de alto como mínimo; "Horas de Curitiba" fuera de −3 h; las horas que no alcanzan se ven desactivadas, se pueden tocar y avisan, y su `Semantics` dice "no disponible";
+    - `BookingLoadErrorNotice(schedule: true)`: "Reintentar" vuelve a pedir el calendario y los turnos ocupados, y ofrece WhatsApp (RF-48);
+    - los avisos de la selección van en un `SnackBar` con `BookingNoticeText`, que traduce en su `build`, y se anuncian con `SemanticsService.sendAnnouncement`;
+    - transición hasta T13: los chips fijos y el botón "CONFIRMAR" antiguo van en `footer`, con la hora de `bookingSelectionProvider` (se guarda con `fromSalon`);
+    - corrección de T8: `busyRangesProvider` conserva el error durante el reintento automático de Riverpod, que `whenData` perdía;
+    - `bookingScheduleOverrides` (los datos de la reserva sin la sesión) para los tests con `pumpWebApp`/`pumpMobileApp`;
+    - tests antiguos adaptados a los datos nuevos: `localized_dates_test`, `state_preserved_test`, `web_booking_flow_test`, `mobile_booking_sign_in_test` y dos de `error_messages_test`;
+    - 11 tests; suite completa, 1134 en verde.
 
-- [ ] **T13. Servicios, adicionales, resumen y "Agendar turno".** RF-10 a RF-14, RF-16 a RF-25, RF-47
+- [x] **T13. Servicios, adicionales, resumen y "Agendar turno".** RF-10 a RF-14, RF-16 a RF-25, RF-47
   - Tests: `test/features/booking/booking_form_services_test.dart`:
     - los servicios aparecen agrupados por categoría y en orden, y después los combos, con precio y duración;
     - con una hora elegida, los que no caben se ven desactivados y avisan con su duración;
@@ -298,8 +323,17 @@ La vista antigua y sus providers (`availableSlotsProvider`, `selectedDateProvide
     - con la lista de precios no disponible, su aviso.
   - Código: `ServicePicker`, `AddonPicker`, `BookingSummary`, `BookButton` y el diálogo de confirmación. Se borran los chips fijos de la vista.
   - Hecho cuando: los tests pasan.
+  - Hecha (2026-11-03):
+    - `service_picker.dart`, `addon_picker.dart`, `booking_summary.dart` y `book_button.dart` (con el diálogo de confirmación, que muestra `BookingSummary` sin título);
+    - servicios y combos con `Semantics`: nombre, precio y duración, elegido y "no disponible"; se ven desactivados, se pueden tocar y avisan;
+    - `selectedFreeSlotProvider`, nuevo: la hora libre elegida con su cobertura, que decide qué servicios caben;
+    - `BookingForm` guarda en su estado si hay que marcar lo que falta: borde y texto en las horas y en los servicios mientras sigan sin elegir;
+    - se borran de la vista los chips fijos y el flujo de guardado antiguo; los providers y las claves `.arb` antiguos se borran en T17;
+    - transición hasta T14: confirmar llama a `bookingSubmitProvider`; con `ok`, el aviso de éxito de antes (Web, diálogo; Android/iOS, `SnackBar`), y con cualquier otro resultado, el aviso de error de antes;
+    - `test/helpers/booking_steps.dart`, nuevo: `openBookingConfirmation` elige la hora y el primer servicio y abre el diálogo; lo usan los tests antiguos que reservaban con "CONFIRMAR 10:00";
+    - 10 tests; suite completa, 1148 en verde.
 
-- [ ] **T14. Guardar el turno.** RF-26 a RF-32, RF-36, RF-50
+- [x] **T14. Guardar el turno.** RF-26 a RF-32, RF-36, RF-50
   - Tests: `test/features/booking/booking_submit_flow_test.dart` y `booking_locale_test.dart`:
     - al confirmar, se guarda y en Android/iOS sale el aviso de éxito;
     - en Web sale el diálogo con "Volver al inicio";
@@ -309,8 +343,15 @@ La vista antigua y sus providers (`availableSlotsProvider`, `selectedDateProvide
     - con un error, el aviso sin detalles técnicos, y lo elegido se conserva;
     - al cambiar de idioma con un aviso o el diálogo abiertos, cambian de idioma.
   - Hecho cuando: los tests pasan y `web_booking_flow_test` está adaptado y en verde.
+  - Hecha (2026-11-03):
+    - `BookingView._submit` muestra un aviso por resultado: éxito (en Web, el diálogo de siempre), hora ocupada (`bookingSlotTaken`), ya no cabe (`bookingSlotNoLongerFits`), turno activo (`bookingAlreadyActive`) y error (`bookingCreateError`, sobre el color de peligro);
+    - `showBookingSubmitResult` (`booking_notices.dart`): el `SnackBar` traduce en su `build` y se anuncia al lector de pantalla;
+    - con `alreadyActive`, la vista vuelve a pedir los turnos (`invalidate(myAppointmentsProvider)`), para mostrar el reservado desde otro dispositivo aunque aún no haya llegado (RF-36);
+    - `FakeBookingRepository.createAppointment` envía el turno guardado a quien escucha `mine`, como Firestore;
+    - `web_booking_flow_test` ya estaba adaptado en T13 (`openBookingConfirmation`) y sigue en verde;
+    - 10 tests (6 del flujo y 4 de idioma); suite completa, 1158 en verde.
 
-- [ ] **T15. Reservar desde el detalle y direcciones.** RF-40 a RF-46
+- [x] **T15. Reservar desde el detalle y direcciones.** RF-40 a RF-46
   - Tests:
     - `test/core/router/redirect_logic_test.dart`, casos nuevos:
       - `next` con `service`/`combo` se conserva al pedir el inicio de sesión y el WhatsApp;
@@ -329,17 +370,30 @@ La vista antigua y sus providers (`availableSlotsProvider`, `selectedDateProvide
     - `requestItem` se llama en el fotograma siguiente;
     - `_ReserveButton` del detalle.
   - Hecho cuando: los tests pasan y los tests de rutas de las specs 002 y 003 siguen en verde.
+  - Hecha (2026-11-03):
+    - `redirect_logic.dart`: `safeNext` acepta `/booking` con una sola clave `service` o `combo` y un id `^[A-Za-z0-9_-]{1,64}$`; cualquier otra query → `/booking`. Al pedir el login o el WhatsApp, solo la reserva lleva su query en `next` (las demás páginas, como antes, sin ella);
+    - `logic/booking_request.dart`, nuevo: `bookingRequestOf(query)` y `bookingLocationOf(ref)`;
+    - las dos rutas `/booking` pasan la petición a `BookingView(request:)`, que llama a `requestItem` en el fotograma siguiente cuando la petición cambia;
+    - `BookingSelectionController.requestItem` aplica también `reconcile`: con la lista ya cargada, un id que no existe se quita y avisa enseguida (RF-44);
+    - `_ReserveButton` del detalle va a `/booking?service=<id>` o `?combo=<id>`;
+    - `pumpWebApp`/`pumpMobileApp` aceptan `appointments`;
+    - el test de spec 004 `price_detail_web_test` ("Reservar cita" sin sesión) espera ahora `next=/booking?service=spa`;
+    - 37 tests nuevos (27 de redirección y 10 de reserva desde el detalle); suite completa, 1196 en verde.
 
 ## Bloque C — Admin, reglas y cierre
 
-- [ ] **T16. Lo reservado en la lista de la admin y la cancelación.** RF-52, RF-56
+- [x] **T16. Lo reservado en la lista de la admin y la cancelación.** RF-52, RF-56
   - Tests: `test/features/admin/admin_appointments_booked_test.dart`:
     - la tarjeta muestra lo reservado y los adicionales en el idioma activo;
     - un turno sin `booked` no muestra esa línea;
     - "Cancelar" llama a la cancelación que libera la hora (fake).
   - Hecho cuando: los tests pasan.
+  - Hecha (2026-11-03):
+    - `_AppointmentCard` añade, bajo la clienta, una línea "Servicio · adicional, adicional" en el idioma activo; sin `booked` no añade nada;
+    - "Cancelar" ya llamaba a `updateAppointmentStatus(id, 'cancelled')`, que desde T6 borra también el turno ocupado en el mismo lote: el test lo fija con el fake;
+    - 4 tests; suite completa, 1200 en verde.
 
-- [ ] **T17. Accesibilidad, texto grande y limpieza.** RNF-2, RNF-3, RF-58
+- [x] **T17. Accesibilidad, texto grande y limpieza.** RNF-2, RNF-3, RF-58
   - Tests:
     - `test/features/booking/booking_accessibility_test.dart`:
       - `textContrastGuideline`, `androidTapTargetGuideline` y `labeledTapTargetGuideline` en tema claro y oscuro;
@@ -348,8 +402,14 @@ La vista antigua y sus providers (`availableSlotsProvider`, `selectedDateProvide
       - texto al 200 % y 320 px en ES y PT sin desbordes.
     - `legacy_cleanup_test.dart`: ya no existen los chips fijos, `availableSlotsProvider`, `selectedDateProvider`, `appointmentsForDateProvider`, `getActiveAppointmentsForDate` ni sus claves `.arb` (se comprueba antes con `grep -w`).
   - Hecho cuando: los tests pasan, se borra lo antiguo y `no_hardcoded_style_test` sigue en verde.
+  - Hecha (2026-11-03):
+    - los títulos de sección (Fecha, Hora, Servicio, Adicionales, Resumen) pasan a `BookingSectionTitle`: encabezado en la semántica y 12 px en w600, porque a 10 px en w400 la guía de contraste no los medía bien;
+    - en el calendario, las flechas y el mes miden 48 px de alto, y las flechas llevan "Mes anterior"/"Mes siguiente" de `MaterialLocalizations` (sin claves nuevas);
+    - borrados `selectedDateProvider`, `appointmentsForDateProvider`, `availableSlotsProvider`, `getActiveAppointmentsForDate`, `bookingOverrides`/`tomorrow` de los tests (`screens_theme_test` usa ya `bookingDataOverrides`) y 18 claves `.arb` sin uso: las 6 `serviceOption*` del plan y las de la vista antigua (`step*Label`, `chooseTimeSlotAction`, `confirmAtTimeAction`, `confirmBookingDialog*`, `slotsLoadError`, `noSlotsAvailable`, `bookingPendingNotice*`), comprobadas antes con `grep -w`;
+    - CLAUDE.md describe ya `freeSlots` y `busySlots` en lugar de lo borrado;
+    - 13 tests de accesibilidad y 7 de limpieza; suite completa, 1223 en verde.
 
-- [ ] **T18. Reglas, índice y comprobación manual.** RF-53 a RF-58, RNF-5
+- [x] **T18. Reglas, índice y comprobación manual.** RF-53 a RF-58, RNF-5
   - Tests: `test/core/firestore_rules_test.dart`:
     - estructura de los `match` de `users`, `appointments` y `busySlots` según § 2 del plan;
     - `firebase.json` apunta a `firestore.indexes.json`;
@@ -360,4 +420,25 @@ La vista antigua y sus providers (`availableSlotsProvider`, `selectedDateProvide
     - `firebase.json`;
     - los comentarios "spec 009" → "spec 012" en `firestore.rules`, `redirect_logic.dart` y `firestore_rules_test.dart`;
     - `specs/005-reservas/rules-check.md`, con los casos del simulador, el borrado de la base de datos antes de publicar (RF-51) y el recorrido de RF-58.
+    - la tarjeta de la admin (`_AppointmentCard`) muestra la hora del dispositivo, no la de Curitiba: pasarla a hora del salón con `toSalon`, con un test en un dispositivo en otra zona (pendiente de T16, decisión del autor, 2026-11-03).
   - Hecho cuando: los tests pasan y el autor confirma los casos del simulador y el recorrido manual (criterios de finalización).
+  - Hecha (2026-11-03), salvo la confirmación del autor:
+    - `firestore.rules` con las reglas de `users`, `appointments` y `busySlots` del plan § 2 (`signedIn`, `myProfile`, `isBlocked`; `isAdmin` usa `myProfile`); `settings/calendar` sigue provisional, marcada para la spec 012;
+    - `firestore.indexes.json` con el índice de "mis turnos" (`clientId` ascendente, `startTime` descendente) y `firebase.json` apuntando a él;
+    - "spec 009" → "spec 012" en `firestore.rules` y `redirect_logic.dart`;
+    - la tarjeta de la admin muestra las horas con `toSalon` (test con el turno en UTC; en rojo con `TZ=Europe/Lisbon`);
+    - `specs/005-reservas/rules-check.md`: borrado de `appointments` y `busySlots` antes de publicar (RF-51), 20 casos del simulador y el recorrido de RF-58;
+    - CLAUDE.md ya no dice que no hay reglas;
+    - 13 tests nuevos (12 de reglas y 1 de la tarjeta); suite completa, 1236 en verde, también con `TZ=Europe/Lisbon`.
+  - **Pendiente:** el autor publica las reglas y el índice y marca el resultado de `rules-check.md`.
+
+## Cambio del 2026-11-05 (RF-59, decisión del autor)
+
+- [x] **T19. Quitar la hora o el servicio elegidos al volver a tocarlos.** RF-59
+  - Tests:
+    - `test/features/booking/logic/booking_selection_test.dart`: `selectSlot` con la hora elegida la quita y conserva el día, el servicio y los adicionales; `selectItem` con el servicio elegido lo quita con sus adicionales y conserva el día y la hora (sustituye a "elegir otra vez el mismo servicio conserva los adicionales");
+    - `test/features/booking/booking_form_services_test.dart`: tocar dos veces un servicio lo deja sin elegir y oculta "Adicionales"; tocar dos veces una hora la deja sin elegir y vuelven a activarse los servicios que no cabían.
+  - Hecho cuando: los tests pasan.
+  - Hecha (2026-11-05):
+    - `selectSlot` con la hora elegida la quita y conserva lo demás; `selectItem` con el servicio o combo elegido lo quita con sus adicionales y conserva el día y la hora;
+    - 4 tests (2 de lógica, 2 de vista); se sustituye el test que conservaba los adicionales al volver a elegir el mismo servicio; suite completa, 1239 en verde.

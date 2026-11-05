@@ -356,18 +356,6 @@ abstract class AppLocalizations {
   /// **'GUARDAR Y CONTINUAR'**
   String get saveAndContinueAction;
 
-  /// No description provided for @confirmBookingDialogTitle.
-  ///
-  /// In es, this message translates to:
-  /// **'Confirmar Reserva'**
-  String get confirmBookingDialogTitle;
-
-  /// No description provided for @confirmBookingDialogBody.
-  ///
-  /// In es, this message translates to:
-  /// **'¿Deseas reservar tu turno para el día {date} a las {time}?'**
-  String confirmBookingDialogBody(String date, String time);
-
   /// No description provided for @bookingCreatedSuccess.
   ///
   /// In es, this message translates to:
@@ -379,102 +367,6 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'No pudimos crear la reserva. Inténtalo de nuevo.'**
   String get bookingCreateError;
-
-  /// No description provided for @stepServiceLabel.
-  ///
-  /// In es, this message translates to:
-  /// **'1 · SERVICIO'**
-  String get stepServiceLabel;
-
-  /// No description provided for @stepDateLabel.
-  ///
-  /// In es, this message translates to:
-  /// **'2 · FECHA'**
-  String get stepDateLabel;
-
-  /// No description provided for @stepTimeLabel.
-  ///
-  /// In es, this message translates to:
-  /// **'3 · Horario'**
-  String get stepTimeLabel;
-
-  /// No description provided for @slotsLoadError.
-  ///
-  /// In es, this message translates to:
-  /// **'No pudimos cargar los horarios. Inténtalo de nuevo.'**
-  String get slotsLoadError;
-
-  /// No description provided for @chooseTimeSlotAction.
-  ///
-  /// In es, this message translates to:
-  /// **'ELIGE UN HORARIO'**
-  String get chooseTimeSlotAction;
-
-  /// No description provided for @confirmAtTimeAction.
-  ///
-  /// In es, this message translates to:
-  /// **'CONFIRMAR {time}'**
-  String confirmAtTimeAction(String time);
-
-  /// No description provided for @bookingPendingNoticePrefix.
-  ///
-  /// In es, this message translates to:
-  /// **'Tu turno quedará en '**
-  String get bookingPendingNoticePrefix;
-
-  /// No description provided for @bookingPendingNoticeHighlight.
-  ///
-  /// In es, this message translates to:
-  /// **'Esperando confirmación'**
-  String get bookingPendingNoticeHighlight;
-
-  /// No description provided for @bookingPendingNoticeSuffix.
-  ///
-  /// In es, this message translates to:
-  /// **' hasta que Beidis lo apruebe.'**
-  String get bookingPendingNoticeSuffix;
-
-  /// No description provided for @noSlotsAvailable.
-  ///
-  /// In es, this message translates to:
-  /// **'No hay horarios disponibles para esta fecha.'**
-  String get noSlotsAvailable;
-
-  /// No description provided for @serviceOptionClassicChip.
-  ///
-  /// In es, this message translates to:
-  /// **'Clásica 45m'**
-  String get serviceOptionClassicChip;
-
-  /// No description provided for @serviceOptionClassicSummary.
-  ///
-  /// In es, this message translates to:
-  /// **'Clásica 45 min'**
-  String get serviceOptionClassicSummary;
-
-  /// No description provided for @serviceOptionSemipermChip.
-  ///
-  /// In es, this message translates to:
-  /// **'Semiperm. 60m'**
-  String get serviceOptionSemipermChip;
-
-  /// No description provided for @serviceOptionSemipermSummary.
-  ///
-  /// In es, this message translates to:
-  /// **'Semiperm. 60 min'**
-  String get serviceOptionSemipermSummary;
-
-  /// No description provided for @serviceOptionAcrylicChip.
-  ///
-  /// In es, this message translates to:
-  /// **'Acrílicas 90m'**
-  String get serviceOptionAcrylicChip;
-
-  /// No description provided for @serviceOptionAcrylicSummary.
-  ///
-  /// In es, this message translates to:
-  /// **'Acrílicas 90 min'**
-  String get serviceOptionAcrylicSummary;
 
   /// No description provided for @myProfileTitle.
   ///
@@ -1963,6 +1855,198 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Editar combo'**
   String get adminServicesEditCombo;
+
+  /// Título del paso de la fecha en la reserva (spec 005, RF-1)
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha'**
+  String get bookingStepDate;
+
+  /// Título del paso de la hora (RF-4)
+  ///
+  /// In es, this message translates to:
+  /// **'Hora'**
+  String get bookingStepTime;
+
+  /// Título del paso del servicio o combo (RF-10)
+  ///
+  /// In es, this message translates to:
+  /// **'Servicio'**
+  String get bookingStepService;
+
+  /// Título del paso de los adicionales (RF-18)
+  ///
+  /// In es, this message translates to:
+  /// **'Adicionales'**
+  String get bookingStepAddons;
+
+  /// Título del resumen de lo elegido (RF-22)
+  ///
+  /// In es, this message translates to:
+  /// **'Resumen'**
+  String get bookingStepSummary;
+
+  /// Nota cuando el dispositivo no está en la zona del salón (RF-5)
+  ///
+  /// In es, this message translates to:
+  /// **'Horas de Curitiba'**
+  String get bookingSalonTimeNote;
+
+  /// Sin días seleccionables en la ventana (RF-3)
+  ///
+  /// In es, this message translates to:
+  /// **'No hay fechas disponibles para reservar. Escríbenos por WhatsApp.'**
+  String get bookingNoDaysAvailable;
+
+  /// Día elegido sin horas libres (RF-7)
+  ///
+  /// In es, this message translates to:
+  /// **'No quedan horas libres este día. Prueba otra fecha.'**
+  String get bookingNoFreeSlots;
+
+  /// Se tocó un servicio que no cabe en la hora elegida (RF-13)
+  ///
+  /// In es, this message translates to:
+  /// **'Este servicio dura {duration}: elige una hora con más tiempo libre.'**
+  String bookingServiceNeedsLongerSlot(String duration);
+
+  /// Se tocó una hora en la que no cabe el servicio elegido (RF-15)
+  ///
+  /// In es, this message translates to:
+  /// **'No hay tiempo suficiente a esta hora para un servicio de {duration}.'**
+  String bookingSlotTooShortFor(String duration);
+
+  /// La hora elegida dejó de ser libre (RF-9)
+  ///
+  /// In es, this message translates to:
+  /// **'La hora elegida ya no está disponible. Elige otra.'**
+  String get bookingSlotGone;
+
+  /// El servicio ya no cabe en la hora elegida (RF-16)
+  ///
+  /// In es, this message translates to:
+  /// **'La hora elegida ya no tiene tiempo suficiente para el servicio. Elige otra.'**
+  String get bookingSlotNoLongerFits;
+
+  /// El servicio elegido ya no se ofrece (RF-17, RF-44)
+  ///
+  /// In es, this message translates to:
+  /// **'El servicio elegido ya no está disponible.'**
+  String get bookingItemUnavailable;
+
+  /// La fecha elegida dejó de poder elegirse (casos límite)
+  ///
+  /// In es, this message translates to:
+  /// **'La fecha elegida ya no se puede reservar: te mostramos la siguiente disponible.'**
+  String get bookingDateMoved;
+
+  /// Lo que anuncia el lector de pantalla en una opción que no se puede elegir (D-11)
+  ///
+  /// In es, this message translates to:
+  /// **'no disponible'**
+  String get bookingUnavailableLabel;
+
+  /// Falta la hora para agendar (RF-24)
+  ///
+  /// In es, this message translates to:
+  /// **'Elige una hora'**
+  String get bookingMissingSlot;
+
+  /// Falta el servicio para agendar (RF-24)
+  ///
+  /// In es, this message translates to:
+  /// **'Elige un servicio'**
+  String get bookingMissingService;
+
+  /// Faltan la hora y el servicio (RF-24)
+  ///
+  /// In es, this message translates to:
+  /// **'Elige una hora y un servicio para agendar.'**
+  String get bookingMissingBoth;
+
+  /// Botón que guarda el turno (RF-25)
+  ///
+  /// In es, this message translates to:
+  /// **'Agendar turno'**
+  String get bookingAction;
+
+  /// Título del diálogo de confirmación (RF-25)
+  ///
+  /// In es, this message translates to:
+  /// **'Confirmar turno'**
+  String get bookingConfirmTitle;
+
+  /// Aviso del diálogo de confirmación (RF-28)
+  ///
+  /// In es, this message translates to:
+  /// **'El turno quedará esperando la confirmación de Beidis.'**
+  String get bookingConfirmPending;
+
+  /// La comprobación previa encontró la hora ocupada (RF-29)
+  ///
+  /// In es, this message translates to:
+  /// **'Esa hora acaba de ocuparse. Elige otra.'**
+  String get bookingSlotTaken;
+
+  /// La comprobación previa encontró un turno activo (RF-36)
+  ///
+  /// In es, this message translates to:
+  /// **'Ya tienes un turno pendiente.'**
+  String get bookingAlreadyActive;
+
+  /// Título de la vista del turno activo (RF-34)
+  ///
+  /// In es, this message translates to:
+  /// **'Tu turno'**
+  String get bookingActiveTitle;
+
+  /// Explicación bajo el turno activo (RF-34)
+  ///
+  /// In es, this message translates to:
+  /// **'Solo puedes tener un turno pendiente a la vez. Puedes ver todos tus turnos en tu perfil.'**
+  String get bookingOnlyOneActive;
+
+  /// Aviso para una cuenta bloqueada (RF-38)
+  ///
+  /// In es, this message translates to:
+  /// **'Tu cuenta no puede reservar turnos. Si crees que es un error, escríbenos por WhatsApp.'**
+  String get bookingBlocked;
+
+  /// Aviso para la administradora (RF-39)
+  ///
+  /// In es, this message translates to:
+  /// **'Con la cuenta de administración no se reservan turnos a tu nombre.'**
+  String get bookingAdminNotice;
+
+  /// Error al cargar turnos o calendario (RF-49)
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo cargar la agenda.'**
+  String get bookingLoadError;
+
+  /// Botón para volver a cargar la agenda (RF-49)
+  ///
+  /// In es, this message translates to:
+  /// **'Reintentar'**
+  String get bookingRetry;
+
+  /// Etiqueta de la duración en el resumen (RF-22)
+  ///
+  /// In es, this message translates to:
+  /// **'Duración'**
+  String get bookingDuration;
+
+  /// Etiqueta del precio total en el resumen (RF-22)
+  ///
+  /// In es, this message translates to:
+  /// **'Total'**
+  String get bookingTotal;
+
+  /// Franja de inicio y fin de un turno
+  ///
+  /// In es, this message translates to:
+  /// **'{start} – {end}'**
+  String bookingTimeRange(String start, String end);
 }
 
 class _AppLocalizationsDelegate

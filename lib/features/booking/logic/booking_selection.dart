@@ -158,12 +158,21 @@ BookingSelection selectDay(BookingSelection selection, DateTime day) =>
     );
 
 /// Elige la hora [slot], salvo que el servicio elegido no quepa en ella
-/// (RF-15).
+/// (RF-15). Si ya era la elegida, la quita (RF-59).
 BookingUpdate selectSlot(
   BookingSelection selection,
   BookingContext context,
   FreeSlot slot,
 ) {
+  if (slot.start == selection.start) {
+    return _unchanged(
+      BookingSelection(
+        day: selection.day,
+        item: selection.item,
+        addonIds: selection.addonIds,
+      ),
+    );
+  }
   final duration = context.durationOf(selection.item);
   if (duration != null && !fits(duration, slot)) {
     return _unchanged(
@@ -182,12 +191,18 @@ BookingUpdate selectSlot(
 }
 
 /// Elige el servicio o combo [ref], salvo que no quepa en la hora elegida
-/// (RF-13). Si cambia de servicio, desmarca los adicionales (RF-20).
+/// (RF-13), y desmarca los adicionales (RF-20). Si ya era el elegido, lo
+/// quita con sus adicionales (RF-59).
 BookingUpdate selectItem(
   BookingSelection selection,
   BookingContext context,
   BookableRef ref,
 ) {
+  if (ref == selection.item) {
+    return _unchanged(
+      BookingSelection(day: selection.day, start: selection.start),
+    );
+  }
   final duration = context.durationOf(ref);
   final start = selection.start;
   if (duration != null && start != null) {
@@ -204,7 +219,7 @@ BookingUpdate selectItem(
       day: selection.day,
       start: selection.start,
       item: ref,
-      addonIds: ref == selection.item ? selection.addonIds : const {},
+      addonIds: const {},
     ),
   );
 }

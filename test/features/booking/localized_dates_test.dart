@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
 import 'package:shaddai/features/auth/providers/auth_provider.dart';
 import 'package:shaddai/features/booking/presentation/booking_view.dart';
 import 'package:table_calendar/table_calendar.dart';
 
+import '../../helpers/booking_steps.dart';
+import '../../helpers/fake_booking.dart';
 import '../../helpers/fake_session.dart';
 import '../../helpers/pump_app.dart';
 
@@ -17,13 +18,14 @@ Future<DateTime> _pumpBooking(WidgetTester tester, String language) async {
   tester.view.physicalSize = const Size(800, 2400);
   addTearDown(tester.view.reset);
 
-  final day = tomorrow();
-  final slot = day.add(const Duration(hours: 14));
+  // Las 14:00 del día que abre la reserva (martes 10/11/2026), en hora del
+  // salón.
+  final slot = DateTime.utc(2026, 11, 10, 14);
   await pumpApp(
     tester,
     stored: {'language': language},
     home: const BookingView(),
-    overrides: bookingOverrides(day: day, slots: AsyncData([slot])),
+    overrides: bookingDataOverrides(bookings: FakeBookingRepository()),
   );
   // En la app, el router escucha siempre a la usuaria actual.
   appContainer(tester).listen(currentUserProvider, (_, _) {});
@@ -77,13 +79,18 @@ void main() {
           'idioma activo', (tester) async {
         final slot = await _pumpBooking(tester, language);
 
-        await tester.tap(find.text('14:00'));
-        await tester.pumpAndSettle();
-        await tester.tap(find.text('CONFIRMAR 14:00'));
-        await tester.pumpAndSettle();
+        await openBookingConfirmation(tester, time: '14:00');
 
-        final longDate = DateFormat.yMMMMEEEEd(language).format(slot);
-        expect(find.textContaining(longDate), findsOneWidget);
+        final longDate = _capitalized(
+          DateFormat.yMMMMEEEEd(language).format(slot),
+        );
+        expect(
+          find.descendant(
+            of: find.byType(AlertDialog),
+            matching: find.text(longDate),
+          ),
+          findsOneWidget,
+        );
       });
     });
   }

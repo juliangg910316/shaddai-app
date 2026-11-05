@@ -157,6 +157,26 @@ void main() {
       expect(result.notices, isEmpty);
     });
 
+    test('tocar la hora elegida la quita y conserva el día, el servicio y '
+        'los adicionales (RF-59)', () {
+      final ctx = context();
+      final result = selectSlot(
+        BookingSelection(
+          day: tuesday,
+          start: at(10, 11),
+          item: s1,
+          addonIds: const {'a1'},
+        ),
+        ctx,
+        slotAt(ctx, at(10, 11)),
+      );
+      expect(
+        result.selection,
+        BookingSelection(day: tuesday, item: s1, addonIds: const {'a1'}),
+      );
+      expect(result.notices, isEmpty);
+    });
+
     test('con un servicio que no cabe, la rechaza y avisa', () {
       final ctx = context();
       final selection = BookingSelection(day: tuesday, item: s2);
@@ -199,13 +219,23 @@ void main() {
       expect(result.selection.addonIds, isEmpty);
     });
 
-    test('elegir otra vez el mismo servicio conserva los adicionales', () {
+    test('tocar el servicio elegido lo quita con sus adicionales y conserva '
+        'el día y la hora (RF-59)', () {
       final result = selectItem(
-        BookingSelection(day: tuesday, item: s1, addonIds: const {'a1'}),
+        BookingSelection(
+          day: tuesday,
+          start: at(10, 11),
+          item: s1,
+          addonIds: const {'a1'},
+        ),
         context(),
         s1,
       );
-      expect(result.selection.addonIds, {'a1'});
+      expect(
+        result.selection,
+        BookingSelection(day: tuesday, start: at(10, 11)),
+      );
+      expect(result.notices, isEmpty);
     });
   });
 

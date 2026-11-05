@@ -1,38 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shaddai/core/platform/platform_provider.dart';
-import 'package:shaddai/data/models/calendar_settings_model.dart';
 import 'package:shaddai/features/auth/presentation/login_view.dart';
 import 'package:shaddai/features/auth/presentation/phone_capture_view.dart';
 import 'package:shaddai/features/auth/presentation/widgets/google_brand_button.dart';
 import 'package:shaddai/features/auth/providers/auth_provider.dart';
 import 'package:shaddai/features/booking/presentation/booking_view.dart';
-import 'package:shaddai/features/booking/providers/booking_provider.dart';
 import 'package:shaddai/features/landing/presentation/landing_page.dart';
 import 'package:shaddai/features/navigation/presentation/web_top_bar.dart';
 
+import '../../helpers/booking_steps.dart';
 import '../../helpers/fake_auth.dart';
+import '../../helpers/fake_booking.dart';
 import '../../helpers/fake_session.dart';
 import '../../helpers/pump_app.dart';
 import '../../helpers/pump_web_app.dart';
 
-/// Reservas sin Firebase: mañana, con un hueco libre a las 10:00, y las
-/// reservas creadas en [bookings].
-List<Override> _bookingOverrides(RecordingBookingRepository bookings) {
-  final day = tomorrow();
-  return [
-    calendarSettingsProvider.overrideWith(
-      (ref) => Stream.value(CalendarSettingsModel.defaultSettings()),
-    ),
-    selectedDateProvider.overrideWith((ref) => day),
-    availableSlotsProvider.overrideWithValue(
-      AsyncData([day.add(const Duration(hours: 10))]),
-    ),
-    bookingRepositoryProvider.overrideWithValue(bookings),
-  ];
-}
+/// Reservas sin Firebase: el calendario por defecto, sin turnos ocupados,
+/// con "ahora" el martes 10/11/2026 a las 7:00 (hay hueco a las 10:00), y
+/// las reservas creadas en [bookings].
+List<Override> _bookingOverrides(FakeBookingRepository bookings) =>
+    bookingScheduleOverrides(bookings: bookings);
 
 Future<void> _tapReserve(WidgetTester tester) async {
   await tester.tap(
@@ -44,12 +33,9 @@ Future<void> _tapReserve(WidgetTester tester) async {
   await settleWeb(tester);
 }
 
-/// Elige las 10:00 y confirma la reserva en el diálogo.
+/// Elige las 10:00 y un servicio, y confirma la reserva en el diálogo.
 Future<void> _book(WidgetTester tester) async {
-  await tester.tap(find.text('10:00'));
-  await settleWeb(tester);
-  await tester.tap(find.text('CONFIRMAR 10:00'));
-  await settleWeb(tester);
+  await openBookingConfirmation(tester, settle: () => settleWeb(tester));
   await tester.tap(
     find.descendant(
       of: find.byType(AlertDialog),
@@ -60,9 +46,9 @@ Future<void> _book(WidgetTester tester) async {
 }
 
 void main() {
-  late RecordingBookingRepository bookings;
+  late FakeBookingRepository bookings;
 
-  setUp(() => bookings = RecordingBookingRepository());
+  setUp(() => bookings = FakeBookingRepository());
 
   testWidgets('"Reservar" sin sesión pide iniciarla y, tras ella, abre la '
       'reserva (RF-19, RF-20)', (tester) async {
@@ -164,10 +150,7 @@ void main() {
         overrides: _bookingOverrides(bookings),
       );
 
-      await tester.tap(find.text('10:00'));
-      await settleWeb(tester);
-      await tester.tap(find.textContaining('10:00').last);
-      await settleWeb(tester);
+      await openBookingConfirmation(tester, settle: () => settleWeb(tester));
       await tester.tap(
         find.descendant(
           of: find.byType(AlertDialog),
@@ -189,16 +172,11 @@ void main() {
       tester.view.physicalSize = const Size(800, 2400);
       addTearDown(tester.view.reset);
 
-      final day = tomorrow();
       await pumpApp(
         tester,
         home: const BookingView(),
         overrides: [
-          ...bookingOverrides(
-            day: day,
-            slots: AsyncData([day.add(const Duration(hours: 10))]),
-          ),
-          bookingRepositoryProvider.overrideWithValue(bookings),
+          ...bookingDataOverrides(bookings: bookings),
           isWebProvider.overrideWithValue(false),
         ],
       );

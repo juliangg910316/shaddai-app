@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shaddai/data/models/calendar_settings_model.dart';
 import 'package:shaddai/features/auth/presentation/phone_capture_view.dart';
 import 'package:shaddai/features/auth/presentation/widgets/google_brand_button.dart';
 import 'package:shaddai/features/booking/presentation/booking_sign_in_prompt.dart';
@@ -10,23 +8,15 @@ import 'package:shaddai/features/booking/presentation/booking_view.dart';
 import 'package:shaddai/features/booking/providers/booking_provider.dart';
 
 import '../../helpers/fake_auth.dart';
+import '../../helpers/fake_booking.dart';
 import '../../helpers/fake_session.dart';
+import '../../helpers/pump_app.dart';
 import '../../helpers/pump_web_app.dart';
 
-/// Reservas sin Firebase: mañana, con un hueco libre a las 10:00.
-List<Override> _bookingOverrides() {
-  final day = tomorrow();
-  return [
-    calendarSettingsProvider.overrideWith(
-      (ref) => Stream.value(CalendarSettingsModel.defaultSettings()),
-    ),
-    selectedDateProvider.overrideWith((ref) => day),
-    availableSlotsProvider.overrideWithValue(
-      AsyncData([day.add(const Duration(hours: 10))]),
-    ),
-    bookingRepositoryProvider.overrideWithValue(RecordingBookingRepository()),
-  ];
-}
+/// Reservas sin Firebase: el calendario por defecto, sin turnos ocupados,
+/// con "ahora" el martes 10/11/2026 a las 7:00 (hay hueco a las 10:00).
+List<Override> _bookingOverrides() =>
+    bookingScheduleOverrides(bookings: FakeBookingRepository());
 
 /// El calendario de la reserva (con sesión).
 final _calendar = find.text('10:00');
@@ -166,7 +156,10 @@ void main() {
     );
     await tester.tap(_calendar);
     await settleWeb(tester);
-    expect(find.text('CONFIRMAR 10:00'), findsOneWidget);
+    expect(
+      appContainer(tester).read(bookingSelectionProvider).selection.start,
+      isNotNull,
+    );
 
     session.signOut();
     await settleWeb(tester);

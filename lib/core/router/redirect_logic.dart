@@ -52,16 +52,52 @@ bool _isAccountPage(String path) =>
 bool _isAdminPage(String path) =>
     path == '/admin' || path.startsWith('/admin/');
 
+/// Id de un servicio o combo en `/booking?service=<id>` (spec 005, RF-40).
+final _bookableId = RegExp(r'^[A-Za-z0-9_-]{1,64}$');
+
+/// `/booking` con una sola clave `service` o `combo` y un id válido, tal
+/// cual; `/booking` con cualquier otra query, sin ella; y `null` si [next]
+/// no es `/booking` con query (spec 005, RF-41, RF-42).
+String? _safeBooking(String next) {
+  if (!next.startsWith('/booking?')) return null;
+  final uri = Uri.tryParse(next);
+  if (uri == null || uri.path != '/booking') return '/booking';
+  final query = uri.queryParametersAll;
+  if (query.length == 1) {
+    final MapEntry(:key, :value) = query.entries.single;
+    if ((key == 'service' || key == 'combo') &&
+        value.length == 1 &&
+        _bookableId.hasMatch(value.single)) {
+      return Uri(
+        path: '/booking',
+        queryParameters: {key: value.single},
+      ).toString();
+    }
+  }
+  return '/booking';
+}
+
 /// [next] si es un destino interno conocido; si no, la página de entrada: la
 /// landing en Web, Inicio en Android/iOS. Así un enlace manipulado no saca a
-/// la persona de la app tras el login (spec 002, D-4).
+/// la persona de la app tras el login (spec 002, D-4). La reserva puede
+/// llevar el servicio pedido ([_safeBooking]).
 String safeNext(String? next, {required bool isWeb}) {
+  final booking = next == null ? null : _safeBooking(next);
+  if (booking != null) return booking;
   if (isWeb) return next == '/' || _allowedNext.contains(next) ? next! : '/';
   return _allowedNextMobile.contains(next) ? next! : '/home';
 }
 
 String _withNext(String path, String next) =>
     Uri(path: path, queryParameters: {'next': next}).toString();
+
+/// A dónde volver tras el login o la captura: la ruta pedida y, en la
+/// reserva, también su query, para no perder el servicio pedido (spec 005,
+/// RF-41, RF-42).
+String _nextOf(RedirectInput input) =>
+    input.path == '/booking' && input.query.isNotEmpty
+    ? Uri(path: input.path, queryParameters: input.query).toString()
+    : input.path;
 
 /// Ruta a la que hay que ir, o `null` para quedarse en [RedirectInput.path].
 String? resolveRedirect(RedirectInput input) =>
@@ -79,7 +115,7 @@ String? _mobile(RedirectInput input) {
 
   if (input.needsPhone) {
     if (path == '/capture_phone') return null;
-    final next = safeNext(input.query['next'] ?? path, isWeb: false);
+    final next = safeNext(input.query['next'] ?? _nextOf(input), isWeb: false);
     return _withNext('/capture_phone', next);
   }
   if (path == '/login' || path == '/capture_phone') {
@@ -101,7 +137,9 @@ String? _web(RedirectInput input) {
   // Sin sesión, las páginas de cuenta piden iniciarla y vuelven después
   // (RF-19, RF-29; también si la sesión caducó).
   if (!input.isLoggedIn) {
-    return isAccountPage ? _withNext('/login', path) : null;
+    return isAccountPage
+        ? _withNext('/login', safeNext(_nextOf(input), isWeb: true))
+        : null;
   }
   if (input.isUserLoading) return null;
 
@@ -111,14 +149,14 @@ String? _web(RedirectInput input) {
     if (isAccountPage || path == '/login') {
       return _withNext(
         '/capture_phone',
-        safeNext(input.query['next'] ?? path, isWeb: true),
+        safeNext(input.query['next'] ?? _nextOf(input), isWeb: true),
       );
     }
     return null;
   }
 
   // La guarda de admin es solo de interfaz: la seguridad va en las reglas de
-  // Firestore (spec 009).
+  // Firestore (spec 012).
   if (_isAdminPage(path) && !input.isAdmin) return '/';
 
   // Tras el login o la captura, al destino pedido o a la landing (RF-20, RF-24).

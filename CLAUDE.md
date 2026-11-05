@@ -24,6 +24,7 @@ Source comments and user-facing strings are Spanish; UI text belongs in ARB file
 ```bash
 flutter pub get
 flutter run                      # device/emulator
+flutter run -d chrome --web-port 5050   # Web: always port 5050 (Google sign-in only accepts registered origins; macOS AirPlay takes 5000)
 flutter analyze                  # lint (flutter_lints)
 flutter test                     # all tests
 flutter test test/app/app_locale_test.dart --plain-name "some test name"   # single test
@@ -59,7 +60,7 @@ Live data is `StreamProvider` over Firestore snapshots. Mutations go through con
 
 ### Derived availability logic
 
-`availableSlotsProvider` (`lib/features/booking/providers/booking_provider.dart`) is the core business rule and is a pure `Provider` composing three sources: calendar settings, that day's active appointments, and the selected date. It walks from `open` to `close` in `globalSlotDurationMinutes` steps, dropping blocked dates, closed weekdays, past times, and slots overlapping an existing appointment. Weekday keys in `openingHours` are lowercase English (`monday`…), produced by the pure `weekdayKey()` (`lib/core/utils/weekday_key.dart`), not by `DateFormat`, so the lookup never depends on the UI language.
+The free times come from the pure `freeSlots` (`lib/features/booking/logic/free_slots.dart`, spec 005): it walks the chosen salon day from `open` to `close` in `globalSlotDurationMinutes` steps, dropping blocked dates, closed weekdays, past times and times inside a `busySlots` range, and gives each its coverage (free minutes until the next busy range or closing), which decides what fits. `BookingSelectionController` (`bookingSelectionProvider`) holds the day, time, service and add-ons and reconciles them when the data changes; `BookingSubmitter` re-checks and saves. Salon times are Curitiba wall times (`salon_time.dart`). Weekday keys in `openingHours` are lowercase English (`monday`…), produced by the pure `weekdayKey()` (`lib/core/utils/weekday_key.dart`), not by `DateFormat`, so the lookup never depends on the UI language.
 
 ### Routing & auth gating
 
@@ -82,7 +83,7 @@ All redirect rules live in the pure `resolveRedirect` (`lib/core/router/redirect
 
 Both return `null` while `currentUserProvider.isLoading`, to avoid redirecting on incomplete data. Preserve that guard when editing.
 
-Admin routes are only cosmetically guarded (hidden entry points, plus the Web redirect above). Real enforcement is expected to live in Firestore security rules (spec 012, see `.ia/technical_architecture.md`). Treat any client-side role check as cosmetic.
+Admin routes are only cosmetically guarded (hidden entry points, plus the Web redirect above). Real enforcement lives in `firestore.rules`: admin-only writes to `settings/priceList` (spec 004), and the `users`, `appointments` and `busySlots` rules (spec 005, checked by hand in `specs/005-reservas/rules-check.md`). `settings/calendar` stays provisional (any signed-in user) until spec 012. Treat any client-side role check as cosmetic.
 
 ### Web landing (also Inicio and Servicios on mobile)
 
@@ -94,7 +95,7 @@ Admin routes are only cosmetically guarded (hidden entry points, plus the Web re
 ### Firestore collections
 
 - `users/{uid}` — `role` (`'cliente'` | `'admin'`), `isBlocked`, `phoneNumber` (WhatsApp), `photoUrl`, `fcmToken`.
-- `appointments/{uuid}` — client-generated UUID v4 as doc id; `status` is `'waiting_confirmation'` | `'confirmed'` | `'cancelled'`. Clients see only the first two (`getActiveAppointmentsForDate`); the admin sees all (`getAppointmentsForDate`).
+- `appointments/{uuid}` — client-generated UUID v4 as doc id; `status` is `'waiting_confirmation'` | `'confirmed'` | `'cancelled'`. Clients see other people's bookings only as `busySlots` ranges (`watchBusySlots`) and read their own appointments; the admin sees all (`getAppointmentsForDate`).
 - `settings/calendar` — single doc; `ConfigRepository` falls back to `CalendarSettingsModel.defaultSettings()` when absent and writes with `merge: true`.
 
 Blocked clients are rejected at sign-in (`AuthController.signInWithGoogle` signs them back out) rather than at booking time.
@@ -105,7 +106,7 @@ Spanish (`app_es.arb`, the template) and Portuguese (`app_pt.arb`). The user pic
 
 ### Not yet implemented
 
-`firebase_messaging` is a dependency and `UserModel.fcmToken` / `UserRepository.updateFcmToken` exist, but nothing requests permissions or captures a token yet. Cloud Functions (the admin push notification on new booking) and Firestore security rules are also unwritten — no `functions/` or `firestore.rules` in this repo.
+`firebase_messaging` is a dependency and `UserModel.fcmToken` / `UserRepository.updateFcmToken` exist, but nothing requests permissions or captures a token yet. Cloud Functions (the admin push notification on new booking) are also unwritten — no `functions/` in this repo. The rules don't yet block overlapping bookings or a second active booking (the app checks both before saving; spec 012).
 
 ## Spec-Driven Development
 

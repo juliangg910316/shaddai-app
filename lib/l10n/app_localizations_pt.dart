@@ -143,71 +143,12 @@ class AppLocalizationsPt extends AppLocalizations {
   String get saveAndContinueAction => 'SALVAR E CONTINUAR';
 
   @override
-  String get confirmBookingDialogTitle => 'Confirmar Reserva';
-
-  @override
-  String confirmBookingDialogBody(String date, String time) {
-    return 'Deseja reservar seu horário para o dia $date às $time?';
-  }
-
-  @override
   String get bookingCreatedSuccess =>
       'Reserva criada com sucesso! Aguardando confirmação da administradora.';
 
   @override
   String get bookingCreateError =>
       'Não foi possível criar a reserva. Tente novamente.';
-
-  @override
-  String get stepServiceLabel => '1 · SERVIÇO';
-
-  @override
-  String get stepDateLabel => '2 · DATA';
-
-  @override
-  String get stepTimeLabel => '3 · Horário';
-
-  @override
-  String get slotsLoadError =>
-      'Não foi possível carregar os horários. Tente novamente.';
-
-  @override
-  String get chooseTimeSlotAction => 'ESCOLHA UM HORÁRIO';
-
-  @override
-  String confirmAtTimeAction(String time) {
-    return 'CONFIRMAR $time';
-  }
-
-  @override
-  String get bookingPendingNoticePrefix => 'Seu horário ficará ';
-
-  @override
-  String get bookingPendingNoticeHighlight => 'Aguardando confirmação';
-
-  @override
-  String get bookingPendingNoticeSuffix => ' até que Beidis aprove.';
-
-  @override
-  String get noSlotsAvailable => 'Não há horários disponíveis para esta data.';
-
-  @override
-  String get serviceOptionClassicChip => 'Clássica 45m';
-
-  @override
-  String get serviceOptionClassicSummary => 'Clássica 45 min';
-
-  @override
-  String get serviceOptionSemipermChip => 'Semiperm. 60m';
-
-  @override
-  String get serviceOptionSemipermSummary => 'Semiperm. 60 min';
-
-  @override
-  String get serviceOptionAcrylicChip => 'Acrílicas 90m';
-
-  @override
-  String get serviceOptionAcrylicSummary => 'Acrílicas 90 min';
 
   @override
   String get myProfileTitle => 'Meu Perfil';
@@ -989,4 +930,118 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get adminServicesEditCombo => 'Editar combo';
+
+  @override
+  String get bookingStepDate => 'Data';
+
+  @override
+  String get bookingStepTime => 'Horário';
+
+  @override
+  String get bookingStepService => 'Serviço';
+
+  @override
+  String get bookingStepAddons => 'Adicionais';
+
+  @override
+  String get bookingStepSummary => 'Resumo';
+
+  @override
+  String get bookingSalonTimeNote => 'Horários de Curitiba';
+
+  @override
+  String get bookingNoDaysAvailable =>
+      'Não há datas disponíveis para agendar. Fale conosco pelo WhatsApp.';
+
+  @override
+  String get bookingNoFreeSlots =>
+      'Não há horários livres neste dia. Tente outra data.';
+
+  @override
+  String bookingServiceNeedsLongerSlot(String duration) {
+    return 'Este serviço dura $duration: escolha um horário com mais tempo livre.';
+  }
+
+  @override
+  String bookingSlotTooShortFor(String duration) {
+    return 'Não há tempo suficiente neste horário para um serviço de $duration.';
+  }
+
+  @override
+  String get bookingSlotGone =>
+      'O horário escolhido não está mais disponível. Escolha outro.';
+
+  @override
+  String get bookingSlotNoLongerFits =>
+      'O horário escolhido não tem mais tempo suficiente para o serviço. Escolha outro.';
+
+  @override
+  String get bookingItemUnavailable =>
+      'O serviço escolhido não está mais disponível.';
+
+  @override
+  String get bookingDateMoved =>
+      'A data escolhida não pode mais ser agendada: mostramos a próxima disponível.';
+
+  @override
+  String get bookingUnavailableLabel => 'indisponível';
+
+  @override
+  String get bookingMissingSlot => 'Escolha um horário';
+
+  @override
+  String get bookingMissingService => 'Escolha um serviço';
+
+  @override
+  String get bookingMissingBoth =>
+      'Escolha um horário e um serviço para agendar.';
+
+  @override
+  String get bookingAction => 'Agendar horário';
+
+  @override
+  String get bookingConfirmTitle => 'Confirmar horário';
+
+  @override
+  String get bookingConfirmPending =>
+      'O horário ficará aguardando a confirmação da Beidis.';
+
+  @override
+  String get bookingSlotTaken =>
+      'Esse horário acabou de ser ocupado. Escolha outro.';
+
+  @override
+  String get bookingAlreadyActive => 'Você já tem um horário pendente.';
+
+  @override
+  String get bookingActiveTitle => 'Seu horário';
+
+  @override
+  String get bookingOnlyOneActive =>
+      'Você só pode ter um horário pendente por vez. Veja todos os seus horários no seu perfil.';
+
+  @override
+  String get bookingBlocked =>
+      'Sua conta não pode agendar horários. Se acha que é um erro, fale conosco pelo WhatsApp.';
+
+  @override
+  String get bookingAdminNotice =>
+      'Com a conta de administração não se agendam horários em seu nome.';
+
+  @override
+  String get bookingLoadError => 'Não foi possível carregar a agenda.';
+
+  @override
+  String get bookingRetry => 'Tentar novamente';
+
+  @override
+  String get bookingDuration => 'Duração';
+
+  @override
+  String get bookingTotal => 'Total';
+
+  @override
+  String bookingTimeRange(String start, String end) {
+    return '$start – $end';
+  }
 }

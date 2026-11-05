@@ -193,8 +193,10 @@ reconcile(selección, contexto) → (selección', avisos)       // contexto: cat
      si no, si item != null y !fits(item.duración, slot): inicio = null; aviso slotTooShort   // RF-16
 
 selectDay(día)       → día; inicio = null                     // RF-8
-selectSlot(slot)     → rechaza con aviso slotTooShortFor si hay item y no cabe            // RF-15
-selectItem(ref)      → rechaza con aviso needsLongerSlot(duración) si no cabe en el inicio // RF-13
+selectSlot(slot)     → si slot es la hora elegida: inicio = null                         // RF-59
+                       rechaza con aviso slotTooShortFor si hay item y no cabe            // RF-15
+selectItem(ref)      → si ref es el elegido: item = null; addons = ∅                      // RF-59
+                       rechaza con aviso needsLongerSlot(duración) si no cabe en el inicio // RF-13
                        si se acepta: addons = ∅                                           // RF-20
 requestItem(ref)     → item = ref, addons = ∅; inicio se conserva solo si cabe            // RF-40
                        (si no, inicio = null y aviso slotTooShort)
@@ -381,7 +383,7 @@ Sin Firebase real:
 | RF-1 a RF-3 | `booking_window.dart`, `BookingCalendar`, `reconcile` |
 | RF-4 a RF-7 | `free_slots.dart`, `salon_time.dart`, `busySlotsProvider`, `SlotGrid` |
 | RF-8, RF-9 | `booking_selection.dart`, `salonNowProvider` |
-| RF-10 a RF-21 | `bookable_catalog.dart`, `booking_selection.dart`, `ServicePicker`, `AddonPicker`, `SlotGrid` |
+| RF-10 a RF-21, RF-59 | `bookable_catalog.dart`, `booking_selection.dart`, `ServicePicker`, `AddonPicker`, `SlotGrid` |
 | RF-22 a RF-25 | `BookingSummary`, `BookButton`, `missingParts` |
 | RF-26 a RF-32, RF-36 | `checkBeforeSave`, `bookingSubmitProvider`, `BookingRepository.fetchBookingCheck/createAppointment` |
 | RF-33 a RF-35, RF-46 | `activeAppointment`, `bookingScreen`, `ActiveAppointmentView`, `myAppointmentsProvider` |

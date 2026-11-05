@@ -2,16 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 
 import '../../../data/models/appointment_model.dart';
 import '../../../data/models/busy_slot_model.dart';
 import '../../../data/models/calendar_settings_model.dart';
 import '../../../data/repositories/booking_repository.dart';
 import '../../../data/repositories/config_repository.dart';
-import '../../../core/utils/weekday_key.dart';
 
-import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../auth/providers/auth_provider.dart';
@@ -86,16 +83,18 @@ final busySlotsProvider = StreamProvider<List<BusySlot>>((ref) {
 });
 
 /// [busySlotsProvider] en horas de pared del salón, para la lógica.
-final busyRangesProvider = Provider<AsyncValue<List<BusyRange>>>(
-  (ref) => ref
-      .watch(busySlotsProvider)
-      .whenData(
-        (slots) => [
-          for (final slot in slots)
-            (start: toSalon(slot.start), end: toSalon(slot.end)),
-        ],
-      ),
-);
+final busyRangesProvider = Provider<AsyncValue<List<BusyRange>>>((ref) {
+  final slots = ref.watch(busySlotsProvider);
+  // Tras un error, Riverpod reintenta solo y el valor queda "cargando" con
+  // el error dentro; `whenData` lo perdería (RF-48).
+  if (slots.hasError) return AsyncError(slots.error!, slots.stackTrace!);
+  return slots.whenData(
+    (slots) => [
+      for (final slot in slots)
+        (start: toSalon(slot.start), end: toSalon(slot.end)),
+    ],
+  );
+});
 
 /// Lo que se puede reservar de la lista de precios (RF-10, RF-11, RF-43,
 /// RF-47).
@@ -128,7 +127,9 @@ final bookingScreenProvider = Provider<BookingScreen<AppointmentModel>>((ref) {
   final mineAsync = ref.watch(myAppointmentsProvider);
   final user = userAsync.value;
   return bookingScreen(
-    userLoading: userAsync.isLoading && user == null,
+    // Tras un error, Riverpod reintenta solo y el valor queda "cargando" con
+    // el error dentro: se muestra el error, con "Reintentar" (RF-49).
+    userLoading: userAsync.isLoading && user == null && !userAsync.hasError,
     userError: userAsync.hasError,
     user: user == null
         ? null
@@ -201,9 +202,17 @@ class BookingSelectionController extends Notifier<BookingSelectionState> {
   void toggleAddon(String id) =>
       _set(pick.toggleAddon(selection, _context(), id));
 
-  /// El servicio pedido desde su detalle (RF-40 a RF-44).
-  void requestItem(BookableRef ref) =>
-      _apply(pick.requestItem(selection, _context(), ref));
+  /// El servicio pedido desde su detalle (RF-40 a RF-44). Con la lista ya
+  /// cargada, un servicio que no existe se quita y se avisa enseguida.
+  void requestItem(BookableRef ref) {
+    final context = _context();
+    final requested = pick.requestItem(selection, context, ref);
+    final reconciled = reconcile(requested.selection, context);
+    _apply((
+      selection: reconciled.selection,
+      notices: [...requested.notices, ...reconciled.notices],
+    ));
+  }
 
   /// Quita la hora y conserva lo demás (RF-29, RF-30).
   void dropSlot() => _set(
@@ -225,6 +234,27 @@ final bookingSelectionProvider =
     NotifierProvider<BookingSelectionController, BookingSelectionState>(
       BookingSelectionController.new,
     );
+
+/// La hora libre elegida, con su cobertura, o `null` si no hay ninguna (o
+/// aún no se sabe). Decide qué servicios caben (RF-12).
+final selectedFreeSlotProvider = Provider<FreeSlot?>((ref) {
+  final start = ref.watch(
+    bookingSelectionProvider.select((state) => state.selection.start),
+  );
+  final settings = ref.watch(calendarSettingsProvider).value;
+  final busy = ref.watch(busyRangesProvider).value;
+  if (start == null || settings == null || busy == null) return null;
+  final slots = freeSlots(
+    day: salonDay(start),
+    settings: settings,
+    busy: busy,
+    nowSalon: _salonNow(ref),
+  );
+  for (final slot in slots) {
+    if (slot.start == start) return slot;
+  }
+  return null;
+});
 
 /// Resultado de "Agendar turno" (RF-26 a RF-31, RF-36).
 enum BookingSubmitResult { ok, slotTaken, doesNotFit, alreadyActive, failed }
@@ -322,94 +352,3 @@ class BookingSubmitter {
 }
 
 final bookingSubmitProvider = Provider(BookingSubmitter.new);
-
-final selectedDateProvider = StateProvider<DateTime>((ref) {
-  return DateTime.now();
-});
-
-final appointmentsForDateProvider = StreamProvider<List<AppointmentModel>>((
-  ref,
-) {
-  final date = ref.watch(selectedDateProvider);
-  return ref
-      .watch(bookingRepositoryProvider)
-      .getActiveAppointmentsForDate(date);
-});
-
-// Calcula los horarios disponibles basándose en el calendario y las citas existentes
-final availableSlotsProvider = Provider<AsyncValue<List<DateTime>>>((ref) {
-  final settingsAsync = ref.watch(calendarSettingsProvider);
-  final appointmentsAsync = ref.watch(appointmentsForDateProvider);
-  final date = ref.watch(selectedDateProvider);
-
-  if (settingsAsync.isLoading || appointmentsAsync.isLoading) {
-    return const AsyncLoading();
-  }
-
-  if (settingsAsync.hasError) {
-    return AsyncError(settingsAsync.error!, settingsAsync.stackTrace!);
-  }
-
-  final settings = settingsAsync.value!;
-  final appointments = appointmentsAsync.value ?? [];
-
-  // Chequear si el dia está bloqueado globalmente
-  final dateString = DateFormat('yyyy-MM-dd').format(date);
-  if (settings.blockedDates.contains(dateString)) {
-    return const AsyncData([]);
-  }
-
-  // Clave del día en inglés, independiente del idioma de la interfaz
-  final weekdayStr = weekdayKey(date);
-
-  final daySchedule = settings.openingHours[weekdayStr];
-  if (daySchedule == null || daySchedule.isClosed) {
-    return const AsyncData([]);
-  }
-
-  // Calcular slots
-  final openParts = daySchedule.open.split(':');
-  final closeParts = daySchedule.close.split(':');
-
-  var currentTime = DateTime(
-    date.year,
-    date.month,
-    date.day,
-    int.parse(openParts[0]),
-    int.parse(openParts[1]),
-  );
-
-  final endTime = DateTime(
-    date.year,
-    date.month,
-    date.day,
-    int.parse(closeParts[0]),
-    int.parse(closeParts[1]),
-  );
-
-  final List<DateTime> availableSlots = [];
-  final now = DateTime.now();
-
-  while (currentTime.isBefore(endTime)) {
-    final slotEnd = currentTime.add(
-      Duration(minutes: settings.globalSlotDurationMinutes),
-    );
-
-    // No mostrar horarios pasados del día actual
-    if (currentTime.isAfter(now)) {
-      // Chequear superposición con otras citas (para evitar reservas dobles)
-      bool isOverlapping = appointments.any((app) {
-        return (currentTime.isBefore(app.endTime) &&
-            slotEnd.isAfter(app.startTime));
-      });
-
-      if (!isOverlapping) {
-        availableSlots.add(currentTime);
-      }
-    }
-
-    currentTime = slotEnd;
-  }
-
-  return AsyncData(availableSlots);
-});

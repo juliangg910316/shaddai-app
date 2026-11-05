@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shaddai/data/models/appointment_model.dart';
 import 'package:shaddai/data/models/calendar_settings_model.dart';
@@ -47,27 +46,6 @@ List<Override> sessionOverrides({
   myAppointmentsProvider.overrideWith((ref) => Stream.value(appointments)),
 ];
 
-/// Mañana a las 0:00: un día que el calendario de Reservas siempre deja
-/// elegir (no admite días pasados).
-DateTime tomorrow() {
-  final now = DateTime.now();
-  return DateTime(now.year, now.month, now.day + 1);
-}
-
-/// Overrides de Reservas sin Firebase: sesión con [testClient], día elegido
-/// [day] y los huecos libres [slots].
-List<Override> bookingOverrides({
-  required DateTime day,
-  required AsyncValue<List<DateTime>> slots,
-}) => [
-  ...sessionOverrides(user: testClient),
-  calendarSettingsProvider.overrideWith(
-    (ref) => Stream.value(CalendarSettingsModel.defaultSettings()),
-  ),
-  selectedDateProvider.overrideWith((ref) => day),
-  availableSlotsProvider.overrideWithValue(slots),
-];
-
 /// Martes 10 de noviembre de 2026 a las 7:00 en Curitiba (10:00 UTC), antes
 /// de abrir: el "ahora" fijo de los tests de la reserva (spec 005).
 final bookingTestNow = DateTime.utc(2026, 11, 10, 10);
@@ -81,6 +59,10 @@ final bookingTestNow = DateTime.utc(2026, 11, 10, 10);
 ///   de `salonNowProvider`;
 /// - dispositivo con la diferencia con UTC [deviceOffset] (por defecto, la
 ///   del salón).
+///
+/// Para cambiarlos durante el test, [userStream] sustituye a la sesión y
+/// [nowStream] a "ahora" (horas de pared del salón); se vuelven a llamar al
+/// invalidar su provider.
 List<Override> bookingDataOverrides({
   required FakeBookingRepository bookings,
   UserModel? user,
@@ -88,18 +70,44 @@ List<Override> bookingDataOverrides({
   CalendarSettingsModel? settings,
   DateTime? now,
   Duration deviceOffset = salonUtcOffset,
+  Stream<UserModel?> Function()? userStream,
+  Stream<DateTime> Function()? nowStream,
 }) {
-  final instant = now ?? bookingTestNow;
   final profile = signedIn ? (user ?? testClient) : null;
   return [
+    currentUserProvider.overrideWith(
+      (ref) => userStream?.call() ?? Stream.value(profile),
+    ),
+    ...bookingScheduleOverrides(
+      bookings: bookings,
+      settings: settings,
+      now: now,
+      deviceOffset: deviceOffset,
+      nowStream: nowStream,
+    ),
+  ];
+}
+
+/// [bookingDataOverrides] sin la sesión, para los tests que la ponen ellos
+/// (`pumpWebApp`, `pumpMobileApp`).
+List<Override> bookingScheduleOverrides({
+  required FakeBookingRepository bookings,
+  CalendarSettingsModel? settings,
+  DateTime? now,
+  Duration deviceOffset = salonUtcOffset,
+  Stream<DateTime> Function()? nowStream,
+}) {
+  final instant = now ?? bookingTestNow;
+  return [
     bookingRepositoryProvider.overrideWithValue(bookings),
-    currentUserProvider.overrideWith((ref) => Stream.value(profile)),
     calendarSettingsProvider.overrideWith(
       (ref) =>
           Stream.value(settings ?? CalendarSettingsModel.defaultSettings()),
     ),
     clockProvider.overrideWithValue(() => instant),
-    salonNowProvider.overrideWith((ref) => Stream.value(toSalon(instant))),
+    salonNowProvider.overrideWith(
+      (ref) => nowStream?.call() ?? Stream.value(toSalon(instant)),
+    ),
     deviceUtcOffsetProvider.overrideWithValue(deviceOffset),
   ];
 }

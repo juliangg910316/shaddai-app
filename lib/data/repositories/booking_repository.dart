@@ -99,20 +99,6 @@ class BookingRepository {
         .map((snapshot) => snapshot.docs.map(_appointment).toList());
   }
 
-  // Para el cliente: solo ver las ocupadas activas (no canceladas). Se borra
-  // en la spec 005 (T17): las reglas nuevas no dejan leer turnos ajenos.
-  Stream<List<AppointmentModel>> getActiveAppointmentsForDate(DateTime date) {
-    final start = DateTime(date.year, date.month, date.day);
-    final end = start.add(const Duration(days: 1));
-
-    return _appointments
-        .where('startTime', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
-        .where('startTime', isLessThan: Timestamp.fromDate(end))
-        .where('status', whereIn: ['waiting_confirmation', 'confirmed'])
-        .snapshots()
-        .map((snapshot) => snapshot.docs.map(_appointment).toList());
-  }
-
   Stream<List<AppointmentModel>> getClientAppointments(String clientId) {
     return _appointments
         .where('clientId', isEqualTo: clientId)
