@@ -1,13 +1,13 @@
 # Spec 006 — Editar el turno
-Estado: borrador
+Estado: aprobada
 
 ## Contexto y objetivo
 Con la spec 005, una clienta tiene como mucho un turno activo y no puede cambiarlo: si se equivoca de día, de hora o de servicio, tiene que escribir al salón. Esta spec le deja editar su turno activo desde la propia reserva, con las mismas reglas que al reservar, mientras falte más de un margen que fija la admin. Al editarlo, el turno vuelve a esperar confirmación, para que la admin vea el cambio.
 
-Depende de la spec 005, que tiene que estar implementada. Segunda de las tres specs de reservas (división decidida por el autor el 2026-10-24).
+Parte de la spec 005, implementada el 2026-11-05. Segunda de las tres specs de reservas (división decidida por el autor el 2026-10-24).
 
 ## Usuarios
-- **Cliente** con sesión y WhatsApp: edita su turno activo.
+- **Clienta** con sesión y WhatsApp: edita su turno activo.
 - **Clienta bloqueada**: ve su turno, pero no lo edita.
 - **Admin**: ve el turno editado esperando confirmación. Cambia el margen de edición en la spec 008.
 
@@ -31,30 +31,39 @@ Las de la spec 005 (hora del salón, vista de reserva, servicio, lo reservado, h
 ### Abrir la edición
 - RF-4: CUANDO la clienta toca "Editar turno", EL SISTEMA abre la edición con la fecha, la hora, el servicio y los adicionales del turno ya elegidos.
 - RF-5: EL SISTEMA abre la edición con la fecha y la hora del turno aunque no cumplan las reglas actuales: más allá de la ventana de reserva, en un día ahora cerrado o bloqueado, o a una hora fuera de la rejilla actual.
-- RF-6: SI el servicio, el combo o un adicional del turno ya no está disponible, o el turno no tiene lo reservado (turnos antiguos), ENTONCES EL SISTEMA abre la edición sin él elegido y avisa de que ya no está disponible.
+- RF-6: SI el servicio, el combo o un adicional del turno ya no está disponible, ENTONCES EL SISTEMA abre la edición sin él elegido y avisa de que ya no está disponible.
 
 ### Editar
-- RF-7: MIENTRAS la clienta edita su turno, EL SISTEMA aplica las reglas de la vista de reserva de la spec 005 (RF-3 a RF-24) y no cuenta ese turno como ocupado.
+- RF-7: MIENTRAS la clienta edita su turno, EL SISTEMA aplica las reglas de la vista de reserva de la spec 005 (RF-3 a RF-24, RF-50 y RF-59) y no cuenta ese turno como ocupado.
 - RF-8: MIENTRAS la clienta no cambia la fecha ni la hora del turno, EL SISTEMA las da por válidas aunque no cumplan las reglas actuales (RF-5), y solo exige que el servicio quepa desde esa hora.
 - RF-9: CUANDO la clienta cambia la fecha o la hora, EL SISTEMA exige que las nuevas cumplan todas las reglas de la reserva.
 - RF-10: SI se toca "Guardar cambios" sin hora o sin servicio elegidos, ENTONCES EL SISTEMA no guarda, indica qué falta y marca cada parte sin elegir.
-- RF-11: CUANDO se toca "Guardar cambios" con todo elegido, EL SISTEMA muestra el turno de antes y el de después, indica que el turno volverá a esperar confirmación de la admin y pide que se confirme.
+- RF-11: CUANDO se toca "Guardar cambios" con todo elegido, EL SISTEMA muestra el turno de antes y el de después, marca qué valores cambian (fecha, hora de inicio y de fin, servicio, adicionales, duración y precio total), indica que el turno volverá a esperar confirmación de la admin y pide que se confirme.
 
 ### Guardar
 - RF-12: CUANDO la clienta confirma los cambios, EL SISTEMA comprueba otra vez, antes de guardar:
   - que la hora sigue libre y el servicio cabe (sin contar el propio turno);
   - que el turno sigue activo y editable;
   - que nadie lo ha cambiado desde que se abrió la edición, contando también un cambio de estado.
+
+  Como en la spec 005 (RF-26), la comprobación tiene en cuenta lo ya guardado; dos confirmaciones exactamente simultáneas se impiden en el servidor con la spec 012.
 - RF-13: CUANDO se cumplen las comprobaciones de RF-12, EL SISTEMA actualiza ese mismo turno con el nuevo inicio, el nuevo fin y la nueva copia de lo reservado (como en la spec 005, RF-27), y lo deja esperando confirmación aunque estuviera confirmado.
 - RF-14: SI la hora ya no está libre o el servicio ya no cabe, ENTONCES EL SISTEMA no guarda y avisa como en la spec 005 (RF-29, RF-30), conservando lo elegido.
-- RF-15: SI el turno ya no es editable, ya no está activo o alguien lo ha cambiado, ENTONCES EL SISTEMA no guarda, avisa y vuelve a mostrar el turno como está ahora.
+- RF-15: SI el turno ya no es editable, ya no está activo o alguien lo ha cambiado, ENTONCES EL SISTEMA no guarda, vuelve a mostrar el turno como está ahora y avisa con un texto distinto para cada caso: que ya no se puede cambiar porque falta poco para el turno, que el turno ya no está activo (se canceló o terminó) o que el turno cambió mientras lo editaba.
 - RF-16: SI los cambios no se pueden guardar (sin conexión o por un error), ENTONCES EL SISTEMA no los da por guardados, avisa con un texto sin detalles técnicos y conserva lo elegido para reintentar.
-- RF-17: CUANDO los cambios se guardan, EL SISTEMA lo confirma y vuelve a mostrar el turno activo, esperando confirmación.
+- RF-17: CUANDO los cambios se guardan, EL SISTEMA lo confirma indicando qué valores cambiaron (como en RF-11) y vuelve a mostrar el turno activo, esperando confirmación.
+- RF-26: CUANDO los cambios se guardan, EL SISTEMA actualiza a la vez el inicio y el fin del turno que ven las demás personas (spec 005, RF-53): para ellas, sin recargar, la hora antigua vuelve a estar libre y la nueva queda ocupada.
 
 ### Salir de la edición
 - RF-18: CUANDO la clienta toca "Cancelar" en la edición, EL SISTEMA vuelve a mostrar su turno sin cambios.
-- RF-19: CUANDO la clienta cambia de pestaña (Android/iOS) y vuelve, EL SISTEMA conserva la edición tal como estaba.
+- RF-19: CUANDO la clienta cambia de pestaña (Android/iOS) o va a otra página con un enlace de la app (Web) y vuelve, EL SISTEMA conserva la edición tal como estaba.
 - RF-20: CUANDO la clienta va atrás o recarga la página en Web, EL SISTEMA deja la edición sin guardar y muestra su turno.
+
+### Cambiar el servicio desde el detalle
+- RF-27: CUANDO la clienta, con la edición abierta, toca "Reservar cita" en el detalle de un servicio o combo, EL SISTEMA vuelve a la edición, conserva la fecha y la hora elegidas e intenta cambiar el servicio por ese.
+- RF-28: CUANDO el servicio pedido cabe en la hora elegida sin contar el propio turno (dura lo mismo o menos que el anterior, o el salón tiene libre justo después el tiempo que le falta), o no hay hora elegida, EL SISTEMA lo elige en lugar del anterior, desmarca los adicionales y avisa de lo que cambia, con el valor de antes y el de después: servicio, hora de fin, duración y precio total.
+- RF-29: SI el servicio pedido no cabe en la hora elegida (el tiempo que necesita justo después está ocupado o pasa del cierre), ENTONCES EL SISTEMA no lo cambia, conserva lo que había elegido y avisa de que ese servicio dura N minutos y a esa hora solo hay M libres, para que elija otra hora u otro servicio.
+- RF-30: SI el servicio pedido no existe o no está disponible, ENTONCES EL SISTEMA no cambia nada de la edición y avisa como en la spec 005 (RF-44).
 
 ### Margen y errores
 - RF-21: EL SISTEMA lee el margen de edición del ajuste del salón y usa 0 si no existe.
@@ -62,14 +71,15 @@ Las de la spec 005 (hora del salón, vista de reserva, servicio, lo reservado, h
 - RF-23: CUANDO la clienta reserva un turno que ya empieza dentro del margen de edición, EL SISTEMA le avisa en el resumen de confirmación (spec 005, RF-25) de que no lo podrá cambiar.
 
 ### Seguridad
-- RF-24: EL SISTEMA solo deja a una clienta cambiar sus propios turnos activos, si no está bloqueada y fuera del margen de edición. Solo puede cambiar el inicio, el fin y lo reservado, y el turno queda esperando confirmación. Se comprueba en el servidor.
-- RF-25: EL SISTEMA solo deja a la admin cambiar el margen de edición. Se comprueba en el servidor.
+- RF-24: EL SISTEMA solo deja a una clienta cambiar sus propios turnos activos, si no está bloqueada y fuera del margen de edición. Solo puede cambiar el inicio, el fin y lo reservado, con el fin posterior al inicio; el turno queda esperando confirmación, y el inicio y el fin que ven las demás (RF-26) se cambian a la vez y coinciden con los del turno. Se comprueba en el servidor.
+- RF-25: EL SISTEMA solo deja a la admin cambiar el ajuste del calendario del salón, incluido el margen de edición; cualquier persona con sesión lo sigue pudiendo leer. Se comprueba en el servidor, y adelanta esta parte de la spec 012.
 
 ## Requisitos no funcionales
 - RNF-1: Son reglas puras, que reciben "ahora" como dato y están probadas con tablas de casos:
-  - si un turno es editable con el margen de edición (incluido un turno justo en el límite y el margen 0);
-  - las horas libres sin contar el propio turno;
-  - la validez de la fecha y la hora originales (RF-8).
+  - si un turno es editable con el margen de edición (incluido un turno justo en el límite, el margen 0 y un dispositivo en otra zona horaria);
+  - las horas libres y su cobertura sin contar el propio turno, también para un servicio pedido desde el detalle (RF-28, RF-29);
+  - la validez de la fecha y la hora originales (RF-8);
+  - qué valores cambian entre el turno de antes y el de después (RF-11, RF-17, RF-28).
 - RNF-2: Mismos requisitos de contraste, 48 px, lector de pantalla, texto al 200 % y 320 px que la spec 005 (RNF-2, RNF-3), también en el diálogo de "antes y después".
 - RNF-3: Todos los textos nuevos de la interfaz están en español y en portugués.
 - RNF-4: Las reglas de seguridad de RF-24 y RF-25 se comprueban caso por caso en el simulador.
@@ -81,6 +91,7 @@ Las de la spec 005 (hora del salón, vista de reserva, servicio, lo reservado, h
 ## Navegación
 - Reserva con turno activo → "Editar turno" (si es editable) → edición → "Guardar cambios" → confirmar → su turno activo.
 - Edición → "Cancelar" → su turno activo.
+- Edición → detalle de un servicio o combo → "Reservar cita" → edición con ese servicio, si cabe (RF-27 a RF-30).
 
 ## Casos límite
 - El turno deja de ser editable mientras la clienta lo edita: al confirmar no se guarda (RF-15).
@@ -89,7 +100,10 @@ Las de la spec 005 (hora del salón, vista de reserva, servicio, lo reservado, h
 - La clienta guarda sin cambiar nada: se guarda igual y vuelve a esperar confirmación.
 - Turno que agendó la admin para la clienta (spec 007): se edita igual.
 - Turno agendado más allá de 60 días: se puede mantener su fecha; cambiarla obliga a elegir una dentro de la ventana (RF-8, RF-9).
-- Turno antiguo con una hora fuera de la rejilla actual: se puede mantener su hora si el servicio cabe (RF-8).
+- Turno cuya hora ya no está en la rejilla actual (la admin cambió la apertura después de reservar): se puede mantener su hora si el servicio cabe (RF-8).
+- Desde el detalle, un servicio más largo cuyo tiempo de después ocupa otra persona: no se cambia y se avisa (RF-29). Si se libera, se puede volver a pedir.
+- Desde el detalle, un servicio más corto en un turno confirmado: se cambia en la edición, y al guardar vuelve a esperar confirmación (RF-13).
+- Desde el detalle, el mismo servicio que ya tiene la edición: se queda igual, sin desmarcar los adicionales.
 - La clienta es bloqueada mientras edita: la edición se cierra y se aplica la spec 005, RF-37.
 
 ## Fuera de alcance
@@ -105,7 +119,16 @@ Las de la spec 005 (hora del salón, vista de reserva, servicio, lo reservado, h
 - Recorrido manual del autor en Android/iOS y en Web, en tema claro y oscuro y en español y portugués: editar día, hora y servicio; volver a esperar confirmación; no poder editar dentro del margen (poniendo a mano un margen en la base de datos); el choque al editar desde dos dispositivos.
 
 ## Dudas abiertas
-Ninguna. Resueltas con el autor (2026-10-24):
+Ninguna.
+
+Resueltas con el autor (2026-11-13):
+- RF-25: la 006 cierra ya a la admin la escritura del ajuste del calendario (antes, provisional para cualquiera con sesión hasta la 012), porque si no cualquier clienta podría poner el margen a 0.
+
+Resueltas con el autor (2026-11-06):
+- Con la edición abierta, "Reservar cita" en un detalle cambia el servicio si cabe: si dura lo mismo o menos, siempre; si dura más, solo si el salón tiene libre el tiempo de después. Si no cabe, no se cambia y se avisa; los cambios de valores se avisan con el antes y el después, también al confirmar y al guardar.
+- Sin turnos antiguos: la spec 005 los borró (RF-51) y todo turno tiene lo reservado.
+
+Resueltas con el autor (2026-10-24):
 - Se editan día, hora, servicio y adicionales, con las mismas reglas que al reservar; el propio turno no cuenta como ocupado.
 - Al editarlo vuelve a esperar confirmación.
 - Margen de edición global, por defecto 0, que solo cambia la admin (spec 008).
