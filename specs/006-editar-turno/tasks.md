@@ -24,12 +24,17 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
     - `==` y `hashCode` por valor en `BookedServiceModel` y `BookedAddonModel`. El nombre se compara por sus dos textos, sin tocar `BilingualText`, y los adicionales en orden, sin importar Flutter en `lib/data/models`;
     - 21 tests nuevos (10 del calendario y 11 de igualdad); suite completa, 1261 en verde.
 
-- [ ] **T2. Si un turno es editable.** RF-1 a RF-3, RF-22, RF-23, RNF-1
+- [x] **T2. Si un turno es editable.** RF-1 a RF-3, RF-22, RF-23, RNF-1
   - Tests: `test/features/booking/logic/booking_edit_test.dart` (nuevo), en tabla:
     - `isEditable`: margen 0 (editable hasta que empieza), margen 30 justo en el límite (9:30 de un turno de las 10:00 → no) y un minuto antes (→ sí), bloqueada (→ no), con el dispositivo en Lisboa (mismo resultado, porque usa instantes);
     - `startsWithinEditMargin`: dentro, en el límite y fuera; margen 0 con una hora futura → nunca;
     - `editAvailability`: bloqueada (aunque el calendario falle) → `blocked`; error → `error`; cargando → `loading`; editable → `editable`; dentro del margen → `closed`.
   - Hecho cuando: `booking_edit.dart` (`lib/features/booking/logic/`) pasa los tests y no importa Flutter ni Firebase.
+  - Hecha (2026-11-14):
+    - `booking_edit.dart`: `isEditable`, `startsWithinEditMargin` (en el límite ya cuenta como dentro), `EditAvailability` y `editAvailability`;
+    - `editAvailability` recibe `settingsError` y `marginMinutes` (`null` mientras carga) en lugar de un `AsyncValue`, como `bookingScreen` de la 005: la lógica pura no depende de Riverpod. Mismo comportamiento que el plan;
+    - sin imports: ni Flutter ni Firebase;
+    - 20 tests de tabla, también en verde con `TZ=Europe/Lisbon`; suite completa, 1282 en verde.
 
 - [ ] **T3. El turno original y sus horas.** RF-5, RF-7 a RF-9, RNF-1
   - Tests: `booking_edit_test.dart`, en tabla:
