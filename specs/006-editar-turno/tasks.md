@@ -36,17 +36,22 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
     - sin imports: ni Flutter ni Firebase;
     - 20 tests de tabla, también en verde con `TZ=Europe/Lisbon`; suite completa, 1282 en verde.
 
-- [ ] **T3. El turno original y sus horas.** RF-5, RF-7 a RF-9, RNF-1
+- [x] **T3. El turno original y sus horas.** RF-5, RF-7 a RF-9, RNF-1
   - Tests: `booking_edit_test.dart`, en tabla:
     - `EditOriginal` desde un `AppointmentModel` (horas en hora del salón);
     - `isEditDaySelectable`: el día original más allá de los 60 días, cerrado o bloqueado → sí; otro día así → no; un día normal → sí;
     - `editFreeSlots`:
       - con el propio turno quitado de los ocupados, su hora sale libre;
       - hora original fuera de la rejilla (apertura cambiada): sale, en orden, con la cobertura hasta el siguiente ocupado;
-      - día original ya cerrado: sale su hora, con el límite de D-3 (siguiente ocupado; si no hay, el cierre o el fin original, lo que sea más tarde);
+      - día original ya cerrado: sale su hora, con el límite de D-3 (el cierre o el fin original, lo que sea más tarde, sin pasar del siguiente ocupado);
       - hora original ya pasada, o dentro de otro turno ocupado: no se añade;
       - otro día: igual que `freeSlots`.
   - Hecho cuando: los tests pasan.
+  - Hecha (2026-11-14):
+    - `booking_edit.dart`: `EditOriginal` (con `EditOriginal.of(turno)`, horas en hora del salón), `isEditDaySelectable` y `editFreeSlots`;
+    - D-3 aclarado con el autor: el límite de la hora original es el cierre (si el día abre) o el fin original, lo que sea más tarde, y nunca pasa del siguiente turno ocupado. En un día ahora cerrado solo cabe un servicio igual o más corto. Actualizado en el plan (§ 4.2 y D-3);
+    - `EditOriginal.booked` admite `null`, como `AppointmentModel.booked`;
+    - 17 tests de tabla, también en verde con `TZ=Europe/Lisbon`; suite completa, 1299 en verde.
 
 - [ ] **T4. Antes y después, y comprobación al guardar.** RF-11, RF-12, RF-14, RF-15, RF-17, RNF-1
   - Tests: `booking_edit_test.dart`, en tabla:

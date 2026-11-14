@@ -5,6 +5,13 @@
 /// zona del dispositivo.
 library;
 
+import '../../../data/models/appointment_model.dart';
+import '../../../data/models/booked_service_model.dart';
+import '../../../data/models/calendar_settings_model.dart';
+import 'booking_window.dart';
+import 'free_slots.dart';
+import 'salon_time.dart';
+
 /// Si la clienta puede editar un turno que empieza en [start]: no está
 /// bloqueada y [now] es anterior a [start] menos [marginMinutes] (RF-1 a
 /// RF-3). Con un margen de 30, un turno de las 10:00 es editable hasta antes
@@ -66,4 +73,93 @@ EditAvailability editAvailability({
       )
       ? EditAvailability.editable
       : EditAvailability.closed;
+}
+
+/// Lo que tenía el turno al abrir la edición (plan § 4.2). Sirve como
+/// excepción a las reglas actuales (RF-5, RF-8), como "antes" del diálogo
+/// (RF-11) y para saber si alguien cambió el turno (RF-12).
+class EditOriginal {
+  const EditOriginal({
+    required this.id,
+    required this.start,
+    required this.end,
+    required this.status,
+    required this.booked,
+  });
+
+  /// El turno [appointment], con sus horas en hora de pared del salón.
+  factory EditOriginal.of(AppointmentModel appointment) => EditOriginal(
+    id: appointment.id,
+    start: toSalon(appointment.startTime),
+    end: toSalon(appointment.endTime),
+    status: appointment.status,
+    booked: appointment.booked,
+  );
+
+  final String id;
+
+  /// Inicio y fin en hora de pared del salón.
+  final DateTime start;
+  final DateTime end;
+  final String status;
+
+  /// Lo reservado. Todo turno de la spec 005 lo tiene; es `null` solo si el
+  /// documento no se pudo leer bien.
+  final BookedServiceModel? booked;
+}
+
+/// Si [day] se puede elegir en la edición: con las reglas de siempre o, si es
+/// el día del turno original, aunque ya no las cumpla (RF-5, RF-9).
+bool isEditDaySelectable(
+  DateTime day,
+  CalendarSettingsModel settings,
+  BookingWindow window,
+  EditOriginal original,
+) =>
+    isSelectableDay(day, settings, window) ||
+    salonDay(day) == salonDay(original.start);
+
+/// Las horas libres de [day] en la edición (RF-5, RF-7, RF-8). [busy] ya no
+/// tiene el propio turno.
+///
+/// Son las de [freeSlots] y, en el día original, también su hora aunque esté
+/// fuera de la rejilla o el día ya no abra, si aún no ha pasado y no la ocupa
+/// otro turno. Su cobertura llega hasta el cierre o el fin original, lo que
+/// sea más tarde, sin pasar del siguiente turno ocupado (D-3).
+List<FreeSlot> editFreeSlots({
+  required DateTime day,
+  required CalendarSettingsModel settings,
+  required Iterable<BusyRange> busy,
+  required DateTime nowSalon,
+  required EditOriginal original,
+}) {
+  final slots = freeSlots(
+    day: day,
+    settings: settings,
+    busy: busy,
+    nowSalon: nowSalon,
+  );
+  final start = original.start;
+  if (salonDay(day) != salonDay(start)) return slots;
+  if (!start.isAfter(nowSalon)) return slots;
+  final inside = busy.any(
+    (range) => !range.start.isAfter(start) && start.isBefore(range.end),
+  );
+  if (inside) return slots;
+  if (slots.any((slot) => slot.start == start)) return slots;
+
+  final close = openingOf(day, settings)?.close;
+  var limit = close != null && close.isAfter(original.end)
+      ? close
+      : original.end;
+  for (final range in busy) {
+    if (range.start.isAfter(start) && range.start.isBefore(limit)) {
+      limit = range.start;
+    }
+  }
+  final own = FreeSlot(
+    start: start,
+    coverageMinutes: limit.difference(start).inMinutes,
+  );
+  return [...slots, own]..sort((a, b) => a.start.compareTo(b.start));
 }

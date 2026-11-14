@@ -129,8 +129,8 @@ editFreeSlots(day, settings, busy, nowSalon, original)                          
   si original.start <= nowSalon o cae dentro de un turno de busy: return slots
   si slots ya tiene original.start: return slots
   // Su hora, aunque esté fuera de la rejilla o el día ya no abra (RF-8):
-  límite = el inicio del siguiente turno ocupado del día, o si no hay
-           max(cierre del día si abre, original.end)                                   // D-3
+  límite = min(inicio del siguiente turno ocupado del día,
+               max(cierre del día si abre, original.end))                              // D-3
   return slots + FreeSlot(original.start, límite − original.start), en orden
 ```
 - Las demás horas del día original y las de los demás días cumplen las reglas de siempre (RF-9).
@@ -298,7 +298,7 @@ Las duraciones se escriben con `formatDuration` y los precios con `formatPrice`.
 | --- | --- | --- | --- |
 | D-1 | La edición reutiliza `bookingSelectionProvider` y los widgets de la 005, con un contexto de edición. | Las mismas reglas (RF-7) sin duplicar la vista. Mientras hay turno activo no se puede reservar otro, así que la selección de una reserva nueva no se pierde. | Un segundo provider de selección y widgets que reciben el provider por parámetro: duplica estado y casi todos los widgets. |
 | D-2 | El turno en edición vive en su propio provider (`editTargetProvider`). | `busyRangesProvider` necesita saber qué turno quitar, y el controlador de la selección escucha `busyRangesProvider`. Si el turno en edición estuviera dentro del controlador, habría un ciclo de dependencias. | Guardarlo en `BookingSelectionState`: Riverpod rechaza el ciclo. |
-| D-3 | Si el día original ya no abre o la hora está fuera de la rejilla, el límite de la hora original es el siguiente turno ocupado o, si no hay, el cierre o el fin original, lo que sea más tarde. | RF-8 pide que "el servicio quepa desde esa hora", pero un día cerrado no tiene cierre. Así el turno original siempre cabe, y un servicio más largo solo cabe si el salón seguía abierto. | Exigir el horario actual: el turno original dejaría de caber en su propia hora, contra RF-5 y RF-8. |
+| D-3 | Si el día original ya no abre o la hora está fuera de la rejilla, el límite de la hora original es el cierre o el fin original, lo que sea más tarde, y nunca pasa del siguiente turno ocupado. Aclarado con el autor el 2026-11-14: en un día cerrado con otro turno más tarde, el límite es el fin original, no ese turno. | RF-8 pide que "el servicio quepa desde esa hora", pero un día cerrado no tiene cierre. Así el turno original siempre cabe, y un servicio más largo solo cabe si el salón seguía abierto. | Exigir el horario actual: el turno original dejaría de caber en su propia hora, contra RF-5 y RF-8. |
 | D-4 | `editMarginMinutes` va en `settings/calendar`, y `toMap` no lo escribe. | Es "un ajuste del salón" (spec, Definiciones). El guardado de la admin con `merge: true` no lo pisa hasta que la 008 lo edite. | Un documento propio (`settings/booking`): otra lectura y otra regla para un solo número. |
 | D-5 | Al guardar: comprobación previa en el servidor (como la 005) y, después, una **transacción** que vuelve a leer el turno y lo cambia solo si sigue como se abrió. | La transacción hace atómico RF-12 para el propio turno: dos dispositivos de la clienta, o la admin confirmando a la vez. Los choques con otros turnos siguen como en la 005, porque una transacción del cliente no puede leer consultas (012). | Un lote sin transacción: dos guardados casi a la vez se pisarían. |
 | D-6 | Una clienta bloqueada ve solo el aviso de bloqueo, sin el de RF-2. | Los dos dicen lo mismo con dos botones de WhatsApp. El aviso de bloqueo ya explica que no puede reservar. | Mostrar los dos avisos. |
