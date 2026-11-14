@@ -119,7 +119,7 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
 
 ## Bloque B — Vista
 
-- [ ] **T8. "Editar turno" en el turno activo.** RF-1 a RF-3, RF-22, D-6
+- [x] **T8. "Editar turno" en el turno activo.** RF-1 a RF-3, RF-22, D-6
   - Tests: `test/features/booking/booking_edit_screen_test.dart` (nuevo, `pumpApp`):
     - con margen 0, "Editar turno" se ve; dentro del margen, no, y sale el texto de RF-2 con WhatsApp (abre el enlace del salón);
     - aparece o desaparece sin recargar al pasar el tiempo, al cambiar el margen y al bloquearla;
@@ -127,6 +127,11 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
     - error del calendario: sin botón, aviso con "Reintentar", que vuelve a leerlo.
     - `booking_screen_states_test.dart` se adapta si hace falta.
   - Hecho cuando: los tests pasan, en ES y PT.
+  - Hecha (2026-11-14):
+    - `ActiveAppointmentView` pasa a `ConsumerWidget` y, según `editAvailabilityProvider`, muestra "Editar turno" (`GoldPillButton`, como "Agendar turno"), la explicación de RF-2 con WhatsApp (`AppNotice`) o `BookingLoadErrorNotice(schedule: true)`; bloqueada o cargando, nada más;
+    - el botón ya llama a `editTargetProvider.start`; hasta T9 la edición se ve como la vista de reserva;
+    - textos `bookingEditAction` y `bookingEditClosed` (ES y PT);
+    - 8 tests de vista y 2 claves en el test de textos; `booking_screen_states_test.dart` no necesitó cambios; suite completa, 1378 en verde.
 
 - [ ] **T9. Abrir la edición, elegir y cancelar.** RF-4 a RF-10, RF-18
   - Tests: `test/features/booking/booking_edit_form_test.dart` (nuevo, `pumpApp`) y `booking_edit_screen_test.dart`:

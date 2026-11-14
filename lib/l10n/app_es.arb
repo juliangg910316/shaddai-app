@@ -549,5 +549,9 @@
   "bookingEditAddonsUnavailable": "Algunos adicionales de tu turno ya no están disponibles y se quitaron.",
   "@bookingEditAddonsUnavailable": {"description": "Al abrir la edición, un adicional del turno ya no se ofrece (spec 006, RF-6)"},
   "bookingEditNotActive": "Tu turno ya no está activo: se canceló o terminó.",
-  "@bookingEditNotActive": {"description": "El turno en edición ya no está activo (spec 006, RF-15)"}
+  "@bookingEditNotActive": {"description": "El turno en edición ya no está activo (spec 006, RF-15)"},
+  "bookingEditAction": "Editar turno",
+  "@bookingEditAction": {"description": "Botón bajo el turno activo para editarlo (spec 006, RF-1)"},
+  "bookingEditClosed": "Ya no puedes cambiar este turno porque falta poco para que empiece. Si necesitas cambiarlo, escríbenos por WhatsApp.",
+  "@bookingEditClosed": {"description": "El turno activo ya no es editable (spec 006, RF-2)"}
 }

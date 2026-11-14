@@ -1062,4 +1062,11 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get bookingEditNotActive =>
       'Tu turno ya no está activo: se canceló o terminó.';
+
+  @override
+  String get bookingEditAction => 'Editar turno';
+
+  @override
+  String get bookingEditClosed =>
+      'Ya no puedes cambiar este turno porque falta poco para que empiece. Si necesitas cambiarlo, escríbenos por WhatsApp.';
 }

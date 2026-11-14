@@ -1,20 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/brand_colors.dart';
 import '../../../core/utils/capitalize.dart';
+import '../../../core/widgets/app_widgets.dart';
 import '../../../data/models/appointment_model.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../services/logic/price_list_view_logic.dart';
+import '../../services/presentation/price_list_notices.dart';
+import '../logic/booking_edit.dart';
 import '../logic/salon_time.dart';
+import '../providers/booking_edit_provider.dart';
 import 'booking_notices.dart';
 
 /// El turno activo de la clienta, en lugar del formulario: lo reservado con
 /// sus adicionales, el día, la franja en hora del salón, el total y el
 /// estado (spec 005, RF-33, RF-34, RF-46). Si la cuenta está bloqueada,
 /// también su aviso (RF-37).
-class ActiveAppointmentView extends StatelessWidget {
+///
+/// Debajo, según si se puede editar (spec 006, RF-1 a RF-3, RF-22): el botón
+/// "Editar turno", la explicación de que ya no se puede cambiar con WhatsApp,
+/// o el error del calendario con "Reintentar". Bloqueada, solo su aviso (D-6).
+class ActiveAppointmentView extends ConsumerWidget {
   const ActiveAppointmentView({
     super.key,
     required this.appointment,
@@ -25,7 +34,7 @@ class ActiveAppointmentView extends StatelessWidget {
   final bool isBlocked;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final brand = context.brand;
     final locale = l10n.localeName;
@@ -110,6 +119,26 @@ class ActiveAppointmentView extends StatelessWidget {
           style: AppText.sans(size: 14, color: brand.inkMuted, height: 1.5),
         ),
         if (isBlocked) const BookingBlockedNotice(),
+        switch (ref.watch(editAvailabilityProvider)) {
+          EditAvailability.editable => Padding(
+            padding: const EdgeInsets.only(top: 20),
+            child: GoldPillButton(
+              label: l10n.bookingEditAction.toUpperCase(),
+              onPressed: () =>
+                  ref.read(editTargetProvider.notifier).start(appointment),
+            ),
+          ),
+          EditAvailability.closed => AppNotice(
+            message: l10n.bookingEditClosed,
+            actions: const [WhatsappNoticeButton()],
+          ),
+          EditAvailability.error => const BookingLoadErrorNotice(
+            schedule: true,
+          ),
+          EditAvailability.blocked ||
+          EditAvailability.loading ||
+          null => const SizedBox.shrink(),
+        },
       ],
     );
   }

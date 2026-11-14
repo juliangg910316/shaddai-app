@@ -2075,6 +2075,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Tu turno ya no está activo: se canceló o terminó.'**
   String get bookingEditNotActive;
+
+  /// Botón bajo el turno activo para editarlo (spec 006, RF-1)
+  ///
+  /// In es, this message translates to:
+  /// **'Editar turno'**
+  String get bookingEditAction;
+
+  /// El turno activo ya no es editable (spec 006, RF-2)
+  ///
+  /// In es, this message translates to:
+  /// **'Ya no puedes cambiar este turno porque falta poco para que empiece. Si necesitas cambiarlo, escríbenos por WhatsApp.'**
+  String get bookingEditClosed;
 }
 
 class _AppLocalizationsDelegate

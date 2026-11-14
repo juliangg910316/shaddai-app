@@ -1064,4 +1064,11 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get bookingEditNotActive =>
       'Seu horário já não está ativo: foi cancelado ou terminou.';
+
+  @override
+  String get bookingEditAction => 'Editar horário';
+
+  @override
+  String get bookingEditClosed =>
+      'Você já não pode alterar este horário porque falta pouco para começar. Se precisar alterá-lo, escreva-nos pelo WhatsApp.';
 }
