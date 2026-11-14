@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/brand_colors.dart';
+import '../../../core/widgets/app_widgets.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../navigation/providers/tab_scroll_provider.dart';
 import '../logic/booking_selection.dart';
@@ -19,10 +20,19 @@ import 'slot_grid.dart';
 /// El formulario de reserva: calendario, horas, servicios, adicionales,
 /// resumen y "Agendar turno" (spec 005, RF-1, RF-23). [onConfirmed] guarda
 /// el turno cuando la clienta lo confirma.
+///
+/// Con [editing], es la edición del turno activo (spec 006, RF-4, RF-10,
+/// RF-18): título "Editar turno", "Guardar cambios" y, debajo, "Cancelar",
+/// que vuelve al turno sin cambios.
 class BookingForm extends ConsumerStatefulWidget {
-  const BookingForm({super.key, required this.onConfirmed});
+  const BookingForm({
+    super.key,
+    required this.onConfirmed,
+    this.editing = false,
+  });
 
   final VoidCallback onConfirmed;
+  final bool editing;
 
   @override
   ConsumerState<BookingForm> createState() => _BookingFormState();
@@ -53,7 +63,7 @@ class _BookingFormState extends ConsumerState<BookingForm> {
       children: [
         Center(
           child: Text(
-            l10n.bookAppointment,
+            widget.editing ? l10n.bookingEditTitle : l10n.bookAppointment,
             style: AppText.serif(size: 24, color: brand.inkStrong),
           ),
         ),
@@ -86,9 +96,17 @@ class _BookingFormState extends ConsumerState<BookingForm> {
         const BookingSummary(),
         const SizedBox(height: 24),
         BookButton(
+          editing: widget.editing,
           onMissing: () => setState(() => _showMissing = true),
           onConfirmed: widget.onConfirmed,
         ),
+        if (widget.editing) ...[
+          const SizedBox(height: 12),
+          OutlinePillButton(
+            label: l10n.cancelAction,
+            onPressed: () => ref.read(editTargetProvider.notifier).end(),
+          ),
+        ],
       ],
     );
   }

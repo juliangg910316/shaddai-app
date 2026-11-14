@@ -8,6 +8,7 @@ import '../../../core/theme/brand_colors.dart';
 import '../../../core/utils/capitalize.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../services/presentation/price_list_notices.dart';
+import '../logic/booking_edit.dart';
 import '../logic/booking_window.dart';
 import '../logic/salon_time.dart';
 import '../providers/booking_provider.dart';
@@ -25,6 +26,10 @@ DateTime _salon(DateTime local) =>
 /// El calendario de la reserva: solo deja elegir los días de la ventana que
 /// abren y no están bloqueados (spec 005, RF-1 a RF-3). Sin ninguno, un
 /// texto y WhatsApp en su lugar.
+///
+/// En la edición, también el día del turno original aunque ya no cumpla las
+/// reglas, y el calendario llega hasta él si está más allá de la ventana
+/// (spec 006, RF-5, RF-9).
 class BookingCalendar extends ConsumerStatefulWidget {
   const BookingCalendar({super.key});
 
@@ -47,6 +52,7 @@ class _BookingCalendarState extends ConsumerState<BookingCalendar> {
         (now) => salonDay(now.value ?? toSalon(ref.read(clockProvider)())),
       ),
     );
+    final original = ref.watch(editTargetProvider);
     ref.listen(
       bookingSelectionProvider.select((state) => state.selection.day),
       (_, next) {
@@ -57,7 +63,12 @@ class _BookingCalendarState extends ConsumerState<BookingCalendar> {
 
     final l10n = AppLocalizations.of(context)!;
     final window = bookingWindow(today);
-    if (!window.days.any((d) => isSelectableDay(d, settings, window))) {
+    bool selectable(DateTime d) => original == null
+        ? isSelectableDay(d, settings, window)
+        : isEditDaySelectable(d, settings, window, original);
+    // En la edición siempre se puede elegir al menos el día original.
+    if (original == null &&
+        !window.days.any((d) => isSelectableDay(d, settings, window))) {
       return AppNotice(
         message: l10n.bookingNoDaysAvailable,
         actions: const [WhatsappNoticeButton()],
@@ -66,20 +77,29 @@ class _BookingCalendarState extends ConsumerState<BookingCalendar> {
 
     final brand = context.brand;
     final material = MaterialLocalizations.of(context);
+    // El rango del calendario: la ventana y, en la edición, el día original.
+    final originalDay = original == null ? null : salonDay(original.start);
+    final first = originalDay != null && originalDay.isBefore(window.first)
+        ? originalDay
+        : window.first;
+    final last = originalDay != null && originalDay.isAfter(window.last)
+        ? originalDay
+        : window.last;
+    bool inRange(DateTime d) => !d.isBefore(first) && !d.isAfter(last);
     var focused = _focused ?? day ?? window.first;
-    if (!window.contains(focused)) focused = day ?? window.first;
+    if (!inRange(focused)) focused = day ?? window.first;
 
     return TableCalendar(
       locale: l10n.localeName,
-      firstDay: _local(window.first),
-      lastDay: _local(window.last),
+      firstDay: _local(first),
+      lastDay: _local(last),
       focusedDay: _local(focused),
       startingDayOfWeek: StartingDayOfWeek.monday,
       availableGestures: AvailableGestures.horizontalSwipe,
       rowHeight: 48,
       daysOfWeekHeight: 22,
       selectedDayPredicate: (d) => day != null && isSameDay(_local(day), d),
-      enabledDayPredicate: (d) => isSelectableDay(_salon(d), settings, window),
+      enabledDayPredicate: (d) => selectable(_salon(d)),
       onDaySelected: (selected, _) {
         final next = _salon(selected);
         setState(() => _focused = next);

@@ -22,22 +22,29 @@ String missingMessage(AppLocalizations l10n, Set<BookingPart> missing) =>
 /// y llama a [onMissing] para que se marque cada parte (RF-24). Con todo
 /// elegido, pide confirmación con el resumen (RF-25) y, si se confirma,
 /// llama a [onConfirmed].
+///
+/// Con [editing], es "Guardar cambios" de la edición (spec 006, RF-10): avisa
+/// igual de lo que falta y, con todo elegido, llama a [onConfirmed], que se
+/// encarga de confirmar los cambios.
 class BookButton extends ConsumerWidget {
   const BookButton({
     super.key,
     required this.onMissing,
     required this.onConfirmed,
+    this.editing = false,
   });
 
   final VoidCallback onMissing;
   final VoidCallback onConfirmed;
+  final bool editing;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
 
     return GoldPillButton(
-      label: l10n.bookingAction.toUpperCase(),
+      label: (editing ? l10n.bookingSaveChangesAction : l10n.bookingAction)
+          .toUpperCase(),
       onPressed: () async {
         final missing = missingParts(
           ref.read(bookingSelectionProvider).selection,
@@ -54,7 +61,11 @@ class BookButton extends ConsumerWidget {
           );
           return;
         }
-        if (await _confirm(context) == true) onConfirmed();
+        if (editing) {
+          onConfirmed();
+        } else if (await _confirm(context) == true) {
+          onConfirmed();
+        }
       },
     );
   }

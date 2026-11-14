@@ -1,18 +1,24 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shaddai/data/models/appointment_model.dart';
 import 'package:shaddai/data/models/booked_service_model.dart';
 import 'package:shaddai/data/models/calendar_settings_model.dart';
 import 'package:shaddai/data/models/price_list_model.dart';
 import 'package:shaddai/data/models/user_model.dart';
+import 'package:shaddai/features/booking/logic/bookable_catalog.dart';
 import 'package:shaddai/features/booking/logic/salon_time.dart';
 import 'package:shaddai/features/booking/presentation/active_appointment_view.dart';
 import 'package:shaddai/features/booking/presentation/booking_notices.dart';
+import 'package:shaddai/features/booking/presentation/booking_form.dart';
 import 'package:shaddai/features/booking/presentation/booking_view.dart';
+import 'package:shaddai/features/booking/providers/booking_provider.dart';
 import 'package:shaddai/features/landing/landing_content.dart';
+import 'package:shaddai/features/navigation/providers/tab_scroll_provider.dart';
 
 import '../../helpers/fake_booking.dart';
+import '../../helpers/fake_price_list.dart';
 import '../../helpers/fake_session.dart';
 import '../../helpers/pump_app.dart';
 import '../../helpers/recording_link_launcher.dart';
@@ -50,6 +56,56 @@ CalendarSettingsModel withMargin(int minutes) {
     editMarginMinutes: minutes,
   );
 }
+
+BilingualText text(String es, String pt) => BilingualText(es: es, pt: pt);
+
+PriceItemModel get manicure => PriceItemModel(
+  id: 's1',
+  kind: PriceItemKind.service,
+  name: text('Manicura', 'Manicure'),
+  priceCents: 3000,
+  durationMinutes: 45,
+);
+
+PriceItemModel get decoration => PriceItemModel(
+  id: 'a1',
+  kind: PriceItemKind.addon,
+  name: text('Decoración', 'Decoração'),
+  priceCents: 1000,
+);
+
+/// La lista de precios con [items] en una sola categoría.
+PriceListModel priceListWith(List<PriceItemModel> items) => PriceListModel(
+  categories: [
+    PriceCategoryModel(id: 'manos', name: text('Manos', 'Mãos'), items: items),
+  ],
+);
+
+/// El turno activo con un adicional: hoy de 9:00 a 9:45, s1 con a1.
+final withAddon = AppointmentModel(
+  id: 't1',
+  clientId: testClient.uid,
+  clientName: testClient.displayName,
+  clientPhone: testClient.phoneNumber!,
+  startTime: fromSalon(at(9)),
+  endTime: fromSalon(at(9, 45)),
+  status: 'confirmed',
+  createdAt: bookingTestNow,
+  booked: BookedServiceModel(
+    kind: BookedKind.service,
+    id: 's1',
+    name: text('Manicura', 'Manicure'),
+    priceCents: 3000,
+    durationMinutes: 45,
+    addons: [
+      BookedAddonModel(
+        id: 'a1',
+        name: text('Decoración', 'Decoração'),
+        priceCents: 1000,
+      ),
+    ],
+  ),
+);
 
 Future<void> settle(WidgetTester tester) async {
   for (var i = 0; i < 5; i++) {
@@ -216,6 +272,147 @@ void main() {
       await settle(tester);
       expect(find.byType(BookingLoadErrorNotice), findsNothing);
       expect(find.text('EDITAR TURNO'), findsOneWidget);
+    });
+  });
+
+  group('Abrir la edición y cancelarla (RF-4 a RF-6, RF-18)', () {
+    /// La reserva con el turno [withAddon] y la lista de [items].
+    Future<void> pumpEdit(
+      WidgetTester tester, {
+      List<PriceItemModel>? items,
+      String language = 'es',
+      Size size = const Size(800, 2400),
+    }) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = size;
+      addTearDown(tester.view.reset);
+      bookings = FakeBookingRepository(mine: [withAddon]);
+      await pumpApp(
+        tester,
+        stored: {'language': language},
+        home: const BookingView(),
+        priceListRepository: FakePriceListRepository(
+          stored: priceListWith(items ?? [manicure, decoration]),
+        ),
+        overrides: [...bookingDataOverrides(bookings: bookings)],
+      );
+      await settle(tester);
+    }
+
+    Future<void> openEdit(
+      WidgetTester tester, {
+      String label = 'EDITAR TURNO',
+    }) async {
+      await tester.ensureVisible(find.text(label));
+      await tester.tap(find.text(label));
+      await settle(tester);
+    }
+
+    ScrollController scroll(WidgetTester tester) =>
+        appContainer(tester)
+            .read(tabScrollControllerProvider(MobileTab.booking));
+
+    testWidgets('"Editar turno" abre la edición con todo elegido, el título '
+        '"Editar turno" y "Guardar cambios" (RF-4)', (tester) async {
+      await pumpEdit(tester);
+      await openEdit(tester);
+
+      expect(find.byType(ActiveAppointmentView), findsNothing);
+      expect(find.byType(BookingForm), findsOneWidget);
+      expect(find.text('Editar turno'), findsOneWidget);
+      expect(find.text('Reservar Turno'), findsNothing);
+      final selection = appContainer(tester)
+          .read(bookingSelectionProvider)
+          .selection;
+      expect(selection.day, DateTime.utc(2026, 11, 10));
+      expect(selection.start, at(9));
+      expect(selection.item, const BookableRef(BookedKind.service, 's1'));
+      expect(selection.addonIds, {'a1'});
+      expect(find.text('GUARDAR CAMBIOS'), findsOneWidget);
+      expect(find.text('AGENDAR TURNO'), findsNothing);
+      expect(find.text('CANCELAR'), findsOneWidget);
+      expect(find.byType(SnackBar), findsNothing);
+    });
+
+    testWidgets('en portugués', (tester) async {
+      await pumpEdit(tester, language: 'pt');
+      await openEdit(tester, label: 'EDITAR HORÁRIO');
+      expect(find.text('Editar horário'), findsOneWidget);
+      expect(find.text('SALVAR ALTERAÇÕES'), findsOneWidget);
+      expect(find.text('CANCELAR'), findsOneWidget);
+    });
+
+    testWidgets('la vista sube al principio al abrirla (RF-4)', (tester) async {
+      // Pantalla baja: el turno activo se desplaza hasta el botón.
+      await pumpEdit(tester, size: const Size(400, 420));
+      scroll(tester).jumpTo(scroll(tester).position.maxScrollExtent);
+      await tester.pump();
+      expect(scroll(tester).offset, greaterThan(0));
+
+      await openEdit(tester);
+      expect(find.byType(BookingForm), findsOneWidget);
+      expect(scroll(tester).offset, 0);
+      expect(find.text('Editar turno').hitTestable(), findsOneWidget);
+    });
+
+    testWidgets('servicio no disponible: abre sin él y avisa (RF-6)', (
+      tester,
+    ) async {
+      await pumpEdit(tester, items: [decoration]);
+      await openEdit(tester);
+
+      final selection = appContainer(tester)
+          .read(bookingSelectionProvider)
+          .selection;
+      expect(selection.start, at(9));
+      expect(selection.item, isNull);
+      expect(selection.addonIds, isEmpty);
+      expect(
+        find.text('El servicio elegido ya no está disponible.'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('adicional no disponible: abre sin él y avisa (RF-6)', (
+      tester,
+    ) async {
+      await pumpEdit(tester, items: [manicure]);
+      await openEdit(tester);
+
+      final selection = appContainer(tester)
+          .read(bookingSelectionProvider)
+          .selection;
+      expect(selection.item, const BookableRef(BookedKind.service, 's1'));
+      expect(selection.addonIds, isEmpty);
+      expect(
+        find.text(
+          'Algunos adicionales de tu turno ya no están disponibles y se '
+          'quitaron.',
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('"Cancelar" vuelve al turno sin cambios (RF-18)', (
+      tester,
+    ) async {
+      await pumpEdit(tester);
+      await openEdit(tester);
+      // Cambia la hora antes de cancelar.
+      await tester.ensureVisible(find.text('10:00'));
+      await tester.tap(find.text('10:00'));
+      await settle(tester);
+
+      await tester.ensureVisible(find.text('CANCELAR'));
+      await tester.tap(find.text('CANCELAR'));
+      await settle(tester);
+
+      expect(find.byType(BookingForm), findsNothing);
+      expect(find.byType(ActiveAppointmentView), findsOneWidget);
+      expect(find.text('EDITAR TURNO'), findsOneWidget);
+      expect(appContainer(tester).read(editTargetProvider), isNull);
+      expect(bookings.edited, isEmpty);
+      expect(bookings.mine.single.startTime, fromSalon(at(9)));
     });
   });
 }

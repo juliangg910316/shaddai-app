@@ -553,5 +553,9 @@
   "bookingEditAction": "Editar turno",
   "@bookingEditAction": {"description": "Botón bajo el turno activo para editarlo (spec 006, RF-1)"},
   "bookingEditClosed": "Ya no puedes cambiar este turno porque falta poco para que empiece. Si necesitas cambiarlo, escríbenos por WhatsApp.",
-  "@bookingEditClosed": {"description": "El turno activo ya no es editable (spec 006, RF-2)"}
+  "@bookingEditClosed": {"description": "El turno activo ya no es editable (spec 006, RF-2)"},
+  "bookingEditTitle": "Editar turno",
+  "@bookingEditTitle": {"description": "Título de la vista de reserva al editar el turno (spec 006, RF-4)"},
+  "bookingSaveChangesAction": "Guardar cambios",
+  "@bookingSaveChangesAction": {"description": "Botón de la edición en lugar de Agendar turno (spec 006, RF-10)"}
 }

@@ -133,7 +133,7 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
     - textos `bookingEditAction` y `bookingEditClosed` (ES y PT);
     - 8 tests de vista y 2 claves en el test de textos; `booking_screen_states_test.dart` no necesitó cambios; suite completa, 1378 en verde.
 
-- [ ] **T9. Abrir la edición, elegir y cancelar.** RF-4 a RF-10, RF-18
+- [x] **T9. Abrir la edición, elegir y cancelar.** RF-4 a RF-10, RF-18
   - Tests: `test/features/booking/booking_edit_form_test.dart` (nuevo, `pumpApp`) y `booking_edit_screen_test.dart`:
     - "Editar turno" abre la edición con el título "Editar turno", el día, la hora, el servicio y los adicionales elegidos, y la vista sube al principio;
     - servicio o adicional no disponibles: abre sin ellos y avisa;
@@ -142,6 +142,12 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
     - "Guardar cambios" sin hora o sin servicio dice qué falta y lo marca;
     - "Cancelar" vuelve al turno sin cambios.
   - Hecho cuando: los tests pasan.
+  - Hecha (2026-11-14):
+    - `BookingView` pinta `BookingScreenEditing` con `BookingForm(editing: true)`: título "Editar turno", `BookButton(editing: true)` con "Guardar cambios" (avisa y marca lo que falta como en la 005; con todo elegido llama a `_confirmEdit`, vacío hasta T10 y T11) y, debajo, "Cancelar" (`OutlinePillButton`, `editTargetProvider.end()`);
+    - `BookingCalendar` en la edición: `isEditDaySelectable` y el rango del calendario llega hasta el día original si está más allá de la ventana; sin el aviso de "sin días" (el día original siempre se puede elegir);
+    - la vista sube al principio sin código propio: la lista de la edición es otra y empieza en 0 (el test lo comprueba);
+    - textos `bookingEditTitle` y `bookingSaveChangesAction` (ES y PT);
+    - 14 tests nuevos (6 en `booking_edit_screen_test.dart`, 8 en `booking_edit_form_test.dart`) y 2 claves en el test de textos; suite completa, 1392 en verde.
 
 - [ ] **T10. Diálogo de antes y después, y aviso del margen al reservar.** RF-11, RF-23
   - Tests: `booking_edit_form_test.dart`:

@@ -1071,4 +1071,10 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get bookingEditClosed =>
       'Você já não pode alterar este horário porque falta pouco para começar. Se precisar alterá-lo, escreva-nos pelo WhatsApp.';
+
+  @override
+  String get bookingEditTitle => 'Editar horário';
+
+  @override
+  String get bookingSaveChangesAction => 'Salvar alterações';
 }

@@ -361,5 +361,7 @@
   "bookingEditAddonsUnavailable": "Alguns adicionais do seu horário já não estão disponíveis e foram removidos.",
   "bookingEditNotActive": "Seu horário já não está ativo: foi cancelado ou terminou.",
   "bookingEditAction": "Editar horário",
-  "bookingEditClosed": "Você já não pode alterar este horário porque falta pouco para começar. Se precisar alterá-lo, escreva-nos pelo WhatsApp."
+  "bookingEditClosed": "Você já não pode alterar este horário porque falta pouco para começar. Se precisar alterá-lo, escreva-nos pelo WhatsApp.",
+  "bookingEditTitle": "Editar horário",
+  "bookingSaveChangesAction": "Salvar alterações"
 }

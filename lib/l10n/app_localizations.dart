@@ -2087,6 +2087,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Ya no puedes cambiar este turno porque falta poco para que empiece. Si necesitas cambiarlo, escríbenos por WhatsApp.'**
   String get bookingEditClosed;
+
+  /// Título de la vista de reserva al editar el turno (spec 006, RF-4)
+  ///
+  /// In es, this message translates to:
+  /// **'Editar turno'**
+  String get bookingEditTitle;
+
+  /// Botón de la edición en lugar de Agendar turno (spec 006, RF-10)
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar cambios'**
+  String get bookingSaveChangesAction;
 }
 
 class _AppLocalizationsDelegate

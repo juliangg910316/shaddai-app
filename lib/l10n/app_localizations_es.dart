@@ -1069,4 +1069,10 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get bookingEditClosed =>
       'Ya no puedes cambiar este turno porque falta poco para que empiece. Si necesitas cambiarlo, escríbenos por WhatsApp.';
+
+  @override
+  String get bookingEditTitle => 'Editar turno';
+
+  @override
+  String get bookingSaveChangesAction => 'Guardar cambios';
 }

@@ -155,18 +155,26 @@ class _BookingViewState extends ConsumerState<BookingView> {
       ),
       BookingScreenBlocked() => const _StatePage(child: BookingBlockedNotice()),
       BookingScreenBooking() => _buildForm(context),
-      // La edición tiene su propia vista en la tarea T9 de la spec 006.
-      BookingScreenEditing() => _buildForm(context),
+      // La edición del turno activo (spec 006, RF-4).
+      BookingScreenEditing() => _buildForm(context, editing: true),
     };
   }
 
-  Widget _buildForm(BuildContext context) {
+  /// "Guardar cambios" con todo elegido (spec 006, RF-11 a RF-17). El
+  /// diálogo de antes y después llega en la tarea T10 y el guardado, en la
+  /// T11: hasta entonces no hace nada.
+  void _confirmEdit() {}
+
+  Widget _buildForm(BuildContext context, {bool editing = false}) {
     final brand = context.brand;
 
     return Scaffold(
       body: Stack(
         children: [
-          BookingForm(onConfirmed: _submit),
+          BookingForm(
+            editing: editing,
+            onConfirmed: editing ? _confirmEdit : _submit,
+          ),
           if (_isBooking)
             Container(
               color: brand.brand.withValues(alpha: 0.45),

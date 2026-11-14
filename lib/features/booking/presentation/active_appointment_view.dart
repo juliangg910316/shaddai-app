@@ -124,6 +124,7 @@ class ActiveAppointmentView extends ConsumerWidget {
             padding: const EdgeInsets.only(top: 20),
             child: GoldPillButton(
               label: l10n.bookingEditAction.toUpperCase(),
+              // La edición es otra lista, que empieza arriba (RF-4).
               onPressed: () =>
                   ref.read(editTargetProvider.notifier).start(appointment),
             ),
