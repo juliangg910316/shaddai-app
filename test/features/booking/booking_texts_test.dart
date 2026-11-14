@@ -39,6 +39,10 @@ const _keys = [
   'bookingDuration',
   'bookingTotal',
   'bookingTimeRange',
+  // Spec 006, plan § 6.
+  'bookingEditItemChanged',
+  'bookingEditItemDoesNotFit',
+  'bookingEditAddonsUnavailable',
 ];
 
 Map<String, dynamic> _arb(String name) =>
@@ -62,6 +66,26 @@ void main() {
     expect(es.bookingServiceNeedsLongerSlot('1 h 30 min'), contains('1 h 30'));
     expect(pt.bookingSlotTooShortFor('45 min'), contains('45 min'));
     expect(es.bookingTimeRange('9:00', '9:45'), '9:00 – 9:45');
+  });
+
+  test('el servicio que no cabe en la edición nombra el servicio, su '
+      'duración y el tiempo libre (spec 006, RF-29)', () {
+    for (final text in [
+      AppLocalizationsEs().bookingEditItemDoesNotFit(
+        'Pedicura',
+        '1 h 30 min',
+        '1 h',
+      ),
+      AppLocalizationsPt().bookingEditItemDoesNotFit(
+        'Pedicure',
+        '1 h 30 min',
+        '1 h',
+      ),
+    ]) {
+      expect(text, contains('1 h 30 min'));
+      expect(text, contains(' 1 h '));
+      expect(text, contains('Pedicur'));
+    }
   });
 
   test('en portugués se dice "horário" (decisión del autor)', () {

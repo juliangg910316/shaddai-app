@@ -355,5 +355,8 @@
   "bookingRetry": "Tentar novamente",
   "bookingDuration": "Duração",
   "bookingTotal": "Total",
-  "bookingTimeRange": "{start} – {end}"
+  "bookingTimeRange": "{start} – {end}",
+  "bookingEditItemChanged": "Você trocou o serviço:",
+  "bookingEditItemDoesNotFit": "{service} dura {duration} e nesse horário só há {free} livres. Escolha outro horário ou outro serviço.",
+  "bookingEditAddonsUnavailable": "Alguns adicionais do seu horário já não estão disponíveis e foram removidos."
 }

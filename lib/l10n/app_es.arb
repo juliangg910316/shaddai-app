@@ -541,5 +541,11 @@
   "bookingTotal": "Total",
   "@bookingTotal": {"description": "Etiqueta del precio total en el resumen (RF-22)"},
   "bookingTimeRange": "{start} – {end}",
-  "@bookingTimeRange": {"description": "Franja de inicio y fin de un turno", "placeholders": {"start": {"type": "String"}, "end": {"type": "String"}}}
+  "@bookingTimeRange": {"description": "Franja de inicio y fin de un turno", "placeholders": {"start": {"type": "String"}, "end": {"type": "String"}}},
+  "bookingEditItemChanged": "Cambiaste el servicio:",
+  "@bookingEditItemChanged": {"description": "Encabezado del aviso al cambiar el servicio de la edición desde su detalle (spec 006, RF-28)"},
+  "bookingEditItemDoesNotFit": "{service} dura {duration} y a esa hora solo hay {free} libres. Elige otra hora u otro servicio.",
+  "@bookingEditItemDoesNotFit": {"description": "El servicio pedido desde el detalle no cabe en la hora de la edición (spec 006, RF-29)", "placeholders": {"service": {"type": "String"}, "duration": {"type": "String"}, "free": {"type": "String"}}},
+  "bookingEditAddonsUnavailable": "Algunos adicionales de tu turno ya no están disponibles y se quitaron.",
+  "@bookingEditAddonsUnavailable": {"description": "Al abrir la edición, un adicional del turno ya no se ofrece (spec 006, RF-6)"}
 }

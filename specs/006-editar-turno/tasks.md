@@ -66,12 +66,20 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
     - `checkEditBeforeSave` recibe el turno leído como `AppointmentModel?`;
     - 21 tests de tabla, también en verde con `TZ=Europe/Lisbon`; suite completa, 1320 en verde.
 
-- [ ] **T5. La selección en la edición.** RF-4 a RF-9, RF-27 a RF-30, RNF-1
+- [x] **T5. La selección en la edición.** RF-4 a RF-9, RF-27 a RF-30, RNF-1
   - Tests: `test/features/booking/logic/booking_selection_test.dart` (casos nuevos):
     - `selectionOf`: con el catálogo listo, el día, la hora, el servicio y los adicionales del turno; con el servicio no disponible → sin servicio y `itemUnavailable`; con un adicional no disponible → sin él y `editAddonsUnavailable`; con el catálogo cargando, `reconcile` lo hace al llegar;
     - `reconcile` con `original`: no salta del día original aunque esté cerrado o fuera de la ventana; mantiene su hora fuera de la rejilla; al elegir otro día, aplica las reglas de la 005;
     - `requestItemInEdit`: más corto → cambia, sin adicionales, aviso `editItemChanged` con antes y después; igual de largo → cambia; más largo con hueco después → cambia; más largo con el tiempo de después ocupado o pasado el cierre → no cambia y `editItemDoesNotFit` con N y M; sin hora → cambia; el mismo servicio → sin cambios ni aviso, con sus adicionales; no disponible → sin cambios e `itemUnavailable`; catálogo cargando → pendiente, y se aplica al llegar.
   - Hecho cuando: los tests pasan y los de la 005 de `booking_selection_test.dart` siguen en verde.
+  - Hecha (2026-11-14):
+    - `BookingContext.original`: con él, `freeSlotsOf` usa `editFreeSlots` y `reconcile` acepta el día original (`isDaySelectable`);
+    - `selectionOf(original, context)`: arma la selección del turno y la pasa por `reconcile`, que quita lo no disponible y avisa. Así funciona igual con el catálogo listo o cargando, sin un estado pendiente aparte;
+    - `reconcile` avisa con `editAddonsUnavailable` solo si quita un adicional del turno original; uno añadido en la edición se quita sin aviso, como en la 005 (RF-21);
+    - `requestItemInEdit` devuelve `null` mientras no puede decidir (catálogo cargando o, con hora, sin calendario ni turnos ocupados). Guardar la petición y repetirla al llegar los datos es del controlador (T7);
+    - `BookingNotice` gana `name`, `freeMinutes`, `before` y `after`, y `BookingDraft` tiene `==`;
+    - textos `bookingEditItemChanged`, `bookingEditItemDoesNotFit` y `bookingEditAddonsUnavailable` (ES y PT), adelantados de T9 y T12 porque `bookingNoticeMessage` necesita un texto para cada aviso. `editItemChanged` muestra de momento solo el encabezado; las líneas de antes y después llegan en T12;
+    - 21 tests de lógica y 1 de textos; suite completa, 1340 en verde.
 
 - [ ] **T6. Repositorio y guardado de la edición.** RF-12 a RF-16, RF-26
   - Código: `BookingRepository.fetchEditCheck` y `updateEditedAppointment` (transacción, plan § 3); `FakeBookingRepository` con los dos métodos (respuesta, `false` o error programables, y registro de lo guardado); `BookingEditor` / `bookingEditSaveProvider` con `EditSaveResult`.

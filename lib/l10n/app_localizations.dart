@@ -2047,6 +2047,28 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'{start} – {end}'**
   String bookingTimeRange(String start, String end);
+
+  /// Encabezado del aviso al cambiar el servicio de la edición desde su detalle (spec 006, RF-28)
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiaste el servicio:'**
+  String get bookingEditItemChanged;
+
+  /// El servicio pedido desde el detalle no cabe en la hora de la edición (spec 006, RF-29)
+  ///
+  /// In es, this message translates to:
+  /// **'{service} dura {duration} y a esa hora solo hay {free} libres. Elige otra hora u otro servicio.'**
+  String bookingEditItemDoesNotFit(
+    String service,
+    String duration,
+    String free,
+  );
+
+  /// Al abrir la edición, un adicional del turno ya no se ofrece (spec 006, RF-6)
+  ///
+  /// In es, this message translates to:
+  /// **'Algunos adicionales de tu turno ya no están disponibles y se quitaron.'**
+  String get bookingEditAddonsUnavailable;
 }
 
 class _AppLocalizationsDelegate

@@ -83,6 +83,15 @@ String bookingNoticeMessage(AppLocalizations l10n, BookingNotice notice) {
     BookingNoticeKind.slotNoLongerFits => l10n.bookingSlotNoLongerFits,
     BookingNoticeKind.itemUnavailable => l10n.bookingItemUnavailable,
     BookingNoticeKind.dateMoved => l10n.bookingDateMoved,
+    // Las líneas con el antes y el después las añade la vista (T12).
+    BookingNoticeKind.editItemChanged => l10n.bookingEditItemChanged,
+    BookingNoticeKind.editItemDoesNotFit => l10n.bookingEditItemDoesNotFit(
+      notice.name?.of(l10n.localeName) ?? '',
+      duration,
+      formatDuration(notice.freeMinutes ?? 0),
+    ),
+    BookingNoticeKind.editAddonsUnavailable =>
+      l10n.bookingEditAddonsUnavailable,
   };
 }
 

@@ -195,6 +195,37 @@ class BookingDraft {
 
   /// Si el total es "desde".
   final bool totalFrom;
+
+  @override
+  bool operator ==(Object other) =>
+      other is BookingDraft &&
+      other.day == day &&
+      other.start == start &&
+      other.end == end &&
+      other.name.es == name.es &&
+      other.name.pt == name.pt &&
+      other.addons.length == addons.length &&
+      [
+        for (var i = 0; i < addons.length; i++)
+          other.addons[i].es == addons[i].es &&
+              other.addons[i].pt == addons[i].pt,
+      ].every((same) => same) &&
+      other.durationMinutes == durationMinutes &&
+      other.totalCents == totalCents &&
+      other.totalFrom == totalFrom;
+
+  @override
+  int get hashCode => Object.hash(
+    day,
+    start,
+    end,
+    name.es,
+    name.pt,
+    Object.hashAll([for (final addon in addons) '${addon.es}/${addon.pt}']),
+    durationMinutes,
+    totalCents,
+    totalFrom,
+  );
 }
 
 /// Lo guardado en el turno original.

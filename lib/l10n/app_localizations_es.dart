@@ -1042,4 +1042,20 @@ class AppLocalizationsEs extends AppLocalizations {
   String bookingTimeRange(String start, String end) {
     return '$start – $end';
   }
+
+  @override
+  String get bookingEditItemChanged => 'Cambiaste el servicio:';
+
+  @override
+  String bookingEditItemDoesNotFit(
+    String service,
+    String duration,
+    String free,
+  ) {
+    return '$service dura $duration y a esa hora solo hay $free libres. Elige otra hora u otro servicio.';
+  }
+
+  @override
+  String get bookingEditAddonsUnavailable =>
+      'Algunos adicionales de tu turno ya no están disponibles y se quitaron.';
 }

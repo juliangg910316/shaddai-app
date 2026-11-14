@@ -3,6 +3,7 @@ import 'package:shaddai/data/models/booked_service_model.dart';
 import 'package:shaddai/data/models/calendar_settings_model.dart';
 import 'package:shaddai/data/models/price_list_model.dart';
 import 'package:shaddai/features/booking/logic/bookable_catalog.dart';
+import 'package:shaddai/features/booking/logic/booking_edit.dart';
 import 'package:shaddai/features/booking/logic/booking_selection.dart';
 import 'package:shaddai/features/booking/logic/free_slots.dart';
 
@@ -94,11 +95,13 @@ BookingContext context({
   List<BusyRange> busy = const [],
   bool scheduleKnown = true,
   DateTime? nowSalon,
+  EditOriginal? original,
 }) => BookingContext(
   catalog: catalogKnown ? bookableCatalog(list ?? priceList()) : null,
   settings: scheduleKnown ? (calendar ?? settings()) : null,
   busy: scheduleKnown ? busy : null,
   nowSalon: nowSalon ?? now,
+  original: original,
 );
 
 BusyRange busy(DateTime start, DateTime end) => (start: start, end: end);
@@ -504,5 +507,295 @@ void main() {
       BookingSelection(day: tuesday),
       isNot(BookingSelection(day: dayOf(11))),
     );
+  });
+
+  group('edición (spec 006)', () {
+    BookedAddonModel bookedAddon(String id) =>
+        BookedAddonModel(id: id, name: text(id), priceCents: 1000);
+
+    /// El turno original: s1 (45 min) de 9:00 a 9:45 del día [day], con los
+    /// adicionales [addons].
+    EditOriginal original({
+      int day = 10,
+      int hour = 9,
+      int minute = 0,
+      List<String> addons = const ['a1'],
+    }) => EditOriginal(
+      id: 't1',
+      start: at(day, hour, minute),
+      end: at(day, hour, minute).add(const Duration(minutes: 45)),
+      status: 'confirmed',
+      booked: BookedServiceModel(
+        kind: BookedKind.service,
+        id: 's1',
+        name: text('s1'),
+        priceCents: 3000,
+        durationMinutes: 45,
+        addons: [for (final id in addons) bookedAddon(id)],
+      ),
+    );
+
+    group('selectionOf (RF-4 a RF-6)', () {
+      test('con el catálogo listo: el día, la hora, el servicio y los '
+          'adicionales del turno', () {
+        final o = original();
+        final update = selectionOf(o, context(original: o));
+        expect(
+          update.selection,
+          BookingSelection(
+            day: tuesday,
+            start: at(10, 9),
+            item: s1,
+            addonIds: const {'a1'},
+          ),
+        );
+        expect(update.notices, isEmpty);
+      });
+
+      test('servicio no disponible: sin servicio ni adicionales, y avisa', () {
+        final o = original();
+        final update = selectionOf(
+          o,
+          context(list: priceList(s1Visible: false), original: o),
+        );
+        expect(update.selection.item, isNull);
+        expect(update.selection.addonIds, isEmpty);
+        expect(update.selection.start, at(10, 9));
+        expect(update.notices, [
+          const BookingNotice(BookingNoticeKind.itemUnavailable),
+        ]);
+      });
+
+      test('adicional no disponible: sin él, y avisa', () {
+        final o = original(addons: ['a1', 'a2']);
+        final update = selectionOf(
+          o,
+          context(list: priceList(a2Visible: false), original: o),
+        );
+        expect(update.selection.addonIds, {'a1'});
+        expect(update.notices, [
+          const BookingNotice(BookingNoticeKind.editAddonsUnavailable),
+        ]);
+      });
+
+      test('con el catálogo cargando lo deja todo; reconcile comprueba al '
+          'llegar', () {
+        final o = original(addons: ['a1', 'a2']);
+        final loading = selectionOf(
+          o,
+          context(catalogKnown: false, original: o),
+        );
+        expect(loading.selection.addonIds, {'a1', 'a2'});
+        expect(loading.notices, isEmpty);
+
+        final arrived = reconcile(
+          loading.selection,
+          context(list: priceList(a2Visible: false), original: o),
+        );
+        expect(arrived.selection.addonIds, {'a1'});
+        expect(arrived.notices, [
+          const BookingNotice(BookingNoticeKind.editAddonsUnavailable),
+        ]);
+      });
+
+      test('el día original cerrado (lunes) y su hora se conservan (RF-5)', () {
+        final o = original(day: 16);
+        final update = selectionOf(o, context(original: o));
+        expect(update.selection.day, dayOf(16));
+        expect(update.selection.start, at(16, 9));
+        expect(update.notices, isEmpty);
+      });
+    });
+
+    group('reconcile con el turno original (RF-7 a RF-9)', () {
+      test('no salta del día original cerrado', () {
+        final o = original(day: 16);
+        final selection = BookingSelection(
+          day: dayOf(16),
+          start: at(16, 9),
+          item: s1,
+        );
+        final update = reconcile(selection, context(original: o));
+        expect(update.selection, selection);
+        expect(update.notices, isEmpty);
+      });
+
+      test('mantiene su hora fuera de la rejilla', () {
+        final o = original(minute: 15);
+        final selection = BookingSelection(
+          day: tuesday,
+          start: at(10, 9, 15),
+          item: s1,
+        );
+        expect(reconcile(selection, context(original: o)).selection, selection);
+      });
+
+      test('su hora no sale ocupada sin el propio turno, y las demás horas '
+          'respetan a las demás', () {
+        final o = original();
+        final ctx = context(original: o, busy: [busy(at(10, 11), at(10, 12))]);
+        final starts = ctx.freeSlotsOf(tuesday).map((s) => s.start);
+        expect(starts, contains(at(10, 9)));
+        expect(starts, isNot(contains(at(10, 11))));
+      });
+
+      test('otro día cerrado: se aplican las reglas de la 005', () {
+        final o = original();
+        final update = reconcile(
+          BookingSelection(day: dayOf(15), item: s1),
+          context(original: o),
+        );
+        expect(update.selection.day, isNot(dayOf(15)));
+        expect(update.notices, [
+          const BookingNotice(BookingNoticeKind.dateMoved),
+        ]);
+      });
+
+      test('un adicional añadido en la edición que deja de estar disponible '
+          'se quita sin avisar, como en la 005', () {
+        final o = original(addons: const []);
+        final update = reconcile(
+          BookingSelection(
+            day: tuesday,
+            start: at(10, 9),
+            item: s1,
+            addonIds: const {'a2'},
+          ),
+          context(list: priceList(a2Visible: false), original: o),
+        );
+        expect(update.selection.addonIds, isEmpty);
+        expect(update.notices, isEmpty);
+      });
+    });
+
+    group('requestItemInEdit (RF-27 a RF-30)', () {
+      // s1 (45 min) con a1; short (30 min); same (45 min); long (90 min).
+      final list = PriceListModel(
+        categories: [
+          PriceCategoryModel(
+            id: 'manos',
+            name: text('Manos'),
+            items: [
+              service('s1', 45),
+              addon('a1'),
+              service('short', 30),
+              service('same', 45),
+              service('long', 90),
+            ],
+          ),
+        ],
+      );
+      const short = BookableRef(BookedKind.service, 'short');
+      const same = BookableRef(BookedKind.service, 'same');
+      const long = BookableRef(BookedKind.service, 'long');
+      final o = original();
+      final editing = BookingSelection(
+        day: tuesday,
+        start: at(10, 9),
+        item: s1,
+        addonIds: const {'a1'},
+      );
+
+      BookingUpdate? request(
+        BookableRef ref, {
+        BookingSelection? from,
+        List<BusyRange> others = const [],
+        bool catalogKnown = true,
+        bool scheduleKnown = true,
+      }) => requestItemInEdit(
+        from ?? editing,
+        context(
+          list: list,
+          catalogKnown: catalogKnown,
+          scheduleKnown: scheduleKnown,
+          busy: others,
+          original: o,
+        ),
+        ref,
+      );
+
+      test('más corto: lo cambia, desmarca los adicionales y avisa con el '
+          'antes y el después', () {
+        final update = request(short)!;
+        expect(
+          update.selection,
+          BookingSelection(day: tuesday, start: at(10, 9), item: short),
+        );
+        final notice = update.notices.single;
+        expect(notice.kind, BookingNoticeKind.editItemChanged);
+        expect(notice.before!.name.es, 's1');
+        expect(notice.before!.end, at(10, 9, 45));
+        expect(notice.before!.totalCents, 4000);
+        expect(notice.after!.name.es, 'short');
+        expect(notice.after!.end, at(10, 9, 30));
+        expect(notice.after!.durationMinutes, 30);
+        expect(notice.after!.totalCents, 3000);
+      });
+
+      test('igual de largo: lo cambia', () {
+        expect(request(same)!.selection.item, same);
+      });
+
+      test('más largo con el tiempo de después libre: lo cambia', () {
+        expect(request(long)!.selection.item, long);
+      });
+
+      test('más largo con el tiempo de después ocupado: no lo cambia y '
+          'avisa con N y M', () {
+        final update = request(long, others: [busy(at(10, 10), at(10, 11))])!;
+        expect(update.selection, editing);
+        final notice = update.notices.single;
+        expect(notice.kind, BookingNoticeKind.editItemDoesNotFit);
+        expect(notice.name!.es, 'long');
+        expect(notice.minutes, 90);
+        expect(notice.freeMinutes, 60);
+      });
+
+      test('más largo que pasa del cierre: no lo cambia', () {
+        final at11 = BookingSelection(
+          day: tuesday,
+          start: at(10, 11),
+          item: s1,
+        );
+        final update = request(long, from: at11)!;
+        expect(update.selection, at11);
+        expect(update.notices.single.freeMinutes, 60);
+      });
+
+      test('sin hora: lo cambia, y el aviso no tiene fin', () {
+        final noStart = BookingSelection(day: tuesday, item: s1);
+        final update = request(long, from: noStart)!;
+        expect(update.selection.item, long);
+        expect(update.notices.single.after!.end, isNull);
+      });
+
+      test('el mismo servicio: sin cambios ni aviso, con sus adicionales', () {
+        final update = request(s1)!;
+        expect(update.selection, editing);
+        expect(update.notices, isEmpty);
+      });
+
+      test('no disponible: sin cambios, y avisa', () {
+        final update = request(const BookableRef(BookedKind.service, 'x'))!;
+        expect(update.selection, editing);
+        expect(update.notices, [
+          const BookingNotice(BookingNoticeKind.itemUnavailable),
+        ]);
+      });
+
+      test('con el catálogo cargando, o sin los turnos ocupados si hay hora, '
+          'aún no decide (null)', () {
+        expect(request(short, catalogKnown: false), isNull);
+        expect(request(short, scheduleKnown: false), isNull);
+        expect(
+          request(
+            short,
+            from: BookingSelection(day: tuesday, item: s1),
+            scheduleKnown: false,
+          ),
+          isNotNull,
+        );
+      });
+    });
   });
 }

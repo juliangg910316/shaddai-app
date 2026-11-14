@@ -8,7 +8,9 @@
 library;
 
 import '../../../data/models/calendar_settings_model.dart';
+import '../../../data/models/price_list_model.dart';
 import 'bookable_catalog.dart';
+import 'booking_edit.dart';
 import 'booking_window.dart';
 import 'free_slots.dart';
 import 'salon_time.dart';
@@ -70,23 +72,68 @@ enum BookingNoticeKind {
 
   /// La fecha elegida ya no se puede elegir y se pasó a otra (casos límite).
   dateMoved,
+
+  /// En la edición, se cambió el servicio desde su detalle (spec 006,
+  /// RF-28). Con [BookingNotice.before] y [BookingNotice.after].
+  editItemChanged,
+
+  /// En la edición, el servicio pedido desde su detalle no cabe en la hora
+  /// elegida (spec 006, RF-29). Con [BookingNotice.name],
+  /// [BookingNotice.minutes] (su duración) y [BookingNotice.freeMinutes].
+  editItemDoesNotFit,
+
+  /// Al abrir la edición, algún adicional del turno ya no está disponible y
+  /// se quitó (spec 006, RF-6).
+  editAddonsUnavailable,
 }
 
 /// Un aviso para la clienta.
 class BookingNotice {
-  const BookingNotice(this.kind, {this.minutes});
+  const BookingNotice(
+    this.kind, {
+    this.minutes,
+    this.name,
+    this.freeMinutes,
+    this.before,
+    this.after,
+  });
 
   final BookingNoticeKind kind;
 
   /// Duración que cita el aviso, si la cita.
   final int? minutes;
 
-  @override
-  bool operator ==(Object other) =>
-      other is BookingNotice && other.kind == kind && other.minutes == minutes;
+  /// Servicio que cita el aviso, en los dos idiomas.
+  final BilingualText? name;
+
+  /// Minutos libres que cita el aviso.
+  final int? freeMinutes;
+
+  /// Lo elegido antes y después de un cambio.
+  final BookingDraft? before;
+  final BookingDraft? after;
 
   @override
-  int get hashCode => Object.hash(kind, minutes);
+  bool operator ==(Object other) =>
+      other is BookingNotice &&
+      other.kind == kind &&
+      other.minutes == minutes &&
+      other.name?.es == name?.es &&
+      other.name?.pt == name?.pt &&
+      other.freeMinutes == freeMinutes &&
+      other.before == before &&
+      other.after == after;
+
+  @override
+  int get hashCode => Object.hash(
+    kind,
+    minutes,
+    name?.es,
+    name?.pt,
+    freeMinutes,
+    before,
+    after,
+  );
 
   @override
   String toString() => 'BookingNotice(${kind.name}, $minutes)';
@@ -107,27 +154,55 @@ class BookingContext {
     this.settings,
     this.busy,
     required this.nowSalon,
+    this.original,
   });
 
   final BookableCatalog? catalog;
   final CalendarSettingsModel? settings;
+
+  /// Sin el propio turno durante la edición (spec 006, RF-7).
   final List<BusyRange>? busy;
   final DateTime nowSalon;
+
+  /// El turno en edición, o `null` en una reserva nueva (spec 006). Con él,
+  /// su día y su hora valen aunque ya no cumplan las reglas (RF-5, RF-8).
+  final EditOriginal? original;
 
   bool get _scheduleKnown => settings != null && busy != null;
 
   /// Las horas libres del día de [day], o ninguna si el calendario o los
-  /// turnos ocupados aún no han llegado.
+  /// turnos ocupados aún no han llegado. En la edición, con su hora original
+  /// (`editFreeSlots`).
   List<FreeSlot> freeSlotsOf(DateTime day) {
     final settings = this.settings;
     final busy = this.busy;
     if (settings == null || busy == null) return const [];
+    final original = this.original;
+    if (original != null) {
+      return editFreeSlots(
+        day: salonDay(day),
+        settings: settings,
+        busy: busy,
+        nowSalon: nowSalon,
+        original: original,
+      );
+    }
     return freeSlots(
       day: salonDay(day),
       settings: settings,
       busy: busy,
       nowSalon: nowSalon,
     );
+  }
+
+  /// Si [day] se puede elegir: con las reglas de la reserva o, en la
+  /// edición, también el día original (RF-5, RF-9).
+  bool isDaySelectable(DateTime day, CalendarSettingsModel settings) {
+    final window = bookingWindow(nowSalon);
+    final original = this.original;
+    return original == null
+        ? isSelectableDay(day, settings, window)
+        : isEditDaySelectable(day, settings, window, original);
   }
 
   /// La duración de [ref], o `null` si no se conoce o no está disponible.
@@ -276,9 +351,11 @@ BookingUpdate requestItem(
 }
 
 /// Mantiene [selection] coherente con [context] cuando cambian los datos:
-/// - sin fecha, o con una que ya no se puede elegir, pasa a la de RF-1;
+/// - sin fecha, o con una que ya no se puede elegir, pasa a la de RF-1; en
+///   la edición, el día original sigue valiendo (spec 006, RF-5);
 /// - quita el servicio que ya no está disponible, con sus adicionales
-///   (RF-17), y desmarca los adicionales que ya no lo están (RF-21);
+///   (RF-17), y desmarca los adicionales que ya no lo están (RF-21); en la
+///   edición, avisa si alguno era del turno original (spec 006, RF-6);
 /// - quita la hora que dejó de ser libre (RF-9) o en la que el servicio ya
 ///   no cabe (RF-16).
 BookingUpdate reconcile(BookingSelection selection, BookingContext context) {
@@ -290,8 +367,7 @@ BookingUpdate reconcile(BookingSelection selection, BookingContext context) {
 
   final settings = context.settings;
   if (settings != null && context._scheduleKnown) {
-    final window = bookingWindow(context.nowSalon);
-    if (day == null || !isSelectableDay(day, settings, window)) {
+    if (day == null || !context.isDaySelectable(day, settings)) {
       final next = initialDay(
         nowSalon: context.nowSalon,
         settings: settings,
@@ -314,6 +390,16 @@ BookingUpdate reconcile(BookingSelection selection, BookingContext context) {
     } else {
       final available = {for (final a in availableAddons(catalog, item)) a.id};
       if (!available.containsAll(addonIds)) {
+        final removed = addonIds.where((id) => !available.contains(id));
+        final originalIds = {
+          for (final addon in context.original?.booked?.addons ?? const [])
+            addon.id,
+        };
+        if (removed.any(originalIds.contains)) {
+          notices.add(
+            const BookingNotice(BookingNoticeKind.editAddonsUnavailable),
+          );
+        }
         addonIds = addonIds.where(available.contains).toSet();
       }
     }
@@ -349,3 +435,74 @@ Set<BookingPart> missingParts(BookingSelection selection) => {
   if (selection.start == null) BookingPart.slot,
   if (selection.item == null) BookingPart.item,
 };
+
+/// La selección al abrir la edición de [original] (spec 006, RF-4 a RF-6):
+/// su día, su hora, su servicio y sus adicionales. Lo que ya no está
+/// disponible se quita y se avisa; si el catálogo aún carga, lo hace
+/// [reconcile] cuando llega.
+BookingUpdate selectionOf(EditOriginal original, BookingContext context) {
+  final booked = original.booked;
+  return reconcile(
+    BookingSelection(
+      day: salonDay(original.start),
+      start: original.start,
+      item: booked == null ? null : BookableRef(booked.kind, booked.id),
+      addonIds: {for (final addon in booked?.addons ?? const []) addon.id},
+    ),
+    context,
+  );
+}
+
+/// "Reservar cita" en el detalle de [ref] con la edición abierta (spec 006,
+/// RF-27 a RF-30):
+/// - el mismo servicio: sin cambios, con sus adicionales;
+/// - no disponible: sin cambios, y avisa (RF-30);
+/// - no cabe en la hora elegida (sin contar el propio turno): sin cambios, y
+///   avisa con su duración y los minutos libres (RF-29);
+/// - si cabe, o no hay hora: lo elige, desmarca los adicionales y avisa con
+///   el antes y el después (RF-28).
+///
+/// `null` si aún no se puede decidir: el catálogo carga o, con hora, aún no
+/// se conocen el calendario y los turnos ocupados. Quien la llama la vuelve
+/// a pedir cuando lleguen.
+BookingUpdate? requestItemInEdit(
+  BookingSelection selection,
+  BookingContext context,
+  BookableRef ref,
+) {
+  if (ref == selection.item) return _unchanged(selection);
+  final catalog = context.catalog;
+  if (catalog == null) return null;
+  final bookable = findBookable(catalog, ref);
+  if (bookable == null) {
+    return _unchanged(
+      selection,
+      const BookingNotice(BookingNoticeKind.itemUnavailable),
+    );
+  }
+  final start = selection.start;
+  if (start != null) {
+    if (!context._scheduleKnown) return null;
+    final slot = context.slotAt(start);
+    if (slot == null || !fits(bookable.durationMinutes, slot)) {
+      return _unchanged(
+        selection,
+        BookingNotice(
+          BookingNoticeKind.editItemDoesNotFit,
+          name: bookable.name,
+          minutes: bookable.durationMinutes,
+          freeMinutes: slot?.coverageMinutes ?? 0,
+        ),
+      );
+    }
+  }
+  final next = BookingSelection(day: selection.day, start: start, item: ref);
+  return _unchanged(
+    next,
+    BookingNotice(
+      BookingNoticeKind.editItemChanged,
+      before: draftOfSelection(selection, catalog),
+      after: draftOfSelection(next, catalog),
+    ),
+  );
+}
