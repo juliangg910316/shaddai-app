@@ -97,7 +97,7 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
     - los turnos ocupados de la comprobación quitan el propio turno por su id;
     - 14 tests; suite completa, 1355 en verde.
 
-- [ ] **T7. Providers de la edición.** RF-1 a RF-9, RF-18; casos límite
+- [x] **T7. Providers de la edición.** RF-1 a RF-9, RF-18; casos límite
   - Código: `editTargetProvider` (ya creado en T6) conectado; `busyRangesProvider` sin el propio turno; `freeSlotsOfDayProvider` (lo usan `SlotGrid` y `selectedFreeSlotProvider`); `editAvailabilityProvider`; `BookingScreenEditing` en `bookingScreen`; `BookingSelectionController` escucha la edición, la ficha y los turnos; `bookingDataOverrides` acepta un calendario con margen.
   - Tests: `test/features/booking/booking_providers_test.dart` y `logic/booking_rules_test.dart` (casos nuevos):
     - `bookingScreen` → `BookingScreenEditing` solo si el turno en edición es el activo y no está bloqueada;
@@ -106,6 +106,16 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
     - `editAvailabilityProvider` cambia al pasar el tiempo, al cambiar el margen y al bloquearla;
     - bloquearla o cancelar el turno mientras edita termina la edición (con `editNotActive` en el segundo caso).
   - Hecho cuando: los tests pasan y los de la 005 siguen en verde (la vista de reserva no cambia por fuera).
+  - Hecha (2026-11-14):
+    - `editTargetProvider` pasa a `booking_provider.dart` (lo usan `busyRangesProvider` y el controlador) y `booking_edit_provider.dart` lo reexporta;
+    - `busyRangesProvider` sin el turno ocupado del turno en edición; `freeSlotsOfDayProvider` (familia por día) usa `editFreeSlots` en la edición, y lo usan `SlotGrid` y `selectedFreeSlotProvider`;
+    - `BookingScreenEditing` en `bookingScreen` (parámetro `isEditing`); `BookingView` la pinta de momento como la vista de reserva (T9 le da su vista);
+    - `editAvailabilityProvider` en `booking_edit_provider.dart`: `null` sin turno activo;
+    - `BookingSelectionController`: al empezar la edición carga `selectionOf`; al terminarla vuelve a la selección vacía; termina la edición si la bloquean (sin aviso) o si el turno deja de ser el activo (aviso nuevo `editNotActive`, texto `bookingEditNotActive`); `requestItem` en la edición guarda la petición y la repite al llegar los datos;
+    - error a evitar: al empezar la edición, el controlador se entera antes de que `busyRangesProvider` se recalcule y veía el propio turno como ocupado. `_context()` lee `busySlotsProvider` y quita el turno en edición él mismo (sin los turnos ocupados si su lectura da error, como antes);
+    - `bookingDataOverrides` acepta `settingsStream`, para cambiar el calendario en vivo;
+    - el helper `choose` de `booking_edit_save_test.dart` ya no vuelve a tocar el servicio: al abrir la edición viene del turno;
+    - 15 tests nuevos (3 de pantalla y 12 de providers) y la clave `bookingEditNotActive` en el test de textos; suite completa, 1370 en verde.
 
 ## Bloque B — Vista
 

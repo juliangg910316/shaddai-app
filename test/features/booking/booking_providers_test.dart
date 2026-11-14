@@ -1,16 +1,22 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shaddai/data/models/appointment_model.dart';
+import 'package:shaddai/data/models/booked_service_model.dart';
 import 'package:shaddai/data/models/busy_slot_model.dart';
+import 'package:shaddai/data/models/calendar_settings_model.dart';
 import 'package:shaddai/data/models/price_list_model.dart';
 import 'package:shaddai/data/models/user_model.dart';
 import 'package:shaddai/features/auth/providers/auth_provider.dart';
 import 'package:shaddai/features/booking/logic/bookable_catalog.dart';
+import 'package:shaddai/features/booking/logic/booking_edit.dart';
 import 'package:shaddai/features/booking/logic/booking_rules.dart';
+import 'package:shaddai/features/booking/logic/booking_selection.dart';
 import 'package:shaddai/features/booking/logic/salon_time.dart';
+import 'package:shaddai/features/booking/providers/booking_edit_provider.dart';
 import 'package:shaddai/features/booking/providers/booking_provider.dart';
 import 'package:shaddai/features/services/logic/price_list_view_logic.dart';
 import 'package:shaddai/features/services/providers/price_list_provider.dart';
@@ -392,6 +398,334 @@ void main() {
       expect(
         c.read(bookingScreenProvider),
         isA<BookingScreenSignedOut<AppointmentModel>>(),
+      );
+    });
+  });
+
+  group('edición (spec 006)', () {
+    // "Ahora": martes 10 a las 7:00 (bookingTestNow). El calendario por
+    // defecto abre de 9:00 a 18:00.
+    DateTime at(int hour, [int minute = 0]) =>
+        DateTime.utc(2026, 11, 10, hour, minute);
+    final today = DateTime.utc(2026, 11, 10);
+    BilingualText text(String es) => BilingualText(es: es, pt: es);
+    PriceItemModel service(String id, int minutes) => PriceItemModel(
+      id: id,
+      kind: PriceItemKind.service,
+      name: text(id),
+      priceCents: 3000,
+      durationMinutes: minutes,
+    );
+
+    // s1 (45 min) con a1; short (30 min); long (90 min).
+    final list = PriceListModel(
+      categories: [
+        PriceCategoryModel(
+          id: 'manos',
+          name: text('Manos'),
+          items: [
+            service('s1', 45),
+            PriceItemModel(
+              id: 'a1',
+              kind: PriceItemKind.addon,
+              name: text('a1'),
+              priceCents: 1000,
+            ),
+            service('short', 30),
+            service('long', 90),
+          ],
+        ),
+      ],
+    );
+    const s1 = BookableRef(BookedKind.service, 's1');
+    const short = BookableRef(BookedKind.service, 'short');
+
+    /// Su turno activo: hoy de 9:00 a 9:45, s1 con a1.
+    AppointmentModel mine({String status = 'confirmed'}) => AppointmentModel(
+      id: 't1',
+      clientId: testClient.uid,
+      clientName: testClient.displayName,
+      clientPhone: testClient.phoneNumber ?? '',
+      startTime: fromSalon(at(9)),
+      endTime: fromSalon(at(9, 45)),
+      status: status,
+      createdAt: DateTime.utc(2026, 11, 1),
+      booked: BookedServiceModel(
+        kind: BookedKind.service,
+        id: 's1',
+        name: text('s1'),
+        priceCents: 3000,
+        durationMinutes: 45,
+        addons: [
+          BookedAddonModel(id: 'a1', name: text('a1'), priceCents: 1000),
+        ],
+      ),
+    );
+
+    BusySlot slot(String id, DateTime start, DateTime end) =>
+        BusySlot(id: id, start: fromSalon(start), end: fromSalon(end));
+
+    late StateProvider<PriceListState> priceState;
+
+    ProviderContainer editing({
+      Stream<UserModel?> Function()? user,
+      Stream<DateTime> Function()? now,
+      Stream<CalendarSettingsModel> Function()? settings,
+    }) {
+      priceState = StateProvider<PriceListState>((ref) => PriceListReady(list));
+      final c = ProviderContainer(
+        overrides: [
+          ...bookingDataOverrides(
+            bookings: bookings,
+            userStream: user,
+            nowStream: now,
+            settingsStream: settings,
+          ),
+          currentPriceListProvider.overrideWith((ref) => ref.watch(priceState)),
+        ],
+      );
+      addTearDown(c.dispose);
+      c.listen(bookingSelectionProvider, (_, _) {});
+      c.listen(bookingScreenProvider, (_, _) {});
+      c.listen(editAvailabilityProvider, (_, _) {});
+      return c;
+    }
+
+    setUp(() {
+      bookings = FakeBookingRepository(
+        mine: [mine()],
+        busy: [slot('t1', at(9), at(9, 45)), slot('x', at(11), at(12))],
+      );
+    });
+
+    BookingSelection selection(ProviderContainer c) =>
+        c.read(bookingSelectionProvider).selection;
+
+    test('bookingScreenProvider: la edición mientras se edita el turno '
+        'activo; al terminar, el turno (RF-4, RF-18)', () async {
+      final c = editing();
+      await settle();
+      c.read(editTargetProvider.notifier).start(mine());
+      expect(
+        c.read(bookingScreenProvider),
+        isA<BookingScreenEditing<AppointmentModel>>(),
+      );
+      c.read(editTargetProvider.notifier).end();
+      expect(
+        c.read(bookingScreenProvider),
+        isA<BookingScreenActive<AppointmentModel>>(),
+      );
+    });
+
+    test('empezar la edición carga lo del turno; terminarla vuelve a la '
+        'selección vacía (RF-4, RF-18)', () async {
+      final c = editing();
+      await settle();
+      c.read(editTargetProvider.notifier).start(mine());
+      await settle();
+      expect(
+        selection(c),
+        BookingSelection(
+          day: today,
+          start: at(9),
+          item: s1,
+          addonIds: const {'a1'},
+        ),
+      );
+
+      c.read(editTargetProvider.notifier).end();
+      await settle();
+      expect(selection(c).start, isNull);
+      expect(selection(c).item, isNull);
+      expect(selection(c).addonIds, isEmpty);
+    });
+
+    test('el propio turno no cuenta como ocupado, y su hora sale libre '
+        '(RF-7)', () async {
+      final c = editing();
+      c.listen(busyRangesProvider, (_, _) {});
+      await settle();
+      expect(c.read(busyRangesProvider).value, hasLength(2));
+      expect(
+        c.read(freeSlotsOfDayProvider(today))!.map((s) => s.start),
+        isNot(contains(at(9))),
+      );
+
+      c.read(editTargetProvider.notifier).start(mine());
+      await settle();
+      expect(c.read(busyRangesProvider).value, [(start: at(11), end: at(12))]);
+      expect(
+        c.read(freeSlotsOfDayProvider(today))!.map((s) => s.start),
+        contains(at(9)),
+      );
+      expect(c.read(selectedFreeSlotProvider)?.start, at(9));
+    });
+
+    group('editAvailabilityProvider (RF-1 a RF-3, RF-22)', () {
+      test('editable con margen 0; sin turno activo, null', () async {
+        bookings.mine = const [];
+        final none = editing();
+        await settle();
+        expect(none.read(editAvailabilityProvider), isNull);
+
+        bookings.mine = [mine()];
+        final c = editing();
+        await settle();
+        expect(c.read(editAvailabilityProvider), EditAvailability.editable);
+      });
+
+      test('cambia al pasar el tiempo', () async {
+        final now = StreamController<DateTime>.broadcast();
+        addTearDown(now.close);
+        final c = editing(
+          now: () async* {
+            yield at(7);
+            yield* now.stream;
+          },
+        );
+        await settle();
+        expect(c.read(editAvailabilityProvider), EditAvailability.editable);
+        now.add(at(9));
+        await settle();
+        expect(c.read(editAvailabilityProvider), EditAvailability.closed);
+      });
+
+      test(
+        'cambia al cambiar el margen, y avisa si no se puede leer',
+        () async {
+          final calendar = StreamController<CalendarSettingsModel>.broadcast();
+          addTearDown(calendar.close);
+          final defaults = CalendarSettingsModel.defaultSettings();
+          CalendarSettingsModel withMargin(int minutes) =>
+              CalendarSettingsModel(
+                openingHours: defaults.openingHours,
+                globalSlotDurationMinutes: defaults.globalSlotDurationMinutes,
+                blockedDates: defaults.blockedDates,
+                editMarginMinutes: minutes,
+              );
+          final c = editing(settings: () => calendar.stream);
+          await settle();
+          expect(c.read(editAvailabilityProvider), EditAvailability.loading);
+
+          calendar.add(withMargin(0));
+          await settle();
+          expect(c.read(editAvailabilityProvider), EditAvailability.editable);
+
+          calendar.add(withMargin(180)); // 7:00 está a menos de 3 h de las 9:00
+          await settle();
+          expect(c.read(editAvailabilityProvider), EditAvailability.closed);
+
+          calendar.addError(Exception('permission-denied'));
+          await settle();
+          expect(c.read(editAvailabilityProvider), EditAvailability.error);
+        },
+      );
+
+      test('cambia al bloquearla', () async {
+        final users = StreamController<UserModel?>.broadcast();
+        addTearDown(users.close);
+        final c = editing(
+          user: () async* {
+            yield testClient;
+            yield* users.stream;
+          },
+        );
+        await settle();
+        expect(c.read(editAvailabilityProvider), EditAvailability.editable);
+        users.add(testClient.copyWith(isBlocked: true));
+        await settle();
+        expect(c.read(editAvailabilityProvider), EditAvailability.blocked);
+      });
+    });
+
+    test('bloquearla mientras edita termina la edición, sin aviso (casos '
+        'límite)', () async {
+      final users = StreamController<UserModel?>.broadcast();
+      addTearDown(users.close);
+      final c = editing(
+        user: () async* {
+          yield testClient;
+          yield* users.stream;
+        },
+      );
+      await settle();
+      c.read(editTargetProvider.notifier).start(mine());
+      await settle();
+      c.read(bookingSelectionProvider.notifier).consumeNotices();
+
+      users.add(testClient.copyWith(isBlocked: true));
+      await settle();
+      expect(c.read(editTargetProvider), isNull);
+      expect(c.read(bookingSelectionProvider).notices, isEmpty);
+    });
+
+    test('cancelar el turno mientras edita termina la edición y avisa '
+        '(casos límite)', () async {
+      final c = editing();
+      await settle();
+      c.read(editTargetProvider.notifier).start(mine());
+      await settle();
+
+      bookings.emitMine([mine(status: 'cancelled')]);
+      await settle();
+      expect(c.read(editTargetProvider), isNull);
+      expect(c.read(bookingSelectionProvider).notices, [
+        const BookingNotice(BookingNoticeKind.editNotActive),
+      ]);
+    });
+
+    test('confirmarlo mientras edita no la termina: lo detecta el guardado '
+        '(RF-12)', () async {
+      final c = editing();
+      await settle();
+      c
+          .read(editTargetProvider.notifier)
+          .start(mine(status: 'waiting_confirmation'));
+      bookings.emitMine([mine()]);
+      await settle();
+      expect(c.read(editTargetProvider), isNotNull);
+    });
+
+    test(
+      'requestItem en la edición usa requestItemInEdit (RF-27, RF-28)',
+      () async {
+        final c = editing();
+        await settle();
+        c.read(editTargetProvider.notifier).start(mine());
+        await settle();
+        c.read(bookingSelectionProvider.notifier).consumeNotices();
+
+        c.read(bookingSelectionProvider.notifier).requestItem(short);
+        expect(
+          selection(c),
+          BookingSelection(day: today, start: at(9), item: short),
+        );
+        expect(
+          c.read(bookingSelectionProvider).notices.single.kind,
+          BookingNoticeKind.editItemChanged,
+        );
+      },
+    );
+
+    test('requestItem en la edición con el catálogo cargando: se aplica al '
+        'llegar (RF-27)', () async {
+      final c = editing();
+      await settle();
+      c.read(editTargetProvider.notifier).start(mine());
+      await settle();
+      c.read(priceState.notifier).state = const PriceListLoading();
+      await settle();
+      c.read(bookingSelectionProvider.notifier).consumeNotices();
+
+      c.read(bookingSelectionProvider.notifier).requestItem(short);
+      expect(selection(c).item, s1);
+
+      c.read(priceState.notifier).state = PriceListReady(list);
+      await settle();
+      expect(selection(c).item, short);
+      expect(
+        c.read(bookingSelectionProvider).notices.map((n) => n.kind),
+        contains(BookingNoticeKind.editItemChanged),
       );
     });
   });

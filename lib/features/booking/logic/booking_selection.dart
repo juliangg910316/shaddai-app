@@ -85,6 +85,10 @@ enum BookingNoticeKind {
   /// Al abrir la edición, algún adicional del turno ya no está disponible y
   /// se quitó (spec 006, RF-6).
   editAddonsUnavailable,
+
+  /// El turno en edición dejó de ser el activo (se canceló o terminó) y la
+  /// edición se cerró (spec 006, casos límite).
+  editNotActive,
 }
 
 /// Un aviso para la clienta.

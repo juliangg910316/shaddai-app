@@ -92,6 +92,7 @@ String bookingNoticeMessage(AppLocalizations l10n, BookingNotice notice) {
     ),
     BookingNoticeKind.editAddonsUnavailable =>
       l10n.bookingEditAddonsUnavailable,
+    BookingNoticeKind.editNotActive => l10n.bookingEditNotActive,
   };
 }
 

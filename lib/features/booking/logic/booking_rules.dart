@@ -115,6 +115,14 @@ class BookingScreenActive<T> extends BookingScreen<T> {
   final bool isBlocked;
 }
 
+/// La edición de su turno activo (spec 006, RF-4): la vista de reserva con
+/// lo del turno ya elegido.
+class BookingScreenEditing<T> extends BookingScreen<T> {
+  const BookingScreenEditing(this.appointment);
+
+  final T appointment;
+}
+
 /// Bloqueada, sin turno activo (RF-37).
 class BookingScreenBlocked<T> extends BookingScreen<T> {
   const BookingScreenBlocked();
@@ -130,7 +138,8 @@ class BookingScreenBooking<T> extends BookingScreen<T> {
 /// cargando o con error, turno activo, bloqueada y la vista de reserva.
 ///
 /// [user] es `null` sin sesión o sin ficha. [mine] es `null` mientras sus
-/// turnos cargan.
+/// turnos cargan. [isEditing] dice si un turno es el que se está editando:
+/// si es el activo y no está bloqueada, se muestra la edición (spec 006).
 BookingScreen<T> bookingScreen<T>({
   required bool userLoading,
   required bool userError,
@@ -139,6 +148,7 @@ BookingScreen<T> bookingScreen<T>({
   required bool mineError,
   required AppointmentTimes Function(T appointment) times,
   required DateTime now,
+  bool Function(T appointment)? isEditing,
 }) {
   if (userLoading) return BookingScreenLoading<T>();
   if (userError) return BookingScreenError<T>();
@@ -149,6 +159,9 @@ BookingScreen<T> bookingScreen<T>({
 
   final active = activeAppointment(mine, times: times, now: now);
   if (active != null) {
+    if (!user.isBlocked && (isEditing?.call(active) ?? false)) {
+      return BookingScreenEditing<T>(active);
+    }
     return BookingScreenActive<T>(active, isBlocked: user.isBlocked);
   }
   if (user.isBlocked) return BookingScreenBlocked<T>();

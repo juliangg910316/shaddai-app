@@ -9,7 +9,6 @@ import 'package:shaddai/data/models/calendar_settings_model.dart';
 import 'package:shaddai/data/models/price_list_model.dart';
 import 'package:shaddai/features/booking/logic/bookable_catalog.dart';
 import 'package:shaddai/features/booking/logic/booking_edit.dart';
-import 'package:shaddai/features/booking/logic/free_slots.dart';
 import 'package:shaddai/features/booking/logic/salon_time.dart';
 import 'package:shaddai/features/booking/providers/booking_edit_provider.dart';
 import 'package:shaddai/features/booking/providers/booking_provider.dart';
@@ -121,21 +120,18 @@ void main() {
     c.read(editTargetProvider.notifier).start(target ?? appointment());
   }
 
-  /// Elige [hour] (hoy), s1 y a1, como si la clienta editara.
+  /// Elige [hour] (hoy). El servicio (s1) y el adicional (a1) ya vienen del
+  /// turno al abrir la edición.
   void choose(DateTime hour) {
     final selector = c.read(bookingSelectionProvider.notifier);
-    // El día ya es hoy (RF-1 de la 005).
-    expect(selector.selection.day, DateTime.utc(2026, 11, 10));
+    expect(selector.selection.item, s1);
+    expect(selector.selection.addonIds, {'a1'});
+    if (selector.selection.start == hour) return;
     selector.selectSlot(
-      freeSlots(
-        day: DateTime.utc(2026, 11, 10),
-        settings: CalendarSettingsModel.defaultSettings(),
-        busy: const [],
-        nowSalon: toSalon(bookingTestNow),
-      ).firstWhere((s) => s.start == hour),
+      c
+          .read(freeSlotsOfDayProvider(DateTime.utc(2026, 11, 10)))!
+          .firstWhere((s) => s.start == hour),
     );
-    selector.selectItem(s1);
-    selector.toggleAddon('a1');
   }
 
   Future<EditSaveResult> save() => c.read(bookingEditSaveProvider).save();
@@ -313,7 +309,6 @@ void main() {
     test('sin turno en edición → failed', () async {
       await start();
       c.read(editTargetProvider.notifier).end();
-      choose(at(10));
       expect((await save()).outcome, EditSaveOutcome.failed);
       expect(bookings.editCheckRequests, isEmpty);
     });

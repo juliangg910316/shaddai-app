@@ -198,6 +198,7 @@ void main() {
       BookingUser? user = client,
       List<Appt>? mine = const [],
       bool mineError = false,
+      String? editingId,
     }) => bookingScreen(
       userLoading: userLoading,
       userError: userError,
@@ -206,6 +207,7 @@ void main() {
       mineError: mineError,
       times: timesOf,
       now: now,
+      isEditing: editingId == null ? null : (a) => a.id == editingId,
     );
 
     test('la ficha cargando → cargando', () {
@@ -257,6 +259,26 @@ void main() {
 
     test('bloqueada con turno activo → el turno, con el aviso (RF-37)', () {
       final result = screen(user: blocked, mine: [future]);
+      expect(result, isA<BookingScreenActive<Appt>>());
+      expect((result as BookingScreenActive<Appt>).isBlocked, isTrue);
+    });
+
+    test('editando el turno activo → la edición (spec 006, RF-4)', () {
+      final result = screen(mine: [future], editingId: 'a');
+      expect(result, isA<BookingScreenEditing<Appt>>());
+      expect((result as BookingScreenEditing<Appt>).appointment.id, 'a');
+    });
+
+    test('editando otro turno que no es el activo → el turno activo', () {
+      expect(
+        screen(mine: [future], editingId: 'otro'),
+        isA<BookingScreenActive<Appt>>(),
+      );
+    });
+
+    test('bloqueada, aunque estuviera editando → el turno con el aviso '
+        '(casos límite de la 006)', () {
+      final result = screen(user: blocked, mine: [future], editingId: 'a');
       expect(result, isA<BookingScreenActive<Appt>>());
       expect((result as BookingScreenActive<Appt>).isBlocked, isTrue);
     });

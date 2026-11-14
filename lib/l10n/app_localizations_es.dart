@@ -1058,4 +1058,8 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get bookingEditAddonsUnavailable =>
       'Algunos adicionales de tu turno ya no están disponibles y se quitaron.';
+
+  @override
+  String get bookingEditNotActive =>
+      'Tu turno ya no está activo: se canceló o terminó.';
 }

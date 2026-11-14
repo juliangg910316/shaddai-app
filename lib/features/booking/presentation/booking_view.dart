@@ -155,6 +155,8 @@ class _BookingViewState extends ConsumerState<BookingView> {
       ),
       BookingScreenBlocked() => const _StatePage(child: BookingBlockedNotice()),
       BookingScreenBooking() => _buildForm(context),
+      // La edición tiene su propia vista en la tarea T9 de la spec 006.
+      BookingScreenEditing() => _buildForm(context),
     };
   }
 

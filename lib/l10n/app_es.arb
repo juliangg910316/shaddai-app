@@ -547,5 +547,7 @@
   "bookingEditItemDoesNotFit": "{service} dura {duration} y a esa hora solo hay {free} libres. Elige otra hora u otro servicio.",
   "@bookingEditItemDoesNotFit": {"description": "El servicio pedido desde el detalle no cabe en la hora de la edición (spec 006, RF-29)", "placeholders": {"service": {"type": "String"}, "duration": {"type": "String"}, "free": {"type": "String"}}},
   "bookingEditAddonsUnavailable": "Algunos adicionales de tu turno ya no están disponibles y se quitaron.",
-  "@bookingEditAddonsUnavailable": {"description": "Al abrir la edición, un adicional del turno ya no se ofrece (spec 006, RF-6)"}
+  "@bookingEditAddonsUnavailable": {"description": "Al abrir la edición, un adicional del turno ya no se ofrece (spec 006, RF-6)"},
+  "bookingEditNotActive": "Tu turno ya no está activo: se canceló o terminó.",
+  "@bookingEditNotActive": {"description": "El turno en edición ya no está activo (spec 006, RF-15)"}
 }

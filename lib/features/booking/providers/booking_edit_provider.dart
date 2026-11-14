@@ -5,28 +5,38 @@ import '../../../data/models/appointment_model.dart';
 import '../../services/providers/price_list_provider.dart';
 import '../logic/bookable_catalog.dart';
 import '../logic/booking_edit.dart';
+import '../logic/booking_rules.dart';
 import '../logic/salon_time.dart';
 import 'booking_provider.dart';
 
-/// El turno en edición, o `null` si no se está editando (spec 006, RF-4,
-/// RF-18). Va en su propio provider, separado de la selección, para no crear
-/// un ciclo de dependencias (plan D-2).
-class EditTargetController extends Notifier<EditOriginal?> {
-  @override
-  EditOriginal? build() => null;
+export 'booking_provider.dart' show EditTargetController, editTargetProvider;
 
-  /// Abre la edición de [appointment].
-  void start(AppointmentModel appointment) =>
-      state = EditOriginal.of(appointment);
-
-  /// Cierra la edición.
-  void end() => state = null;
-}
-
-final editTargetProvider =
-    NotifierProvider<EditTargetController, EditOriginal?>(
-      EditTargetController.new,
-    );
+/// Qué se ve bajo el turno activo (spec 006, RF-1 a RF-3, RF-22): el botón
+/// "Editar turno", el aviso de que ya no se puede cambiar, el del error del
+/// calendario o, si está bloqueada, nada más que su aviso. `null` sin turno
+/// activo. Cambia en vivo con la ficha, el calendario y "ahora".
+final editAvailabilityProvider = Provider<EditAvailability?>((ref) {
+  final screen = ref.watch(bookingScreenProvider);
+  final (appointment, isBlocked) = switch (screen) {
+    BookingScreenActive(:final appointment, :final isBlocked) => (
+      appointment,
+      isBlocked,
+    ),
+    BookingScreenEditing(:final appointment) => (appointment, false),
+    _ => (null, false),
+  };
+  if (appointment == null) return null;
+  final settings = ref.watch(calendarSettingsProvider);
+  final now =
+      ref.watch(salonNowProvider).value ?? toSalon(ref.read(clockProvider)());
+  return editAvailability(
+    isBlocked: isBlocked,
+    settingsError: settings.hasError,
+    marginMinutes: settings.value?.editMarginMinutes,
+    start: appointment.startTime,
+    now: fromSalon(now),
+  );
+});
 
 /// Cómo terminó "Guardar cambios" (RF-12 a RF-17).
 enum EditSaveOutcome {

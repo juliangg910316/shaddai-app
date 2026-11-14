@@ -2069,6 +2069,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Algunos adicionales de tu turno ya no están disponibles y se quitaron.'**
   String get bookingEditAddonsUnavailable;
+
+  /// El turno en edición ya no está activo (spec 006, RF-15)
+  ///
+  /// In es, this message translates to:
+  /// **'Tu turno ya no está activo: se canceló o terminó.'**
+  String get bookingEditNotActive;
 }
 
 class _AppLocalizationsDelegate

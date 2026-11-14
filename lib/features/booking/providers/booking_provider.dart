@@ -15,6 +15,7 @@ import '../../auth/providers/auth_provider.dart';
 import '../../services/logic/price_list_view_logic.dart';
 import '../../services/providers/price_list_provider.dart';
 import '../logic/bookable_catalog.dart';
+import '../logic/booking_edit.dart';
 import '../logic/booking_rules.dart';
 import '../logic/booking_selection.dart'
     hide selectDay, selectSlot, selectItem, toggleAddon, requestItem;
@@ -82,18 +83,42 @@ final busySlotsProvider = StreamProvider<List<BusySlot>>((ref) {
       .watchBusySlots(fromSalon(window.first), fromSalon(end));
 });
 
-/// [busySlotsProvider] en horas de pared del salón, para la lógica.
+/// El turno en edición, o `null` si no se está editando (spec 006, RF-4,
+/// RF-18). Va en su propio provider, separado de la selección, para no crear
+/// un ciclo de dependencias (plan D-2).
+class EditTargetController extends Notifier<EditOriginal?> {
+  @override
+  EditOriginal? build() => null;
+
+  /// Abre la edición de [appointment].
+  void start(AppointmentModel appointment) =>
+      state = EditOriginal.of(appointment);
+
+  /// Cierra la edición.
+  void end() => state = null;
+}
+
+final editTargetProvider =
+    NotifierProvider<EditTargetController, EditOriginal?>(
+      EditTargetController.new,
+    );
+
+/// [slots] en horas de pared del salón, sin el turno ocupado [editingId].
+List<BusyRange> _rangesOf(List<BusySlot> slots, String? editingId) => [
+  for (final slot in slots)
+    if (slot.id != editingId)
+      (start: toSalon(slot.start), end: toSalon(slot.end)),
+];
+
+/// [busySlotsProvider] en horas de pared del salón, para la lógica. Durante
+/// la edición, sin el turno ocupado del propio turno (spec 006, RF-7).
 final busyRangesProvider = Provider<AsyncValue<List<BusyRange>>>((ref) {
   final slots = ref.watch(busySlotsProvider);
+  final editingId = ref.watch(editTargetProvider.select((o) => o?.id));
   // Tras un error, Riverpod reintenta solo y el valor queda "cargando" con
   // el error dentro; `whenData` lo perdería (RF-48).
   if (slots.hasError) return AsyncError(slots.error!, slots.stackTrace!);
-  return slots.whenData(
-    (slots) => [
-      for (final slot in slots)
-        (start: toSalon(slot.start), end: toSalon(slot.end)),
-    ],
-  );
+  return slots.whenData((slots) => _rangesOf(slots, editingId));
 });
 
 /// Lo que se puede reservar de la lista de precios (RF-10, RF-11, RF-43,
@@ -125,6 +150,7 @@ AppointmentTimes _timesOf(AppointmentModel appointment) => (
 final bookingScreenProvider = Provider<BookingScreen<AppointmentModel>>((ref) {
   final userAsync = ref.watch(currentUserProvider);
   final mineAsync = ref.watch(myAppointmentsProvider);
+  final editingId = ref.watch(editTargetProvider.select((o) => o?.id));
   final user = userAsync.value;
   return bookingScreen(
     // Tras un error, Riverpod reintenta solo y el valor queda "cargando" con
@@ -138,6 +164,7 @@ final bookingScreenProvider = Provider<BookingScreen<AppointmentModel>>((ref) {
     mineError: mineAsync.hasError,
     times: _timesOf,
     now: fromSalon(_salonNow(ref)),
+    isEditing: (appointment) => appointment.id == editingId,
   );
 });
 
@@ -153,33 +180,99 @@ class BookingSelectionState {
 /// aplica la lógica de `booking_selection.dart` y guarda sus avisos; cuando
 /// cambian el catálogo, el calendario, los turnos ocupados o "ahora", aplica
 /// [reconcile].
+///
+/// También es la selección de la edición (spec 006, plan D-1): al empezar,
+/// carga lo del turno; al terminar, vuelve a la selección vacía. Termina la
+/// edición si la bloquean o si el turno deja de ser el activo.
 class BookingSelectionController extends Notifier<BookingSelectionState> {
+  /// Servicio pedido desde su detalle durante la edición que aún no se pudo
+  /// decidir (spec 006, RF-27): se vuelve a intentar al llegar los datos.
+  BookableRef? _pendingEditRequest;
+
   @override
   BookingSelectionState build() {
-    void onChange(Object? _, Object? _) =>
-        _apply(reconcile(selection, _context()));
+    void onChange(Object? _, Object? _) {
+      _apply(reconcile(selection, _context()));
+      _retryEditRequest();
+    }
+
     ref.listen(bookableCatalogProvider, onChange);
     ref.listen(calendarSettingsProvider, onChange);
     ref.listen(busyRangesProvider, onChange);
-    ref.listen(salonNowProvider, onChange);
+    ref.listen(salonNowProvider, (_, _) {
+      onChange(null, null);
+      _checkEdit();
+    });
+    ref.listen<EditOriginal?>(editTargetProvider, _onEditTarget);
+    ref.listen(currentUserProvider, (_, _) => _checkEdit());
+    ref.listen(myAppointmentsProvider, (_, _) => _checkEdit());
     return BookingSelectionState(
       reconcile(BookingSelection.empty, _context()).selection,
     );
+  }
+
+  void _onEditTarget(EditOriginal? previous, EditOriginal? next) {
+    _pendingEditRequest = null;
+    final context = _context();
+    if (next != null) {
+      final update = selectionOf(next, context);
+      state = BookingSelectionState(update.selection, [
+        ...state.notices,
+        ...update.notices,
+      ]);
+    } else if (previous != null) {
+      _set(reconcile(BookingSelection.empty, context).selection);
+    }
+  }
+
+  /// Termina la edición si la bloquean (sin aviso: se ve el de bloqueo) o si
+  /// el turno ya no es el activo (avisa, casos límite de la spec 006).
+  void _checkEdit() {
+    final original = ref.read(editTargetProvider);
+    if (original == null) return;
+    final user = ref.read(currentUserProvider).value;
+    final mine = ref.read(myAppointmentsProvider);
+    final target = ref.read(editTargetProvider.notifier);
+    if (user != null && user.isBlocked) {
+      target.end();
+      return;
+    }
+    final appointments = mine.value;
+    if (mine.hasError || appointments == null) return;
+    final active = activeAppointment(
+      appointments,
+      times: _timesOf,
+      now: fromSalon(_context().nowSalon),
+    );
+    if (active?.id != original.id) {
+      target.end();
+      state = BookingSelectionState(selection, [
+        ...state.notices,
+        const BookingNotice(BookingNoticeKind.editNotActive),
+      ]);
+    }
   }
 
   BookingSelection get selection => state.selection;
 
   BookingContext _context() {
     final catalog = ref.read(bookableCatalogProvider);
+    final original = ref.read(editTargetProvider);
+    // Los turnos ocupados se leen aquí sin el turno en edición, y no de
+    // busyRangesProvider: al empezar la edición, este controlador se entera
+    // antes de que ese provider se recalcule.
+    final busySlots = ref.read(busySlotsProvider);
+    final slots = busySlots.hasError ? null : busySlots.value;
     return BookingContext(
       catalog: catalog is PriceViewReady<BookableCatalog>
           ? catalog.value
           : null,
       settings: ref.read(calendarSettingsProvider).value,
-      busy: ref.read(busyRangesProvider).value,
+      busy: slots == null ? null : _rangesOf(slots, original?.id),
       nowSalon:
           ref.read(salonNowProvider).value ??
           toSalon(ref.read(clockProvider)()),
+      original: original,
     );
   }
 
@@ -204,7 +297,15 @@ class BookingSelectionController extends Notifier<BookingSelectionState> {
 
   /// El servicio pedido desde su detalle (RF-40 a RF-44). Con la lista ya
   /// cargada, un servicio que no existe se quita y se avisa enseguida.
+  ///
+  /// Durante la edición, lo cambia solo si cabe (spec 006, RF-27 a RF-30).
+  /// Si aún no se puede decidir, lo intenta otra vez al llegar los datos.
   void requestItem(BookableRef ref) {
+    if (this.ref.read(editTargetProvider) != null) {
+      _pendingEditRequest = ref;
+      _retryEditRequest();
+      return;
+    }
     final context = _context();
     final requested = pick.requestItem(selection, context, ref);
     final reconciled = reconcile(requested.selection, context);
@@ -212,6 +313,15 @@ class BookingSelectionController extends Notifier<BookingSelectionState> {
       selection: reconciled.selection,
       notices: [...requested.notices, ...reconciled.notices],
     ));
+  }
+
+  void _retryEditRequest() {
+    final request = _pendingEditRequest;
+    if (request == null) return;
+    final update = requestItemInEdit(selection, _context(), request);
+    if (update == null) return;
+    _pendingEditRequest = null;
+    _apply(update);
   }
 
   /// Quita la hora y conserva lo demás (RF-29, RF-30).
@@ -235,22 +345,39 @@ final bookingSelectionProvider =
       BookingSelectionController.new,
     );
 
+/// Las horas libres de [day], o `null` si el calendario o los turnos
+/// ocupados aún no se conocen. En la edición, sin el propio turno y con su
+/// hora original (spec 006, RF-5, RF-7, RF-8). Lo usan la vista y la lógica,
+/// para que calculen lo mismo.
+final freeSlotsOfDayProvider = Provider.family<List<FreeSlot>?, DateTime>((
+  ref,
+  day,
+) {
+  final settings = ref.watch(calendarSettingsProvider).value;
+  final busy = ref.watch(busyRangesProvider).value;
+  if (settings == null || busy == null) return null;
+  final original = ref.watch(editTargetProvider);
+  final now = _salonNow(ref);
+  return original == null
+      ? freeSlots(day: day, settings: settings, busy: busy, nowSalon: now)
+      : editFreeSlots(
+          day: day,
+          settings: settings,
+          busy: busy,
+          nowSalon: now,
+          original: original,
+        );
+});
+
 /// La hora libre elegida, con su cobertura, o `null` si no hay ninguna (o
 /// aún no se sabe). Decide qué servicios caben (RF-12).
 final selectedFreeSlotProvider = Provider<FreeSlot?>((ref) {
   final start = ref.watch(
     bookingSelectionProvider.select((state) => state.selection.start),
   );
-  final settings = ref.watch(calendarSettingsProvider).value;
-  final busy = ref.watch(busyRangesProvider).value;
-  if (start == null || settings == null || busy == null) return null;
-  final slots = freeSlots(
-    day: salonDay(start),
-    settings: settings,
-    busy: busy,
-    nowSalon: _salonNow(ref),
-  );
-  for (final slot in slots) {
+  if (start == null) return null;
+  for (final slot
+      in ref.watch(freeSlotsOfDayProvider(salonDay(start))) ?? const []) {
     if (slot.start == start) return slot;
   }
   return null;

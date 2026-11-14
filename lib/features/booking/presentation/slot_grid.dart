@@ -28,8 +28,6 @@ class SlotGrid extends ConsumerWidget {
     final busyAsync = ref.watch(busyRangesProvider);
     final selection = ref.watch(bookingSelectionProvider).selection;
     final catalog = ref.watch(bookableCatalogProvider);
-    final now =
-        ref.watch(salonNowProvider).value ?? toSalon(ref.read(clockProvider)());
     final inSalonZone = deviceIsInSalonZone(ref.watch(deviceUtcOffsetProvider));
 
     // Tras un error, Riverpod reintenta solo: el error manda sobre la carga.
@@ -45,12 +43,7 @@ class SlotGrid extends ConsumerWidget {
         child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
       );
     } else {
-      final slots = freeSlots(
-        day: day,
-        settings: settings,
-        busy: busy,
-        nowSalon: now,
-      );
+      final slots = ref.watch(freeSlotsOfDayProvider(day)) ?? const [];
       final item = selection.item;
       final duration = item == null
           ? null

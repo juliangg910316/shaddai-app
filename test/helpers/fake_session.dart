@@ -72,6 +72,7 @@ List<Override> bookingDataOverrides({
   Duration deviceOffset = salonUtcOffset,
   Stream<UserModel?> Function()? userStream,
   Stream<DateTime> Function()? nowStream,
+  Stream<CalendarSettingsModel> Function()? settingsStream,
 }) {
   final profile = signedIn ? (user ?? testClient) : null;
   return [
@@ -84,6 +85,7 @@ List<Override> bookingDataOverrides({
       now: now,
       deviceOffset: deviceOffset,
       nowStream: nowStream,
+      settingsStream: settingsStream,
     ),
   ];
 }
@@ -96,12 +98,14 @@ List<Override> bookingScheduleOverrides({
   DateTime? now,
   Duration deviceOffset = salonUtcOffset,
   Stream<DateTime> Function()? nowStream,
+  Stream<CalendarSettingsModel> Function()? settingsStream,
 }) {
   final instant = now ?? bookingTestNow;
   return [
     bookingRepositoryProvider.overrideWithValue(bookings),
     calendarSettingsProvider.overrideWith(
       (ref) =>
+          settingsStream?.call() ??
           Stream.value(settings ?? CalendarSettingsModel.defaultSettings()),
     ),
     clockProvider.overrideWithValue(() => instant),

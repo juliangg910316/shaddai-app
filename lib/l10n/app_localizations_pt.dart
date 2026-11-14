@@ -1060,4 +1060,8 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get bookingEditAddonsUnavailable =>
       'Alguns adicionais do seu horário já não estão disponíveis e foram removidos.';
+
+  @override
+  String get bookingEditNotActive =>
+      'Seu horário já não está ativo: foi cancelado ou terminou.';
 }
