@@ -81,7 +81,7 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
     - textos `bookingEditItemChanged`, `bookingEditItemDoesNotFit` y `bookingEditAddonsUnavailable` (ES y PT), adelantados de T9 y T12 porque `bookingNoticeMessage` necesita un texto para cada aviso. `editItemChanged` muestra de momento solo el encabezado; las líneas de antes y después llegan en T12;
     - 21 tests de lógica y 1 de textos; suite completa, 1340 en verde.
 
-- [ ] **T6. Repositorio y guardado de la edición.** RF-12 a RF-16, RF-26
+- [x] **T6. Repositorio y guardado de la edición.** RF-12 a RF-16, RF-26
   - Código: `BookingRepository.fetchEditCheck` y `updateEditedAppointment` (transacción, plan § 3); `FakeBookingRepository` con los dos métodos (respuesta, `false` o error programables, y registro de lo guardado); `BookingEditor` / `bookingEditSaveProvider` con `EditSaveResult`.
   - Tests: `test/features/booking/booking_edit_save_test.dart` (parte de providers, con `ProviderContainer` y el fake):
     - `ok`: guarda el mismo id con las horas nuevas, la copia nueva de lo reservado y el turno ocupado con las mismas horas; devuelve los campos cambiados; termina la edición;
@@ -90,9 +90,15 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
     - `notEditable` / `notActive` / `changed` (de la comprobación o porque la transacción devuelve `false`): no guarda como hecho y termina la edición;
     - error o tiempo agotado → `failed`, la edición sigue igual.
   - Hecho cuando: los tests pasan.
+  - Hecha (2026-11-14):
+    - `BookingRepository.fetchEditCheck` (turno y turnos ocupados del día, leídos del servidor) y `updateEditedAppointment` (transacción: vuelve a leer el turno, comprueba `expected` y cambia el turno y su turno ocupado; `false` si ya no es el esperado; con `saveTimeout`). Sin test propio: tocaría Firebase; se comprueba en el recorrido de `rules-check.md` (T14);
+    - `FakeBookingRepository`: los dos métodos. Su guardado se comporta como la transacción: aplica `expected`, cambia el turno (esperando confirmación) y su turno ocupado, y los envía en vivo;
+    - `providers/booking_edit_provider.dart` (nuevo): `editTargetProvider` (`start`/`end`), adelantado de T7 porque el guardado termina la edición; `EditSaveOutcome`, `EditSaveResult` (con los campos cambiados) y `BookingEditor` / `bookingEditSaveProvider`;
+    - los turnos ocupados de la comprobación quitan el propio turno por su id;
+    - 14 tests; suite completa, 1355 en verde.
 
 - [ ] **T7. Providers de la edición.** RF-1 a RF-9, RF-18; casos límite
-  - Código: `editTargetProvider`; `busyRangesProvider` sin el propio turno; `freeSlotsOfDayProvider` (lo usan `SlotGrid` y `selectedFreeSlotProvider`); `editAvailabilityProvider`; `BookingScreenEditing` en `bookingScreen`; `BookingSelectionController` escucha la edición, la ficha y los turnos; `bookingDataOverrides` acepta un calendario con margen.
+  - Código: `editTargetProvider` (ya creado en T6) conectado; `busyRangesProvider` sin el propio turno; `freeSlotsOfDayProvider` (lo usan `SlotGrid` y `selectedFreeSlotProvider`); `editAvailabilityProvider`; `BookingScreenEditing` en `bookingScreen`; `BookingSelectionController` escucha la edición, la ficha y los turnos; `bookingDataOverrides` acepta un calendario con margen.
   - Tests: `test/features/booking/booking_providers_test.dart` y `logic/booking_rules_test.dart` (casos nuevos):
     - `bookingScreen` → `BookingScreenEditing` solo si el turno en edición es el activo y no está bloqueada;
     - empezar la edición carga `selectionOf`; terminarla vuelve a la selección vacía;

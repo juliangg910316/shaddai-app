@@ -2,11 +2,17 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../firestore_dates.dart';
 import '../models/appointment_model.dart';
+import '../models/booked_service_model.dart';
 import '../models/busy_slot_model.dart';
 
 /// Lo que se lee del servidor justo antes de guardar un turno (spec 005,
 /// RF-26): los turnos ocupados de ese día y los turnos de la clienta.
 typedef BookingCheckData = ({List<BusySlot> busy, List<AppointmentModel> mine});
+
+/// Lo que se lee del servidor justo antes de guardar la edición de un turno
+/// (spec 006, RF-12): el turno tal como está ahora (`null` si ya no existe) y
+/// los turnos ocupados del día nuevo.
+typedef EditCheckData = ({AppointmentModel? appointment, List<BusySlot> busy});
 
 /// Turnos (`appointments`) y turnos ocupados (`busySlots`, spec 005, plan
 /// § 2). Un turno y su turno ocupado se escriben siempre juntos.
@@ -86,6 +92,68 @@ class BookingRepository {
       busy: _slots(results[0]),
       mine: [for (final doc in results[1].docs) _appointment(doc)],
     );
+  }
+
+  /// Lee **del servidor** el turno [appointmentId] y los turnos ocupados que
+  /// empiezan entre [from] y [to], para comprobar la edición antes de
+  /// guardarla (spec 006, RF-12). Sin conexión falla, como
+  /// [fetchBookingCheck].
+  Future<EditCheckData> fetchEditCheck({
+    required String appointmentId,
+    required DateTime from,
+    required DateTime to,
+  }) async {
+    const server = GetOptions(source: Source.server);
+    final results = await Future.wait([
+      _appointments.doc(appointmentId).get(server),
+      _busySlots
+          .where('start', isGreaterThanOrEqualTo: Timestamp.fromDate(from))
+          .where('start', isLessThan: Timestamp.fromDate(to))
+          .get(server),
+    ]);
+    final doc = results[0] as DocumentSnapshot<Map<String, dynamic>>;
+    return (
+      appointment: doc.exists ? _appointment(doc) : null,
+      busy: _slots(results[1] as QuerySnapshot<Map<String, dynamic>>),
+    );
+  }
+
+  /// Guarda la edición del turno [id] en una transacción (spec 006, plan
+  /// D-5): vuelve a leer el turno y, solo si [expected] lo da por bueno,
+  /// cambia su inicio, su fin y lo reservado, lo deja esperando confirmación
+  /// (RF-13) y cambia a la vez su turno ocupado (RF-26).
+  ///
+  /// Devuelve `false` si el turno ya no es el esperado. Si no termina en
+  /// [saveTimeout], lanza `TimeoutException` (RF-16).
+  Future<bool> updateEditedAppointment({
+    required String id,
+    required bool Function(AppointmentModel? current) expected,
+    required DateTime start,
+    required DateTime end,
+    required BookedServiceModel booked,
+  }) {
+    final appointmentRef = _appointments.doc(id);
+    return _firestore
+        .runTransaction<bool>((transaction) async {
+          final doc = await transaction.get(appointmentRef);
+          if (!expected(doc.exists ? _appointment(doc) : null)) return false;
+          transaction
+            ..update(
+              appointmentRef,
+              encodeDates({
+                'startTime': start,
+                'endTime': end,
+                'booked': booked.toMap(),
+                'status': 'waiting_confirmation',
+              }),
+            )
+            ..update(
+              _busySlots.doc(id),
+              encodeDates({'start': start, 'end': end}),
+            );
+          return true;
+        })
+        .timeout(saveTimeout);
   }
 
   Stream<List<AppointmentModel>> getAppointmentsForDate(DateTime date) {

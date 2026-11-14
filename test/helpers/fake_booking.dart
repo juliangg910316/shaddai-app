@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:shaddai/data/models/appointment_model.dart';
+import 'package:shaddai/data/models/booked_service_model.dart';
 import 'package:shaddai/data/models/busy_slot_model.dart';
 import 'package:shaddai/data/repositories/booking_repository.dart';
 
@@ -11,6 +12,13 @@ import 'package:shaddai/data/repositories/booking_repository.dart';
 /// comprobación previa devuelve [checkData] (por defecto, lo que hay en
 /// [busy] y [mine]) o lanza [checkError]; el guardado lanza [saveError] o
 /// guarda en [created] y lo envía como uno más de [mine].
+///
+/// La edición (spec 006): la comprobación previa devuelve [editCheckData]
+/// (por defecto, el turno de [mine] con ese id y [busy]) o lanza
+/// [editCheckError]. El guardado lanza [updateError]; si no, como la
+/// transacción de Firestore, aplica `expected` al turno de [mine] y, si lo da
+/// por bueno, lo cambia (esperando confirmación) junto a su turno ocupado de
+/// [busy], los envía a quien escucha y lo registra en [edited].
 class FakeBookingRepository implements BookingRepository {
   FakeBookingRepository({this.busy = const [], this.mine = const []});
 
@@ -35,6 +43,17 @@ class FakeBookingRepository implements BookingRepository {
   final created = <AppointmentModel>[];
 
   final statusChanges = <({String id, String status})>[];
+
+  EditCheckData? editCheckData;
+  Object? editCheckError;
+  final editCheckRequests =
+      <({String appointmentId, DateTime from, DateTime to})>[];
+
+  Object? updateError;
+  final edited =
+      <
+        ({String id, DateTime start, DateTime end, BookedServiceModel booked})
+      >[];
 
   @override
   Duration get saveTimeout => const Duration(seconds: 15);
@@ -98,6 +117,61 @@ class FakeBookingRepository implements BookingRepository {
     created.add(appointment);
     // Como Firestore, el turno guardado llega a quien escucha los turnos.
     emitMine([...mine, appointment]);
+  }
+
+  @override
+  Future<EditCheckData> fetchEditCheck({
+    required String appointmentId,
+    required DateTime from,
+    required DateTime to,
+  }) async {
+    editCheckRequests.add((appointmentId: appointmentId, from: from, to: to));
+    final error = editCheckError;
+    if (error != null) throw error;
+    return editCheckData ??
+        (
+          appointment: mine.where((a) => a.id == appointmentId).firstOrNull,
+          busy: busy,
+        );
+  }
+
+  @override
+  Future<bool> updateEditedAppointment({
+    required String id,
+    required bool Function(AppointmentModel? current) expected,
+    required DateTime start,
+    required DateTime end,
+    required BookedServiceModel booked,
+  }) async {
+    final error = updateError;
+    if (error != null) throw error;
+    final current = mine.where((a) => a.id == id).firstOrNull;
+    if (!expected(current)) return false;
+    edited.add((id: id, start: start, end: end, booked: booked));
+    emitMine([
+      for (final a in mine)
+        a.id == id
+            ? AppointmentModel(
+                id: a.id,
+                clientId: a.clientId,
+                clientName: a.clientName,
+                clientPhone: a.clientPhone,
+                clientPhotoUrl: a.clientPhotoUrl,
+                startTime: start,
+                endTime: end,
+                status: 'waiting_confirmation',
+                createdAt: a.createdAt,
+                booked: booked,
+              )
+            : a,
+    ]);
+    if (busy.any((slot) => slot.id == id)) {
+      emitBusy([
+        for (final slot in busy)
+          slot.id == id ? BusySlot(id: id, start: start, end: end) : slot,
+      ]);
+    }
+    return true;
   }
 
   @override
