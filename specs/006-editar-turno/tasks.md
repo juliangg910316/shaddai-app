@@ -14,11 +14,15 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
 
 ## Bloque A — Datos, lógica y providers
 
-- [ ] **T1. Margen de edición en el calendario e igualdad de lo reservado.** RF-12, RF-21
+- [x] **T1. Margen de edición en el calendario e igualdad de lo reservado.** RF-12, RF-21
   - Tests:
     - `test/data/models/calendar_settings_model_test.dart` (nuevo): `editMarginMinutes` vale 0 si falta, si es texto o si es negativo; se lee un entero; `defaultSettings()` lo deja en 0; `toMap` no lo escribe (D-4).
     - `test/data/models/booked_service_model_test.dart`: dos `BookedServiceModel` con los mismos datos son iguales y tienen el mismo `hashCode`; cambiar el nombre, el precio, la duración o un adicional los hace distintos; lo mismo con `BookedAddonModel`.
   - Hecho cuando: los tests pasan y `AdminSettingsView` no cambia (como `toMap` no escribe el margen y guarda con `merge: true`, no lo pisa).
+  - Hecha (2026-11-14):
+    - `CalendarSettingsModel.editMarginMinutes` (por defecto 0): `fromMap` acepta un entero ≥ 0, también como decimal sin parte fraccionaria; lo demás vale 0. `toMap` no lo escribe;
+    - `==` y `hashCode` por valor en `BookedServiceModel` y `BookedAddonModel`. El nombre se compara por sus dos textos, sin tocar `BilingualText`, y los adicionales en orden, sin importar Flutter en `lib/data/models`;
+    - 21 tests nuevos (10 del calendario y 11 de igualdad); suite completa, 1261 en verde.
 
 - [ ] **T2. Si un turno es editable.** RF-1 a RF-3, RF-22, RF-23, RNF-1
   - Tests: `test/features/booking/logic/booking_edit_test.dart` (nuevo), en tabla:

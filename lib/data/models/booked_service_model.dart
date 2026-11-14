@@ -65,6 +65,28 @@ class BookedAddonModel {
     'name': name.toMap(),
     'priceCents': priceCents,
   };
+
+  // Igualdad por valor, para saber si el turno cambió (spec 006, RF-12).
+  @override
+  bool operator ==(Object other) =>
+      other is BookedAddonModel &&
+      other.id == id &&
+      _sameName(other.name, name) &&
+      other.priceCents == priceCents;
+
+  @override
+  int get hashCode => Object.hash(id, name.es, name.pt, priceCents);
+}
+
+bool _sameName(BilingualText a, BilingualText b) =>
+    a.es == b.es && a.pt == b.pt;
+
+bool _sameAddons(List<BookedAddonModel> a, List<BookedAddonModel> b) {
+  if (a.length != b.length) return false;
+  for (var i = 0; i < a.length; i++) {
+    if (a[i] != b[i]) return false;
+  }
+  return true;
 }
 
 /// El servicio o combo reservado, con sus adicionales.
@@ -130,4 +152,28 @@ class BookedServiceModel {
     'durationMinutes': durationMinutes,
     'addons': [for (final addon in addons) addon.toMap()],
   };
+
+  // Igualdad por valor, para saber si el turno cambió (spec 006, RF-12).
+  @override
+  bool operator ==(Object other) =>
+      other is BookedServiceModel &&
+      other.kind == kind &&
+      other.id == id &&
+      _sameName(other.name, name) &&
+      other.priceCents == priceCents &&
+      other.priceFrom == priceFrom &&
+      other.durationMinutes == durationMinutes &&
+      _sameAddons(other.addons, addons);
+
+  @override
+  int get hashCode => Object.hash(
+    kind,
+    id,
+    name.es,
+    name.pt,
+    priceCents,
+    priceFrom,
+    durationMinutes,
+    Object.hashAll(addons),
+  );
 }

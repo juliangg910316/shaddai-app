@@ -27,10 +27,16 @@ class CalendarSettingsModel {
   final int globalSlotDurationMinutes;
   final List<String> blockedDates; // YYYY-MM-DD format
 
+  /// Minutos antes del inicio de un turno a partir de los cuales la clienta
+  /// ya no puede editarlo (spec 006, RF-21). Lo cambia la admin en la spec
+  /// 008; hasta entonces solo se lee, y vale 0 si no está.
+  final int editMarginMinutes;
+
   CalendarSettingsModel({
     required this.openingHours,
     required this.globalSlotDurationMinutes,
     required this.blockedDates,
+    this.editMarginMinutes = 0,
   });
 
   factory CalendarSettingsModel.fromMap(Map<String, dynamic> data) {
@@ -46,7 +52,15 @@ class CalendarSettingsModel {
       openingHours: parsedHours,
       globalSlotDurationMinutes: data['globalSlotDurationMinutes'] ?? 60,
       blockedDates: blocked.map((e) => e.toString()).toList(),
+      editMarginMinutes: _readMargin(data['editMarginMinutes']),
     );
+  }
+
+  /// Un entero ≥ 0 (también guardado como decimal sin parte fraccionaria);
+  /// cualquier otra cosa vale 0 (constitución, principio 5).
+  static int _readMargin(Object? value) {
+    if (value is! num || value < 0 || value != value.roundToDouble()) return 0;
+    return value.toInt();
   }
 
   factory CalendarSettingsModel.defaultSettings() {
@@ -70,6 +84,8 @@ class CalendarSettingsModel {
     );
   }
 
+  /// No escribe `editMarginMinutes`: la admin guarda con `merge: true`, así
+  /// que guardar el horario no pisa el margen (spec 006, plan D-4).
   Map<String, dynamic> toMap() {
     final hoursMap = <String, dynamic>{};
     openingHours.forEach((key, value) {

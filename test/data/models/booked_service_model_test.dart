@@ -58,6 +58,87 @@ void main() {
     expect(manicure.totalCents, 4500);
   });
 
+  group('igualdad por valor (spec 006, RF-12)', () {
+    // Una copia con los mismos datos, construida aparte.
+    BookedServiceModel copy({
+      BookedKind kind = BookedKind.service,
+      String id = 's1',
+      String es = 'Manicura',
+      String pt = 'Manicure',
+      int priceCents = 3000,
+      bool priceFrom = true,
+      int durationMinutes = 45,
+      List<BookedAddonModel>? addons,
+    }) => BookedServiceModel(
+      kind: kind,
+      id: id,
+      name: BilingualText(es: es, pt: pt),
+      priceCents: priceCents,
+      priceFrom: priceFrom,
+      durationMinutes: durationMinutes,
+      addons:
+          addons ??
+          [
+            BookedAddonModel(
+              id: 'a1',
+              name: BilingualText(es: 'Decoración', pt: 'Decoração'),
+              priceCents: 1500,
+            ),
+          ],
+    );
+
+    test('los mismos datos son iguales y tienen el mismo hashCode', () {
+      expect(copy(), manicure);
+      expect(copy().hashCode, manicure.hashCode);
+      expect(BookedServiceModel.fromMap(manicure.toMap()), manicure);
+    });
+
+    for (final (label, other) in [
+      ('el tipo', copy(kind: BookedKind.combo)),
+      ('el id', copy(id: 's2')),
+      ('el nombre en español', copy(es: 'Otra')),
+      ('el nombre en portugués', copy(pt: 'Outra')),
+      ('el precio', copy(priceCents: 3100)),
+      ('el "desde"', copy(priceFrom: false)),
+      ('la duración', copy(durationMinutes: 60)),
+      ('sin adicionales', copy(addons: const [])),
+      (
+        'otro adicional',
+        copy(
+          addons: const [
+            BookedAddonModel(
+              id: 'a2',
+              name: BilingualText(es: 'Decoración', pt: 'Decoração'),
+              priceCents: 1500,
+            ),
+          ],
+        ),
+      ),
+    ]) {
+      test('cambiar $label los hace distintos', () {
+        expect(other, isNot(manicure));
+      });
+    }
+
+    test('BookedAddonModel: iguales por valor; cambiar el id, el nombre o '
+        'el precio los hace distintos', () {
+      BookedAddonModel addon({
+        String id = 'a1',
+        String es = 'Piedras',
+        int priceCents = 500,
+      }) => BookedAddonModel(
+        id: id,
+        name: BilingualText(es: es, pt: 'Pedras'),
+        priceCents: priceCents,
+      );
+      expect(addon(), addon());
+      expect(addon().hashCode, addon().hashCode);
+      expect(addon(id: 'a2'), isNot(addon()));
+      expect(addon(es: 'Brillo'), isNot(addon()));
+      expect(addon(priceCents: 600), isNot(addon()));
+    });
+  });
+
   group('lectura tolerante', () {
     test('los campos que faltan toman su valor por defecto', () {
       final read = BookedServiceModel.fromMap({
