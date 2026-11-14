@@ -3,7 +3,9 @@ import 'package:shaddai/data/models/appointment_model.dart';
 import 'package:shaddai/data/models/booked_service_model.dart';
 import 'package:shaddai/data/models/calendar_settings_model.dart';
 import 'package:shaddai/data/models/price_list_model.dart';
+import 'package:shaddai/features/booking/logic/bookable_catalog.dart';
 import 'package:shaddai/features/booking/logic/booking_edit.dart';
+import 'package:shaddai/features/booking/logic/booking_selection.dart';
 import 'package:shaddai/features/booking/logic/booking_window.dart';
 import 'package:shaddai/features/booking/logic/free_slots.dart';
 import 'package:shaddai/features/booking/logic/salon_time.dart';
@@ -326,6 +328,291 @@ void main() {
           nowSalon: at(7),
         ),
       );
+    });
+  });
+
+  group('antes y después (RF-11, RF-17, RF-28)', () {
+    BilingualText text(String es, String pt) => BilingualText(es: es, pt: pt);
+
+    // s1: Manicura, 60 min, R$ 50, con los adicionales a1 (R$ 10) y a2
+    // (R$ 5). s2: Pedicura, 90 min, "desde" R$ 60. s3: como s1, con otro
+    // nombre.
+    final catalog = bookableCatalog(
+      PriceListModel(
+        categories: [
+          PriceCategoryModel(
+            id: 'manos',
+            name: text('Manos', 'Mãos'),
+            items: [
+              PriceItemModel(
+                id: 's1',
+                kind: PriceItemKind.service,
+                name: text('Manicura', 'Manicure'),
+                priceCents: 5000,
+                durationMinutes: 60,
+              ),
+              PriceItemModel(
+                id: 'a1',
+                kind: PriceItemKind.addon,
+                name: text('Decoración', 'Decoração'),
+                priceCents: 1000,
+              ),
+              PriceItemModel(
+                id: 'a2',
+                kind: PriceItemKind.addon,
+                name: text('Brillo', 'Brilho'),
+                priceCents: 500,
+              ),
+              PriceItemModel(
+                id: 's2',
+                kind: PriceItemKind.service,
+                name: text('Pedicura', 'Pedicure'),
+                priceCents: 6000,
+                priceFrom: true,
+                durationMinutes: 90,
+              ),
+              PriceItemModel(
+                id: 's3',
+                kind: PriceItemKind.service,
+                name: text('Manicura rusa', 'Manicure russa'),
+                priceCents: 5000,
+                durationMinutes: 60,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+    const s1 = BookableRef(BookedKind.service, 's1');
+    const s2 = BookableRef(BookedKind.service, 's2');
+    const s3 = BookableRef(BookedKind.service, 's3');
+
+    // El turno original: martes 10 de 9:00 a 10:00, Manicura con
+    // Decoración, R$ 60.
+    final before = EditOriginal(
+      id: 't1',
+      start: at(9),
+      end: at(10),
+      status: 'confirmed',
+      booked: const BookedServiceModel(
+        kind: BookedKind.service,
+        id: 's1',
+        name: BilingualText(es: 'Manicura', pt: 'Manicure'),
+        priceCents: 5000,
+        durationMinutes: 60,
+        addons: [
+          BookedAddonModel(
+            id: 'a1',
+            name: BilingualText(es: 'Decoración', pt: 'Decoração'),
+            priceCents: 1000,
+          ),
+        ],
+      ),
+    );
+
+    BookingDraft after({
+      int day = 10,
+      int hour = 9,
+      int minute = 0,
+      BookableRef item = s1,
+      Set<String> addons = const {'a1'},
+    }) => draftOfSelection(
+      BookingSelection(
+        day: at(0, 0, day),
+        start: at(hour, minute, day),
+        item: item,
+        addonIds: addons,
+      ),
+      catalog,
+    )!;
+
+    test('draftOfOriginal: lo guardado en el turno', () {
+      final draft = draftOfOriginal(before);
+      expect(draft.day, at(0, 0, 10));
+      expect(draft.start, at(9));
+      expect(draft.end, at(10));
+      expect(draft.name.es, 'Manicura');
+      expect(draft.addons.map((a) => a.pt), ['Decoração']);
+      expect(draft.durationMinutes, 60);
+      expect(draft.totalCents, 6000);
+      expect(draft.totalFrom, isFalse);
+    });
+
+    test('draftOfSelection: con los precios y la duración actuales, los '
+        'adicionales en el orden del catálogo y el "desde"', () {
+      final both = after(addons: {'a2', 'a1'});
+      expect(both.addons.map((a) => a.es), ['Decoración', 'Brillo']);
+      expect(both.totalCents, 6500);
+
+      final pedicure = after(item: s2, addons: const {});
+      expect(pedicure.end, at(10, 30));
+      expect(pedicure.durationMinutes, 90);
+      expect(pedicure.totalCents, 6000);
+      expect(pedicure.totalFrom, isTrue);
+    });
+
+    test('draftOfSelection: sin hora, sin inicio ni fin; sin servicio o con '
+        'uno no disponible, null', () {
+      final noStart = draftOfSelection(
+        BookingSelection(day: at(0, 0, 10), item: s1),
+        catalog,
+      )!;
+      expect(noStart.start, isNull);
+      expect(noStart.end, isNull);
+      expect(
+        draftOfSelection(BookingSelection(day: at(0, 0, 10)), catalog),
+        isNull,
+      );
+      expect(
+        draftOfSelection(
+          const BookingSelection(item: BookableRef(BookedKind.service, 'x')),
+          catalog,
+        ),
+        isNull,
+      );
+    });
+
+    for (final (label, draft, expected) in [
+      ('sin cambios', after(), <EditField>{}),
+      ('otra hora', after(minute: 30), {EditField.start, EditField.end}),
+      ('otro día a la misma hora', after(day: 17), {EditField.date}),
+      (
+        'otro servicio igual de largo y caro',
+        after(item: s3),
+        {EditField.item},
+      ),
+      (
+        'otro adicional del mismo servicio',
+        after(addons: {'a2'}),
+        {EditField.addons, EditField.total},
+      ),
+      (
+        'sin adicionales',
+        after(addons: const {}),
+        {EditField.addons, EditField.total},
+      ),
+      (
+        'otro servicio más largo, otro día y otra hora',
+        after(day: 17, hour: 10, item: s2, addons: const {}),
+        {
+          EditField.date,
+          EditField.start,
+          EditField.end,
+          EditField.item,
+          EditField.addons,
+          EditField.duration,
+          EditField.total,
+        },
+      ),
+    ]) {
+      test('changedFields: $label', () {
+        expect(changedFields(draftOfOriginal(before), draft), expected);
+      });
+    }
+  });
+
+  group('checkEditBeforeSave (RF-12, RF-14, RF-15)', () {
+    final o = original(at(9), at(10));
+
+    AppointmentModel current({
+      DateTime? start,
+      DateTime? end,
+      String status = 'confirmed',
+      BookedServiceModel? bookedNow = booked,
+    }) => AppointmentModel(
+      id: 't1',
+      clientId: 'c1',
+      clientName: 'Ana',
+      clientPhone: '+55',
+      startTime: fromSalon(start ?? at(9)),
+      endTime: fromSalon(end ?? at(10)),
+      status: status,
+      createdAt: fromSalon(at(7)),
+      booked: bookedNow,
+    );
+
+    EditCheck check({
+      EditOriginal? from,
+      AppointmentModel? now,
+      bool deleted = false,
+      DateTime? start,
+      int duration = 60,
+      List<BusyRange> others = const [],
+      DateTime? nowSalon,
+      int margin = 0,
+    }) => checkEditBeforeSave(
+      original: from ?? o,
+      current: deleted ? null : (now ?? current()),
+      start: start ?? at(10, 30),
+      durationMinutes: duration,
+      settings: settings,
+      busy: others,
+      nowSalon: nowSalon ?? at(7),
+      marginMinutes: margin,
+    );
+
+    test('turno borrado → notActive', () {
+      expect(check(deleted: true), EditCheck.notActive);
+    });
+
+    test('cancelado → notActive, aunque también haya cambiado', () {
+      expect(check(now: current(status: 'cancelled')), EditCheck.notActive);
+    });
+
+    test('ya terminado → notActive, antes que notEditable', () {
+      expect(check(nowSalon: at(10, 30)), EditCheck.notActive);
+    });
+
+    for (final (label, changed) in [
+      ('otra hora', current(start: at(9, 30), end: at(10, 30))),
+      ('otro estado', current(status: 'waiting_confirmation')),
+      (
+        'otra cosa reservada',
+        current(
+          bookedNow: const BookedServiceModel(
+            kind: BookedKind.service,
+            id: 's2',
+            name: BilingualText(es: 'Pedicura', pt: 'Pedicure'),
+            priceCents: 6000,
+            durationMinutes: 60,
+          ),
+        ),
+      ),
+    ]) {
+      test('$label → changed', () {
+        expect(check(now: changed), EditCheck.changed);
+      });
+    }
+
+    test('dentro del margen → notEditable', () {
+      expect(check(nowSalon: at(7, 30), margin: 120), EditCheck.notEditable);
+    });
+
+    test('la hora nueva está ocupada → slotTaken', () {
+      expect(
+        check(start: at(10, 30), others: [busy(at(10, 30), at(11, 30))]),
+        EditCheck.slotTaken,
+      );
+    });
+
+    test('el servicio ya no cabe → doesNotFit', () {
+      expect(check(start: at(11), duration: 90), EditCheck.doesNotFit);
+    });
+
+    test('la hora original fuera de la rejilla con el mismo servicio → ok', () {
+      final offGrid = original(at(9, 15), at(10, 15));
+      expect(
+        check(
+          from: offGrid,
+          now: current(start: at(9, 15), end: at(10, 15)),
+          start: at(9, 15),
+        ),
+        EditCheck.ok,
+      );
+    });
+
+    test('todo bien → ok', () {
+      expect(check(), EditCheck.ok);
     });
   });
 }

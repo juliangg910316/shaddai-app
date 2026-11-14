@@ -8,6 +8,10 @@ library;
 import '../../../data/models/appointment_model.dart';
 import '../../../data/models/booked_service_model.dart';
 import '../../../data/models/calendar_settings_model.dart';
+import '../../../data/models/price_list_model.dart';
+import 'bookable_catalog.dart';
+import 'booking_rules.dart';
+import 'booking_selection.dart';
 import 'booking_window.dart';
 import 'free_slots.dart';
 import 'salon_time.dart';
@@ -162,4 +166,183 @@ List<FreeSlot> editFreeSlots({
     coverageMinutes: limit.difference(start).inMinutes,
   );
   return [...slots, own]..sort((a, b) => a.start.compareTo(b.start));
+}
+
+/// Un turno tal como se enseña en el antes y el después (plan § 4.4). Los
+/// nombres van en los dos idiomas: la vista los traduce al pintarlos.
+class BookingDraft {
+  const BookingDraft({
+    required this.day,
+    required this.start,
+    required this.end,
+    required this.name,
+    required this.addons,
+    required this.durationMinutes,
+    required this.totalCents,
+    required this.totalFrom,
+  });
+
+  /// Día del salón, a las 0:00. `null` si aún no se eligió.
+  final DateTime? day;
+
+  /// Inicio y fin en hora de pared. `null` si aún no se eligió la hora.
+  final DateTime? start;
+  final DateTime? end;
+  final BilingualText name;
+  final List<BilingualText> addons;
+  final int durationMinutes;
+  final int totalCents;
+
+  /// Si el total es "desde".
+  final bool totalFrom;
+}
+
+/// Lo guardado en el turno original.
+BookingDraft draftOfOriginal(EditOriginal original) {
+  final booked = original.booked;
+  return BookingDraft(
+    day: salonDay(original.start),
+    start: original.start,
+    end: original.end,
+    name: booked?.name ?? BilingualText.empty,
+    addons: [for (final addon in booked?.addons ?? const []) addon.name],
+    durationMinutes: original.end.difference(original.start).inMinutes,
+    totalCents: booked?.totalCents ?? 0,
+    totalFrom: booked?.priceFrom ?? false,
+  );
+}
+
+/// Lo elegido en [selection], con los precios y la duración actuales de
+/// [catalog]. Los adicionales van en el orden del catálogo. `null` sin
+/// servicio o si ya no se puede reservar.
+BookingDraft? draftOfSelection(
+  BookingSelection selection,
+  BookableCatalog catalog,
+) {
+  final item = selection.item;
+  if (item == null) return null;
+  final bookable = findBookable(catalog, item);
+  if (bookable == null) return null;
+  final addons = [
+    for (final addon in availableAddons(catalog, item))
+      if (selection.addonIds.contains(addon.id)) addon,
+  ];
+  final total = totalPrice(bookable, addons);
+  final start = selection.start;
+  return BookingDraft(
+    day: selection.day,
+    start: start,
+    end: start?.add(Duration(minutes: bookable.durationMinutes)),
+    name: bookable.name,
+    addons: [for (final addon in addons) addon.name],
+    durationMinutes: bookable.durationMinutes,
+    totalCents: total.cents,
+    totalFrom: total.from,
+  );
+}
+
+/// Un valor del turno que se enseña en el antes y el después.
+enum EditField { date, start, end, item, addons, duration, total }
+
+/// Los valores que cambian de [before] a [after] (RF-11, RF-17, RF-28). El
+/// inicio y el fin se comparan por la hora del día: si solo cambia el día,
+/// cambia la fecha.
+Set<EditField> changedFields(BookingDraft before, BookingDraft after) {
+  bool sameText(BilingualText a, BilingualText b) =>
+      a.es == b.es && a.pt == b.pt;
+  bool sameTime(DateTime? a, DateTime? b) =>
+      a?.hour == b?.hour && a?.minute == b?.minute;
+  String key(BilingualText text) => '${text.es}\u0000${text.pt}';
+  bool sameAddons(List<BilingualText> a, List<BilingualText> b) {
+    if (a.length != b.length) return false;
+    final rest = [for (final text in a) key(text)];
+    for (final text in b) {
+      if (!rest.remove(key(text))) return false;
+    }
+    return true;
+  }
+
+  return {
+    if (before.day != after.day) EditField.date,
+    if (!sameTime(before.start, after.start)) EditField.start,
+    if (!sameTime(before.end, after.end)) EditField.end,
+    if (!sameText(before.name, after.name)) EditField.item,
+    if (!sameAddons(before.addons, after.addons)) EditField.addons,
+    if (before.durationMinutes != after.durationMinutes) EditField.duration,
+    if (before.totalCents != after.totalCents ||
+        before.totalFrom != after.totalFrom)
+      EditField.total,
+  };
+}
+
+/// Resultado de la comprobación antes de guardar la edición.
+enum EditCheck {
+  ok,
+
+  /// El turno ya no está activo: borrado, cancelado o terminado (RF-15).
+  notActive,
+
+  /// Alguien cambió el turno desde que se abrió la edición (RF-15).
+  changed,
+
+  /// Ya está dentro del margen de edición (RF-15).
+  notEditable,
+
+  /// La hora nueva ya no es libre (RF-14; spec 005, RF-29).
+  slotTaken,
+
+  /// El servicio ya no cabe en la hora nueva (RF-14; spec 005, RF-30).
+  doesNotFit,
+}
+
+/// Comprueba otra vez, justo antes de guardar, la edición de [original]
+/// (RF-12). [current] es el turno leído del servidor (`null` si ya no
+/// existe); [start] y [durationMinutes], lo elegido; [busy], los turnos
+/// ocupados del día de [start] sin el propio.
+///
+/// El orden da el motivo más útil: si la admin canceló el turno, "ya no está
+/// activo" explica más que "cambió".
+EditCheck checkEditBeforeSave({
+  required EditOriginal original,
+  required AppointmentModel? current,
+  required DateTime start,
+  required int durationMinutes,
+  required CalendarSettingsModel settings,
+  required Iterable<BusyRange> busy,
+  required DateTime nowSalon,
+  required int marginMinutes,
+}) {
+  if (current == null ||
+      !activeStatuses.contains(current.status) ||
+      !toSalon(current.endTime).isAfter(nowSalon)) {
+    return EditCheck.notActive;
+  }
+  final now = EditOriginal.of(current);
+  if (now.start != original.start ||
+      now.end != original.end ||
+      now.status != original.status ||
+      now.booked != original.booked) {
+    return EditCheck.changed;
+  }
+  if (!isEditable(
+    start: current.startTime,
+    now: fromSalon(nowSalon),
+    marginMinutes: marginMinutes,
+    isBlocked: false,
+  )) {
+    return EditCheck.notEditable;
+  }
+  FreeSlot? slot;
+  for (final free in editFreeSlots(
+    day: salonDay(start),
+    settings: settings,
+    busy: busy,
+    nowSalon: nowSalon,
+    original: original,
+  )) {
+    if (free.start == start) slot = free;
+  }
+  if (slot == null) return EditCheck.slotTaken;
+  if (!fits(durationMinutes, slot)) return EditCheck.doesNotFit;
+  return EditCheck.ok;
 }

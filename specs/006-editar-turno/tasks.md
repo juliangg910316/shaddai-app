@@ -53,12 +53,18 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
     - `EditOriginal.booked` admite `null`, como `AppointmentModel.booked`;
     - 17 tests de tabla, también en verde con `TZ=Europe/Lisbon`; suite completa, 1299 en verde.
 
-- [ ] **T4. Antes y después, y comprobación al guardar.** RF-11, RF-12, RF-14, RF-15, RF-17, RNF-1
+- [x] **T4. Antes y después, y comprobación al guardar.** RF-11, RF-12, RF-14, RF-15, RF-17, RNF-1
   - Tests: `booking_edit_test.dart`, en tabla:
     - `draftOfOriginal` y `draftOfSelection` (con los precios y la duración actuales del catálogo, adicionales incluidos, y `totalFrom` de un servicio "desde");
     - `changedFields`: sin cambios → vacío; cada campo por separado (fecha, inicio, fin, servicio, adicionales, duración, total); varios a la vez; mismo servicio con otro adicional → solo adicionales y total;
     - `checkEditBeforeSave`, cada resultado y su orden: turno borrado, cancelado o terminado → `notActive` (aunque también haya cambiado); horas, estado o lo reservado distintos → `changed`; dentro del margen → `notEditable`; hora ocupada → `slotTaken`; servicio que ya no cabe → `doesNotFit`; la hora original fuera de la rejilla con el mismo servicio → `ok`; todo bien → `ok`.
   - Hecho cuando: los tests pasan.
+  - Hecha (2026-11-14):
+    - `booking_edit.dart`: `BookingDraft`, `draftOfOriginal`, `draftOfSelection` (`null` sin servicio o si no está disponible; sin hora, sin inicio ni fin), `EditField`, `changedFields`, `EditCheck` y `checkEditBeforeSave`;
+    - `changedFields` compara el inicio y el fin por la hora del día (si solo cambia el día, cambia la fecha), el servicio por su nombre en los dos idiomas y los adicionales sin importar el orden;
+    - la duración del turno original es su fin menos su inicio;
+    - `checkEditBeforeSave` recibe el turno leído como `AppointmentModel?`;
+    - 21 tests de tabla, también en verde con `TZ=Europe/Lisbon`; suite completa, 1320 en verde.
 
 - [ ] **T5. La selección en la edición.** RF-4 a RF-9, RF-27 a RF-30, RNF-1
   - Tests: `test/features/booking/logic/booking_selection_test.dart` (casos nuevos):
