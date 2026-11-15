@@ -363,5 +363,14 @@
   "bookingEditAction": "Editar horário",
   "bookingEditClosed": "Você já não pode alterar este horário porque falta pouco para começar. Se precisar alterá-lo, escreva-nos pelo WhatsApp.",
   "bookingEditTitle": "Editar horário",
-  "bookingSaveChangesAction": "Salvar alterações"
+  "bookingSaveChangesAction": "Salvar alterações",
+  "bookingEditConfirmTitle": "Confirmar alterações",
+  "bookingEditBefore": "Antes",
+  "bookingEditAfter": "Depois",
+  "bookingEditChangedLabel": "muda",
+  "bookingEditStart": "Início",
+  "bookingEditEnd": "Fim",
+  "bookingEditNoAddons": "Nenhum",
+  "bookingEditConfirmPending": "O horário voltará a aguardar a confirmação de Beidis.",
+  "bookingEditMarginWarning": "Você não poderá alterar este horário: falta menos de {margin} para começar."
 }

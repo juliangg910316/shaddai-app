@@ -2099,6 +2099,60 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Guardar cambios'**
   String get bookingSaveChangesAction;
+
+  /// Título del diálogo de antes y después (spec 006, RF-11)
+  ///
+  /// In es, this message translates to:
+  /// **'Confirmar cambios'**
+  String get bookingEditConfirmTitle;
+
+  /// Valor de antes en el diálogo de cambios, para el lector de pantalla (spec 006, RF-11)
+  ///
+  /// In es, this message translates to:
+  /// **'Antes'**
+  String get bookingEditBefore;
+
+  /// Valor de después en el diálogo de cambios, para el lector de pantalla (spec 006, RF-11)
+  ///
+  /// In es, this message translates to:
+  /// **'Después'**
+  String get bookingEditAfter;
+
+  /// Marca de un valor que cambia, para el lector de pantalla (spec 006, RF-11)
+  ///
+  /// In es, this message translates to:
+  /// **'cambia'**
+  String get bookingEditChangedLabel;
+
+  /// Etiqueta de la hora de inicio en el diálogo de cambios (spec 006, RF-11)
+  ///
+  /// In es, this message translates to:
+  /// **'Inicio'**
+  String get bookingEditStart;
+
+  /// Etiqueta de la hora de fin en el diálogo de cambios (spec 006, RF-11)
+  ///
+  /// In es, this message translates to:
+  /// **'Fin'**
+  String get bookingEditEnd;
+
+  /// Sin adicionales en el diálogo de cambios (spec 006, RF-11)
+  ///
+  /// In es, this message translates to:
+  /// **'Ninguno'**
+  String get bookingEditNoAddons;
+
+  /// Aviso del diálogo de cambios (spec 006, RF-11)
+  ///
+  /// In es, this message translates to:
+  /// **'El turno volverá a esperar la confirmación de Beidis.'**
+  String get bookingEditConfirmPending;
+
+  /// Al reservar un turno que ya empieza dentro del margen de edición (spec 006, RF-23)
+  ///
+  /// In es, this message translates to:
+  /// **'No podrás cambiar este turno: falta menos de {margin} para que empiece.'**
+  String bookingEditMarginWarning(String margin);
 }
 
 class _AppLocalizationsDelegate

@@ -14,6 +14,7 @@ import 'active_appointment_view.dart';
 import 'booking_form.dart';
 import 'booking_notices.dart';
 import 'booking_sign_in_prompt.dart';
+import 'edit_changes_dialog.dart';
 
 class BookingView extends ConsumerStatefulWidget {
   const BookingView({super.key, this.request});
@@ -160,10 +161,11 @@ class _BookingViewState extends ConsumerState<BookingView> {
     };
   }
 
-  /// "Guardar cambios" con todo elegido (spec 006, RF-11 a RF-17). El
-  /// diálogo de antes y después llega en la tarea T10 y el guardado, en la
-  /// T11: hasta entonces no hace nada.
-  void _confirmEdit() {}
+  /// "Guardar cambios" con todo elegido: pide confirmar el antes y el
+  /// después (spec 006, RF-11). El guardado llega en la tarea T11.
+  Future<void> _confirmEdit() async {
+    await confirmEditChanges(context);
+  }
 
   Widget _buildForm(BuildContext context, {bool editing = false}) {
     final brand = context.brand;

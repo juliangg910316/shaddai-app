@@ -48,6 +48,15 @@ const _keys = [
   'bookingEditClosed',
   'bookingEditTitle',
   'bookingSaveChangesAction',
+  'bookingEditConfirmTitle',
+  'bookingEditBefore',
+  'bookingEditAfter',
+  'bookingEditChangedLabel',
+  'bookingEditStart',
+  'bookingEditEnd',
+  'bookingEditNoAddons',
+  'bookingEditConfirmPending',
+  'bookingEditMarginWarning',
 ];
 
 Map<String, dynamic> _arb(String name) =>

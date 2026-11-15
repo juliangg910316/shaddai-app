@@ -149,12 +149,18 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
     - textos `bookingEditTitle` y `bookingSaveChangesAction` (ES y PT);
     - 14 tests nuevos (6 en `booking_edit_screen_test.dart`, 8 en `booking_edit_form_test.dart`) y 2 claves en el test de textos; suite completa, 1392 en verde.
 
-- [ ] **T10. Diálogo de antes y después, y aviso del margen al reservar.** RF-11, RF-23
+- [x] **T10. Diálogo de antes y después, y aviso del margen al reservar.** RF-11, RF-23
   - Tests: `booking_edit_form_test.dart`:
     - "Guardar cambios" con todo elegido abre el diálogo con la tabla: las filas que cambian con antes → después y "cambia" para el lector de pantalla; las demás con un valor; "volverá a esperar la confirmación"; "Cancelar" lo cierra sin guardar;
     - en ES y PT, y al cambiar de idioma con el diálogo abierto;
     - en una reserva nueva (005) dentro del margen, el diálogo de confirmación lleva la línea de RF-23; con margen 0, no.
   - Hecho cuando: los tests pasan.
+  - Hecha (2026-11-14):
+    - `edit_changes_dialog.dart` (nuevo): `confirmEditChanges` (título "Confirmar cambios", tabla, "volverá a esperar la confirmación", "Cancelar" y "Confirmar") y `EditChangesTable`: una fila por `EditField`; las que cambian con "antes → después" (después en negrita) y, para el lector de pantalla, "{campo}, cambia. Antes: … Después: …"; las demás, un valor. El antes y el después se calculan dentro del diálogo, así que siguen el cambio de idioma;
+    - `BookingView._confirmEdit` abre el diálogo; confirmar aún no guarda (T11);
+    - `BookButton`: el diálogo de la 005 añade la línea de RF-23 (`_MarginWarning`) si `startsWithinEditMargin`; con margen 0, nunca;
+    - textos `bookingEditConfirmTitle`, `bookingEditBefore`, `bookingEditAfter`, `bookingEditChangedLabel`, `bookingEditStart`, `bookingEditEnd`, `bookingEditNoAddons`, `bookingEditConfirmPending` y `bookingEditMarginWarning` (ES y PT); `bookingEditChangeLine` queda para T11/T12;
+    - 10 tests nuevos en `booking_edit_form_test.dart` y 9 claves en el test de textos; suite completa, 1403 en verde.
 
 - [ ] **T11. Guardar y avisar.** RF-12 a RF-17, RF-26
   - Tests: `booking_edit_save_test.dart` (parte de vista, `pumpApp`):

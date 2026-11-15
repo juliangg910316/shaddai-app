@@ -1075,4 +1075,34 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get bookingSaveChangesAction => 'Guardar cambios';
+
+  @override
+  String get bookingEditConfirmTitle => 'Confirmar cambios';
+
+  @override
+  String get bookingEditBefore => 'Antes';
+
+  @override
+  String get bookingEditAfter => 'Después';
+
+  @override
+  String get bookingEditChangedLabel => 'cambia';
+
+  @override
+  String get bookingEditStart => 'Inicio';
+
+  @override
+  String get bookingEditEnd => 'Fin';
+
+  @override
+  String get bookingEditNoAddons => 'Ninguno';
+
+  @override
+  String get bookingEditConfirmPending =>
+      'El turno volverá a esperar la confirmación de Beidis.';
+
+  @override
+  String bookingEditMarginWarning(String margin) {
+    return 'No podrás cambiar este turno: falta menos de $margin para que empiece.';
+  }
 }

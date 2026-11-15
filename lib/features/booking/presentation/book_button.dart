@@ -6,7 +6,10 @@ import '../../../core/theme/app_text.dart';
 import '../../../core/theme/brand_colors.dart';
 import '../../../core/widgets/app_widgets.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../services/logic/price_list_view_logic.dart';
+import '../logic/booking_edit.dart';
 import '../logic/booking_selection.dart';
+import '../logic/salon_time.dart';
 import '../providers/booking_provider.dart';
 import 'booking_summary.dart';
 
@@ -90,6 +93,7 @@ class BookButton extends ConsumerWidget {
                 l10n.bookingConfirmPending,
                 style: AppText.sans(size: 14, color: brand.inkMuted),
               ),
+              const _MarginWarning(),
             ],
           ),
         ),
@@ -134,4 +138,41 @@ class _MissingText extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       Text(missingMessage(AppLocalizations.of(context)!, missing));
+}
+
+/// Si el turno que se va a reservar ya empieza dentro del margen de edición,
+/// avisa de que no se podrá cambiar (spec 006, RF-23). Con margen 0 nunca
+/// sale: una hora libre siempre es futura.
+class _MarginWarning extends ConsumerWidget {
+  const _MarginWarning();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final start = ref.watch(bookingSelectionProvider).selection.start;
+    final margin =
+        ref.watch(calendarSettingsProvider).value?.editMarginMinutes ?? 0;
+    if (start == null || margin <= 0) return const SizedBox.shrink();
+    final now =
+        ref.watch(salonNowProvider).value ?? toSalon(ref.read(clockProvider)());
+    if (!startsWithinEditMargin(
+      start: fromSalon(start),
+      now: fromSalon(now),
+      marginMinutes: margin,
+    )) {
+      return const SizedBox.shrink();
+    }
+    final brand = context.brand;
+    return Padding(
+      padding: const EdgeInsets.only(top: 12),
+      child: Text(
+        AppLocalizations.of(context)!
+            .bookingEditMarginWarning(formatDuration(margin)),
+        style: AppText.sans(
+          size: 14,
+          weight: FontWeight.w600,
+          color: brand.inkStrong,
+        ),
+      ),
+    );
+  }
 }
