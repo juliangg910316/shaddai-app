@@ -103,11 +103,27 @@ class EditChangesTable extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final locale = l10n.localeName;
     final changed = changedFields(before, after);
-    final hm = DateFormat.Hm(locale);
 
-    String label(EditField field) => switch (field) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (final field in EditField.values)
+          _ChangeRow(
+            label: editFieldLabel(l10n, field),
+            before: editFieldValue(l10n, field, before),
+            after: editFieldValue(l10n, field, after),
+            changed: changed.contains(field),
+          ),
+      ],
+    );
+  }
+}
+
+/// El nombre de [field] en el idioma activo.
+String editFieldLabel(AppLocalizations l10n, EditField field) =>
+    switch (field) {
       EditField.date => l10n.bookingStepDate,
       EditField.start => l10n.bookingEditStart,
       EditField.end => l10n.bookingEditEnd,
@@ -117,45 +133,96 @@ class EditChangesTable extends StatelessWidget {
       EditField.total => l10n.bookingTotal,
     };
 
-    String value(EditField field, BookingDraft draft) {
-      String time(DateTime? t) => t == null ? '' : hm.format(t);
-      return switch (field) {
-        EditField.date =>
-          draft.day == null
-              ? ''
-              : capitalizeFirst(
-                  DateFormat.yMMMMEEEEd(locale).format(draft.day!),
-                ),
-        EditField.start => time(draft.start),
-        EditField.end => time(draft.end),
-        EditField.item => draft.name.of(locale),
-        EditField.addons =>
-          draft.addons.isEmpty
-              ? l10n.bookingEditNoAddons
-              : draft.addons.map((addon) => addon.of(locale)).join(', '),
-        EditField.duration => formatDuration(draft.durationMinutes),
-        EditField.total => formatPrice(
-          draft.totalCents,
-          from: draft.totalFrom ? l10n.priceFrom : null,
-        ),
-      };
-    }
+/// El valor de [field] en [draft], en el idioma activo.
+String editFieldValue(
+  AppLocalizations l10n,
+  EditField field,
+  BookingDraft draft,
+) {
+  final locale = l10n.localeName;
+  String time(DateTime? t) => t == null ? '' : DateFormat.Hm(locale).format(t);
+  final day = draft.day;
+  return switch (field) {
+    EditField.date =>
+      day == null
+          ? ''
+          : capitalizeFirst(DateFormat.yMMMMEEEEd(locale).format(day)),
+    EditField.start => time(draft.start),
+    EditField.end => time(draft.end),
+    EditField.item => draft.name.of(locale),
+    EditField.addons =>
+      draft.addons.isEmpty
+          ? l10n.bookingEditNoAddons
+          : draft.addons.map((addon) => addon.of(locale)).join(', '),
+    EditField.duration => formatDuration(draft.durationMinutes),
+    EditField.total => formatPrice(
+      draft.totalCents,
+      from: draft.totalFrom ? l10n.priceFrom : null,
+    ),
+  };
+}
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        for (final field in EditField.values)
-          _ChangeRow(
-            label: label(field),
-            before: value(field, before),
-            after: value(field, after),
-            changed: changed.contains(field),
+/// "Cambios guardados" (spec 006, RF-17; plan D-7): lo que cambió, con el
+/// antes y el después, o que no cambió nada, y que el turno vuelve a esperar
+/// la confirmación. Los textos se escriben dentro del diálogo, así que siguen
+/// el cambio de idioma.
+Future<void> showEditSavedDialog(
+  BuildContext context, {
+  required BookingDraft before,
+  required BookingDraft after,
+  required Set<EditField> changes,
+}) => showDialog<void>(
+  context: context,
+  builder: (context) {
+    final l10n = AppLocalizations.of(context)!;
+    final brand = context.brand;
+    final body = AppText.sans(size: 15, color: brand.ink, height: 1.5);
+    return AlertDialog(
+      title: Text(l10n.bookingEditSavedTitle),
+      content: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (changes.isEmpty)
+              Text(l10n.bookingEditNoChanges, style: body)
+            else
+              for (final field in EditField.values)
+                if (changes.contains(field))
+                  Text(
+                    l10n.bookingEditChangeLine(
+                      editFieldLabel(l10n, field),
+                      editFieldValue(l10n, field, before),
+                      editFieldValue(l10n, field, after),
+                    ),
+                    style: body,
+                  ),
+            const SizedBox(height: 16),
+            Text(
+              l10n.bookingEditSavedPending,
+              style: AppText.sans(size: 14, color: brand.inkMuted),
+            ),
+          ],
+        ),
+      ),
+      actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+      actions: [
+        ElevatedButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(
+            MaterialLocalizations.of(context).closeButtonLabel,
+            style: AppText.sans(
+              size: 12,
+              weight: FontWeight.w600,
+              spacing: 1.2,
+              color: brand.onBrand,
+            ),
           ),
+        ),
       ],
     );
-  }
-}
+  },
+);
 
 class _ChangeRow extends StatelessWidget {
   const _ChangeRow({

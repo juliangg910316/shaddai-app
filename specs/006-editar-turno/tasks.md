@@ -162,7 +162,7 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
     - textos `bookingEditConfirmTitle`, `bookingEditBefore`, `bookingEditAfter`, `bookingEditChangedLabel`, `bookingEditStart`, `bookingEditEnd`, `bookingEditNoAddons`, `bookingEditConfirmPending` y `bookingEditMarginWarning` (ES y PT); `bookingEditChangeLine` queda para T11/T12;
     - 10 tests nuevos en `booking_edit_form_test.dart` y 9 claves en el test de textos; suite completa, 1403 en verde.
 
-- [ ] **T11. Guardar y avisar.** RF-12 a RF-17, RF-26
+- [x] **T11. Guardar y avisar.** RF-12 a RF-17, RF-26
   - Tests: `booking_edit_save_test.dart` (parte de vista, `pumpApp`):
     - confirmar guarda y abre "Cambios guardados" con lo que cambió, o "No cambiaste nada…"; al cerrarlo se ve el turno esperando confirmación (también si estaba confirmado);
     - `slotTaken` y `doesNotFit`: los avisos de la 005 y la edición sigue sin la hora;
@@ -170,8 +170,14 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
     - error: aviso sin detalles técnicos y la edición sigue igual;
     - el turno ocupado guardado tiene las horas nuevas (RF-26).
   - Hecho cuando: los tests pasan, en ES y PT.
+  - Hecha (2026-11-15):
+    - `BookingView._confirmEdit`: tras "Confirmar", toma el antes (`draftOfOriginal`) y el después (`draftOfSelection`), guarda con `bookingEditSaveProvider` (con la capa de espera de la 005) y, con `ok`, abre "Cambios guardados"; con lo demás, `showEditSaveResult`;
+    - `showEditSavedDialog` (en `edit_changes_dialog.dart`): una línea `bookingEditChangeLine` por valor cambiado, o "No cambiaste nada…", y "Tu turno vuelve a esperar la confirmación de Beidis"; los textos se escriben dentro del diálogo. `editFieldLabel` y `editFieldValue` salen de `EditChangesTable` para usarlos en los dos diálogos;
+    - `editSaveMessage` y `showEditSaveResult` (en `booking_notices.dart`): `SnackBar` traducido en su `build` y anunciado; `slotTaken`/`doesNotFit` con los textos de la 005; `notEditable`, `notActive` y `changed` con el suyo; el error sobre el color de peligro, sin detalles;
+    - textos `bookingEditChangeLine`, `bookingEditSavedTitle`, `bookingEditSavedPending`, `bookingEditNoChanges`, `bookingEditNotEditable`, `bookingEditChangedMeanwhile` y `bookingEditSaveError` (ES y PT);
+    - 9 tests de vista nuevos en `booking_edit_save_test.dart` y 7 claves en el test de textos; suite completa, 1412 en verde.
 
-- [ ] **T12. Cambiar el servicio desde el detalle.** RF-19, RF-27 a RF-30
+- [x] **T12. Cambiar el servicio desde el detalle.** RF-19, RF-27 a RF-30
   - Tests: `test/features/booking/booking_edit_detail_test.dart` (nuevo, `pumpMobileApp` y `pumpWebApp`):
     - con la edición abierta, "Reservar cita" en un servicio que cabe vuelve a la edición con la misma fecha y hora, el servicio nuevo sin adicionales y el aviso con antes → después (servicio, fin, duración y total);
     - uno que no cabe: no cambia y avisa con N y M;
@@ -179,18 +185,27 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
     - el mismo servicio: sin cambios, con sus adicionales;
     - en Android/iOS, cambiar de pestaña y volver conserva la edición.
   - Hecho cuando: los tests pasan.
+  - Hecha (2026-11-15):
+    - la lógica ya estaba (T5, `requestItemInEdit`; T7, `requestItem` en la edición y la petición pendiente); la vista solo añade las líneas del aviso;
+    - `bookingNoticeMessage` con `editItemChanged`: "Cambiaste el servicio:" y, debajo, una línea `bookingEditChangeLine` por valor que cambia, separadas por " · ", con `editFieldLabel`/`editFieldValue`. Se traduce en el `build` del `SnackBar`. Si había adicionales, también sale "Adicionales: … → Ninguno", porque se desmarcan (RF-28);
+    - 6 tests nuevos en `booking_edit_detail_test.dart` (`pumpMobileApp` y `pumpWebApp`); suite completa, 1418 en verde.
 
-- [ ] **T13. Web: enlace de la app y "atrás" del navegador.** RF-19, RF-20, D-8
+- [x] **T13. Web: enlace de la app y "atrás" del navegador.** RF-19, RF-20, D-8
   - Primero, comprobar con un test si go_router 18 deja distinguir una navegación del navegador de una de la app. **Si no es fiable, parar y preguntar al autor.**
   - Tests: `test/features/booking/booking_edit_web_test.dart` (nuevo, `pumpWebApp`):
     - ir a otra página con un enlace de la app (barra superior, detalle) y volver conserva la edición;
     - "atrás" del navegador (mensaje de plataforma `pushRouteInformation`) la cierra y, al volver, se ve el turno;
     - recargar (app nueva) muestra el turno.
   - Hecho cuando: los tests pasan.
+  - Hecha (2026-11-15):
+    - D-8 comprobado (test "D-8" de `booking_edit_web_test.dart`): en el **aviso** de `GoRouteInformationProvider`, una navegación de la app (`go`, `push`) trae `RouteInformationState` y una del navegador trae el estado que la app guardó en su historial (un `Map`). En reposo no se distinguen: el router escribe después ese `Map` en el valor sin avisar. Una entrada del navegador sin estado se trataría como de la app (conserva la edición); no ocurre con las entradas que escribe la app;
+    - `WebShell` pasa a `ConsumerStatefulWidget` y escucha `GoRouter.of(context).routeInformationProvider`: si el aviso viene del navegador y la ruta no es `/booking`, `editTargetProvider.end()`;
+    - el test simula el navegador: guarda lo que la app escribe en el historial (`routeInformationUpdated`) y lo devuelve con `pushRouteInformation`;
+    - 4 tests nuevos; suite completa, 1422 en verde.
 
 ## Bloque C — Reglas, accesibilidad y cierre
 
-- [ ] **T14. Reglas y comprobación manual.** RF-24, RF-25, RNF-4
+- [x] **T14. Reglas y comprobación manual.** RF-24, RF-25, RNF-4
   - Tests: `test/core/firestore_rules_test.dart`:
     - `editMarginMinutes()` con `exists` y 0 por defecto;
     - `update` de `appointments`: la rama de la admin igual; la de la clienta con `!isBlocked()`, turno propio, estado activo, el margen, `hasOnly` de los cuatro campos, `waiting_confirmation`, fin después del inicio y `getAfter` del turno ocupado;
@@ -198,11 +213,23 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
     - `settings/calendar`: lectura con sesión, escritura de la admin, sin "PROVISIONAL" (sustituye al test de la 005).
   - Código: `firestore.rules`; `specs/006-editar-turno/rules-check.md` con los casos del simulador (plan § 9) y el recorrido de lo que ya existía.
   - Hecho cuando: los tests pasan y el autor publica las reglas y confirma `rules-check.md`.
+  - Hecha (2026-11-15), **pendiente del autor**: publicar las reglas y confirmar `rules-check.md`.
+    - `firestore.rules` como el plan § 2: `editMarginMinutes()`; `update` de `appointments` con la rama de la admin y la de la clienta; `update` de `busySlots` junto a su turno; `settings/calendar` con lectura con sesión y escritura de la admin. Un cambio de forma: `affectedKeys().hasOnly([...])` de la clienta va en una línea, como el de la admin;
+    - si alguien escribe a mano un `editMarginMinutes` que no es un entero, `duration.value` falla y la regla deniega la edición (la app lo trata como 0);
+    - `rules-check.md`: 17 casos del simulador (en cada uno cambia solo lo que prueba, porque el simulador no hace lotes), la prueba en la app y el recorrido de la 005;
+    - `firestore_rules_test.dart`: 3 tests nuevos y 2 adaptados (el `update` de la admin y el calendario, que ya no es provisional); suite completa, 1425 en verde.
 
-- [ ] **T15. Accesibilidad, textos y cierre.** RNF-2, RNF-3
+- [x] **T15. Accesibilidad, textos y cierre.** RNF-2, RNF-3
   - Tests:
     - `test/features/booking/booking_edit_accessibility_test.dart` (nuevo): contraste, 48 px y nombres en los dos temas para "Editar turno", "Guardar cambios", "Cancelar", el diálogo de antes y después y "Cambios guardados"; "cambia" y los avisos se anuncian; texto al 200 % y 320 px en ES y PT sin desbordes;
     - `booking_texts_test.dart`: todas las claves del plan § 6 en ES y PT;
     - `booking_accessibility_test.dart` de la 005, si el botón entra en sus pantallas.
   - Código: `CLAUDE.md` (`settings/calendar` ya no es provisional, la clienta edita su turno, el margen de edición).
   - Hecho cuando: los tests pasan, la suite completa está en verde (también con `TZ=Europe/Lisbon`) y el autor hace el recorrido manual de los criterios de finalización.
+  - Hecha (2026-11-15), **pendiente del autor**: el recorrido manual de los criterios de finalización.
+    - `booking_edit_accessibility_test.dart` (nuevo, 13 tests): contraste, 48 px y nombres en los dos temas para la edición ("Guardar cambios", "Cancelar"), el diálogo de antes y después y "Cambios guardados"; "Editar turno", "Guardar cambios" y "Cancelar" como botones con nombre; "cambia" en la frase del lector de pantalla; avisos anunciados (lo que falta y el error al guardar); texto al 200 % y 320 px en ES y PT sin desbordes, también en los dos diálogos;
+    - estos tests pasaron desde el principio: la vista de T9 a T11 ya cumplía. Para comprobar que pueden fallar, se rompió a propósito el contraste de las etiquetas de la tabla. `textContrastGuideline` no lo vio, porque cada fila es un solo nodo de semántica (`excludeSemantics`) y la guía no mide sus textos. Por eso el test mide también el contraste de cada texto de los diálogos, salvo los botones, sobre el fondo del diálogo; con el contraste roto falla en los dos temas;
+    - `booking_texts_test.dart`: un test lee las claves de la tabla del plan § 6 y comprueba que están en ES y PT;
+    - `booking_accessibility_test.dart` de la 005: el turno activo ya medía "Editar turno"; ahora el test comprueba que está;
+    - `CLAUDE.md`: `settings/calendar` ya no es provisional; `editMarginMinutes`; la edición del turno (providers, guardado en transacción, "atrás" del navegador en Web);
+    - suite completa, 1439 en verde, también con `TZ=Europe/Lisbon`.

@@ -575,5 +575,19 @@
   "bookingEditConfirmPending": "El turno volverá a esperar la confirmación de Beidis.",
   "@bookingEditConfirmPending": {"description": "Aviso del diálogo de cambios (spec 006, RF-11)"},
   "bookingEditMarginWarning": "No podrás cambiar este turno: falta menos de {margin} para que empiece.",
-  "@bookingEditMarginWarning": {"description": "Al reservar un turno que ya empieza dentro del margen de edición (spec 006, RF-23)", "placeholders": {"margin": {"type": "String"}}}
+  "@bookingEditMarginWarning": {"description": "Al reservar un turno que ya empieza dentro del margen de edición (spec 006, RF-23)", "placeholders": {"margin": {"type": "String"}}},
+  "bookingEditChangeLine": "{label}: {before} → {after}",
+  "@bookingEditChangeLine": {"description": "Un valor que cambió, con el antes y el después (spec 006, RF-17, RF-28)", "placeholders": {"label": {"type": "String"}, "before": {"type": "String"}, "after": {"type": "String"}}},
+  "bookingEditSavedTitle": "Cambios guardados",
+  "@bookingEditSavedTitle": {"description": "Título del diálogo tras guardar la edición (spec 006, RF-17)"},
+  "bookingEditSavedPending": "Tu turno vuelve a esperar la confirmación de Beidis.",
+  "@bookingEditSavedPending": {"description": "Tras guardar la edición (spec 006, RF-17)"},
+  "bookingEditNoChanges": "No cambiaste nada: el turno sigue igual.",
+  "@bookingEditNoChanges": {"description": "Se guardó la edición sin cambios (spec 006, RF-17)"},
+  "bookingEditNotEditable": "Ya no se puede cambiar el turno: falta poco para que empiece.",
+  "@bookingEditNotEditable": {"description": "Al guardar, el turno ya está dentro del margen de edición (spec 006, RF-15)"},
+  "bookingEditChangedMeanwhile": "Tu turno cambió mientras lo editabas. Revisa cómo está ahora.",
+  "@bookingEditChangedMeanwhile": {"description": "Al guardar, alguien cambió el turno (spec 006, RF-15)"},
+  "bookingEditSaveError": "No pudimos guardar los cambios. Inténtalo de nuevo.",
+  "@bookingEditSaveError": {"description": "No se pudo guardar la edición (spec 006, RF-16)"}
 }

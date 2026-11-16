@@ -83,7 +83,7 @@ All redirect rules live in the pure `resolveRedirect` (`lib/core/router/redirect
 
 Both return `null` while `currentUserProvider.isLoading`, to avoid redirecting on incomplete data. Preserve that guard when editing.
 
-Admin routes are only cosmetically guarded (hidden entry points, plus the Web redirect above). Real enforcement lives in `firestore.rules`: admin-only writes to `settings/priceList` (spec 004), and the `users`, `appointments` and `busySlots` rules (spec 005, checked by hand in `specs/005-reservas/rules-check.md`). `settings/calendar` stays provisional (any signed-in user) until spec 012. Treat any client-side role check as cosmetic.
+Admin routes are only cosmetically guarded (hidden entry points, plus the Web redirect above). Real enforcement lives in `firestore.rules`: admin-only writes to `settings/priceList` (spec 004) and `settings/calendar` (spec 006, RF-25; any signed-in user reads it), and the `users`, `appointments` and `busySlots` rules (spec 005; spec 006 adds the client's edit of her own active appointment and its busy slot). They are checked by hand in each spec's `rules-check.md`. Treat any client-side role check as cosmetic.
 
 ### Web landing (also Inicio and Servicios on mobile)
 
@@ -96,7 +96,9 @@ Admin routes are only cosmetically guarded (hidden entry points, plus the Web re
 
 - `users/{uid}` — `role` (`'cliente'` | `'admin'`), `isBlocked`, `phoneNumber` (WhatsApp), `photoUrl`, `fcmToken`.
 - `appointments/{uuid}` — client-generated UUID v4 as doc id; `status` is `'waiting_confirmation'` | `'confirmed'` | `'cancelled'`. Clients see other people's bookings only as `busySlots` ranges (`watchBusySlots`) and read their own appointments; the admin sees all (`getAppointmentsForDate`).
-- `settings/calendar` — single doc; `ConfigRepository` falls back to `CalendarSettingsModel.defaultSettings()` when absent and writes with `merge: true`.
+- `settings/calendar` — single doc; `ConfigRepository` falls back to `CalendarSettingsModel.defaultSettings()` when absent and writes with `merge: true`. Optional `editMarginMinutes` (spec 006): minutes before the start after which the client can no longer edit; 0 if missing, not an integer or negative. `toMap` never writes it, so saving the schedule keeps it (spec 008 will edit it).
+
+**Editing the active appointment (spec 006).** While it starts more than the edit margin from now, the client edits its day, time, service and add-ons; saving puts it back to `waiting_confirmation`. The edit reuses the booking view and `bookingSelectionProvider` with the appointment in `editTargetProvider` (pure logic in `logic/booking_edit.dart`): the original day and time stay valid even if they no longer meet the current rules, and the appointment's own busy slot doesn't count. `BookingEditor` saves in a transaction that changes the appointment and its `busySlots` together, only if nobody changed it since the edit opened. On Web, `WebShell` closes the edit when the browser's back/forward leaves `/booking` (it tells them from app links by the `routeInformationProvider` state at notification time); app links keep it.
 
 Blocked clients are rejected at sign-in (`AuthController.signInWithGoogle` signs them back out) rather than at booking time.
 

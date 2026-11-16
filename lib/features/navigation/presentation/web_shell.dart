@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../core/theme/brand_colors.dart';
+import '../../booking/providers/booking_provider.dart';
 import 'web_menu_drawer.dart';
 import 'web_top_bar.dart';
 
 /// Estructura de todas las páginas de Web: la barra superior fija y, debajo,
 /// la página (spec 002, RF-13). Sustituye a la barra inferior de Android/iOS.
-class WebShell extends StatefulWidget {
+///
+/// También cierra la edición del turno cuando "atrás" o "adelante" del
+/// navegador sale de la reserva (spec 006, RF-20, D-8); los enlaces de la app
+/// la conservan (RF-19).
+class WebShell extends ConsumerStatefulWidget {
   const WebShell({super.key, required this.child});
 
   /// Ancho desde el que la ventana es "amplia" (definición de la spec).
@@ -21,11 +28,38 @@ class WebShell extends StatefulWidget {
   final Widget child;
 
   @override
-  State<WebShell> createState() => _WebShellState();
+  ConsumerState<WebShell> createState() => _WebShellState();
 }
 
-class _WebShellState extends State<WebShell> {
+class _WebShellState extends ConsumerState<WebShell> {
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+  GoRouteInformationProvider? _routes;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final routes = GoRouter.of(context).routeInformationProvider;
+    if (routes != _routes) {
+      _routes?.removeListener(_onRouteChanged);
+      _routes = routes..addListener(_onRouteChanged);
+    }
+  }
+
+  @override
+  void dispose() {
+    _routes?.removeListener(_onRouteChanged);
+    super.dispose();
+  }
+
+  /// Las navegaciones de la app avisan con el estado de go_router; las del
+  /// navegador, con el que guardó en su historial (plan D-8). Si el navegador
+  /// sale de la reserva, la edición se cierra sin guardar (RF-20).
+  void _onRouteChanged() {
+    final route = _routes?.value;
+    if (route == null || route.state is RouteInformationState) return;
+    if (route.uri.path == '/booking') return;
+    ref.read(editTargetProvider.notifier).end();
+  }
 
   @override
   Widget build(BuildContext context) {

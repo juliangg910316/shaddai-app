@@ -372,5 +372,12 @@
   "bookingEditEnd": "Fim",
   "bookingEditNoAddons": "Nenhum",
   "bookingEditConfirmPending": "O horário voltará a aguardar a confirmação de Beidis.",
-  "bookingEditMarginWarning": "Você não poderá alterar este horário: falta menos de {margin} para começar."
+  "bookingEditMarginWarning": "Você não poderá alterar este horário: falta menos de {margin} para começar.",
+  "bookingEditChangeLine": "{label}: {before} → {after}",
+  "bookingEditSavedTitle": "Alterações salvas",
+  "bookingEditSavedPending": "Seu horário volta a aguardar a confirmação de Beidis.",
+  "bookingEditNoChanges": "Você não alterou nada: o horário continua igual.",
+  "bookingEditNotEditable": "Já não é possível alterar o horário: falta pouco para começar.",
+  "bookingEditChangedMeanwhile": "Seu horário mudou enquanto você o editava. Confira como está agora.",
+  "bookingEditSaveError": "Não conseguimos salvar as alterações. Tente novamente."
 }

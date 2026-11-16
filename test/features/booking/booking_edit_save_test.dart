@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shaddai/data/models/appointment_model.dart';
@@ -10,13 +11,18 @@ import 'package:shaddai/data/models/price_list_model.dart';
 import 'package:shaddai/features/booking/logic/bookable_catalog.dart';
 import 'package:shaddai/features/booking/logic/booking_edit.dart';
 import 'package:shaddai/features/booking/logic/salon_time.dart';
+import 'package:shaddai/features/booking/presentation/active_appointment_view.dart';
+import 'package:shaddai/features/booking/presentation/booking_form.dart';
+import 'package:shaddai/features/booking/presentation/booking_view.dart';
 import 'package:shaddai/features/booking/providers/booking_edit_provider.dart';
 import 'package:shaddai/features/booking/providers/booking_provider.dart';
 import 'package:shaddai/features/services/logic/price_list_view_logic.dart';
 import 'package:shaddai/features/services/providers/price_list_provider.dart';
 
 import '../../helpers/fake_booking.dart';
+import '../../helpers/fake_price_list.dart';
 import '../../helpers/fake_session.dart';
+import '../../helpers/pump_app.dart';
 
 // Horas de pared del salón. "Ahora" es el martes 10/11/2026 a las 7:00
 // (bookingTestNow); el calendario por defecto abre de 9:00 a 18:00.
@@ -311,6 +317,240 @@ void main() {
       c.read(editTargetProvider.notifier).end();
       expect((await save()).outcome, EditSaveOutcome.failed);
       expect(bookings.editCheckRequests, isEmpty);
+    });
+  });
+
+  group('Guardar desde la vista (RF-12 a RF-17, RF-26)', () {
+    Finder inDialog(Finder finder) =>
+        find.descendant(of: find.byType(AlertDialog), matching: finder);
+    Finder inSnackBar(String message) => find.descendant(
+      of: find.byType(SnackBar),
+      matching: find.text(message),
+    );
+
+    Future<void> pumpFrames(WidgetTester tester) async {
+      for (var i = 0; i < 5; i++) {
+        await tester.pump();
+      }
+    }
+
+    /// Un diálogo tarda en abrirse o cerrarse.
+    Future<void> animate(WidgetTester tester) async {
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      await pumpFrames(tester);
+    }
+
+    Future<void> tap(WidgetTester tester, Finder finder) async {
+      await tester.ensureVisible(finder);
+      await tester.tap(finder);
+      await pumpFrames(tester);
+    }
+
+    /// Abre la edición del turno de las 9:00 (confirmado), elige [hour] y
+    /// confirma los cambios. [beforeSave] prepara el servidor.
+    Future<void> editAndSave(
+      WidgetTester tester, {
+      String? hour = '10:00',
+      String language = 'es',
+      Stream<CalendarSettingsModel> Function()? settingsStream,
+      void Function()? beforeSave,
+    }) async {
+      tester.view.devicePixelRatio = 1;
+      tester.view.physicalSize = const Size(800, 2400);
+      addTearDown(tester.view.reset);
+      bookings = FakeBookingRepository(mine: [appointment()], busy: [own]);
+      await pumpApp(
+        tester,
+        stored: {'language': language},
+        home: const BookingView(),
+        priceListRepository: FakePriceListRepository(stored: priceList),
+        overrides: [
+          ...bookingDataOverrides(
+            bookings: bookings,
+            settingsStream: settingsStream,
+          ),
+        ],
+      );
+      await pumpFrames(tester);
+      final pt = language == 'pt';
+      await tap(tester, find.text(pt ? 'EDITAR HORÁRIO' : 'EDITAR TURNO'));
+      if (hour != null) await tap(tester, find.text(hour));
+      beforeSave?.call();
+      await tap(
+        tester,
+        find.text(pt ? 'SALVAR ALTERAÇÕES' : 'GUARDAR CAMBIOS'),
+      );
+      await animate(tester);
+      await tester.tap(inDialog(find.byType(ElevatedButton)));
+      await animate(tester);
+    }
+
+    testWidgets('guarda y abre "Cambios guardados" con lo que cambió; al '
+        'cerrarlo, el turno espera confirmación (RF-13, RF-17, RF-26)', (
+      tester,
+    ) async {
+      await editAndSave(tester);
+
+      expect(bookings.edited.single.start, fromSalon(at(10)));
+      // Las demás ven la hora nueva ocupada y la antigua libre (RF-26).
+      expect(bookings.busy.single.start, fromSalon(at(10)));
+      expect(bookings.busy.single.end, fromSalon(at(10, 45)));
+
+      expect(inDialog(find.text('Cambios guardados')), findsOneWidget);
+      expect(inDialog(find.text('Inicio: 9:00 → 10:00')), findsOneWidget);
+      expect(inDialog(find.text('Fin: 9:45 → 10:45')), findsOneWidget);
+      expect(inDialog(find.textContaining('Servicio')), findsNothing);
+      expect(
+        inDialog(
+          find.text('Tu turno vuelve a esperar la confirmación de Beidis.'),
+        ),
+        findsOneWidget,
+      );
+
+      await tester.tap(inDialog(find.byType(ElevatedButton)));
+      await animate(tester);
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(find.byType(ActiveAppointmentView), findsOneWidget);
+      expect(find.text('EN REVISIÓN'), findsOneWidget);
+      expect(find.text('10:00 – 10:45'), findsOneWidget);
+    });
+
+    testWidgets('sin cambios: "No cambiaste nada…"', (tester) async {
+      await editAndSave(tester, hour: null);
+
+      expect(bookings.edited, hasLength(1));
+      expect(inDialog(find.text('Cambios guardados')), findsOneWidget);
+      expect(
+        inDialog(find.text('No cambiaste nada: el turno sigue igual.')),
+        findsOneWidget,
+      );
+      expect(inDialog(find.textContaining('→')), findsNothing);
+    });
+
+    testWidgets('en portugués', (tester) async {
+      await editAndSave(tester, language: 'pt');
+
+      expect(inDialog(find.text('Alterações salvas')), findsOneWidget);
+      expect(inDialog(find.text('Início: 09:00 → 10:00')), findsOneWidget);
+      expect(
+        inDialog(
+          find.text('Seu horário volta a aguardar a confirmação de Beidis.'),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    for (final (label, others, message) in [
+      (
+        'la hora ya está ocupada',
+        [busy('x', at(10), at(11))],
+        'Esa hora acaba de ocuparse. Elige otra.',
+      ),
+      (
+        'el servicio ya no cabe',
+        [busy('x', at(10, 30), at(11))],
+        'La hora elegida ya no tiene tiempo suficiente para el servicio. '
+            'Elige otra.',
+      ),
+    ]) {
+      testWidgets('$label: el aviso de la 005 y la edición sigue sin la hora '
+          '(RF-14)', (tester) async {
+        await editAndSave(
+          tester,
+          beforeSave: () => bookings.editCheckData = (
+            appointment: appointment(),
+            busy: [own, ...others],
+          ),
+        );
+
+        expect(inSnackBar(message), findsOneWidget);
+        expect(find.byType(BookingForm), findsOneWidget);
+        expect(
+          appContainer(tester).read(bookingSelectionProvider).selection.start,
+          isNull,
+        );
+        expect(bookings.edited, isEmpty);
+      });
+    }
+
+    for (final (label, current, message) in [
+      (
+        'ya no está activo',
+        null,
+        'Tu turno ya no está activo: se canceló o terminó.',
+      ),
+      (
+        'alguien lo cambió',
+        appointment(status: 'waiting_confirmation'),
+        'Tu turno cambió mientras lo editabas. Revisa cómo está ahora.',
+      ),
+    ]) {
+      testWidgets('$label: su texto y vuelve al turno (RF-15)', (tester) async {
+        await editAndSave(
+          tester,
+          beforeSave: () =>
+              bookings.editCheckData = (appointment: current, busy: [own]),
+        );
+
+        expect(inSnackBar(message), findsOneWidget);
+        expect(find.byType(ActiveAppointmentView), findsOneWidget);
+        expect(bookings.edited, isEmpty);
+      });
+    }
+
+    testWidgets('ya no es editable: su texto y vuelve al turno (RF-15)', (
+      tester,
+    ) async {
+      final calendar = StreamController<CalendarSettingsModel>.broadcast();
+      addTearDown(calendar.close);
+      final defaults = CalendarSettingsModel.defaultSettings();
+      await editAndSave(
+        tester,
+        settingsStream: () async* {
+          yield defaults;
+          yield* calendar.stream;
+        },
+        // La admin pone un margen de 3 h mientras edita.
+        beforeSave: () => calendar.add(
+          CalendarSettingsModel(
+            openingHours: defaults.openingHours,
+            globalSlotDurationMinutes: defaults.globalSlotDurationMinutes,
+            blockedDates: defaults.blockedDates,
+            editMarginMinutes: 180,
+          ),
+        ),
+      );
+
+      expect(
+        inSnackBar(
+          'Ya no se puede cambiar el turno: falta poco para que empiece.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.byType(ActiveAppointmentView), findsOneWidget);
+      expect(bookings.edited, isEmpty);
+    });
+
+    testWidgets('error: aviso sin detalles y la edición sigue igual (RF-16)', (
+      tester,
+    ) async {
+      await editAndSave(
+        tester,
+        beforeSave: () => bookings.updateError = Exception('permission-denied'),
+      );
+
+      expect(
+        inSnackBar('No pudimos guardar los cambios. Inténtalo de nuevo.'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('permission-denied'), findsNothing);
+      expect(find.byType(BookingForm), findsOneWidget);
+      expect(
+        appContainer(tester).read(bookingSelectionProvider).selection.start,
+        at(10),
+      );
+      expect(appContainer(tester).read(editTargetProvider), isNotNull);
     });
   });
 }

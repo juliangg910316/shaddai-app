@@ -1107,4 +1107,32 @@ class AppLocalizationsPt extends AppLocalizations {
   String bookingEditMarginWarning(String margin) {
     return 'Você não poderá alterar este horário: falta menos de $margin para começar.';
   }
+
+  @override
+  String bookingEditChangeLine(String label, String before, String after) {
+    return '$label: $before → $after';
+  }
+
+  @override
+  String get bookingEditSavedTitle => 'Alterações salvas';
+
+  @override
+  String get bookingEditSavedPending =>
+      'Seu horário volta a aguardar a confirmação de Beidis.';
+
+  @override
+  String get bookingEditNoChanges =>
+      'Você não alterou nada: o horário continua igual.';
+
+  @override
+  String get bookingEditNotEditable =>
+      'Já não é possível alterar o horário: falta pouco para começar.';
+
+  @override
+  String get bookingEditChangedMeanwhile =>
+      'Seu horário mudou enquanto você o editava. Confira como está agora.';
+
+  @override
+  String get bookingEditSaveError =>
+      'Não conseguimos salvar as alterações. Tente novamente.';
 }

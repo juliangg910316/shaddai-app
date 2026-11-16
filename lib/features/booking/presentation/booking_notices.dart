@@ -7,8 +7,11 @@ import '../../../l10n/app_localizations.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../services/logic/price_list_view_logic.dart';
 import '../../services/presentation/price_list_notices.dart';
+import '../logic/booking_edit.dart';
 import '../logic/booking_selection.dart';
+import '../providers/booking_edit_provider.dart';
 import '../providers/booking_provider.dart';
+import 'edit_changes_dialog.dart';
 
 /// No se pudo cargar la ficha o los turnos: "Reintentar" los vuelve a pedir
 /// (spec 005, RF-49). Con [schedule], lo que no se pudo cargar es el
@@ -83,8 +86,7 @@ String bookingNoticeMessage(AppLocalizations l10n, BookingNotice notice) {
     BookingNoticeKind.slotNoLongerFits => l10n.bookingSlotNoLongerFits,
     BookingNoticeKind.itemUnavailable => l10n.bookingItemUnavailable,
     BookingNoticeKind.dateMoved => l10n.bookingDateMoved,
-    // Las líneas con el antes y el después las añade la vista (T12).
-    BookingNoticeKind.editItemChanged => l10n.bookingEditItemChanged,
+    BookingNoticeKind.editItemChanged => _itemChangedMessage(l10n, notice),
     BookingNoticeKind.editItemDoesNotFit => l10n.bookingEditItemDoesNotFit(
       notice.name?.of(l10n.localeName) ?? '',
       duration,
@@ -94,6 +96,26 @@ String bookingNoticeMessage(AppLocalizations l10n, BookingNotice notice) {
       l10n.bookingEditAddonsUnavailable,
     BookingNoticeKind.editNotActive => l10n.bookingEditNotActive,
   };
+}
+
+/// "Cambiaste el servicio:" y, debajo, lo que cambia con el antes y el
+/// después: servicio, adicionales, fin, duración y total (spec 006, RF-28).
+String _itemChangedMessage(AppLocalizations l10n, BookingNotice notice) {
+  final before = notice.before;
+  final after = notice.after;
+  if (before == null || after == null) return l10n.bookingEditItemChanged;
+  final changes = changedFields(before, after);
+  final lines = [
+    for (final field in EditField.values)
+      if (changes.contains(field))
+        l10n.bookingEditChangeLine(
+          editFieldLabel(l10n, field),
+          editFieldValue(l10n, field, before),
+          editFieldValue(l10n, field, after),
+        ),
+  ];
+  if (lines.isEmpty) return l10n.bookingEditItemChanged;
+  return '${l10n.bookingEditItemChanged}\n${lines.join(' · ')}';
 }
 
 /// Un aviso de la selección, traducido en su `build`: si cambia el idioma
@@ -159,4 +181,47 @@ class _SubmitText extends StatelessWidget {
   @override
   Widget build(BuildContext context) =>
       Text(bookingSubmitMessage(AppLocalizations.of(context)!, result));
+}
+
+/// El aviso de "Guardar cambios" según [outcome] (spec 006, RF-14 a RF-16):
+/// la hora ocupada o sin sitio, como en la 005; un texto distinto si ya no
+/// es editable, ya no está activo o cambió; y el error, sin detalles.
+String editSaveMessage(AppLocalizations l10n, EditSaveOutcome outcome) =>
+    switch (outcome) {
+      EditSaveOutcome.ok => l10n.bookingEditSavedTitle,
+      EditSaveOutcome.slotTaken => l10n.bookingSlotTaken,
+      EditSaveOutcome.doesNotFit => l10n.bookingSlotNoLongerFits,
+      EditSaveOutcome.notEditable => l10n.bookingEditNotEditable,
+      EditSaveOutcome.notActive => l10n.bookingEditNotActive,
+      EditSaveOutcome.changed => l10n.bookingEditChangedMeanwhile,
+      EditSaveOutcome.failed => l10n.bookingEditSaveError,
+    };
+
+/// Muestra el resultado de "Guardar cambios" en un `SnackBar`, que traduce
+/// en su `build`, y lo anuncia al lector de pantalla. El error va sobre el
+/// color de peligro (RF-16).
+void showEditSaveResult(BuildContext context, EditSaveOutcome outcome) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: _EditSaveText(outcome),
+      backgroundColor: outcome == EditSaveOutcome.failed
+          ? context.brand.danger
+          : null,
+    ),
+  );
+  SemanticsService.sendAnnouncement(
+    View.of(context),
+    editSaveMessage(AppLocalizations.of(context)!, outcome),
+    Directionality.of(context),
+  );
+}
+
+class _EditSaveText extends StatelessWidget {
+  const _EditSaveText(this.outcome);
+
+  final EditSaveOutcome outcome;
+
+  @override
+  Widget build(BuildContext context) =>
+      Text(editSaveMessage(AppLocalizations.of(context)!, outcome));
 }

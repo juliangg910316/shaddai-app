@@ -3,14 +3,16 @@ rules_version = '2';
 // Reglas de seguridad de Firestore de Studio Shaddai.
 //
 // - settings/priceList: definitivas (spec 004, RNF-2).
-// - users, appointments y busySlots: las de la reserva (spec 005, plan § 2).
-//   Los solapes y un segundo turno activo los comprueba la app antes de
-//   guardar; las reglas que los impiden llegan en la spec 012.
-// - settings/calendar: PROVISIONAL hasta la spec 012 (todo con sesión).
+// - users, appointments y busySlots: las de la reserva (spec 005, plan § 2)
+//   y la edición del turno por la clienta (spec 006, plan § 2). Los solapes
+//   y un segundo turno activo los comprueba la app antes de guardar; las
+//   reglas que los impiden llegan en la spec 012.
+// - settings/calendar: lo lee cualquiera con sesión y solo lo escribe la
+//   admin (spec 006, RF-25; adelanta esa parte de la spec 012).
 //
 // Lo que no aparece aquí queda denegado. Se comprueban a mano en el
-// simulador de la consola: specs/004-servicios-firestore/rules-check.md y
-// specs/005-reservas/rules-check.md.
+// simulador de la consola: specs/004-servicios-firestore/rules-check.md,
+// specs/005-reservas/rules-check.md y specs/006-editar-turno/rules-check.md.
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -30,6 +32,13 @@ service cloud.firestore {
 
     function isBlocked() {
       return myProfile().get('isBlocked', false) == true;
+    }
+
+    // Margen de edición del salón (spec 006, RF-21): 0 si no hay documento
+    // o campo.
+    function editMarginMinutes() {
+      let path = /databases/$(database)/documents/settings/calendar;
+      return exists(path) ? get(path).data.get('editMarginMinutes', 0) : 0;
     }
 
     // Lista de precios: la ve cualquiera, también sin sesión; solo la admin
@@ -54,7 +63,12 @@ service cloud.firestore {
 
     // Turnos: la clienta solo ve los suyos (RF-53) y los crea a su nombre,
     // sin estar bloqueada (RF-54) y con su turno ocupado en el mismo lote,
-    // con las mismas horas. Solo la admin cambia el estado (RF-55, RF-56).
+    // con las mismas horas. La admin solo cambia el estado (RF-55, RF-56).
+    // La clienta edita su turno activo fuera del margen de edición: solo el
+    // inicio, el fin y lo reservado; vuelve a esperar confirmación y su turno
+    // ocupado cambia a la vez, con las mismas horas (spec 006, RF-24, RF-26).
+    // "Activo" queda cubierto: si empieza después de ahora más el margen,
+    // aún no ha terminado.
     match /appointments/{id} {
       allow get, list: if isAdmin()
         || (signedIn() && resource.data.clientId == request.auth.uid);
@@ -64,15 +78,26 @@ service cloud.firestore {
         && request.resource.data.endTime > request.resource.data.startTime
         && getAfter(/databases/$(database)/documents/busySlots/$(id)).data.start == request.resource.data.startTime
         && getAfter(/databases/$(database)/documents/busySlots/$(id)).data.end == request.resource.data.endTime;
-      allow update: if isAdmin()
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']);
+      allow update: if
+        (isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']))
+        || (signedIn() && !isBlocked()
+          && resource.data.clientId == request.auth.uid
+          && resource.data.status in ['waiting_confirmation', 'confirmed']
+          && resource.data.startTime > request.time + duration.value(editMarginMinutes(), 'm')
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['startTime', 'endTime', 'booked', 'status'])
+          && request.resource.data.status == 'waiting_confirmation'
+          && request.resource.data.startTime > request.time
+          && request.resource.data.endTime > request.resource.data.startTime
+          && getAfter(/databases/$(database)/documents/busySlots/$(id)).data.start == request.resource.data.startTime
+          && getAfter(/databases/$(database)/documents/busySlots/$(id)).data.end == request.resource.data.endTime);
       allow delete: if false;
     }
 
     // Turnos ocupados: solo inicio y fin, con el mismo id que su turno. Los
     // lee cualquiera con sesión para ver las horas libres (RF-53); se crean
     // junto a un turno propio con las mismas horas, y la admin los borra al
-    // cancelar (RF-56).
+    // cancelar (RF-56). Se cambian solo junto a la edición de su turno, que
+    // es de la clienta, con sus mismas horas (spec 006, RF-24, RF-26).
     match /busySlots/{id} {
       allow get, list: if signedIn();
       allow create: if signedIn()
@@ -81,12 +106,18 @@ service cloud.firestore {
         && getAfter(/databases/$(database)/documents/appointments/$(id)).data.startTime == request.resource.data.start
         && getAfter(/databases/$(database)/documents/appointments/$(id)).data.endTime == request.resource.data.end;
       allow delete: if isAdmin();
-      allow update: if false;
+      allow update: if signedIn()
+        && request.resource.data.keys().hasOnly(['start', 'end'])
+        && get(/databases/$(database)/documents/appointments/$(id)).data.clientId == request.auth.uid
+        && getAfter(/databases/$(database)/documents/appointments/$(id)).data.startTime == request.resource.data.start
+        && getAfter(/databases/$(database)/documents/appointments/$(id)).data.endTime == request.resource.data.end;
     }
 
+    // Calendario del salón (spec 006, RF-25): lo lee cualquiera con sesión
+    // y solo lo escribe la admin, también el margen de edición.
     match /settings/calendar {
-      // PROVISIONAL hasta la spec 012: calendario con sesión.
-      allow read, write: if request.auth != null;
+      allow read: if signedIn();
+      allow write: if isAdmin();
     }
   }
 }

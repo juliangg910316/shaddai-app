@@ -146,6 +146,8 @@ void main() {
         final semantics = tester.ensureSemantics();
         bookings.mine = [active()];
         await pump(tester, theme: theme);
+        // Con margen 0 es editable: también se mide "Editar turno" (006).
+        expect(find.text('EDITAR TURNO'), findsOneWidget);
         await expectGuidelines(tester);
         semantics.dispose();
       });

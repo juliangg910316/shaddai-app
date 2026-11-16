@@ -2153,6 +2153,48 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'No podrás cambiar este turno: falta menos de {margin} para que empiece.'**
   String bookingEditMarginWarning(String margin);
+
+  /// Un valor que cambió, con el antes y el después (spec 006, RF-17, RF-28)
+  ///
+  /// In es, this message translates to:
+  /// **'{label}: {before} → {after}'**
+  String bookingEditChangeLine(String label, String before, String after);
+
+  /// Título del diálogo tras guardar la edición (spec 006, RF-17)
+  ///
+  /// In es, this message translates to:
+  /// **'Cambios guardados'**
+  String get bookingEditSavedTitle;
+
+  /// Tras guardar la edición (spec 006, RF-17)
+  ///
+  /// In es, this message translates to:
+  /// **'Tu turno vuelve a esperar la confirmación de Beidis.'**
+  String get bookingEditSavedPending;
+
+  /// Se guardó la edición sin cambios (spec 006, RF-17)
+  ///
+  /// In es, this message translates to:
+  /// **'No cambiaste nada: el turno sigue igual.'**
+  String get bookingEditNoChanges;
+
+  /// Al guardar, el turno ya está dentro del margen de edición (spec 006, RF-15)
+  ///
+  /// In es, this message translates to:
+  /// **'Ya no se puede cambiar el turno: falta poco para que empiece.'**
+  String get bookingEditNotEditable;
+
+  /// Al guardar, alguien cambió el turno (spec 006, RF-15)
+  ///
+  /// In es, this message translates to:
+  /// **'Tu turno cambió mientras lo editabas. Revisa cómo está ahora.'**
+  String get bookingEditChangedMeanwhile;
+
+  /// No se pudo guardar la edición (spec 006, RF-16)
+  ///
+  /// In es, this message translates to:
+  /// **'No pudimos guardar los cambios. Inténtalo de nuevo.'**
+  String get bookingEditSaveError;
 }
 
 class _AppLocalizationsDelegate

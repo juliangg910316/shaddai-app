@@ -1105,4 +1105,31 @@ class AppLocalizationsEs extends AppLocalizations {
   String bookingEditMarginWarning(String margin) {
     return 'No podrás cambiar este turno: falta menos de $margin para que empiece.';
   }
+
+  @override
+  String bookingEditChangeLine(String label, String before, String after) {
+    return '$label: $before → $after';
+  }
+
+  @override
+  String get bookingEditSavedTitle => 'Cambios guardados';
+
+  @override
+  String get bookingEditSavedPending =>
+      'Tu turno vuelve a esperar la confirmación de Beidis.';
+
+  @override
+  String get bookingEditNoChanges => 'No cambiaste nada: el turno sigue igual.';
+
+  @override
+  String get bookingEditNotEditable =>
+      'Ya no se puede cambiar el turno: falta poco para que empiece.';
+
+  @override
+  String get bookingEditChangedMeanwhile =>
+      'Tu turno cambió mientras lo editabas. Revisa cómo está ahora.';
+
+  @override
+  String get bookingEditSaveError =>
+      'No pudimos guardar los cambios. Inténtalo de nuevo.';
 }

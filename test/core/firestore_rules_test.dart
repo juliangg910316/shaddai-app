@@ -3,11 +3,11 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-/// Estructura de `firestore.rules` (spec 004, RNF-2; spec 005, RNF-5). Lo
-/// que permite cada regla se comprueba a mano en el simulador de la consola
-/// (`specs/004-servicios-firestore/rules-check.md` y
-/// `specs/005-reservas/rules-check.md`); aquí se fija qué cubre cada `match`
-/// para que un cambio no lo rompa sin querer.
+/// Estructura de `firestore.rules` (spec 004, RNF-2; spec 005, RNF-5; spec
+/// 006, RNF-4). Lo que permite cada regla se comprueba a mano en el
+/// simulador de la consola (`rules-check.md` de las specs 004, 005 y 006);
+/// aquí se fija qué cubre cada `match` para que un cambio no lo rompa sin
+/// querer.
 void main() {
   final rulesFile = File('firestore.rules');
   String rules() => rulesFile.readAsStringSync();
@@ -142,12 +142,60 @@ void main() {
       );
     });
 
-    test('solo la admin cambia el estado, y nadie lo borra', () {
+    test('la admin solo cambia el estado, y nadie lo borra', () {
       final update = allow(path, 'update');
-      expect(update, contains('isAdmin()'));
-      expect(update, contains("affectedKeys().hasOnly(['status'])"));
+      expect(
+        update,
+        contains(
+          "(isAdmin() && request.resource.data.diff(resource.data)"
+          ".affectedKeys().hasOnly(['status']))",
+        ),
+      );
       expect(allow(path, 'delete'), contains('if false'));
     });
+
+    test('la clienta edita su turno activo y editable: solo el inicio, el '
+        'fin y lo reservado, vuelve a esperar confirmación y su turno '
+        'ocupado cambia a la vez (spec 006, RF-24, RF-26)', () {
+      final update = allow(path, 'update');
+      for (final check in [
+        'signedIn() && !isBlocked()',
+        'resource.data.clientId == request.auth.uid',
+        "resource.data.status in ['waiting_confirmation', 'confirmed']",
+        'resource.data.startTime > request.time + '
+            "duration.value(editMarginMinutes(), 'm')",
+        'request.resource.data.diff(resource.data).affectedKeys()'
+            ".hasOnly(['startTime', 'endTime', 'booked', 'status'])",
+        "request.resource.data.status == 'waiting_confirmation'",
+        'request.resource.data.startTime > request.time',
+        'request.resource.data.endTime > request.resource.data.startTime',
+        'getAfter(/databases/\$(database)/documents/busySlots/\$(id))'
+            '.data.start == request.resource.data.startTime',
+        'getAfter(/databases/\$(database)/documents/busySlots/\$(id))'
+            '.data.end == request.resource.data.endTime',
+      ]) {
+        expect(update, contains(check), reason: check);
+      }
+    });
+  });
+
+  test('el margen de edición: 0 si no hay documento o campo (spec 006, '
+      'RF-21)', () {
+    final text = rules();
+    expect(text, contains('function editMarginMinutes()'));
+    expect(
+      text,
+      contains(
+        'let path = /databases/\$(database)/documents/settings/calendar;',
+      ),
+    );
+    expect(
+      text,
+      contains(
+        "return exists(path) ? get(path).data.get('editMarginMinutes', 0) "
+        ': 0;',
+      ),
+    );
   });
 
   group('busySlots (RF-53, RF-56)', () {
@@ -177,19 +225,49 @@ void main() {
       }
     });
 
-    test('solo la admin lo borra, al cancelar, y nadie lo cambia', () {
+    test('solo la admin lo borra, al cancelar', () {
       expect(allow(path, 'delete'), contains('isAdmin()'));
-      expect(allow(path, 'update'), contains('if false'));
+    });
+
+    test('se cambia solo junto a la edición de su turno, que es de la '
+        'clienta, con las mismas horas (spec 006, RF-24, RF-26)', () {
+      final update = allow(path, 'update');
+      expect(update, contains('signedIn()'));
+      expect(
+        update,
+        contains("request.resource.data.keys().hasOnly(['start', 'end'])"),
+      );
+      expect(
+        update,
+        contains(
+          'get(/databases/\$(database)/documents/appointments/\$(id))'
+          '.data.clientId == request.auth.uid',
+        ),
+      );
+      for (final check in [
+        'data.startTime == request.resource.data.start',
+        'data.endTime == request.resource.data.end',
+      ]) {
+        expect(
+          update,
+          contains(
+            'getAfter(/databases/\$(database)/documents/appointments/'
+            '\$(id)).$check',
+          ),
+          reason: check,
+        );
+      }
+      expect(update, isNot(contains('if false')));
     });
   });
 
-  test('el calendario sigue con la regla provisional, marcada para la spec '
-      '012', () {
+  test('el calendario: lo lee cualquiera con sesión y solo lo escribe la '
+      'admin (spec 006, RF-25)', () {
     final rule = block(rules(), '/settings/calendar');
     expect(rule, isNotNull);
-    expect(rule, contains('allow read, write: if request.auth != null;'));
-    expect(rule, contains('PROVISIONAL'));
-    expect(rule, contains('spec 012'));
+    expect(rule, contains('allow read: if signedIn();'));
+    expect(rule, contains('allow write: if isAdmin();'));
+    expect(rules(), isNot(contains('PROVISIONAL')));
   });
 
   test('ya no se cita la spec 009 en las reglas ni en la redirección', () {

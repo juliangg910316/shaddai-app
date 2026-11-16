@@ -8,7 +8,10 @@ import '../../../core/theme/brand_colors.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../navigation/providers/tab_scroll_provider.dart';
 import '../logic/bookable_catalog.dart';
+import '../../services/providers/price_list_provider.dart';
+import '../logic/booking_edit.dart';
 import '../logic/booking_rules.dart';
+import '../providers/booking_edit_provider.dart';
 import '../providers/booking_provider.dart';
 import 'active_appointment_view.dart';
 import 'booking_form.dart';
@@ -162,9 +165,36 @@ class _BookingViewState extends ConsumerState<BookingView> {
   }
 
   /// "Guardar cambios" con todo elegido: pide confirmar el antes y el
-  /// después (spec 006, RF-11). El guardado llega en la tarea T11.
+  /// después (spec 006, RF-11), guarda y avisa de cómo fue (RF-12 a RF-17).
+  /// El antes y el después se toman antes de guardar, porque al guardar
+  /// termina la edición; la vista pasa sola al turno, que llega en vivo.
   Future<void> _confirmEdit() async {
-    await confirmEditChanges(context);
+    if (await confirmEditChanges(context) != true || !mounted) return;
+    final original = ref.read(editTargetProvider);
+    final after = switch (ref.read(bookableCatalogProvider)) {
+      PriceViewReady(:final value) => draftOfSelection(
+        ref.read(bookingSelectionProvider).selection,
+        value,
+      ),
+      _ => null,
+    };
+
+    setState(() => _isBooking = true);
+    final result = await ref.read(bookingEditSaveProvider).save();
+    if (!mounted) return;
+    setState(() => _isBooking = false);
+    if (result.outcome == EditSaveOutcome.ok &&
+        original != null &&
+        after != null) {
+      await showEditSavedDialog(
+        context,
+        before: draftOfOriginal(original),
+        after: after,
+        changes: result.changes,
+      );
+    } else {
+      showEditSaveResult(context, result.outcome);
+    }
   }
 
   Widget _buildForm(BuildContext context, {bool editing = false}) {

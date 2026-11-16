@@ -57,6 +57,13 @@ const _keys = [
   'bookingEditNoAddons',
   'bookingEditConfirmPending',
   'bookingEditMarginWarning',
+  'bookingEditChangeLine',
+  'bookingEditSavedTitle',
+  'bookingEditSavedPending',
+  'bookingEditNoChanges',
+  'bookingEditNotEditable',
+  'bookingEditChangedMeanwhile',
+  'bookingEditSaveError',
 ];
 
 Map<String, dynamic> _arb(String name) =>
@@ -73,6 +80,25 @@ void main() {
       }
     });
   }
+
+  test('todas las claves del plan § 6 de la spec 006 están en español y en '
+      'portugués (RNF-3)', () {
+    final plan = File('specs/006-editar-turno/plan.md').readAsStringSync();
+    final start = plan.indexOf('## 6.');
+    final section = plan.substring(start, plan.indexOf('Se reutilizan', start));
+    final keys = {
+      for (final match in RegExp(r'`(booking[A-Za-z]+)`').allMatches(section))
+        match.group(1)!,
+    };
+    expect(keys, hasLength(greaterThanOrEqualTo(24)));
+    for (final arb in ['app_es.arb', 'app_pt.arb']) {
+      final texts = _arb(arb);
+      for (final key in keys) {
+        expect(texts[key], isA<String>(), reason: '$arb: $key');
+        expect((texts[key] as String).trim(), isNotEmpty, reason: key);
+      }
+    }
+  });
 
   test('los textos con duración y franja la incluyen', () {
     final es = AppLocalizationsEs();
