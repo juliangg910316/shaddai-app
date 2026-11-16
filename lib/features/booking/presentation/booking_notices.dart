@@ -142,6 +142,26 @@ void showBookingNotice(BuildContext context, BookingNotice notice) {
   );
 }
 
+/// Un `SnackBar` con [content]. Un error va sobre el color de peligro, con
+/// el texto en el color de fondo: es el mismo par que el texto de peligro
+/// sobre el fondo, así que cumple AA en los dos temas (RNF-2). El dorado de
+/// los avisos normales no se lee sobre el peligro.
+SnackBar _resultSnackBar(
+  BuildContext context,
+  Widget content, {
+  required bool isError,
+}) {
+  if (!isError) return SnackBar(content: content);
+  final brand = context.brand;
+  return SnackBar(
+    backgroundColor: brand.danger,
+    content: DefaultTextStyle.merge(
+      style: TextStyle(color: brand.background),
+      child: content,
+    ),
+  );
+}
+
 /// El aviso de "Agendar turno" según [result] (RF-29 a RF-32, RF-36).
 String bookingSubmitMessage(
   AppLocalizations l10n,
@@ -159,11 +179,10 @@ String bookingSubmitMessage(
 /// va sobre el color de peligro, sin detalles técnicos (RF-31).
 void showBookingSubmitResult(BuildContext context, BookingSubmitResult result) {
   ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: _SubmitText(result),
-      backgroundColor: result == BookingSubmitResult.failed
-          ? context.brand.danger
-          : null,
+    _resultSnackBar(
+      context,
+      _SubmitText(result),
+      isError: result == BookingSubmitResult.failed,
     ),
   );
   SemanticsService.sendAnnouncement(
@@ -202,11 +221,10 @@ String editSaveMessage(AppLocalizations l10n, EditSaveOutcome outcome) =>
 /// color de peligro (RF-16).
 void showEditSaveResult(BuildContext context, EditSaveOutcome outcome) {
   ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: _EditSaveText(outcome),
-      backgroundColor: outcome == EditSaveOutcome.failed
-          ? context.brand.danger
-          : null,
+    _resultSnackBar(
+      context,
+      _EditSaveText(outcome),
+      isError: outcome == EditSaveOutcome.failed,
     ),
   );
   SemanticsService.sendAnnouncement(

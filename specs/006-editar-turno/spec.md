@@ -1,5 +1,5 @@
 # Spec 006 — Editar el turno
-Estado: aprobada
+Estado: implementada
 
 ## Contexto y objetivo
 Con la spec 005, una clienta tiene como mucho un turno activo y no puede cambiarlo: si se equivoca de día, de hora o de servicio, tiene que escribir al salón. Esta spec le deja editar su turno activo desde la propia reserva, con las mismas reglas que al reservar, mientras falte más de un margen que fija la admin. Al editarlo, el turno vuelve a esperar confirmación, para que la admin vea el cambio.

@@ -70,10 +70,12 @@ Si algo falla, vuelve a publicar la copia del paso 1.2 y avisa.
 
 ## Resultado
 
-Pendiente de la comprobación del autor.
+Comprobado por el autor el 2026-11-15.
 
-- [ ] Copia de las reglas anteriores guardada.
-- [ ] Reglas publicadas.
-- [ ] Casos 1 a 17 del simulador correctos.
-- [ ] La edición funciona en la app (paso 4).
-- [ ] Lo que ya existía sigue funcionando.
+- [x] Copia de las reglas anteriores guardada.
+- [x] Reglas publicadas.
+- [x] Casos 1 a 17 del simulador correctos.
+- [x] La edición funciona en la app (paso 4).
+- [x] Lo que ya existía sigue funcionando.
+
+Durante el recorrido salió que `editMarginMinutes` debe ser entero (`int64` en la consola): con un `double`, `duration.value` falla y la regla deniega. Y que un `settings/calendar` creado a mano sin `openingHours` dejaba el salón cerrado; desde el 2026-11-15 la app usa entonces el horario por defecto.

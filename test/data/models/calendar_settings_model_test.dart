@@ -36,6 +36,39 @@ void main() {
     });
   });
 
+  group('sin horario, el horario por defecto (como sin documento)', () {
+    final defaults = CalendarSettingsModel.defaultSettings().toMap();
+
+    for (final (label, data) in [
+      ('solo con el margen', <String, dynamic>{'editMarginMinutes': 1440}),
+      ('con openingHours vacío', <String, dynamic>{'openingHours': {}}),
+      (
+        'con openingHours que no es un mapa',
+        <String, dynamic>{'openingHours': 'lunes a sábado'},
+      ),
+    ]) {
+      test(label, () {
+        final settings = CalendarSettingsModel.fromMap(data);
+        expect(settings.toMap()['openingHours'], defaults['openingHours']);
+        expect(settings.globalSlotDurationMinutes, 60);
+        expect(settings.blockedDates, isEmpty);
+      });
+    }
+
+    test('conserva el margen guardado', () {
+      expect(
+        CalendarSettingsModel.fromMap({'editMarginMinutes': 1440})
+            .editMarginMinutes,
+        1440,
+      );
+    });
+
+    test('un horario con solo algunos días se respeta tal cual', () {
+      final settings = CalendarSettingsModel.fromMap(calendar());
+      expect(settings.openingHours.keys, ['monday']);
+    });
+  });
+
   test('los ajustes por defecto tienen margen 0', () {
     expect(CalendarSettingsModel.defaultSettings().editMarginMinutes, 0);
   });

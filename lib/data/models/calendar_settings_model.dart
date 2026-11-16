@@ -39,12 +39,21 @@ class CalendarSettingsModel {
     this.editMarginMinutes = 0,
   });
 
+  /// Sin `openingHours` (falta, está vacío o no es un mapa), usa el horario
+  /// por defecto, igual que si no hubiera documento: un documento creado a
+  /// mano con solo el margen no deja el salón cerrado todos los días.
   factory CalendarSettingsModel.fromMap(Map<String, dynamic> data) {
-    final hoursMap = data['openingHours'] as Map<String, dynamic>? ?? {};
+    final hoursData = data['openingHours'];
     final parsedHours = <String, DaySchedule>{};
-    hoursMap.forEach((key, value) {
-      parsedHours[key] = DaySchedule.fromMap(Map<String, dynamic>.from(value));
-    });
+    if (hoursData is Map && hoursData.isNotEmpty) {
+      hoursData.forEach((key, value) {
+        parsedHours[key.toString()] = DaySchedule.fromMap(
+          Map<String, dynamic>.from(value as Map),
+        );
+      });
+    } else {
+      parsedHours.addAll(CalendarSettingsModel.defaultSettings().openingHours);
+    }
 
     final blocked = data['blockedDates'] as List<dynamic>? ?? [];
 

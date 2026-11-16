@@ -6,6 +6,7 @@ import '../../../core/theme/brand_colors.dart';
 import '../../../core/widgets/app_widgets.dart';
 import '../../../data/models/calendar_settings_model.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../booking/presentation/booking_notices.dart';
 import '../../booking/providers/booking_provider.dart';
 import '../providers/admin_provider.dart';
 
@@ -40,19 +41,17 @@ class _AdminSettingsViewState extends ConsumerState<AdminSettingsView> {
     'sunday': l10n.weekdaySunday,
   };
 
-  @override
-  void initState() {
-    super.initState();
-    // Load current values safely
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final settings = ref.read(calendarSettingsProvider).value;
-      if (settings != null) {
-        setState(() {
-          _tempHours.addAll(settings.openingHours);
-        });
-      }
-    });
-  }
+  /// Si ya se copió el horario guardado a [_tempHours]. Se copia una sola
+  /// vez, cuando llega el calendario, para no pisar lo que se está editando.
+  bool _loaded = false;
+
+  /// Un día que no está en el horario guardado sale cerrado, como lo trata
+  /// la reserva.
+  static final _closedDay = DaySchedule(
+    open: '09:00',
+    close: '18:00',
+    isClosed: true,
+  );
 
   Future<void> _saveSettings() async {
     setState(() => _isLoading = true);
@@ -80,12 +79,26 @@ class _AdminSettingsViewState extends ConsumerState<AdminSettingsView> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final settingsAsync = ref.watch(calendarSettingsProvider);
 
-    if (_tempHours.isEmpty) {
-      return Scaffold(
-        appBar: AppBar(title: Text(l10n.scheduleSettingsTitle)),
-        body: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
-      );
+    if (!_loaded) {
+      final settings = settingsAsync.value;
+      if (settings == null) {
+        return Scaffold(
+          appBar: AppBar(title: Text(l10n.scheduleSettingsTitle)),
+          // Tras un error, Riverpod reintenta solo: el error manda.
+          body: settingsAsync.hasError
+              ? const Padding(
+                  padding: EdgeInsets.all(20),
+                  child: BookingLoadErrorNotice(schedule: true),
+                )
+              : const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+        );
+      }
+      for (final day in _daysOrder) {
+        _tempHours[day] = settings.openingHours[day] ?? _closedDay;
+      }
+      _loaded = true;
     }
 
     final dayNames = _dayNames(l10n);
@@ -119,7 +132,7 @@ class _AdminSettingsViewState extends ConsumerState<AdminSettingsView> {
         separatorBuilder: (_, index) => const SizedBox(height: 12),
         itemBuilder: (context, index) {
           final dayKey = _daysOrder[index];
-          final schedule = _tempHours[dayKey]!;
+          final schedule = _tempHours[dayKey] ?? _closedDay;
 
           return FlatCard(
             padding: const EdgeInsets.fromLTRB(18, 14, 12, 18),
