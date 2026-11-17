@@ -2207,6 +2207,48 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Nombre o WhatsApp de la clienta'**
   String get bookingRecipientSearchLabel;
+
+  /// Indicación bajo la búsqueda de clientas (spec 007, RF-3)
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe al menos 2 caracteres'**
+  String get bookingRecipientSearchHint;
+
+  /// La búsqueda no encuentra a nadie (spec 007, RF-5)
+  ///
+  /// In es, this message translates to:
+  /// **'No hay clientas con ese nombre o WhatsApp.'**
+  String get bookingRecipientNoResults;
+
+  /// Error al cargar las fichas (spec 007, RF-6)
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudieron cargar las clientas.'**
+  String get bookingRecipientLoadError;
+
+  /// Botón para agendar a alguien sin cuenta (spec 007, RF-5, RF-7)
+  ///
+  /// In es, this message translates to:
+  /// **'Persona sin cuenta'**
+  String get bookingRecipientGuestAction;
+
+  /// Vuelve de la persona sin cuenta a la búsqueda (spec 007)
+  ///
+  /// In es, this message translates to:
+  /// **'Buscar clienta'**
+  String get bookingRecipientSearchAction;
+
+  /// Quita la clienta elegida para buscar otra (spec 007)
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar'**
+  String get bookingRecipientChange;
+
+  /// La persona elegida ya tiene un turno activo (spec 007, RF-14)
+  ///
+  /// In es, this message translates to:
+  /// **'Ya tiene un turno el {date} a las {time}: {service}. No se le puede agendar otro.'**
+  String bookingRecipientActive(String date, String time, String service);
 }
 
 class _AppLocalizationsDelegate

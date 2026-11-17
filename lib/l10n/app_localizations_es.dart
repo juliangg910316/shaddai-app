@@ -1137,4 +1137,28 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get bookingRecipientSearchLabel => 'Nombre o WhatsApp de la clienta';
+
+  @override
+  String get bookingRecipientSearchHint => 'Escribe al menos 2 caracteres';
+
+  @override
+  String get bookingRecipientNoResults =>
+      'No hay clientas con ese nombre o WhatsApp.';
+
+  @override
+  String get bookingRecipientLoadError => 'No se pudieron cargar las clientas.';
+
+  @override
+  String get bookingRecipientGuestAction => 'Persona sin cuenta';
+
+  @override
+  String get bookingRecipientSearchAction => 'Buscar clienta';
+
+  @override
+  String get bookingRecipientChange => 'Cambiar';
+
+  @override
+  String bookingRecipientActive(String date, String time, String service) {
+    return 'Ya tiene un turno el $date a las $time: $service. No se le puede agendar otro.';
+  }
 }

@@ -106,13 +106,19 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
     - los tests de `booking_screen_states_test.dart` sustituyen el repositorio de fichas (`FakeUserRepository`): "Para quién" las lee;
     - 5 tests nuevos (y 2 cambiados); suite completa, 1595 en verde.
 
-- [ ] **T8. Buscar y elegir a una clienta con cuenta.** RF-3 a RF-6, RF-14
+- [x] **T8. Buscar y elegir a una clienta con cuenta.** RF-3 a RF-6, RF-14
   - Tests (`admin_booking_view_test.dart`):
     - con 1 carácter no hay resultados; con 2, las clientas que coinciden, por nombre sin acentos y por WhatsApp; sin bloqueadas ni admins;
     - sin resultados: el texto y "Persona sin cuenta";
     - error al cargar las clientas: aviso con "Reintentar", que vuelve a pedirlas, y "Persona sin cuenta" disponible;
     - elegir a una muestra su tarjeta con "Cambiar"; si tiene turno activo, el aviso con su fecha, su hora y lo reservado.
   - Hecho cuando: los tests pasan. Textos: `bookingRecipientSearch*`, `bookingRecipientNoResults`, `bookingRecipientLoadError`, `bookingRecipientGuestAction`, `bookingRecipientChange`, `bookingRecipientActive`.
+  - Hecha (2026-11-16):
+    - `RecipientPicker`: indicación con menos de 2 caracteres; resultados como filas de 56 px (avatar, nombre y WhatsApp; una sola frase para el lector de pantalla); "No hay clientas…"; aviso de error con "Reintentar" (`ref.invalidate(adminUsersProvider)`); "Persona sin cuenta" siempre debajo, también con el error;
+    - la clienta elegida, en una tarjeta con "Cambiar"; el aviso del turno activo (borde y texto de peligro), con la fecha, la hora y lo reservado con sus adicionales (`activeAppointmentMessage`);
+    - con la persona sin cuenta, de momento solo "Buscar clienta" (sus campos, en la T9);
+    - `mobile_closure_test` toma `label: '${…}'` por un texto sin traducir: la frase del lector de pantalla se arma en una variable;
+    - 8 tests nuevos; suite completa, 1603 en verde.
 
 - [ ] **T9. Persona sin cuenta.** RF-7 a RF-11
   - Tests (`admin_booking_view_test.dart`):

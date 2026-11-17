@@ -382,5 +382,12 @@
 
   "bookingAdminTitle": "Agendar um horário",
   "bookingStepRecipient": "Para quem",
-  "bookingRecipientSearchLabel": "Nome ou WhatsApp da cliente"
+  "bookingRecipientSearchLabel": "Nome ou WhatsApp da cliente",
+  "bookingRecipientSearchHint": "Digite pelo menos 2 caracteres",
+  "bookingRecipientNoResults": "Não há clientes com esse nome ou WhatsApp.",
+  "bookingRecipientLoadError": "Não foi possível carregar as clientes.",
+  "bookingRecipientGuestAction": "Pessoa sem conta",
+  "bookingRecipientSearchAction": "Buscar cliente",
+  "bookingRecipientChange": "Trocar",
+  "bookingRecipientActive": "Já tem um horário em {date} às {time}: {service}. Não é possível agendar outro."
 }
