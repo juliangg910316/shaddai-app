@@ -2567,6 +2567,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'No se pudo cancelar el turno. Inténtalo de nuevo.'**
   String get adminCancelAppointmentError;
+
+  /// Marca de un cierre en la agenda del día (spec 008, RF-9)
+  ///
+  /// In es, this message translates to:
+  /// **'Cerrado'**
+  String get adminAgendaClosed;
 }
 
 class _AppLocalizationsDelegate

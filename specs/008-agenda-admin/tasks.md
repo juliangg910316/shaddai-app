@@ -137,13 +137,19 @@ Son más de 10, pero la spec no se divide (decisión del autor, 2026-11-17).
     - 21 textos nuevos (ES y PT). Fuera del plan § 6, tres para la confirmación de cancelar: `adminCancelAppointmentConfirm`, `adminCancelAppointmentKeep` y `adminCancelAppointmentError`;
     - 10 tests nuevos en `admin_closures_view_test`; suite completa, 1812 en verde.
 
-- [ ] **T8. La agenda muestra los cierres y "Editar".** RF-9, RF-10, RF-18
+- [x] **T8. La agenda muestra los cierres y "Editar".** RF-9, RF-10, RF-18
   - Tests, en `admin_appointments_booked_test`:
     - los cierres del día salen entre los turnos, en orden de hora, con "CERRADO";
     - un cierre de varios días sale en cada uno;
     - si fallan los cierres: aviso y "Reintentar";
     - "Editar" solo aparece en los turnos esperando confirmación o confirmados que no han terminado: también en uno en curso, nunca en uno cancelado ni en uno terminado.
   - Hecho cuando: la agenda usa `adminDayClosuresProvider` y `_AppointmentCard` tiene "Editar", que lleva a `/admin/appointments/<id>/edit`.
+  - Hecha (2026-11-17):
+    - la agenda mezcla turnos y cierres del día por su inicio (`_ClosureCard`: "CERRADO", sus horas o "Todo el día" y, si es de varios días, cuáles); con solo cierres, ya no dice "No hay reservas";
+    - si fallan los cierres, aviso con "Reintentar" encima de la lista, y los turnos siguen; `adminAgendaClosuresProvider` pasa a ser público para reintentar;
+    - "Editar" (`openAdminEdit`) junto a "Cancelar" en los turnos esperando o confirmados que terminan después de "ahora";
+    - "Cerrado" en ES y PT;
+    - 7 tests nuevos en `admin_appointments_booked_test`. Seis archivos de tests que montan el panel reciben un `FakeConfigRepository` (Riverpod no deja sustituir dos veces el mismo provider, así que no puede ir por defecto en `pumpApp`); suite completa, 1819 en verde.
 
 ## Bloque C — La admin edita un turno
 

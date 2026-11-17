@@ -48,8 +48,8 @@ DateTime _agendaDay(DateTime date) =>
     DateTime.utc(date.year, date.month, date.day);
 
 /// Los cierres que terminan desde el día de la agenda, en vivo: también un
-/// día pasado muestra los suyos (RF-9).
-final _agendaClosuresProvider = StreamProvider<List<ClosureModel>>((ref) {
+/// día pasado muestra los suyos (RF-9). "Reintentar" lo invalida (RF-10).
+final adminAgendaClosuresProvider = StreamProvider<List<ClosureModel>>((ref) {
   final day = ref.watch(adminSelectedDateProvider.select(_agendaDay));
   return ref.watch(configRepositoryProvider).watchClosures(fromSalon(day));
 });
@@ -60,7 +60,7 @@ final adminDayClosuresProvider = Provider<AsyncValue<List<ClosureEntry>>>((
   ref,
 ) {
   final day = _agendaDay(ref.watch(adminSelectedDateProvider));
-  final closures = ref.watch(_agendaClosuresProvider);
+  final closures = ref.watch(adminAgendaClosuresProvider);
   final settings = ref.watch(calendarSettingsProvider);
   if (closures.hasError) {
     return AsyncError(closures.error!, closures.stackTrace!);

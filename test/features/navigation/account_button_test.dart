@@ -9,6 +9,9 @@ import 'package:shaddai/features/profile/presentation/profile_view.dart';
 
 import '../../helpers/fake_session.dart';
 import '../../helpers/pump_web_app.dart';
+import '../../helpers/fake_config.dart';
+
+import 'package:shaddai/features/booking/providers/booking_provider.dart';
 
 Finder _inBar(Finder finder) =>
     find.descendant(of: find.byType(WebTopBar), matching: finder);
@@ -27,6 +30,7 @@ Finder _menuItem(String text) => find.widgetWithText(MenuItemButton, text);
 /// El panel de admin lee sus turnos de Firestore: aquí, ninguno.
 final _adminOverrides = [
   adminAppointmentsProvider.overrideWith((ref) => Stream.value(const [])),
+  configRepositoryProvider.overrideWithValue(FakeConfigRepository()),
 ];
 
 void main() {

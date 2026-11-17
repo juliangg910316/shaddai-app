@@ -2,7 +2,6 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shaddai/data/models/calendar_settings_model.dart';
 import 'package:shaddai/data/models/price_list_model.dart';
-import 'package:shaddai/data/repositories/config_repository.dart';
 import 'package:shaddai/features/admin/presentation/admin_services_view.dart';
 import 'package:shaddai/features/admin/providers/admin_provider.dart';
 import 'package:shaddai/features/booking/providers/booking_provider.dart';
@@ -10,30 +9,20 @@ import 'package:shaddai/features/booking/providers/booking_provider.dart';
 import '../../helpers/fake_price_list.dart';
 import '../../helpers/fake_session.dart';
 import '../../helpers/pump_web_app.dart';
-
-/// Calendario con una duración global del turno de [minutes].
-class _FakeConfigRepository implements ConfigRepository {
-  _FakeConfigRepository(this.minutes);
-
-  final int minutes;
-
-  @override
-  Stream<CalendarSettingsModel> getCalendarSettings() => Stream.value(
-    CalendarSettingsModel(
-      openingHours: CalendarSettingsModel.defaultSettings().openingHours,
-      globalSlotDurationMinutes: minutes,
-      blockedDates: const [],
-    ),
-  );
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
+import '../../helpers/fake_config.dart';
 
 /// Overrides del panel sin Firebase: agenda vacía y turnos de 45 minutos.
 List<Override> _adminOverrides() => [
   adminAppointmentsProvider.overrideWith((ref) => Stream.value(const [])),
-  configRepositoryProvider.overrideWithValue(_FakeConfigRepository(45)),
+  configRepositoryProvider.overrideWithValue(
+    FakeConfigRepository(
+      settings: CalendarSettingsModel(
+        openingHours: CalendarSettingsModel.defaultSettings().openingHours,
+        globalSlotDurationMinutes: 45,
+        blockedDates: const [],
+      ),
+    ),
+  ),
 ];
 
 /// Gestión de servicios en Android/iOS, con la admin y [repository].

@@ -1351,4 +1351,7 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get adminCancelAppointmentError =>
       'No se pudo cancelar el turno. Inténtalo de nuevo.';
+
+  @override
+  String get adminAgendaClosed => 'Cerrado';
 }

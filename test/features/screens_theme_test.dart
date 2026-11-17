@@ -24,6 +24,7 @@ import '../helpers/fake_auth.dart';
 import '../helpers/fake_booking.dart';
 import '../helpers/fake_session.dart';
 import '../helpers/pump_app.dart';
+import '../helpers/fake_config.dart';
 
 /// Una pantalla existente en uno de sus estados, con los providers que
 /// necesita sin Firebase. Cada tarea de migración de la spec 001 añade las
@@ -189,6 +190,7 @@ final _screens = <_Screen>[
     'Admin: agenda con turnos en los tres estados',
     () => const AdminDashboardView(),
     overrides: [
+      configRepositoryProvider.overrideWithValue(FakeConfigRepository()),
       adminAppointmentsProvider.overrideWith(
         (ref) => Stream.value([
           testAppointment(DateTime(2026, 11, 3, 10), status: 'confirmed'),
@@ -210,6 +212,7 @@ final _screens = <_Screen>[
     'Admin: agenda vacía',
     () => const AdminDashboardView(),
     overrides: [
+      configRepositoryProvider.overrideWithValue(FakeConfigRepository()),
       adminAppointmentsProvider.overrideWith((ref) => Stream.value(const [])),
     ],
   ),
@@ -217,6 +220,7 @@ final _screens = <_Screen>[
     'Admin: agenda con error',
     () => const AdminDashboardView(),
     overrides: [
+      configRepositoryProvider.overrideWithValue(FakeConfigRepository()),
       adminAppointmentsProvider.overrideWith(
         (ref) => Stream.error(Exception('permission-denied')),
       ),

@@ -442,5 +442,6 @@
   "adminCancelAppointmentBody": "O horário ficará livre.",
   "adminCancelAppointmentConfirm": "Cancelar horário",
   "adminCancelAppointmentKeep": "Voltar",
-  "adminCancelAppointmentError": "Não foi possível cancelar o horário. Tente de novo."
+  "adminCancelAppointmentError": "Não foi possível cancelar o horário. Tente de novo.",
+  "adminAgendaClosed": "Fechado"
 }

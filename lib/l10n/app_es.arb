@@ -735,5 +735,7 @@
   "adminCancelAppointmentKeep": "Volver",
   "@adminCancelAppointmentKeep": {"description": "Botón que cierra la confirmación sin cancelar (spec 008, RF-5)"},
   "adminCancelAppointmentError": "No se pudo cancelar el turno. Inténtalo de nuevo.",
-  "@adminCancelAppointmentError": {"description": "Error al cancelar un turno desde los cierres (spec 008, RF-5)"}
+  "@adminCancelAppointmentError": {"description": "Error al cancelar un turno desde los cierres (spec 008, RF-5)"},
+  "adminAgendaClosed": "Cerrado",
+  "@adminAgendaClosed": {"description": "Marca de un cierre en la agenda del día (spec 008, RF-9)"}
 }

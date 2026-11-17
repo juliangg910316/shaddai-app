@@ -13,7 +13,13 @@ import '../../../core/widgets/app_widgets.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../booking/logic/salon_time.dart';
 import '../../booking/logic/whatsapp.dart';
+import '../../booking/logic/closures.dart';
+import '../../booking/providers/booking_provider.dart';
+import '../../services/presentation/price_list_notices.dart';
+import '../providers/admin_closures_provider.dart';
 import '../providers/admin_provider.dart';
+import 'admin_closures_view.dart';
+import 'admin_navigation.dart';
 import '../../../data/models/appointment_model.dart';
 import '../../../data/models/booked_service_model.dart';
 
@@ -25,6 +31,11 @@ class AdminDashboardView extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final selectedDate = ref.watch(adminSelectedDateProvider);
     final appointmentsAsync = ref.watch(adminAppointmentsProvider);
+    // Los cierres del día, entre los turnos (spec 008, RF-9).
+    final closuresAsync = ref.watch(adminDayClosuresProvider);
+    final closures = closuresAsync.hasError
+        ? const <ClosureEntry>[]
+        : closuresAsync.value ?? const <ClosureEntry>[];
     final appointments = appointmentsAsync.value ?? const <AppointmentModel>[];
 
     final waitingCount = appointments
@@ -66,8 +77,35 @@ class AdminDashboardView extends ConsumerWidget {
                 );
               },
               data: (items) {
-                if (items.isEmpty) {
-                  return Center(
+                // Turnos y cierres, por su inicio (hora de pared del salón).
+                final cards = <(DateTime, Widget)>[
+                  for (final appointment in items)
+                    (
+                      toSalon(appointment.startTime),
+                      _AppointmentCard(appointment: appointment),
+                    ),
+                  for (final closure in closures)
+                    (closure.start, _ClosureCard(entry: closure)),
+                ]..sort((a, b) => a.$1.compareTo(b.$1));
+                final notice = closuresAsync.hasError
+                    ? Padding(
+                        padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
+                        child: AppNotice(
+                          message: l10n.adminClosuresLoadError,
+                          actions: [
+                            AppNoticeButton(
+                              label: l10n.bookingRetry,
+                              onPressed: () {
+                                ref.invalidate(adminAgendaClosuresProvider);
+                                ref.invalidate(calendarSettingsProvider);
+                              },
+                            ),
+                          ],
+                        ),
+                      )
+                    : null;
+                if (cards.isEmpty) {
+                  final empty = Center(
                     child: Text(
                       l10n.adminNoAppointmentsToday,
                       style: AppText.sans(
@@ -77,13 +115,25 @@ class AdminDashboardView extends ConsumerWidget {
                       ),
                     ),
                   );
+                  if (notice == null) return empty;
+                  return Column(
+                    children: [
+                      notice,
+                      Expanded(child: empty),
+                    ],
+                  );
                 }
                 return ListView.separated(
                   padding: const EdgeInsets.all(20),
-                  itemCount: items.length,
+                  itemCount: cards.length + (notice == null ? 0 : 1),
                   separatorBuilder: (_, index) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) =>
-                      _AppointmentCard(appointment: items[index]),
+                  itemBuilder: (context, index) {
+                    if (notice != null) {
+                      if (index == 0) return notice;
+                      index--;
+                    }
+                    return cards[index].$2;
+                  },
                 );
               },
             ),
@@ -319,6 +369,13 @@ class _AppointmentCard extends ConsumerWidget {
     );
     final brand = context.brand;
     final waiting = appointment.status == 'waiting_confirmation';
+    // "Editar" en los turnos activos que no han terminado, también en curso
+    // (spec 008, RF-18).
+    final now =
+        ref.watch(salonNowProvider).value ?? toSalon(ref.read(clockProvider)());
+    final editable =
+        (waiting || appointment.status == 'confirmed') &&
+        toSalon(appointment.endTime).isAfter(now);
     // En hora del salón, esté donde esté el dispositivo (spec 005).
     final hours = DateFormat.Hm(l10n.localeName);
     final startStr = hours.format(toSalon(appointment.startTime));
@@ -331,6 +388,7 @@ class _AppointmentCard extends ConsumerWidget {
     ];
 
     return FlatCard(
+      key: ValueKey('agenda-appointment-${appointment.id}'),
       borderColor: waiting ? brand.goldHairline : brand.hairline,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -435,6 +493,16 @@ class _AppointmentCard extends ConsumerWidget {
             const SizedBox(height: 16),
             Row(
               children: [
+                if (editable) ...[
+                  Expanded(
+                    child: OutlinePillButton(
+                      label: l10n.adminAppointmentEdit.toUpperCase(),
+                      onPressed: () =>
+                          openAdminEdit(context, ref, appointment.id),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                ],
                 Expanded(
                   child: OutlinePillButton(
                     label: l10n.cancelAction,
@@ -494,3 +562,55 @@ String bookedLabel(BookedServiceModel booked, String language) => [
   if (booked.addons.isNotEmpty)
     booked.addons.map((addon) => addon.name.of(language)).join(', '),
 ].join(' · ');
+
+/// Un cierre en la agenda del día: "CERRADO" y sus horas o "Todo el día"
+/// (spec 008, RF-9).
+class _ClosureCard extends StatelessWidget {
+  const _ClosureCard({required this.entry});
+
+  final ClosureEntry entry;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final brand = context.brand;
+    final labels = closureLabels(l10n, entry);
+    final id = switch (entry.source) {
+      StoredClosureSource(:final id) => id,
+      BlockedDateSource(:final key) => key,
+    };
+
+    return FlatCard(
+      key: ValueKey('agenda-closure-$id'),
+      borderColor: brand.hairline,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.adminAgendaClosed.toUpperCase(),
+            style: AppText.sans(
+              size: 12,
+              weight: FontWeight.w600,
+              spacing: 1.2,
+              color: brand.inkMuted,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            labels.hours,
+            style: AppText.serif(size: 19, color: brand.inkStrong),
+          ),
+          // Un cierre de varios días dice cuáles.
+          if (entry.kind == ClosureKind.days &&
+              entry.end.difference(entry.start).inDays > 1) ...[
+            const SizedBox(height: 4),
+            Text(
+              labels.dates,
+              style: AppText.sans(size: 14, color: brand.ink, height: 1.4),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
