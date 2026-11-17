@@ -10,6 +10,7 @@ import '../../features/auth/providers/auth_provider.dart';
 import '../../features/booking/logic/booking_request.dart';
 import '../../features/booking/presentation/booking_view.dart';
 import '../../features/admin/presentation/admin_dashboard_view.dart';
+import '../../features/admin/presentation/admin_closures_view.dart';
 import '../../features/admin/presentation/admin_users_view.dart';
 import '../../features/admin/presentation/admin_category_form_view.dart';
 import '../../features/admin/presentation/admin_combo_form_view.dart';
@@ -161,6 +162,12 @@ List<RouteBase> _webRoutes() => [
         builder: (context, state) =>
             const WebAccountPage(child: AdminSettingsView()),
       ),
+      // Cierres de la agenda (spec 008, RF-1).
+      GoRoute(
+        path: '/admin/closures',
+        builder: (context, state) =>
+            const WebAccountPage(child: AdminClosuresView()),
+      ),
       GoRoute(
         path: '/admin/services',
         builder: (context, state) =>
@@ -204,6 +211,11 @@ List<RouteBase> _mobileRoutes() => [
   GoRoute(
     path: '/admin/settings',
     builder: (context, state) => const AdminSettingsView(),
+  ),
+  // Cierres de la agenda (spec 008, RF-1).
+  GoRoute(
+    path: '/admin/closures',
+    builder: (context, state) => const AdminClosuresView(),
   ),
   GoRoute(
     path: '/admin/services',

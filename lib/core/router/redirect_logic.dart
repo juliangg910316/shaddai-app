@@ -37,6 +37,7 @@ const _allowedNext = {
   '/admin/users',
   '/admin/settings',
   '/admin/services',
+  '/admin/closures',
 };
 
 /// En Android/iOS también se vuelve a las pestañas Inicio y Servicios.

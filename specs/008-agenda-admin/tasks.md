@@ -100,7 +100,7 @@ Son más de 10, pero la spec no se divide (decisión del autor, 2026-11-17).
     - `fetchActiveAppointments(now)` lee del servidor los turnos que terminan desde "ahora"; el fake registra `activeFetches` y acepta `activeFetchError`;
     - 16 tests; suite completa, 1784 en verde.
 
-- [ ] **T6. Pantalla de cierres.** RF-1, RF-2, RF-7, RF-8, RF-10
+- [x] **T6. Pantalla de cierres.** RF-1, RF-2, RF-7, RF-8, RF-10
   - Tests: `test/features/admin/admin_closures_view_test.dart` (nuevo):
     - lista ordenada, con fechas, horas o "Todo el día", y las fechas bloqueadas;
     - sin cierres: el texto y "Nuevo cierre";
@@ -111,6 +111,11 @@ Son más de 10, pero la spec no se divide (decisión del autor, 2026-11-17).
     - existen `AdminClosuresView` y la ruta `/admin/closures` (Android/iOS y Web);
     - el panel tiene el botón "Cierres";
     - los textos de la lista están en ES y PT.
+  - Hecha (2026-11-17):
+    - `AdminClosuresView`: tarjetas con las fechas (o "Del … al …") y las horas o "Todo el día" (`closureLabels`); "Quitar" (48 px, tooltip) con confirmación y aviso; vacía, el texto; con error, aviso y "Reintentar" (vuelve a pedir cierres y calendario), sin "Nuevo cierre". "Nuevo cierre" abre `/admin/closures/new`, que llega en la T7;
+    - ruta `/admin/closures` en Web (`WebAccountPage`) y Android/iOS, y en `safeNext`; botón "Cierres" (`event_busy_outlined`) en la cabecera del panel;
+    - 11 textos nuevos en ES y PT; se reutilizan `bookingTimeRange`, `bookingRetry` y `cancelAction`;
+    - `admin_closures_view_test.dart`: 11 tests; suite completa en verde.
 
 - [ ] **T7. Nuevo cierre y turnos que chocan.** RF-3 a RF-6, RF-11
   - Tests, en `admin_closures_view_test`:

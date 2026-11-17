@@ -2375,6 +2375,72 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Escribir a {name} por WhatsApp'**
   String adminAppointmentWhatsApp(String name);
+
+  /// Título de la pantalla de cierres y del botón del panel (spec 008, RF-1)
+  ///
+  /// In es, this message translates to:
+  /// **'Cierres'**
+  String get adminClosuresTitle;
+
+  /// Lista de cierres vacía (spec 008, RF-2)
+  ///
+  /// In es, this message translates to:
+  /// **'No hay cierres próximos.'**
+  String get adminClosuresEmpty;
+
+  /// Botón para crear un cierre (spec 008, RF-2, RF-3)
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo cierre'**
+  String get adminClosuresNew;
+
+  /// Error al cargar los cierres (spec 008, RF-10)
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudieron cargar los cierres.'**
+  String get adminClosuresLoadError;
+
+  /// Cierre de días enteros (spec 008, RF-1)
+  ///
+  /// In es, this message translates to:
+  /// **'Todo el día'**
+  String get closureAllDay;
+
+  /// Cierre de varios días: el primero y el último (spec 008, RF-1)
+  ///
+  /// In es, this message translates to:
+  /// **'Del {first} al {last}'**
+  String closureDaysRange(String first, String last);
+
+  /// Botón para quitar un cierre (spec 008, RF-7)
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar'**
+  String get closureDeleteAction;
+
+  /// Título de la confirmación al quitar un cierre (spec 008, RF-7)
+  ///
+  /// In es, this message translates to:
+  /// **'¿Quitar este cierre?'**
+  String get closureDeleteTitle;
+
+  /// Texto de la confirmación al quitar un cierre (spec 008, RF-7)
+  ///
+  /// In es, this message translates to:
+  /// **'Esas horas volverán a estar libres para reservar.'**
+  String get closureDeleteBody;
+
+  /// Aviso tras quitar un cierre (spec 008, RF-7)
+  ///
+  /// In es, this message translates to:
+  /// **'Cierre quitado.'**
+  String get closureDeleted;
+
+  /// Error al quitar un cierre (spec 008, RF-11)
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo quitar el cierre. Inténtalo de nuevo.'**
+  String get closureDeleteError;
 }
 
 class _AppLocalizationsDelegate

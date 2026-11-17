@@ -167,6 +167,16 @@ class _AdminHeader extends StatelessWidget {
                     ],
                   ),
                 ),
+                // Cierres de la agenda (spec 008, RF-1).
+                IconButton(
+                  tooltip: l10n.adminClosuresTitle,
+                  onPressed: () => context.push('/admin/closures'),
+                  icon: Icon(
+                    Icons.event_busy_outlined,
+                    size: 22,
+                    color: brand.onBrand,
+                  ),
+                ),
                 // Gestión de servicios y precios (spec 004, RF-19).
                 IconButton(
                   tooltip: l10n.adminServicesTitle,

@@ -671,5 +671,27 @@
   "@adminAppointmentWhatsApp": {
     "description": "Nombre del botón de WhatsApp de un turno en la lista de la admin (spec 007, RF-22, D-6)",
     "placeholders": {"name": {"type": "String"}}
-  }
+  },
+  "adminClosuresTitle": "Cierres",
+  "@adminClosuresTitle": {"description": "Título de la pantalla de cierres y del botón del panel (spec 008, RF-1)"},
+  "adminClosuresEmpty": "No hay cierres próximos.",
+  "@adminClosuresEmpty": {"description": "Lista de cierres vacía (spec 008, RF-2)"},
+  "adminClosuresNew": "Nuevo cierre",
+  "@adminClosuresNew": {"description": "Botón para crear un cierre (spec 008, RF-2, RF-3)"},
+  "adminClosuresLoadError": "No se pudieron cargar los cierres.",
+  "@adminClosuresLoadError": {"description": "Error al cargar los cierres (spec 008, RF-10)"},
+  "closureAllDay": "Todo el día",
+  "@closureAllDay": {"description": "Cierre de días enteros (spec 008, RF-1)"},
+  "closureDaysRange": "Del {first} al {last}",
+  "@closureDaysRange": {"description": "Cierre de varios días: el primero y el último (spec 008, RF-1)", "placeholders": {"first": {"type": "String"}, "last": {"type": "String"}}},
+  "closureDeleteAction": "Quitar",
+  "@closureDeleteAction": {"description": "Botón para quitar un cierre (spec 008, RF-7)"},
+  "closureDeleteTitle": "¿Quitar este cierre?",
+  "@closureDeleteTitle": {"description": "Título de la confirmación al quitar un cierre (spec 008, RF-7)"},
+  "closureDeleteBody": "Esas horas volverán a estar libres para reservar.",
+  "@closureDeleteBody": {"description": "Texto de la confirmación al quitar un cierre (spec 008, RF-7)"},
+  "closureDeleted": "Cierre quitado.",
+  "@closureDeleted": {"description": "Aviso tras quitar un cierre (spec 008, RF-7)"},
+  "closureDeleteError": "No se pudo quitar el cierre. Inténtalo de nuevo.",
+  "@closureDeleteError": {"description": "Error al quitar un cierre (spec 008, RF-11)"}
 }

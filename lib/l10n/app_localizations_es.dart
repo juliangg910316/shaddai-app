@@ -1242,4 +1242,41 @@ class AppLocalizationsEs extends AppLocalizations {
   String adminAppointmentWhatsApp(String name) {
     return 'Escribir a $name por WhatsApp';
   }
+
+  @override
+  String get adminClosuresTitle => 'Cierres';
+
+  @override
+  String get adminClosuresEmpty => 'No hay cierres próximos.';
+
+  @override
+  String get adminClosuresNew => 'Nuevo cierre';
+
+  @override
+  String get adminClosuresLoadError => 'No se pudieron cargar los cierres.';
+
+  @override
+  String get closureAllDay => 'Todo el día';
+
+  @override
+  String closureDaysRange(String first, String last) {
+    return 'Del $first al $last';
+  }
+
+  @override
+  String get closureDeleteAction => 'Quitar';
+
+  @override
+  String get closureDeleteTitle => '¿Quitar este cierre?';
+
+  @override
+  String get closureDeleteBody =>
+      'Esas horas volverán a estar libres para reservar.';
+
+  @override
+  String get closureDeleted => 'Cierre quitado.';
+
+  @override
+  String get closureDeleteError =>
+      'No se pudo quitar el cierre. Inténtalo de nuevo.';
 }
