@@ -153,7 +153,7 @@ Son más de 10, pero la spec no se divide (decisión del autor, 2026-11-17).
 
 ## Bloque C — La admin edita un turno
 
-- [ ] **T9. Lógica pura de la edición de la admin.** RF-20 a RF-26, RF-29 a RF-31, RNF-1
+- [x] **T9. Lógica pura de la edición de la admin.** RF-20 a RF-26, RF-29 a RF-31, RNF-1
   - Tests: `test/features/booking/admin_edit_test.dart` (nuevo, tablas):
     - `recipientOf`: cuenta, y sin cuenta con la casilla marcada;
     - `personChanged`: otra clienta, de cuenta a sin cuenta, nombre con espacios, WhatsApp con otro formato;
@@ -164,6 +164,11 @@ Son más de 10, pero la spec no se divide (decisión del autor, 2026-11-17).
 
     `EditOriginal.of` copia la persona y la marca.
   - Hecho cuando: `logic/admin_edit.dart` y los cambios de `booking_edit.dart` cumplen el plan § 4.3 y § 4.4.
+  - Hecha (2026-11-17):
+    - `EditOriginal` lleva la persona y la marca (campos opcionales: la edición de la clienta no cambia); `editFreeSlots(allowStarted)`;
+    - `admin_edit.dart`: `recipientOf`, `personChanged`, `adminEditChanges` (devuelve `AdminEditChanges(fields, person)` en lugar del `Set<AdminEditField>` del plan, para reutilizar `EditField` sin tocar la edición de la clienta), `markAfterEdit` y `checkAdminEditBeforeSave` con `AdminEditCheck`;
+    - los pasos de la persona de `checkAdminBeforeSave` salen a `checkRecipient`, que comparten las dos;
+    - 50 tests nuevos en `admin_edit_test.dart`; suite completa, 1869 en verde.
 
 - [ ] **T10. Datos de la edición de la admin.** RF-28, RF-30, RF-31
   - Tests: el fake de turnos implementa `watchAppointment` (`emitAppointment`), `fetchAdminEditCheck` y `updateAppointmentByAdmin`, que respeta `expected` y registra lo guardado. También hay tests del fake: no guarda si `expected` falla y conserva los campos que no se envían.

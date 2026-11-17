@@ -92,6 +92,40 @@ AdminBookingCheck checkAdminBeforeSave({
   required Iterable<UserModel> users,
   required DateTime nowSalon,
 }) {
+  final problem = checkRecipient(
+    recipient: recipient,
+    recipientUser: recipientUser,
+    users: users,
+    active: active,
+    nowSalon: nowSalon,
+  );
+  if (problem != null) return problem;
+
+  return switch (checkSlot(
+    start: start,
+    durationMinutes: durationMinutes,
+    settings: settings,
+    busy: busy,
+    closures: closures,
+    nowSalon: nowSalon,
+  )) {
+    BookingCheck.slotTaken => const AdminCheckSlotTaken(),
+    BookingCheck.doesNotFit => const AdminCheckDoesNotFit(),
+    BookingCheck.ok || BookingCheck.alreadyActive => const AdminCheckOk(),
+  };
+}
+
+/// Los pasos 1 y 2 de [checkAdminBeforeSave]: la persona está bloqueada
+/// ([AdminCheckRecipientBlocked]) o ya tiene un turno activo entre [active]
+/// ([AdminCheckPersonActive]); `null` si puede tener el turno. La edición de
+/// la admin la reutiliza sin el turno que edita (spec 008, RF-25, RF-29).
+AdminBookingCheck? checkRecipient({
+  required Recipient recipient,
+  required UserModel? recipientUser,
+  required Iterable<UserModel> users,
+  required Iterable<AppointmentModel> active,
+  required DateTime nowSalon,
+}) {
   final String? uid;
   final String phone;
   switch (recipient) {
@@ -118,17 +152,5 @@ AdminBookingCheck checkAdminBeforeSave({
     now: fromSalon(nowSalon),
   );
   if (existing != null) return AdminCheckPersonActive(existing);
-
-  return switch (checkSlot(
-    start: start,
-    durationMinutes: durationMinutes,
-    settings: settings,
-    busy: busy,
-    closures: closures,
-    nowSalon: nowSalon,
-  )) {
-    BookingCheck.slotTaken => const AdminCheckSlotTaken(),
-    BookingCheck.doesNotFit => const AdminCheckDoesNotFit(),
-    BookingCheck.ok || BookingCheck.alreadyActive => const AdminCheckOk(),
-  };
+  return null;
 }

@@ -89,6 +89,11 @@ class EditOriginal {
     required this.end,
     required this.status,
     required this.booked,
+    this.clientId,
+    this.clientName = '',
+    this.clientPhone = '',
+    this.clientPhotoUrl,
+    this.createdByAdmin = false,
   });
 
   /// El turno [appointment], con sus horas en hora de pared del salón.
@@ -98,6 +103,11 @@ class EditOriginal {
     end: toSalon(appointment.endTime),
     status: appointment.status,
     booked: appointment.booked,
+    clientId: appointment.clientId,
+    clientName: appointment.clientName,
+    clientPhone: appointment.clientPhone,
+    clientPhotoUrl: appointment.clientPhotoUrl,
+    createdByAdmin: appointment.createdByAdmin,
   );
 
   final String id;
@@ -110,6 +120,14 @@ class EditOriginal {
   /// Lo reservado. Todo turno de la spec 005 lo tiene; es `null` solo si el
   /// documento no se pudo leer bien.
   final BookedServiceModel? booked;
+
+  /// La persona del turno y si lo agendó la admin. Solo los usa la edición
+  /// de la admin (spec 008, plan § 4.3): `clientId` es `null` sin cuenta.
+  final String? clientId;
+  final String clientName;
+  final String clientPhone;
+  final String? clientPhotoUrl;
+  final bool createdByAdmin;
 }
 
 /// Si [day] se puede elegir en la edición: con las reglas de siempre o, si es
@@ -131,12 +149,16 @@ bool isEditDaySelectable(
 /// fuera de la rejilla o el día ya no abra, si aún no ha pasado y no la ocupa
 /// otro turno. Su cobertura llega hasta el cierre o el fin original, lo que
 /// sea más tarde, sin pasar del siguiente turno ocupado (D-3).
+///
+/// Con [allowStarted] (la admin, spec 008, RF-21), la hora original vale
+/// también si ya empezó, mientras el turno no haya terminado.
 List<FreeSlot> editFreeSlots({
   required DateTime day,
   required CalendarSettingsModel settings,
   required Iterable<BusyRange> busy,
   required DateTime nowSalon,
   required EditOriginal original,
+  bool allowStarted = false,
 }) {
   final slots = freeSlots(
     day: day,
@@ -146,7 +168,10 @@ List<FreeSlot> editFreeSlots({
   );
   final start = original.start;
   if (salonDay(day) != salonDay(start)) return slots;
-  if (!start.isAfter(nowSalon)) return slots;
+  final started = !start.isAfter(nowSalon);
+  if (started && !(allowStarted && original.end.isAfter(nowSalon))) {
+    return slots;
+  }
   final inside = busy.any(
     (range) => !range.start.isAfter(start) && start.isBefore(range.end),
   );
