@@ -4,8 +4,9 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Estructura de `firestore.rules` (spec 004, RNF-2; spec 005, RNF-5; spec
-/// 006, RNF-4). Lo que permite cada regla se comprueba a mano en el
-/// simulador de la consola (`rules-check.md` de las specs 004, 005 y 006);
+/// 006, RNF-4; spec 007, RNF-5). Lo que permite cada regla se comprueba a
+/// mano en el simulador de la consola (`rules-check.md` de las specs 004 a
+/// 007);
 /// aquí se fija qué cubre cada `match` para que un cambio no lo rompa sin
 /// querer.
 void main() {
@@ -142,6 +143,49 @@ void main() {
       );
     });
 
+    test('la clienta no puede marcarlo como creado por la admin (spec 007, '
+        'RF-25)', () {
+      expect(
+        allow(path, 'create'),
+        contains("request.resource.data.get('createdByAdmin', false) == false"),
+      );
+    });
+
+    test('la admin lo crea confirmado y marcado, para una persona sin cuenta '
+        'o para una clienta sin bloquear que no es ella, con su turno '
+        'ocupado en el mismo lote (spec 007, RF-2, RF-25)', () {
+      final create = allow(path, 'create');
+      final admin = create.substring(create.indexOf('|| (isAdmin()'));
+      for (final check in [
+        "request.resource.data.status == 'confirmed'",
+        'request.resource.data.createdByAdmin == true',
+        'request.resource.data.endTime > request.resource.data.startTime',
+        'getAfter(/databases/\$(database)/documents/busySlots/\$(id))'
+            '.data.start == request.resource.data.startTime',
+        'getAfter(/databases/\$(database)/documents/busySlots/\$(id))'
+            '.data.end == request.resource.data.endTime',
+        'request.resource.data.clientId == null',
+        'request.resource.data.clientId != request.auth.uid',
+        'get(/databases/\$(database)/documents/users/'
+            '\$(request.resource.data.clientId)).data.role == \'cliente\'',
+        'get(/databases/\$(database)/documents/users/'
+            '\$(request.resource.data.clientId)).data'
+            ".get('isBlocked', false) == false",
+      ]) {
+        expect(admin, contains(check), reason: check);
+      }
+    });
+
+    test('la clienta, al editar, no toca la marca de la admin (spec 007, '
+        'RF-30)', () {
+      final update = allow(path, 'update');
+      expect(
+        update,
+        contains(".hasOnly(['startTime', 'endTime', 'booked', 'status'])"),
+      );
+      expect(update, isNot(contains('createdByAdmin')));
+    });
+
     test('la admin solo cambia el estado, y nadie lo borra', () {
       final update = allow(path, 'update');
       expect(
@@ -223,6 +267,18 @@ void main() {
           reason: check,
         );
       }
+    });
+
+    test('la admin lo crea junto a un turno que ella marcó (spec 007, '
+        'RF-25)', () {
+      final create = allow(path, 'create');
+      expect(
+        create,
+        contains(
+          '(isAdmin() && getAfter(/databases/\$(database)/documents/'
+          "appointments/\$(id)).data.get('createdByAdmin', false) == true)",
+        ),
+      );
     });
 
     test('solo la admin lo borra, al cancelar', () {

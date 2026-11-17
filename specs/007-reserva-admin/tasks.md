@@ -190,6 +190,10 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
     - la clienta edita un turno que le agendó la admin sin tocar `createdByAdmin` (→ sí) y cambiándolo (→ no);
     - los casos de la 006 que tocan estas reglas siguen igual.
   - Hecho cuando: `firestore.rules` tiene los cambios del plan § 2 y el autor los comprueba en el simulador.
+  - Hecho en el código (2026-11-17); **falta la comprobación del autor** en el simulador y en la app:
+    - `firestore.rules`: la clienta crea con `createdByAdmin` falso o sin él; la admin crea turnos confirmados y marcados para una persona sin cuenta (`clientId == null`) o para una clienta sin bloquear que no es ella (`role == 'cliente'`), con su turno ocupado en el mismo lote; el turno ocupado también lo crea la admin si su turno lo marcó ella. Lectura y edición, sin cambios (RF-26 y RF-30 ya se cumplían);
+    - `firestore_rules_test.dart`: 4 tests nuevos de estructura;
+    - `rules-check.md`: 24 casos del simulador, con documentos de prueba creados a mano para que el simulador, que no ve lotes, pruebe cada condición por separado; los casos de la 006 y los pasos en la app.
 
 - [ ] **T15. Accesibilidad y cierre.** RNF-2, RNF-3
   - Tests: `test/features/booking/admin_booking_accessibility_test.dart` (nuevo): contraste en tema claro y oscuro, objetivos de 48 px, semántica de los resultados, del aviso de WhatsApp con cuenta y del de turno activo, texto al 200 % y 320 px en "Para quién", en la persona sin cuenta, en la confirmación y en la tarjeta de la lista; todas las claves nuevas en ES y PT.
