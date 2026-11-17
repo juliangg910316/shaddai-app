@@ -7,6 +7,7 @@ import '../../../core/widgets/app_widgets.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../navigation/providers/tab_scroll_provider.dart';
 import '../logic/booking_selection.dart';
+import '../providers/admin_booking_provider.dart';
 import '../providers/booking_provider.dart';
 import 'addon_picker.dart';
 import 'book_button.dart';
@@ -14,6 +15,7 @@ import 'booking_calendar.dart';
 import 'booking_notices.dart';
 import 'booking_section_title.dart';
 import 'booking_summary.dart';
+import 'recipient_picker.dart';
 import 'service_picker.dart';
 import 'slot_grid.dart';
 
@@ -24,15 +26,20 @@ import 'slot_grid.dart';
 /// Con [editing], es la edición del turno activo (spec 006, RF-4, RF-10,
 /// RF-18): título "Editar turno", "Guardar cambios" y, debajo, "Cancelar",
 /// que vuelve al turno sin cambios.
+///
+/// Con [admin], es la reserva de la admin (spec 007, RF-1): título "Agendar
+/// un turno" y, antes que nada, "Para quién".
 class BookingForm extends ConsumerStatefulWidget {
   const BookingForm({
     super.key,
     required this.onConfirmed,
     this.editing = false,
+    this.admin = false,
   });
 
   final VoidCallback onConfirmed;
   final bool editing;
+  final bool admin;
 
   @override
   ConsumerState<BookingForm> createState() => _BookingFormState();
@@ -49,8 +56,19 @@ class _BookingFormState extends ConsumerState<BookingForm> {
     final brand = context.brand;
     final settingsAsync = ref.watch(calendarSettingsProvider);
     final missing = _showMissing
-        ? missingParts(ref.watch(bookingSelectionProvider).selection)
+        ? missingParts(
+            ref.watch(bookingSelectionProvider).selection,
+            admin: widget.admin,
+            recipient: widget.admin
+                ? ref.watch(bookingRecipientProvider).recipient
+                : null,
+          )
         : const <BookingPart>{};
+    // La persona ya tiene un turno activo: también se marca (RF-14).
+    final recipientActive =
+        _showMissing &&
+        widget.admin &&
+        ref.watch(recipientActiveAppointmentProvider) != null;
 
     return ListView(
       controller: ref.watch(tabScrollControllerProvider(MobileTab.booking)),
@@ -63,11 +81,26 @@ class _BookingFormState extends ConsumerState<BookingForm> {
       children: [
         Center(
           child: Text(
-            widget.editing ? l10n.bookingEditTitle : l10n.bookAppointment,
+            widget.editing
+                ? l10n.bookingEditTitle
+                : widget.admin
+                ? l10n.bookingAdminTitle
+                : l10n.bookAppointment,
             style: AppText.serif(size: 24, color: brand.inkStrong),
           ),
         ),
         const SizedBox(height: 18),
+        if (widget.admin) ...[
+          _MissingFrame(
+            message: missing.contains(BookingPart.recipient)
+                ? l10n.bookingMissingRecipient
+                : null,
+            // Su aviso ya sale dentro de "Para quién".
+            marked: recipientActive,
+            child: RecipientPicker(showErrors: _showMissing),
+          ),
+          const SizedBox(height: 24),
+        ],
         BookingSectionTitle(l10n.bookingStepDate),
         const SizedBox(height: 4),
         // Sin calendario no hay fechas ni horas: un solo aviso (RF-48).
@@ -93,10 +126,11 @@ class _BookingFormState extends ConsumerState<BookingForm> {
         const SizedBox(height: 16),
         const AddonPicker(),
         const SizedBox(height: 16),
-        const BookingSummary(),
+        BookingSummary(admin: widget.admin),
         const SizedBox(height: 24),
         BookButton(
           editing: widget.editing,
+          admin: widget.admin,
           onMissing: () => setState(() => _showMissing = true),
           onConfirmed: widget.onConfirmed,
         ),
@@ -113,20 +147,27 @@ class _BookingFormState extends ConsumerState<BookingForm> {
 }
 
 /// Marca una parte sin elegir con un borde y su texto de error (RF-24).
+/// Con [marked] y sin [message], solo el borde: la parte ya dice qué pasa.
 class _MissingFrame extends StatelessWidget {
-  const _MissingFrame({required this.message, required this.child});
+  const _MissingFrame({
+    required this.message,
+    required this.child,
+    this.marked = false,
+  });
 
   /// El texto de lo que falta, o `null` si no falta.
   final String? message;
+  final bool marked;
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
     final message = this.message;
-    if (message == null) return child;
+    if (message == null && !marked) return child;
     final brand = context.brand;
 
     return Container(
+      key: const ValueKey('missingFrame'),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
@@ -137,15 +178,17 @@ class _MissingFrame extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           child,
-          const SizedBox(height: 8),
-          Text(
-            message,
-            style: AppText.sans(
-              size: 14,
-              weight: FontWeight.w500,
-              color: brand.danger,
+          if (message != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              message,
+              style: AppText.sans(
+                size: 14,
+                weight: FontWeight.w500,
+                color: brand.danger,
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );

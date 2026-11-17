@@ -530,8 +530,6 @@
   "@bookingOnlyOneActive": {"description": "Explicación bajo el turno activo (RF-34)"},
   "bookingBlocked": "Tu cuenta no puede reservar turnos. Si crees que es un error, escríbenos por WhatsApp.",
   "@bookingBlocked": {"description": "Aviso para una cuenta bloqueada (RF-38)"},
-  "bookingAdminNotice": "Con la cuenta de administración no se reservan turnos a tu nombre.",
-  "@bookingAdminNotice": {"description": "Aviso para la administradora (RF-39)"},
   "bookingLoadError": "No se pudo cargar la agenda.",
   "@bookingLoadError": {"description": "Error al cargar turnos o calendario (RF-49)"},
   "bookingRetry": "Reintentar",
@@ -589,5 +587,89 @@
   "bookingEditChangedMeanwhile": "Tu turno cambió mientras lo editabas. Revisa cómo está ahora.",
   "@bookingEditChangedMeanwhile": {"description": "Al guardar, alguien cambió el turno (spec 006, RF-15)"},
   "bookingEditSaveError": "No pudimos guardar los cambios. Inténtalo de nuevo.",
-  "@bookingEditSaveError": {"description": "No se pudo guardar la edición (spec 006, RF-16)"}
+  "@bookingEditSaveError": {"description": "No se pudo guardar la edición (spec 006, RF-16)"},
+
+  "bookingAdminTitle": "Agendar un turno",
+  "@bookingAdminTitle": {"description": "Título de la reserva de la admin (spec 007, RF-1)"},
+  "bookingStepRecipient": "Para quién",
+  "@bookingStepRecipient": {"description": "Título de la parte de para quién es el turno (spec 007, RF-1)"},
+  "bookingRecipientSearchLabel": "Nombre o WhatsApp de la clienta",
+  "@bookingRecipientSearchLabel": {"description": "Etiqueta de la búsqueda de clientas (spec 007, RF-3)"},
+  "bookingRecipientSearchHint": "Escribe al menos 2 caracteres",
+  "@bookingRecipientSearchHint": {"description": "Indicación bajo la búsqueda de clientas (spec 007, RF-3)"},
+  "bookingRecipientNoResults": "No hay clientas con ese nombre o WhatsApp.",
+  "@bookingRecipientNoResults": {"description": "La búsqueda no encuentra a nadie (spec 007, RF-5)"},
+  "bookingRecipientLoadError": "No se pudieron cargar las clientas.",
+  "@bookingRecipientLoadError": {"description": "Error al cargar las fichas (spec 007, RF-6)"},
+  "bookingRecipientGuestAction": "Persona sin cuenta",
+  "@bookingRecipientGuestAction": {"description": "Botón para agendar a alguien sin cuenta (spec 007, RF-5, RF-7)"},
+  "bookingRecipientSearchAction": "Buscar clienta",
+  "@bookingRecipientSearchAction": {"description": "Vuelve de la persona sin cuenta a la búsqueda (spec 007)"},
+  "bookingRecipientChange": "Cambiar",
+  "@bookingRecipientChange": {"description": "Quita la clienta elegida para buscar otra (spec 007)"},
+  "bookingRecipientActive": "Ya tiene un turno el {date} a las {time}: {service}. No se le puede agendar otro.",
+  "@bookingRecipientActive": {
+    "description": "La persona elegida ya tiene un turno activo (spec 007, RF-14)",
+    "placeholders": {"date": {"type": "String"}, "time": {"type": "String"}, "service": {"type": "String"}}
+  },
+  "bookingGuestNameLabel": "Nombre",
+  "@bookingGuestNameLabel": {"description": "Nombre de la persona sin cuenta (spec 007, RF-7)"},
+  "bookingGuestPhoneLabel": "WhatsApp",
+  "@bookingGuestPhoneLabel": {"description": "WhatsApp de la persona sin cuenta (spec 007, RF-7)"},
+  "bookingGuestConsent": "La persona acepta dar su nombre y su WhatsApp para este turno.",
+  "@bookingGuestConsent": {"description": "Casilla de consentimiento de la persona sin cuenta (spec 007, RF-8)"},
+  "bookingGuestNameError": "Escribe un nombre de hasta 80 caracteres.",
+  "@bookingGuestNameError": {"description": "Nombre vacío o demasiado largo (spec 007, RF-9)"},
+  "bookingGuestPhoneError": "Escribe un WhatsApp válido (de 8 a 15 dígitos).",
+  "@bookingGuestPhoneError": {"description": "WhatsApp no válido (spec 007, RF-9)"},
+  "bookingGuestConsentError": "Marca la casilla para continuar.",
+  "@bookingGuestConsentError": {"description": "Casilla sin marcar (spec 007, RF-9)"},
+  "bookingGuestPhoneHasAccount": "Este WhatsApp es de {name}, que tiene cuenta.",
+  "@bookingGuestPhoneHasAccount": {
+    "description": "El WhatsApp de la persona sin cuenta es de una clienta (spec 007, RF-10)",
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "bookingGuestChooseAccount": "Elegir a {name}",
+  "@bookingGuestChooseAccount": {
+    "description": "Elige a la clienta con ese WhatsApp (spec 007, RF-10)",
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "bookingGuestKeepGuest": "Seguir sin cuenta",
+  "@bookingGuestKeepGuest": {"description": "Sigue con la persona sin cuenta (spec 007, RF-10)"},
+  "bookingGuestPhoneBlocked": "Este WhatsApp es de una clienta bloqueada: no se le puede agendar.",
+  "@bookingGuestPhoneBlocked": {"description": "El WhatsApp es de una clienta bloqueada (spec 007, RF-11)"},
+  "bookingMissingRecipient": "Indica para quién es el turno",
+  "@bookingMissingRecipient": {"description": "Falta para quién o sus datos (spec 007, RF-17)"},
+  "bookingMissingSeveral": "Faltan datos para agendar: revisa lo marcado.",
+  "@bookingMissingSeveral": {"description": "Falta para quién y algo más (spec 007, RF-17)"},
+  "bookingSummaryFor": "Para: {name}",
+  "@bookingSummaryFor": {
+    "description": "Para quién es el turno, primero en el resumen (spec 007, RF-16)",
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "bookingSummaryGuest": "sin cuenta",
+  "@bookingSummaryGuest": {"description": "Tras el WhatsApp de una persona sin cuenta en el resumen (spec 007, RF-16)"},
+  "bookingAdminConfirmNote": "El turno quedará confirmado.",
+  "@bookingAdminConfirmNote": {"description": "Confirmación de la admin (spec 007, RF-16)"},
+  "bookingAdminMarginWarning": "{name} no podrá cambiar este turno: falta menos de {margin} para que empiece.",
+  "@bookingAdminMarginWarning": {
+    "description": "La admin agenda para una clienta con cuenta dentro del margen de edición (spec 007, RF-29)",
+    "placeholders": {"name": {"type": "String"}, "margin": {"type": "String"}}
+  },
+  "bookingAdminCreated": "Turno agendado para {name}.",
+  "@bookingAdminCreated": {
+    "description": "La admin agendó el turno (spec 007, RF-20)",
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "bookingRecipientBlocked": "Esa clienta está bloqueada: ya no se le puede agendar.",
+  "@bookingRecipientBlocked": {"description": "La clienta elegida se bloqueó y se quitó de Para quién (spec 007, RF-15)"},
+  "adminAppointmentGuest": "Sin cuenta",
+  "@adminAppointmentGuest": {"description": "Marca de un turno de una persona sin cuenta en la lista de la admin (spec 007, RF-22)"},
+  "adminAppointmentByAdmin": "Agendado por la admin",
+  "@adminAppointmentByAdmin": {"description": "Marca de un turno que creó la admin (spec 007, RF-23)"},
+  "adminAppointmentWhatsApp": "Escribir a {name} por WhatsApp",
+  "@adminAppointmentWhatsApp": {
+    "description": "Nombre del botón de WhatsApp de un turno en la lista de la admin (spec 007, RF-22, D-6)",
+    "placeholders": {"name": {"type": "String"}}
+  }
 }

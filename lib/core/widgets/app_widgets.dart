@@ -229,13 +229,18 @@ class OutlinePillButton extends StatelessWidget {
               Icon(icon, size: 17, color: color),
               const SizedBox(width: 9),
             ],
-            Text(
-              label,
-              style: AppText.sans(
-                size: 12,
-                weight: FontWeight.w500,
-                spacing: 2,
-                color: color,
+            // Una etiqueta larga con el texto grande pasa a otra línea en
+            // lugar de desbordarse.
+            Flexible(
+              child: Text(
+                label,
+                textAlign: TextAlign.center,
+                style: AppText.sans(
+                  size: 12,
+                  weight: FontWeight.w500,
+                  spacing: 2,
+                  color: color,
+                ),
               ),
             ),
           ],

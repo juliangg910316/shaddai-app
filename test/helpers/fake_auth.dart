@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shaddai/data/models/appointment_model.dart';
 import 'package:shaddai/data/models/user_model.dart';
@@ -54,12 +56,59 @@ class FakeAuthRepository implements AuthRepository {
 }
 
 /// Usuarias en memoria. Si [error] no es nulo, `getUser` lo lanza.
+///
+/// Para la admin (spec 007): [users] son todas las fichas, en vivo
+/// ([emitUsers], [failUsers]); `fetchUser` lee de [serverUsers] (por
+/// defecto, [users]) o lanza [fetchError].
 class FakeUserRepository implements UserRepository {
-  FakeUserRepository({this.stored, this.error});
+  FakeUserRepository({
+    this.stored,
+    this.error,
+    this.users = const [],
+    this.serverUsers,
+  });
 
   final UserModel? stored;
   final Object? error;
   final saved = <UserModel>[];
+
+  List<UserModel> users;
+  List<UserModel>? serverUsers;
+  Object? fetchError;
+  final fetchRequests = <String>[];
+  final _usersListeners = <StreamController<List<UserModel>>>[];
+
+  void emitUsers(List<UserModel> value) {
+    users = value;
+    for (final listener in List.of(_usersListeners)) {
+      listener.add(value);
+    }
+  }
+
+  void failUsers(Object error) {
+    for (final listener in List.of(_usersListeners)) {
+      listener.addError(error);
+    }
+  }
+
+  @override
+  Stream<List<UserModel>> getAllUsers() {
+    late final StreamController<List<UserModel>> controller;
+    controller = StreamController<List<UserModel>>(
+      onListen: () => controller.add(users),
+      onCancel: () => _usersListeners.remove(controller),
+    );
+    _usersListeners.add(controller);
+    return controller.stream;
+  }
+
+  @override
+  Future<UserModel?> fetchUser(String uid) async {
+    fetchRequests.add(uid);
+    final error = fetchError;
+    if (error != null) throw error;
+    return (serverUsers ?? users).where((u) => u.uid == uid).firstOrNull;
+  }
 
   @override
   Future<UserModel?> getUser(String uid) async {

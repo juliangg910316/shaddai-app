@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shaddai/core/widgets/app_widgets.dart';
 import 'package:shaddai/data/models/appointment_model.dart';
 import 'package:shaddai/data/models/booked_service_model.dart';
 import 'package:shaddai/data/models/price_list_model.dart';
@@ -12,6 +13,7 @@ import 'package:shaddai/features/booking/providers/booking_provider.dart';
 import '../../helpers/fake_auth.dart';
 import '../../helpers/fake_booking.dart';
 import '../../helpers/pump_app.dart';
+import '../../helpers/recording_link_launcher.dart';
 
 /// Un turno de las 9:00 a las 10:30 (o de [start] a [end]), con lo
 /// reservado si [booked].
@@ -19,11 +21,16 @@ AppointmentModel appointment({
   bool booked = true,
   DateTime? start,
   DateTime? end,
+  String? clientId = 'u1',
+  String name = 'Ana Herrera',
+  String phone = '+55 41 99999-0000',
+  bool createdByAdmin = false,
 }) => AppointmentModel(
   id: 't1',
-  clientId: 'u1',
-  clientName: 'Ana Herrera',
-  clientPhone: '+55 41 99999-0000',
+  clientId: clientId,
+  clientName: name,
+  clientPhone: phone,
+  createdByAdmin: createdByAdmin,
   startTime: start ?? DateTime(2026, 11, 20, 9),
   endTime: end ?? DateTime(2026, 11, 20, 10, 30),
   status: 'waiting_confirmation',
@@ -59,8 +66,12 @@ class _UnusedConfigRepository implements ConfigRepository {
 
 void main() {
   late FakeBookingRepository bookings;
+  late RecordingLinkLauncher links;
 
-  setUp(() => bookings = FakeBookingRepository());
+  setUp(() {
+    bookings = FakeBookingRepository();
+    links = RecordingLinkLauncher();
+  });
 
   Future<void> pump(
     WidgetTester tester,
@@ -80,6 +91,7 @@ void main() {
         configRepositoryProvider.overrideWithValue(_UnusedConfigRepository()),
         adminSelectedDateProvider.overrideWith((ref) => DateTime(2026, 11, 20)),
         adminAppointmentsProvider.overrideWith((ref) => Stream.value([shown])),
+        links.override,
       ],
     );
     await tester.pumpAndSettle();
@@ -122,5 +134,92 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(bookings.statusChanges, [(id: 't1', status: 'cancelled')]);
+  });
+
+  group('turnos sin cuenta y agendados por la admin (RF-22 a RF-24)', () {
+    final guest = appointment(
+      clientId: null,
+      name: 'Rosa Lima',
+      phone: '(41) 99333-0000',
+      createdByAdmin: true,
+    );
+
+    testWidgets('sin cuenta: su nombre, su WhatsApp, "Sin cuenta" y las '
+        'iniciales sin foto (RF-22)', (tester) async {
+      await pump(tester, guest);
+      expect(find.text('Rosa Lima'), findsOneWidget);
+      expect(find.text('(41) 99333-0000'), findsOneWidget);
+      expect(find.text('SIN CUENTA'), findsOneWidget);
+      expect(find.text('RL'), findsOneWidget);
+      expect(find.byType(Image), findsNothing);
+    });
+
+    testWidgets('el que creó la admin lo dice (RF-23)', (tester) async {
+      await pump(tester, guest);
+      expect(find.text('AGENDADO POR LA ADMIN'), findsOneWidget);
+    });
+
+    testWidgets('uno de una clienta, pedido por ella, no lleva ninguna de '
+        'las dos marcas', (tester) async {
+      await pump(tester, appointment());
+      expect(find.text('SIN CUENTA'), findsNothing);
+      expect(find.text('AGENDADO POR LA ADMIN'), findsNothing);
+    });
+
+    testWidgets('el botón de WhatsApp abre su chat; mide 48 px y tiene '
+        'nombre (RF-22, D-6)', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await pump(tester, guest);
+      final button = find.byTooltip('Escribir a Rosa Lima por WhatsApp');
+      expect(button, findsOneWidget);
+      // El lector de pantalla lo lee como un botón con ese nombre.
+      expect(
+        tester.getSemantics(
+          find.ancestor(
+            of: find.byType(WhatsAppIcon),
+            matching: find.byType(IconButton),
+          ),
+        ),
+        isSemantics(
+          tooltip: 'Escribir a Rosa Lima por WhatsApp',
+          isButton: true,
+          hasTapAction: true,
+        ),
+      );
+      final size = tester.getSize(
+        find.ancestor(
+          of: find.byType(WhatsAppIcon),
+          matching: find.byType(IconButton),
+        ),
+      );
+      expect(size.width, greaterThanOrEqualTo(48));
+      expect(size.height, greaterThanOrEqualTo(48));
+
+      await tester.tap(button);
+      await tester.pumpAndSettle();
+      expect(links.opened, [Uri.parse('https://wa.me/5541993330000')]);
+      semantics.dispose();
+    });
+
+    testWidgets('también en un turno con cuenta (D-6)', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await pump(tester, appointment());
+      await tester.tap(find.byTooltip('Escribir a Ana Herrera por WhatsApp'));
+      await tester.pumpAndSettle();
+      expect(links.opened, [Uri.parse('https://wa.me/5541999990000')]);
+      semantics.dispose();
+    });
+
+    testWidgets('en portugués', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await pump(tester, guest, language: 'pt');
+      expect(find.text('SEM CONTA'), findsOneWidget);
+      expect(find.text('AGENDADO PELA ADMIN'), findsOneWidget);
+      expect(
+        find.byTooltip('Escrever para Rosa Lima pelo WhatsApp'),
+        findsOneWidget,
+      );
+      semantics.dispose();
+    });
   });
 }

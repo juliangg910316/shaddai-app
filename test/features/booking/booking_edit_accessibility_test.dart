@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shaddai/core/platform/platform_provider.dart';
-import 'package:shaddai/core/theme/contrast.dart';
 import 'package:shaddai/data/models/appointment_model.dart';
 import 'package:shaddai/data/models/booked_service_model.dart';
 import 'package:shaddai/data/models/price_list_model.dart';
@@ -11,6 +9,7 @@ import 'package:shaddai/features/booking/presentation/booking_form.dart';
 import 'package:shaddai/features/booking/presentation/booking_view.dart';
 import 'package:shaddai/features/navigation/providers/tab_scroll_provider.dart';
 
+import '../../helpers/dialog_contrast.dart';
 import '../../helpers/fake_booking.dart';
 import '../../helpers/fake_price_list.dart';
 import '../../helpers/fake_session.dart';
@@ -130,58 +129,6 @@ void main() {
     await animate(tester);
     expect(bookings.edited, hasLength(1));
     expect(find.byType(AlertDialog), findsOneWidget);
-  }
-
-  /// Contraste de cada texto del diálogo abierto, salvo los botones, sobre
-  /// su fondo (WCAG AA:
-  /// 4,5:1, o 3:1 para texto grande). `textContrastGuideline` no mide las
-  /// filas de la tabla de antes y después: cada una es un solo nodo de
-  /// semántica con su frase para el lector de pantalla.
-  void expectDialogTextContrast(WidgetTester tester) {
-    final dialog = find.byType(AlertDialog);
-    final background = Theme.of(tester.element(dialog))
-        .dialogTheme
-        .backgroundColor!;
-    // Los botones van sobre su propio fondo: los mide la guía.
-    final texts = find.descendant(of: dialog, matching: find.byType(RichText));
-    final inButtons = find.descendant(
-      of: find.descendant(
-        of: dialog,
-        matching: find.byWidgetPredicate((w) => w is ButtonStyleButton),
-      ),
-      matching: find.byType(RichText),
-    );
-    final skipped = inButtons.evaluate().toSet();
-    final paragraphs = [
-      for (final element in texts.evaluate())
-        if (!skipped.contains(element))
-          element.renderObject! as RenderParagraph,
-    ];
-    expect(paragraphs, isNotEmpty);
-    for (final paragraph in paragraphs) {
-      void check(InlineSpan span, TextStyle inherited) {
-        final style = inherited.merge(span.style);
-        if (span is TextSpan) {
-          final text = span.text ?? '';
-          if (text.trim().isNotEmpty) {
-            final bold = (style.fontWeight?.value ?? 400) >= 700;
-            final minimum = isLargeText(style.fontSize ?? 14, bold: bold)
-                ? 3.0
-                : 4.5;
-            expect(
-              contrastRatio(style.color!.toARGB32(), background.toARGB32()),
-              greaterThanOrEqualTo(minimum),
-              reason: text,
-            );
-          }
-          for (final child in span.children ?? const <InlineSpan>[]) {
-            check(child, style);
-          }
-        }
-      }
-
-      check(paragraph.text, const TextStyle());
-    }
   }
 
   Future<void> expectGuidelines(WidgetTester tester) async {

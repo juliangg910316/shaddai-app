@@ -1025,10 +1025,6 @@ class AppLocalizationsPt extends AppLocalizations {
       'Sua conta não pode agendar horários. Se acha que é um erro, fale conosco pelo WhatsApp.';
 
   @override
-  String get bookingAdminNotice =>
-      'Com a conta de administração não se agendam horários em seu nome.';
-
-  @override
   String get bookingLoadError => 'Não foi possível carregar a agenda.';
 
   @override
@@ -1135,4 +1131,118 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get bookingEditSaveError =>
       'Não conseguimos salvar as alterações. Tente novamente.';
+
+  @override
+  String get bookingAdminTitle => 'Agendar um horário';
+
+  @override
+  String get bookingStepRecipient => 'Para quem';
+
+  @override
+  String get bookingRecipientSearchLabel => 'Nome ou WhatsApp da cliente';
+
+  @override
+  String get bookingRecipientSearchHint => 'Digite pelo menos 2 caracteres';
+
+  @override
+  String get bookingRecipientNoResults =>
+      'Não há clientes com esse nome ou WhatsApp.';
+
+  @override
+  String get bookingRecipientLoadError =>
+      'Não foi possível carregar as clientes.';
+
+  @override
+  String get bookingRecipientGuestAction => 'Pessoa sem conta';
+
+  @override
+  String get bookingRecipientSearchAction => 'Buscar cliente';
+
+  @override
+  String get bookingRecipientChange => 'Trocar';
+
+  @override
+  String bookingRecipientActive(String date, String time, String service) {
+    return 'Já tem um horário em $date às $time: $service. Não é possível agendar outro.';
+  }
+
+  @override
+  String get bookingGuestNameLabel => 'Nome';
+
+  @override
+  String get bookingGuestPhoneLabel => 'WhatsApp';
+
+  @override
+  String get bookingGuestConsent =>
+      'A pessoa aceita fornecer seu nome e seu WhatsApp para este horário.';
+
+  @override
+  String get bookingGuestNameError => 'Digite um nome de até 80 caracteres.';
+
+  @override
+  String get bookingGuestPhoneError =>
+      'Digite um WhatsApp válido (de 8 a 15 dígitos).';
+
+  @override
+  String get bookingGuestConsentError => 'Marque a caixa para continuar.';
+
+  @override
+  String bookingGuestPhoneHasAccount(String name) {
+    return 'Este WhatsApp é de $name, que tem conta.';
+  }
+
+  @override
+  String bookingGuestChooseAccount(String name) {
+    return 'Escolher $name';
+  }
+
+  @override
+  String get bookingGuestKeepGuest => 'Continuar sem conta';
+
+  @override
+  String get bookingGuestPhoneBlocked =>
+      'Este WhatsApp é de uma cliente bloqueada: não é possível agendar.';
+
+  @override
+  String get bookingMissingRecipient => 'Indique para quem é o horário';
+
+  @override
+  String get bookingMissingSeveral =>
+      'Faltam dados para agendar: revise o que está marcado.';
+
+  @override
+  String bookingSummaryFor(String name) {
+    return 'Para: $name';
+  }
+
+  @override
+  String get bookingSummaryGuest => 'sem conta';
+
+  @override
+  String get bookingAdminConfirmNote => 'O horário ficará confirmado.';
+
+  @override
+  String bookingAdminMarginWarning(String name, String margin) {
+    return '$name não poderá alterar este horário: falta menos de $margin para começar.';
+  }
+
+  @override
+  String bookingAdminCreated(String name) {
+    return 'Horário agendado para $name.';
+  }
+
+  @override
+  String get bookingRecipientBlocked =>
+      'Essa cliente está bloqueada: não é mais possível agendar para ela.';
+
+  @override
+  String get adminAppointmentGuest => 'Sem conta';
+
+  @override
+  String get adminAppointmentByAdmin => 'Agendado pela admin';
+
+  @override
+  String adminAppointmentWhatsApp(String name) {
+    return 'Escrever para $name pelo WhatsApp';
+  }
 }

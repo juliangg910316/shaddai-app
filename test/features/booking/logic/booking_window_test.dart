@@ -41,6 +41,42 @@ void main() {
       expect(window.contains(DateTime.utc(2026, 11, 9)), isFalse);
     });
 
+    test('la de la admin va de hoy a hoy + 365 días (spec 007, RF-12)', () {
+      expect(adminBookingWindowDays, 365);
+      final window = bookingWindow(nowTuesday, days: adminBookingWindowDays);
+      expect(window.first, tuesday);
+      expect(window.last, DateTime.utc(2027, 11, 10));
+      expect(window.contains(DateTime.utc(2027, 11, 10)), isTrue);
+      expect(window.contains(DateTime.utc(2027, 11, 11)), isFalse);
+      expect(window.days, hasLength(366));
+    });
+
+    test('con 365 días siguen fuera los cerrados y los bloqueados (RF-13)', () {
+      final window = bookingWindow(nowTuesday, days: adminBookingWindowDays);
+      final calendar = settings(blockedDates: ['2027-06-01']);
+      // 2027-06-01 es martes; 2027-06-06, domingo.
+      expect(
+        isSelectableDay(DateTime.utc(2027, 6, 2), calendar, window),
+        isTrue,
+      );
+      expect(
+        isSelectableDay(DateTime.utc(2027, 6, 1), calendar, window),
+        isFalse,
+      );
+      expect(
+        isSelectableDay(DateTime.utc(2027, 6, 6), calendar, window),
+        isFalse,
+      );
+      expect(
+        isSelectableDay(
+          DateTime.utc(2027, 6, 2),
+          calendar,
+          bookingWindow(nowTuesday),
+        ),
+        isFalse,
+      );
+    });
+
     test('a las 23:59 del salón la ventana sigue empezando hoy', () {
       expect(bookingWindow(DateTime.utc(2026, 11, 10, 23, 59)).first, tuesday);
     });
@@ -179,6 +215,28 @@ void main() {
           hasFreeSlot: (day) => day != tuesday,
         ),
         DateTime.utc(2026, 11, 11),
+      );
+    });
+
+    test('con la ventana de la admin busca más allá de 60 días (RF-12)', () {
+      final far = DateTime.utc(2027, 3, 1);
+      expect(
+        initialDay(
+          nowSalon: nowTuesday,
+          settings: settings(),
+          hasFreeSlot: (day) => !day.isBefore(far),
+          windowDays: adminBookingWindowDays,
+        ),
+        far,
+      );
+      // Con la de la clienta no llega: el primero que se puede elegir.
+      expect(
+        initialDay(
+          nowSalon: nowTuesday,
+          settings: settings(),
+          hasFreeSlot: (day) => !day.isBefore(far),
+        ),
+        tuesday,
       );
     });
 

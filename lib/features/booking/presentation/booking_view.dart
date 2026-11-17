@@ -11,6 +11,8 @@ import '../logic/bookable_catalog.dart';
 import '../../services/providers/price_list_provider.dart';
 import '../logic/booking_edit.dart';
 import '../logic/booking_rules.dart';
+import '../logic/recipient.dart';
+import '../providers/admin_booking_provider.dart';
 import '../providers/booking_edit_provider.dart';
 import '../providers/booking_provider.dart';
 import 'active_appointment_view.dart';
@@ -18,6 +20,7 @@ import 'booking_form.dart';
 import 'booking_notices.dart';
 import 'booking_sign_in_prompt.dart';
 import 'edit_changes_dialog.dart';
+import 'recipient_picker.dart';
 
 class BookingView extends ConsumerStatefulWidget {
   const BookingView({super.key, this.request});
@@ -126,8 +129,69 @@ class _BookingViewState extends ConsumerState<BookingView> {
     }
   }
 
+  /// Guarda el turno que agenda la admin y avisa de cómo fue (spec 007,
+  /// RF-14, RF-15, RF-18 a RF-20). Con `ok`, la selección y para quién ya
+  /// quedaron vacíos: la vista sube al principio para agendar otro, también
+  /// en Web, sin el diálogo de volver a la landing.
+  Future<void> _submitAdmin() async {
+    setState(() => _isBooking = true);
+    final result = await ref.read(adminBookingSubmitProvider).confirm();
+    if (!mounted) return;
+    setState(() => _isBooking = false);
+    switch (result.outcome) {
+      case AdminBookingOutcome.ok:
+        final name = result.name ?? '';
+        showBookingMessage(context, (l10n) => l10n.bookingAdminCreated(name));
+        final scroll = ref.read(tabScrollControllerProvider(MobileTab.booking));
+        if (scroll.hasClients) scroll.jumpTo(0);
+      case AdminBookingOutcome.slotTaken:
+        showBookingSubmitResult(context, BookingSubmitResult.slotTaken);
+      case AdminBookingOutcome.doesNotFit:
+        showBookingSubmitResult(context, BookingSubmitResult.doesNotFit);
+      case AdminBookingOutcome.failed:
+        showBookingSubmitResult(context, BookingSubmitResult.failed);
+      case AdminBookingOutcome.personActive:
+        final active = result.active!;
+        showBookingMessage(
+          context,
+          (l10n) => activeAppointmentMessage(l10n, active),
+        );
+      case AdminBookingOutcome.recipientBlocked:
+        // Una clienta con cuenta ya se quitó y su aviso llega por los
+        // avisos de "Para quién"; la persona sin cuenta se conserva para
+        // cambiar el WhatsApp (RF-11, RF-15).
+        if (ref.read(bookingRecipientProvider).recipient is GuestRecipient) {
+          showBookingMessage(
+            context,
+            (l10n) => l10n.bookingGuestPhoneBlocked,
+            isError: true,
+          );
+        }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // La clienta elegida se bloqueó y se quitó de "Para quién" (spec 007,
+    // RF-15).
+    ref.listen(bookingRecipientProvider.select((state) => state.notices), (
+      _,
+      notices,
+    ) {
+      if (notices.isEmpty) return;
+      ref.read(bookingRecipientProvider.notifier).consumeNotices();
+      for (final notice in notices) {
+        switch (notice) {
+          case RecipientNotice.blocked:
+            showBookingMessage(
+              context,
+              (l10n) => l10n.bookingRecipientBlocked,
+              isError: true,
+            );
+        }
+      }
+    });
+
     // Los avisos de lo elegido, en un SnackBar que también se anuncia
     // (RF-9, RF-13, RF-15 a RF-17; RNF-2).
     ref.listen(bookingSelectionProvider.select((state) => state.notices), (
@@ -150,7 +214,8 @@ class _BookingViewState extends ConsumerState<BookingView> {
       ),
       BookingScreenSignedOut() => const BookingSignInPrompt(),
       BookingScreenError() => const _StatePage(child: BookingLoadErrorNotice()),
-      BookingScreenAdmin() => const _StatePage(child: BookingAdminNotice()),
+      // La admin agenda para otra persona (spec 007, RF-1, RF-28).
+      BookingScreenAdmin() => _buildForm(context, admin: true),
       BookingScreenActive(:final appointment, :final isBlocked) => _StatePage(
         child: ActiveAppointmentView(
           appointment: appointment,
@@ -197,7 +262,11 @@ class _BookingViewState extends ConsumerState<BookingView> {
     }
   }
 
-  Widget _buildForm(BuildContext context, {bool editing = false}) {
+  Widget _buildForm(
+    BuildContext context, {
+    bool editing = false,
+    bool admin = false,
+  }) {
     final brand = context.brand;
 
     return Scaffold(
@@ -205,7 +274,12 @@ class _BookingViewState extends ConsumerState<BookingView> {
         children: [
           BookingForm(
             editing: editing,
-            onConfirmed: editing ? _confirmEdit : _submit,
+            admin: admin,
+            onConfirmed: editing
+                ? _confirmEdit
+                : admin
+                ? _submitAdmin
+                : _submit,
           ),
           if (_isBooking)
             Container(

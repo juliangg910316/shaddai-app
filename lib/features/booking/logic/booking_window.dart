@@ -10,10 +10,14 @@ import 'salon_time.dart';
 /// Días después de hoy que se pueden reservar (los dos incluidos).
 const bookingWindowDays = 60;
 
+/// Días después de hoy en los que agenda la admin (spec 007, RF-12).
+const adminBookingWindowDays = 365;
+
 /// Paso de la rejilla de horas.
 const slotStepMinutes = 30;
 
-/// Desde hoy hasta [bookingWindowDays] días después, en días del salón.
+/// Desde hoy hasta unos días después ([bookingWindowDays] para la clienta,
+/// [adminBookingWindowDays] para la admin), en días del salón.
 class BookingWindow {
   const BookingWindow({required this.first, required this.last});
 
@@ -36,12 +40,13 @@ class BookingWindow {
 DateTime _nextDay(DateTime day) =>
     DateTime.utc(day.year, day.month, day.day + 1);
 
-/// La ventana de reserva con "ahora" del salón [nowSalon].
-BookingWindow bookingWindow(DateTime nowSalon) {
+/// La ventana de reserva con "ahora" del salón [nowSalon]: desde hoy hasta
+/// [days] días después.
+BookingWindow bookingWindow(DateTime nowSalon, {int days = bookingWindowDays}) {
   final first = salonDay(nowSalon);
   return BookingWindow(
     first: first,
-    last: DateTime.utc(first.year, first.month, first.day + bookingWindowDays),
+    last: DateTime.utc(first.year, first.month, first.day + days),
   );
 }
 
@@ -109,13 +114,14 @@ bool isSelectableDay(
 /// El día que se elige al abrir la reserva (RF-1): el primero de la ventana
 /// que se puede elegir y tiene alguna hora libre ([hasFreeSlot]). Si ninguno
 /// tiene, el primero que se puede elegir; si ninguno se puede elegir, `null`
-/// (RF-2).
+/// (RF-2). [windowDays] es el largo de la ventana (spec 007, RF-12).
 DateTime? initialDay({
   required DateTime nowSalon,
   required CalendarSettingsModel settings,
   required bool Function(DateTime day) hasFreeSlot,
+  int windowDays = bookingWindowDays,
 }) {
-  final window = bookingWindow(nowSalon);
+  final window = bookingWindow(nowSalon, days: windowDays);
   DateTime? firstSelectable;
   for (final day in window.days) {
     if (!isSelectableDay(day, settings, window)) continue;

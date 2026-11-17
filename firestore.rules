@@ -3,8 +3,9 @@ rules_version = '2';
 // Reglas de seguridad de Firestore de Studio Shaddai.
 //
 // - settings/priceList: definitivas (spec 004, RNF-2).
-// - users, appointments y busySlots: las de la reserva (spec 005, plan § 2)
-//   y la edición del turno por la clienta (spec 006, plan § 2). Los solapes
+// - users, appointments y busySlots: las de la reserva (spec 005, plan § 2),
+//   la edición del turno por la clienta (spec 006, plan § 2) y la reserva
+//   de la admin para otra persona (spec 007, plan § 2). Los solapes
 //   y un segundo turno activo los comprueba la app antes de guardar; las
 //   reglas que los impiden llegan en la spec 012.
 // - settings/calendar: lo lee cualquiera con sesión y solo lo escribe la
@@ -12,7 +13,8 @@ rules_version = '2';
 //
 // Lo que no aparece aquí queda denegado. Se comprueban a mano en el
 // simulador de la consola: specs/004-servicios-firestore/rules-check.md,
-// specs/005-reservas/rules-check.md y specs/006-editar-turno/rules-check.md.
+// specs/005-reservas/rules-check.md, specs/006-editar-turno/rules-check.md
+// y specs/007-reserva-admin/rules-check.md.
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -69,15 +71,33 @@ service cloud.firestore {
     // ocupado cambia a la vez, con las mismas horas (spec 006, RF-24, RF-26).
     // "Activo" queda cubierto: si empieza después de ahora más el margen,
     // aún no ha terminado.
+    //
+    // La clienta no puede marcar su turno como creado por la admin. La admin
+    // agenda turnos confirmados y marcados para una persona sin cuenta
+    // (clientId nulo) o para una clienta sin bloquear que no es ella, con su
+    // turno ocupado en el mismo lote (spec 007, RF-2, RF-25). Un turno sin
+    // cuenta no coincide con el uid de nadie: solo lo lee la admin (RF-26).
+    // La edición de la clienta no puede tocar la marca (RF-30).
     match /appointments/{id} {
       allow get, list: if isAdmin()
         || (signedIn() && resource.data.clientId == request.auth.uid);
-      allow create: if signedIn() && !isBlocked()
-        && request.resource.data.clientId == request.auth.uid
-        && request.resource.data.status == 'waiting_confirmation'
-        && request.resource.data.endTime > request.resource.data.startTime
-        && getAfter(/databases/$(database)/documents/busySlots/$(id)).data.start == request.resource.data.startTime
-        && getAfter(/databases/$(database)/documents/busySlots/$(id)).data.end == request.resource.data.endTime;
+      allow create: if (signedIn() && !isBlocked()
+          && request.resource.data.clientId == request.auth.uid
+          && request.resource.data.status == 'waiting_confirmation'
+          && request.resource.data.get('createdByAdmin', false) == false
+          && request.resource.data.endTime > request.resource.data.startTime
+          && getAfter(/databases/$(database)/documents/busySlots/$(id)).data.start == request.resource.data.startTime
+          && getAfter(/databases/$(database)/documents/busySlots/$(id)).data.end == request.resource.data.endTime)
+        || (isAdmin()
+          && request.resource.data.status == 'confirmed'
+          && request.resource.data.createdByAdmin == true
+          && request.resource.data.endTime > request.resource.data.startTime
+          && getAfter(/databases/$(database)/documents/busySlots/$(id)).data.start == request.resource.data.startTime
+          && getAfter(/databases/$(database)/documents/busySlots/$(id)).data.end == request.resource.data.endTime
+          && (request.resource.data.clientId == null
+            || (request.resource.data.clientId != request.auth.uid
+              && get(/databases/$(database)/documents/users/$(request.resource.data.clientId)).data.role == 'cliente'
+              && get(/databases/$(database)/documents/users/$(request.resource.data.clientId)).data.get('isBlocked', false) == false)));
       allow update: if
         (isAdmin() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']))
         || (signedIn() && !isBlocked()
@@ -97,12 +117,15 @@ service cloud.firestore {
     // lee cualquiera con sesión para ver las horas libres (RF-53); se crean
     // junto a un turno propio con las mismas horas, y la admin los borra al
     // cancelar (RF-56). Se cambian solo junto a la edición de su turno, que
-    // es de la clienta, con sus mismas horas (spec 006, RF-24, RF-26).
+    // es de la clienta, con sus mismas horas (spec 006, RF-24, RF-26). La
+    // admin también los crea, junto a un turno que ella marcó (spec 007,
+    // RF-25).
     match /busySlots/{id} {
       allow get, list: if signedIn();
       allow create: if signedIn()
         && request.resource.data.keys().hasOnly(['start', 'end'])
-        && getAfter(/databases/$(database)/documents/appointments/$(id)).data.clientId == request.auth.uid
+        && (getAfter(/databases/$(database)/documents/appointments/$(id)).data.clientId == request.auth.uid
+          || (isAdmin() && getAfter(/databases/$(database)/documents/appointments/$(id)).data.get('createdByAdmin', false) == true))
         && getAfter(/databases/$(database)/documents/appointments/$(id)).data.startTime == request.resource.data.start
         && getAfter(/databases/$(database)/documents/appointments/$(id)).data.endTime == request.resource.data.end;
       allow delete: if isAdmin();

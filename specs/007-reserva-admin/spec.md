@@ -1,5 +1,5 @@
 # Spec 007 — Reserva de la admin
-Estado: borrador
+Estado: implementada
 
 ## Contexto y objetivo
 Con la spec 005, la admin no puede agendar turnos: no reserva a su propio nombre, y no tiene forma de apuntar los turnos que le piden por WhatsApp, por teléfono o en el salón. Esta spec le deja reservar desde la misma vista de reserva, siempre para otra persona:
@@ -8,11 +8,11 @@ Con la spec 005, la admin no puede agendar turnos: no reserva a su propio nombre
 
 Así todos los turnos del salón están en la app y ocupan sus horas.
 
-Depende de la spec 005, que tiene que estar implementada. Tercera de las tres specs de reservas (división decidida por el autor el 2026-10-24).
+Parte de las specs 005 (reservas, implementada el 2026-11-05) y 006 (editar el turno, implementada el 2026-11-15). Tercera de las tres specs de reservas (división decidida por el autor el 2026-10-24).
 
 ## Usuarios
 - **Admin**: reserva para una clienta con cuenta o para una persona sin cuenta, nunca para sí misma.
-- **Cliente** con cuenta: ve como suyo el turno que le agenda la admin.
+- **Cliente** con cuenta: ve como suyo el turno que le agenda la admin y lo puede editar como cualquier turno suyo (spec 006).
 - **Persona sin cuenta**: no usa la app; solo se guardan su nombre y su WhatsApp en el turno.
 
 ## Historias de usuario
@@ -21,13 +21,13 @@ Depende de la spec 005, que tiene que estar implementada. Tercera de las tres sp
 - HU-3. Como clienta, quiero ver en la app el turno que me agendó la admin.
 
 ## Definiciones
-Las de la spec 005, más:
+Las de las specs 005 y 006 (margen de edición, turno editable, edición), más:
 - **Para quién**: la persona a cuyo nombre queda el turno que agenda la admin. Es una de estas dos:
   - una **clienta con cuenta**: rol clienta, no bloqueada y con WhatsApp;
   - una **persona sin cuenta**: un nombre y un WhatsApp que escribe la admin.
 - **WhatsApp normalizado**: solo los dígitos del WhatsApp, sin espacios, guiones, paréntesis ni el prefijo 55 de Brasil. Dos WhatsApp son el mismo si su versión normalizada coincide.
 - **Persona**: una clienta con cuenta y una persona sin cuenta con el mismo WhatsApp normalizado cuentan como la misma persona para el turno activo.
-- **Turno activo de una persona**: turno a su nombre, o con su WhatsApp normalizado, que empieza después de "ahora" y está esperando confirmación o confirmado.
+- **Turno activo de una persona**: turno a su nombre, o con su WhatsApp normalizado, que termina después de "ahora" (también mientras está en curso) y está esperando confirmación o confirmado, como el turno activo de una clienta de la spec 005.
 - **WhatsApp válido**: al menos 8 dígitos y como mucho 15, una vez normalizado.
 
 ## Requisitos funcionales
@@ -44,15 +44,18 @@ Las de la spec 005, más:
 - RF-9: SI el nombre está vacío o es demasiado largo, el WhatsApp no es válido o la casilla no está marcada, ENTONCES EL SISTEMA no agenda y marca el campo.
 - RF-10: CUANDO la admin sale del campo de WhatsApp de "Persona sin cuenta" y el número coincide con el de una clienta con cuenta, EL SISTEMA se lo avisa y le propone elegir a esa clienta. Si la admin sigue como persona sin cuenta, el turno se guarda así.
 - RF-11: SI ese WhatsApp coincide con el de una clienta bloqueada, ENTONCES EL SISTEMA avisa de que esa clienta está bloqueada y no agenda.
+- RF-27: CUANDO la admin cambia de pestaña (Android/iOS) o va a otra página con un enlace de la app (Web) y vuelve a la reserva, EL SISTEMA conserva "Para quién" junto con lo demás elegido (spec 005, RF-45).
 
 ### Reglas de la reserva de la admin
 - RF-12: MIENTRAS reserva la admin, EL SISTEMA aplica las reglas de la vista de reserva de la spec 005, salvo la ventana de reserva: deja elegir fechas desde hoy hasta 365 días después.
 - RF-13: MIENTRAS reserva la admin, EL SISTEMA no deja elegir días cerrados ni fechas bloqueadas, ni, con la spec 008, horas dentro de un cierre.
 - RF-14: SI la persona elegida ya tiene un turno activo, ENTONCES EL SISTEMA no deja agendar otro, se lo indica a la admin con la fecha, la hora y lo reservado de ese turno, y conserva lo elegido.
 - RF-15: SI la admin bloquea a la clienta elegida antes de confirmar, ENTONCES EL SISTEMA no guarda el turno, la quita de "Para quién" y avisa.
+- RF-28: MIENTRAS la sesión es de la admin, EL SISTEMA no le muestra un turno activo propio ni "Editar turno" (spec 006) en la reserva: siempre le muestra la vista de reserva con "Para quién".
 
 ### Agendar
 - RF-16: EL SISTEMA muestra en el resumen y en la confirmación, antes que lo demás, para quién es el turno.
+- RF-29: CUANDO la admin agenda para una clienta con cuenta un turno que ya empieza dentro del margen de edición, EL SISTEMA le avisa en la confirmación de que la clienta no lo podrá cambiar (como la spec 006, RF-23). Para una persona sin cuenta no hay aviso, porque no edita.
 - RF-17: SI se toca "Agendar turno" sin para quién, sin hora o sin servicio, ENTONCES EL SISTEMA no agenda, indica qué falta y marca cada parte sin elegir.
 - RF-18: CUANDO la admin confirma, EL SISTEMA comprueba otra vez la hora, que el servicio cabe y el turno activo de la persona (RF-14), como en la spec 005 (RF-26).
 - RF-19: CUANDO se cumplen las comprobaciones, EL SISTEMA guarda el turno confirmado, con la copia de lo reservado (spec 005, RF-27), marca que lo creó la admin y guarda:
@@ -67,7 +70,8 @@ Las de la spec 005, más:
 - RF-24: EL SISTEMA sigue mostrando bien los turnos de personas sin cuenta en todas las vistas que ya leen turnos (lista de la admin y cálculo de horas libres), aunque no tengan cuenta asociada.
 
 ### Seguridad y privacidad
-- RF-25: EL SISTEMA solo deja a la admin crear turnos confirmados, turnos a nombre de otra persona y turnos de personas sin cuenta. Se comprueba en el servidor.
+- RF-25: EL SISTEMA solo deja a la admin crear turnos confirmados, turnos a nombre de otra persona y turnos de personas sin cuenta, y crear a la vez su inicio y su fin para las demás (spec 005, RF-53), con las mismas horas que el turno. Se comprueba en el servidor.
+- RF-30: EL SISTEMA no deja a la clienta cambiar la marca de que la admin creó su turno al editarlo (spec 006, RF-24): se conserva. Se comprueba en el servidor.
 - RF-26: EL SISTEMA solo deja leer el nombre y el WhatsApp de una persona sin cuenta a la admin. Se comprueba en el servidor.
 
 ## Requisitos no funcionales
@@ -79,7 +83,7 @@ Las de la spec 005, más:
 - RNF-2: Mismos requisitos de contraste, 48 px, lector de pantalla, texto al 200 % y 320 px que la spec 005, también en "Para quién".
 - RNF-3: Todos los textos nuevos de la interfaz están en español y en portugués.
 - RNF-4: De una persona sin cuenta solo se guardan su nombre y su WhatsApp, dentro del turno, sin una ficha aparte (constitución, principio 5).
-- RNF-5: Las reglas de RF-25 y RF-26 se comprueban caso por caso en el simulador.
+- RNF-5: Las reglas de RF-25, RF-26 y RF-30 se comprueban caso por caso en el simulador, y las de la spec 006 (RF-24) se siguen cumpliendo.
 
 ## Plataformas
 - **Android/iOS**: la admin reserva en la pestaña Reservas, con la barra inferior visible.
@@ -97,10 +101,13 @@ Las de la spec 005, más:
 - La admin agenda un turno para una clienta que tiene la reserva abierta: la clienta pasa a ver su turno activo sin recargar (RF-21).
 - La clienta y la admin confirman a la vez un turno para la misma clienta: el segundo no se guarda (RF-18); la garantía en el servidor llega con la spec 012.
 - La admin cambia de idioma con la confirmación abierta: se traduce.
+- La clienta edita un turno que le agendó la admin (spec 006): vuelve a esperar confirmación aunque la admin lo creara confirmado, y sigue marcado como creado por la admin (RF-23, RF-30).
+- La admin agenda para una clienta un turno a más de 60 días: la clienta puede editarlo manteniendo su fecha; si la cambia, tiene que elegir una dentro de su ventana de 60 días (spec 006, RF-8 y RF-9).
+- Turno en curso de una persona (está en el salón): sigue siendo su turno activo hasta su fin, y la admin no le puede agendar otro hasta entonces (RF-14).
 
 ## Fuera de alcance
 - Unir los turnos de una persona sin cuenta a su cuenta si después se registra.
-- Editar los datos de una persona sin cuenta o cambiar la persona de un turno (spec 008).
+- Que la admin edite los turnos ya guardados, los datos de una persona sin cuenta o la persona de un turno (spec 008).
 - Que la admin agende turnos que se solapen, que pasen del cierre o en días cerrados o bloqueados.
 - Aviso push de los turnos que crea la admin (spec 011).
 - Política de privacidad (spec 013).
@@ -108,7 +115,7 @@ Las de la spec 005, más:
 ## Criterios de finalización
 - Todos los RF tienen su test y pasan. `flutter analyze` sin errores ni avisos y `dart format` sin cambios.
 - Las reglas puras de RNF-1 tienen tests de tabla.
-- El autor comprueba las reglas de RF-25 y RF-26 en el simulador.
+- El autor comprueba las reglas de RF-25, RF-26 y RF-30 en el simulador.
 - Recorrido manual del autor en Android/iOS y en Web, en tema claro y oscuro y en español y portugués. Incluye:
   - agendar para una clienta con cuenta, que lo ve como su turno activo;
   - agendar para una persona sin cuenta, más allá de 60 días;
@@ -117,7 +124,16 @@ Las de la spec 005, más:
   - ver los turnos en la lista de la admin.
 
 ## Dudas abiertas
-Ninguna. Resueltas con el autor (2026-10-24):
+Ninguna.
+
+Puesta al día con la spec 006 (2026-11-16, decisión del autor):
+- El turno activo de una persona dura hasta su fin, como en la spec 005.
+- Las reglas dejan a la admin crear también el inicio y el fin del turno para las demás (RF-25), y la clienta no cambia la marca de "creado por la admin" al editarlo (RF-30).
+- La admin no tiene turno activo ni "Editar turno" en la reserva (RF-28); editar turnos guardados llega con la 008.
+- Aviso del margen de edición al agendar para una clienta con cuenta, no para una persona sin cuenta (RF-29).
+- "Para quién" se conserva al cambiar de pestaña o de página, como lo demás elegido (RF-27).
+
+Resueltas con el autor (2026-10-24):
 - La admin reserva siempre para otra persona: una clienta con cuenta (no bloqueada) o una persona sin cuenta, con nombre y WhatsApp obligatorios.
 - Sus turnos quedan confirmados y sin el límite de 60 días; se mantienen un turno activo por persona y que el servicio quepa.
 - Tampoco agenda en días cerrados, bloqueados o dentro de un cierre.

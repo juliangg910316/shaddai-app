@@ -10,6 +10,8 @@ import '../../../l10n/app_localizations.dart';
 import '../../services/logic/price_list_view_logic.dart';
 import '../../services/providers/price_list_provider.dart';
 import '../logic/bookable_catalog.dart';
+import '../logic/recipient.dart';
+import '../providers/admin_booking_provider.dart';
 import '../providers/booking_provider.dart';
 import 'booking_section_title.dart';
 
@@ -17,10 +19,13 @@ import 'booking_section_title.dart';
 /// reservado, los adicionales, la duración y el total (spec 005, RF-22).
 /// Solo aparece con una hora o un servicio elegidos. El diálogo de
 /// confirmación lo muestra sin su título ([showTitle]).
+///
+/// Con [admin], empieza por para quién es el turno (spec 007, RF-16).
 class BookingSummary extends ConsumerWidget {
-  const BookingSummary({super.key, this.showTitle = true});
+  const BookingSummary({super.key, this.showTitle = true, this.admin = false});
 
   final bool showTitle;
+  final bool admin;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -28,6 +33,9 @@ class BookingSummary extends ConsumerWidget {
     final start = selection.start;
     final day = selection.day;
     final item = selection.item;
+    final recipient = admin
+        ? ref.watch(bookingRecipientProvider.select((s) => s.recipient))
+        : null;
     if (start == null && item == null) return const SizedBox.shrink();
 
     final l10n = AppLocalizations.of(context)!;
@@ -70,6 +78,11 @@ class BookingSummary extends ConsumerWidget {
       children: [
         if (showTitle) ...[
           BookingSectionTitle(l10n.bookingStepSummary),
+          const SizedBox(height: 8),
+        ],
+        if (recipient != null) ...[
+          Text(l10n.bookingSummaryFor(recipient.name.trim()), style: strong),
+          Text(_recipientDetail(l10n, recipient), style: body),
           const SizedBox(height: 8),
         ],
         if (day != null)
@@ -115,4 +128,13 @@ class BookingSummary extends ConsumerWidget {
       ],
     );
   }
+}
+
+/// El WhatsApp de para quién y, si no tiene cuenta, "sin cuenta" (RF-16).
+String _recipientDetail(AppLocalizations l10n, Recipient recipient) {
+  final phone = recipient.phone.trim();
+  return switch (recipient) {
+    AccountRecipient() => phone,
+    GuestRecipient() => [phone, l10n.bookingSummaryGuest].join(' · '),
+  };
 }

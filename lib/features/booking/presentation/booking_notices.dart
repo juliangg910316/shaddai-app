@@ -61,19 +61,6 @@ class BookingBlockedNotice extends StatelessWidget {
   }
 }
 
-/// La administradora no reserva turnos a su nombre (RF-39).
-class BookingAdminNotice extends StatelessWidget {
-  const BookingAdminNotice({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return AppNotice(
-      message: AppLocalizations.of(context)!.bookingAdminNotice,
-      actions: const [],
-    );
-  }
-}
-
 /// El texto de [notice] en el idioma activo (plan, D-7).
 String bookingNoticeMessage(AppLocalizations l10n, BookingNotice notice) {
   final duration = formatDuration(notice.minutes ?? 0);
@@ -160,6 +147,34 @@ SnackBar _resultSnackBar(
       child: content,
     ),
   );
+}
+
+/// Muestra en un `SnackBar` el texto que da [message], traducido en su
+/// `build` para que cambie con el idioma, y lo anuncia al lector de
+/// pantalla. Con [isError], sobre el color de peligro.
+void showBookingMessage(
+  BuildContext context,
+  String Function(AppLocalizations l10n) message, {
+  bool isError = false,
+}) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    _resultSnackBar(context, _MessageText(message), isError: isError),
+  );
+  SemanticsService.sendAnnouncement(
+    View.of(context),
+    message(AppLocalizations.of(context)!),
+    Directionality.of(context),
+  );
+}
+
+class _MessageText extends StatelessWidget {
+  const _MessageText(this.message);
+
+  final String Function(AppLocalizations l10n) message;
+
+  @override
+  Widget build(BuildContext context) =>
+      Text(message(AppLocalizations.of(context)!));
 }
 
 /// El aviso de "Agendar turno" según [result] (RF-29 a RF-32, RF-36).

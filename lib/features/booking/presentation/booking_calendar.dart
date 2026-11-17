@@ -62,7 +62,11 @@ class _BookingCalendarState extends ConsumerState<BookingCalendar> {
     if (settings == null) return const SizedBox.shrink();
 
     final l10n = AppLocalizations.of(context)!;
-    final window = bookingWindow(today);
+    // 365 días para la admin, 60 para la clienta (spec 007, RF-12).
+    final window = bookingWindow(
+      today,
+      days: ref.watch(bookingWindowDaysProvider),
+    );
     bool selectable(DateTime d) => original == null
         ? isSelectableDay(d, settings, window)
         : isEditDaySelectable(d, settings, window, original);
