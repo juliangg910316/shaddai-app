@@ -120,13 +120,19 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
     - `mobile_closure_test` toma `label: '${…}'` por un texto sin traducir: la frase del lector de pantalla se arma en una variable;
     - 8 tests nuevos; suite completa, 1603 en verde.
 
-- [ ] **T9. Persona sin cuenta.** RF-7 a RF-11
+- [x] **T9. Persona sin cuenta.** RF-7 a RF-11
   - Tests (`admin_booking_view_test.dart`):
     - "Persona sin cuenta" muestra nombre, WhatsApp y la casilla; "Buscar clienta" vuelve a la búsqueda;
     - al tocar "Agendar turno", cada campo con error lleva su texto (nombre vacío o de 81 caracteres, WhatsApp no válido, casilla sin marcar);
     - al salir del campo de WhatsApp con el número de una clienta: el aviso, "Elegir a <nombre>" la elige y "Seguir sin cuenta" lo deja como está; con el de una bloqueada: el error en el campo;
     - con el WhatsApp de una persona con turno activo: el aviso de RF-14.
   - Hecho cuando: los tests pasan. Textos: `bookingGuest*`.
+  - Hecha (2026-11-16):
+    - `RecipientPicker` → `_GuestForm`: nombre (contador de 80, deja escribir de más para avisar), WhatsApp (teclado de teléfono) y la casilla; errores en cada campo solo tras tocar "Agendar turno"; al salir del WhatsApp, aviso con "Elegir a <nombre>" y "Seguir sin cuenta" (anunciado al lector de pantalla), o error en el campo si es de una bloqueada, sin decir su nombre;
+    - adelantado de la T10: "Agendar turno" en modo admin cuenta "para quién" como parte que falta (`BookButton(admin)`, `BookingForm`), con `bookingMissingRecipient` ("Indica para quién es el turno", que vale también para datos incompletos) y `bookingMissingSeveral`; "Para quién" se marca con su borde como las demás partes;
+    - arreglo: el campo de búsqueda se crea en `initState`. Creado al usarse, si "Para quién" se montaba con la persona sin cuenta (al volver tras bajar la lista), se creaba por primera vez en `dispose` y fallaba al leer `ref`;
+    - en los tests, tras saltar en la lista hay que dejar pasar varios fotogramas con tiempo antes de tocar: la lista se recoloca con una animación e ignora los toques mientras tanto;
+    - 8 tests nuevos; suite completa, 1611 en verde.
 
 - [ ] **T10. Lo que falta, resumen y confirmación.** RF-14, RF-16, RF-17, RF-29
   - Tests (`admin_booking_view_test.dart`):
@@ -135,7 +141,7 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
     - el resumen y la confirmación muestran primero para quién (y "sin cuenta"), y "El turno quedará confirmado";
     - con un margen de 60 minutos y una hora dentro: el aviso con el nombre de la clienta con cuenta; nada con una persona sin cuenta;
     - cambio de idioma con la confirmación abierta: se traduce.
-  - Hecho cuando: los tests pasan. Textos: `bookingMissingRecipient`, `bookingMissingSeveral`, `bookingSummaryFor`, `bookingSummaryGuest`, `bookingAdminConfirmNote`, `bookingAdminMarginWarning`.
+  - Hecho cuando: los tests pasan. Textos (`bookingMissingRecipient` y `bookingMissingSeveral` ya llegaron con la T9): `bookingSummaryFor`, `bookingSummaryGuest`, `bookingAdminConfirmNote`, `bookingAdminMarginWarning`.
 
 - [ ] **T11. Agendar y lo que pasa después.** RF-15, RF-18 a RF-20, RF-27
   - Tests:

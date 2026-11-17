@@ -2249,6 +2249,78 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Ya tiene un turno el {date} a las {time}: {service}. No se le puede agendar otro.'**
   String bookingRecipientActive(String date, String time, String service);
+
+  /// Nombre de la persona sin cuenta (spec 007, RF-7)
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre'**
+  String get bookingGuestNameLabel;
+
+  /// WhatsApp de la persona sin cuenta (spec 007, RF-7)
+  ///
+  /// In es, this message translates to:
+  /// **'WhatsApp'**
+  String get bookingGuestPhoneLabel;
+
+  /// Casilla de consentimiento de la persona sin cuenta (spec 007, RF-8)
+  ///
+  /// In es, this message translates to:
+  /// **'La persona acepta dar su nombre y su WhatsApp para este turno.'**
+  String get bookingGuestConsent;
+
+  /// Nombre vacío o demasiado largo (spec 007, RF-9)
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe un nombre de hasta 80 caracteres.'**
+  String get bookingGuestNameError;
+
+  /// WhatsApp no válido (spec 007, RF-9)
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe un WhatsApp válido (de 8 a 15 dígitos).'**
+  String get bookingGuestPhoneError;
+
+  /// Casilla sin marcar (spec 007, RF-9)
+  ///
+  /// In es, this message translates to:
+  /// **'Marca la casilla para continuar.'**
+  String get bookingGuestConsentError;
+
+  /// El WhatsApp de la persona sin cuenta es de una clienta (spec 007, RF-10)
+  ///
+  /// In es, this message translates to:
+  /// **'Este WhatsApp es de {name}, que tiene cuenta.'**
+  String bookingGuestPhoneHasAccount(String name);
+
+  /// Elige a la clienta con ese WhatsApp (spec 007, RF-10)
+  ///
+  /// In es, this message translates to:
+  /// **'Elegir a {name}'**
+  String bookingGuestChooseAccount(String name);
+
+  /// Sigue con la persona sin cuenta (spec 007, RF-10)
+  ///
+  /// In es, this message translates to:
+  /// **'Seguir sin cuenta'**
+  String get bookingGuestKeepGuest;
+
+  /// El WhatsApp es de una clienta bloqueada (spec 007, RF-11)
+  ///
+  /// In es, this message translates to:
+  /// **'Este WhatsApp es de una clienta bloqueada: no se le puede agendar.'**
+  String get bookingGuestPhoneBlocked;
+
+  /// Falta para quién o sus datos (spec 007, RF-17)
+  ///
+  /// In es, this message translates to:
+  /// **'Indica para quién es el turno'**
+  String get bookingMissingRecipient;
+
+  /// Falta para quién y algo más (spec 007, RF-17)
+  ///
+  /// In es, this message translates to:
+  /// **'Faltan datos para agendar: revisa lo marcado.'**
+  String get bookingMissingSeveral;
 }
 
 class _AppLocalizationsDelegate

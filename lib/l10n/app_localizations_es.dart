@@ -1161,4 +1161,49 @@ class AppLocalizationsEs extends AppLocalizations {
   String bookingRecipientActive(String date, String time, String service) {
     return 'Ya tiene un turno el $date a las $time: $service. No se le puede agendar otro.';
   }
+
+  @override
+  String get bookingGuestNameLabel => 'Nombre';
+
+  @override
+  String get bookingGuestPhoneLabel => 'WhatsApp';
+
+  @override
+  String get bookingGuestConsent =>
+      'La persona acepta dar su nombre y su WhatsApp para este turno.';
+
+  @override
+  String get bookingGuestNameError =>
+      'Escribe un nombre de hasta 80 caracteres.';
+
+  @override
+  String get bookingGuestPhoneError =>
+      'Escribe un WhatsApp válido (de 8 a 15 dígitos).';
+
+  @override
+  String get bookingGuestConsentError => 'Marca la casilla para continuar.';
+
+  @override
+  String bookingGuestPhoneHasAccount(String name) {
+    return 'Este WhatsApp es de $name, que tiene cuenta.';
+  }
+
+  @override
+  String bookingGuestChooseAccount(String name) {
+    return 'Elegir a $name';
+  }
+
+  @override
+  String get bookingGuestKeepGuest => 'Seguir sin cuenta';
+
+  @override
+  String get bookingGuestPhoneBlocked =>
+      'Este WhatsApp es de una clienta bloqueada: no se le puede agendar.';
+
+  @override
+  String get bookingMissingRecipient => 'Indica para quién es el turno';
+
+  @override
+  String get bookingMissingSeveral =>
+      'Faltan datos para agendar: revisa lo marcado.';
 }

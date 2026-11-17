@@ -8,8 +8,10 @@ import 'package:shaddai/data/models/user_model.dart';
 import 'package:shaddai/features/auth/providers/auth_provider.dart';
 import 'package:shaddai/features/booking/logic/recipient.dart';
 import 'package:shaddai/features/booking/logic/salon_time.dart';
+import 'package:shaddai/features/booking/presentation/book_button.dart';
 import 'package:shaddai/features/booking/presentation/booking_view.dart';
 import 'package:shaddai/features/booking/providers/admin_booking_provider.dart';
+import 'package:shaddai/features/navigation/providers/tab_scroll_provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import '../../helpers/fake_auth.dart';
@@ -118,6 +120,55 @@ void main() {
       find.widgetWithText(TextField, 'Nombre o WhatsApp de la clienta'),
       text,
     );
+    await settle(tester);
+  }
+
+  /// Baja hasta "Agendar turno" y lo toca.
+  Future<void> tapBook(WidgetTester tester) async {
+    final scroll = appContainer(tester)
+        .read(tabScrollControllerProvider(MobileTab.booking));
+    final button = find.descendant(
+      of: find.byType(BookButton),
+      matching: find.byType(ElevatedButton),
+    );
+    for (var i = 0; i < 10 && button.evaluate().isEmpty; i++) {
+      scroll.jumpTo(scroll.position.maxScrollExtent);
+      await tester.pump();
+    }
+    await tester.ensureVisible(button);
+    await tester.pump();
+    await tester.tap(button);
+    await settle(tester);
+  }
+
+  /// Vuelve arriba, a "Para quién".
+  Future<void> scrollToTop(WidgetTester tester) async {
+    appContainer(tester)
+        .read(tabScrollControllerProvider(MobileTab.booking))
+        .jumpTo(0);
+    await settle(tester);
+    await tester.pump(const Duration(seconds: 1));
+  }
+
+  Finder field(String label) => find.widgetWithText(TextField, label);
+
+  Future<void> tapConsent(WidgetTester tester) async {
+    final consent = find.text(
+      'La persona acepta dar su nombre y su WhatsApp para este turno.',
+    );
+    await tester.ensureVisible(consent);
+    // Tras un salto, la lista se recoloca con una animación e ignora los
+    // toques hasta que acaba: hay que dejar pasar el tiempo, en varios
+    // fotogramas.
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    await tester.tap(consent);
+    await settle(tester);
+  }
+
+  Future<void> startGuest(WidgetTester tester) async {
+    await tester.tap(find.text('PERSONA SIN CUENTA'));
     await settle(tester);
   }
 
@@ -302,6 +353,207 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('PESSOA SEM CONTA'), findsOneWidget);
+    });
+  });
+
+  group('persona sin cuenta (RF-7 a RF-11)', () {
+    testWidgets('pide nombre, WhatsApp y la casilla; "Buscar clienta" '
+        'vuelve', (tester) async {
+      await pump(tester);
+      await startGuest(tester);
+
+      expect(field('Nombre'), findsOneWidget);
+      expect(field('WhatsApp'), findsOneWidget);
+      expect(
+        find.text(
+          'La persona acepta dar su nombre y su WhatsApp para este turno.',
+        ),
+        findsOneWidget,
+      );
+
+      await tester.enterText(field('Nombre'), 'Rosa');
+      await tester.enterText(field('WhatsApp'), '41 99333-0000');
+      await tapConsent(tester);
+      expect(
+        recipientState(tester).recipient,
+        const GuestRecipient(
+          name: 'Rosa',
+          phone: '41 99333-0000',
+          consent: true,
+        ),
+      );
+
+      await tester.tap(find.text('BUSCAR CLIENTA'));
+      await settle(tester);
+      expect(recipientState(tester).recipient, isNull);
+      expect(field('Nombre'), findsNothing);
+    });
+
+    testWidgets('al tocar "Agendar turno", marca cada campo con error y no '
+        'abre la confirmación (RF-9, RF-17)', (tester) async {
+      await pump(tester);
+      await startGuest(tester);
+      // Antes de tocar "Agendar turno" no se marca nada.
+      expect(
+        find.text('Escribe un nombre de hasta 80 caracteres.'),
+        findsNothing,
+      );
+
+      await tapBook(tester);
+      expect(find.text('Confirmar turno'), findsNothing);
+      expect(
+        find.text('Faltan datos para agendar: revisa lo marcado.'),
+        findsOneWidget,
+      );
+
+      await scrollToTop(tester);
+      expect(
+        find.text('Escribe un nombre de hasta 80 caracteres.'),
+        findsOneWidget,
+      );
+      expect(
+        find.text('Escribe un WhatsApp válido (de 8 a 15 dígitos).'),
+        findsOneWidget,
+      );
+      expect(find.text('Marca la casilla para continuar.'), findsOneWidget);
+      expect(find.text('Indica para quién es el turno'), findsOneWidget);
+
+      // Al corregir cada campo, su error desaparece.
+      await tester.enterText(field('Nombre'), 'Rosa');
+      await tester.enterText(field('WhatsApp'), '41 99333-0000');
+      await tapConsent(tester);
+      expect(
+        find.text('Escribe un nombre de hasta 80 caracteres.'),
+        findsNothing,
+      );
+      expect(
+        find.text('Escribe un WhatsApp válido (de 8 a 15 dígitos).'),
+        findsNothing,
+      );
+      expect(find.text('Marca la casilla para continuar.'), findsNothing);
+      expect(find.text('Indica para quién es el turno'), findsNothing);
+    });
+
+    testWidgets('un nombre de 81 caracteres o un WhatsApp corto dan error', (
+      tester,
+    ) async {
+      await pump(tester);
+      await startGuest(tester);
+      await tester.enterText(field('Nombre'), 'a' * 81);
+      await tester.enterText(field('WhatsApp'), '1234567');
+      await tapConsent(tester);
+      await tapBook(tester);
+      await scrollToTop(tester);
+
+      expect(
+        find.text('Escribe un nombre de hasta 80 caracteres.'),
+        findsOneWidget,
+      );
+      expect(
+        find.text('Escribe un WhatsApp válido (de 8 a 15 dígitos).'),
+        findsOneWidget,
+      );
+
+      await tester.enterText(field('Nombre'), 'a' * 80);
+      await settle(tester);
+      expect(
+        find.text('Escribe un nombre de hasta 80 caracteres.'),
+        findsNothing,
+      );
+    });
+
+    testWidgets('sin para quién, "Agendar turno" lo dice (RF-17)', (
+      tester,
+    ) async {
+      await pump(tester);
+      await tapBook(tester);
+      expect(
+        find.text('Faltan datos para agendar: revisa lo marcado.'),
+        findsOneWidget,
+      );
+      await scrollToTop(tester);
+      expect(find.text('Indica para quién es el turno'), findsOneWidget);
+    });
+
+    testWidgets('al salir del WhatsApp de una clienta con cuenta, lo avisa y '
+        'propone elegirla (RF-10)', (tester) async {
+      await pump(tester);
+      await startGuest(tester);
+      await tester.enterText(field('WhatsApp'), '(41) 99111-0000');
+      // Aún no ha salido del campo: sin aviso.
+      expect(
+        find.text('Este WhatsApp es de Ana Souza, que tiene cuenta.'),
+        findsNothing,
+      );
+      await tester.tap(field('Nombre'));
+      await settle(tester);
+
+      expect(
+        find.text('Este WhatsApp es de Ana Souza, que tiene cuenta.'),
+        findsOneWidget,
+      );
+      await tester.tap(find.text('ELEGIR A ANA SOUZA'));
+      await settle(tester);
+      expect(recipientState(tester).recipient, AccountRecipient.of(ana));
+    });
+
+    testWidgets('"Seguir sin cuenta" deja la persona sin cuenta (RF-10)', (
+      tester,
+    ) async {
+      await pump(tester);
+      await startGuest(tester);
+      await tester.enterText(field('WhatsApp'), '41 99111-0000');
+      await tester.tap(field('Nombre'));
+      await settle(tester);
+
+      await tester.tap(find.text('SEGUIR SIN CUENTA'));
+      await settle(tester);
+      expect(
+        find.text('Este WhatsApp es de Ana Souza, que tiene cuenta.'),
+        findsNothing,
+      );
+      expect(recipientState(tester).recipient, isA<GuestRecipient>());
+      expect(
+        (recipientState(tester).recipient! as GuestRecipient).phone,
+        '41 99111-0000',
+      );
+    });
+
+    testWidgets('con el WhatsApp de una clienta bloqueada, error en el campo '
+        '(RF-11)', (tester) async {
+      await pump(tester);
+      await startGuest(tester);
+      await tester.enterText(field('WhatsApp'), carla.phoneNumber!);
+      await tester.tap(field('Nombre'));
+      await settle(tester);
+
+      expect(
+        find.text(
+          'Este WhatsApp es de una clienta bloqueada: no se le puede agendar.',
+        ),
+        findsOneWidget,
+      );
+      expect(find.textContaining('Carla'), findsNothing);
+
+      // Otro número quita el error.
+      await tester.enterText(field('WhatsApp'), '41 95555-0000');
+      await settle(tester);
+      expect(
+        find.text(
+          'Este WhatsApp es de una clienta bloqueada: no se le puede agendar.',
+        ),
+        findsNothing,
+      );
+    });
+
+    testWidgets('con el WhatsApp de una persona con turno activo, lo avisa '
+        '(RF-14)', (tester) async {
+      bookings.active = [anaActive()];
+      await pump(tester);
+      await startGuest(tester);
+      await tester.enterText(field('WhatsApp'), '41 99111-0000');
+      await settle(tester);
+      expect(find.textContaining('Ya tiene un turno el'), findsOneWidget);
     });
   });
 }

@@ -611,5 +611,35 @@
   "@bookingRecipientActive": {
     "description": "La persona elegida ya tiene un turno activo (spec 007, RF-14)",
     "placeholders": {"date": {"type": "String"}, "time": {"type": "String"}, "service": {"type": "String"}}
-  }
+  },
+  "bookingGuestNameLabel": "Nombre",
+  "@bookingGuestNameLabel": {"description": "Nombre de la persona sin cuenta (spec 007, RF-7)"},
+  "bookingGuestPhoneLabel": "WhatsApp",
+  "@bookingGuestPhoneLabel": {"description": "WhatsApp de la persona sin cuenta (spec 007, RF-7)"},
+  "bookingGuestConsent": "La persona acepta dar su nombre y su WhatsApp para este turno.",
+  "@bookingGuestConsent": {"description": "Casilla de consentimiento de la persona sin cuenta (spec 007, RF-8)"},
+  "bookingGuestNameError": "Escribe un nombre de hasta 80 caracteres.",
+  "@bookingGuestNameError": {"description": "Nombre vacío o demasiado largo (spec 007, RF-9)"},
+  "bookingGuestPhoneError": "Escribe un WhatsApp válido (de 8 a 15 dígitos).",
+  "@bookingGuestPhoneError": {"description": "WhatsApp no válido (spec 007, RF-9)"},
+  "bookingGuestConsentError": "Marca la casilla para continuar.",
+  "@bookingGuestConsentError": {"description": "Casilla sin marcar (spec 007, RF-9)"},
+  "bookingGuestPhoneHasAccount": "Este WhatsApp es de {name}, que tiene cuenta.",
+  "@bookingGuestPhoneHasAccount": {
+    "description": "El WhatsApp de la persona sin cuenta es de una clienta (spec 007, RF-10)",
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "bookingGuestChooseAccount": "Elegir a {name}",
+  "@bookingGuestChooseAccount": {
+    "description": "Elige a la clienta con ese WhatsApp (spec 007, RF-10)",
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "bookingGuestKeepGuest": "Seguir sin cuenta",
+  "@bookingGuestKeepGuest": {"description": "Sigue con la persona sin cuenta (spec 007, RF-10)"},
+  "bookingGuestPhoneBlocked": "Este WhatsApp es de una clienta bloqueada: no se le puede agendar.",
+  "@bookingGuestPhoneBlocked": {"description": "El WhatsApp es de una clienta bloqueada (spec 007, RF-11)"},
+  "bookingMissingRecipient": "Indica para quién es el turno",
+  "@bookingMissingRecipient": {"description": "Falta para quién o sus datos (spec 007, RF-17)"},
+  "bookingMissingSeveral": "Faltan datos para agendar: revisa lo marcado.",
+  "@bookingMissingSeveral": {"description": "Falta para quién y algo más (spec 007, RF-17)"}
 }

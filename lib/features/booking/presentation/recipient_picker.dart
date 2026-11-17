@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
@@ -18,8 +20,13 @@ import 'booking_section_title.dart';
 /// "Para quién" de la reserva de la admin (spec 007, RF-1 a RF-11): la
 /// búsqueda de clientas con cuenta, la clienta elegida o la persona sin
 /// cuenta.
+///
+/// Con [showErrors] (tras tocar "Agendar turno"), marca los campos de la
+/// persona sin cuenta que impiden agendar (RF-9).
 class RecipientPicker extends ConsumerStatefulWidget {
-  const RecipientPicker({super.key});
+  const RecipientPicker({super.key, this.showErrors = false});
+
+  final bool showErrors;
 
   @override
   ConsumerState<RecipientPicker> createState() => _RecipientPickerState();
@@ -27,10 +34,18 @@ class RecipientPicker extends ConsumerStatefulWidget {
 
 class _RecipientPickerState extends ConsumerState<RecipientPicker> {
   /// Empieza con la búsqueda guardada: se conserva al volver a la reserva
-  /// (RF-27).
-  late final _query = TextEditingController(
-    text: ref.read(bookingRecipientProvider).query,
-  );
+  /// (RF-27). Se crea en [initState], no al usarla: si "Para quién" se monta
+  /// con la persona sin cuenta, la primera vez sería en [dispose], donde ya
+  /// no se puede leer `ref`.
+  late final TextEditingController _query;
+
+  @override
+  void initState() {
+    super.initState();
+    _query = TextEditingController(
+      text: ref.read(bookingRecipientProvider).query,
+    );
+  }
 
   @override
   void dispose() {
@@ -63,6 +78,8 @@ class _RecipientPickerState extends ConsumerState<RecipientPicker> {
           null => _search(context),
           AccountRecipient() => [_ChosenClient(recipient: recipient)],
           GuestRecipient() => [
+            _GuestForm(guest: recipient, showErrors: widget.showErrors),
+            const SizedBox(height: 12),
             OutlinePillButton(
               label: l10n.bookingRecipientSearchAction.toUpperCase(),
               onPressed: _controller.clear,
@@ -317,4 +334,170 @@ String activeAppointmentMessage(
       for (final addon in booked?.addons ?? const []) addon.name.of(locale),
     ].join(', '),
   );
+}
+
+/// Los datos de la persona sin cuenta: nombre, WhatsApp y la casilla de
+/// consentimiento (RF-7 a RF-9). Al salir del WhatsApp, avisa si es el de
+/// una clienta con cuenta (RF-10) o el de una bloqueada (RF-11).
+class _GuestForm extends ConsumerStatefulWidget {
+  const _GuestForm({required this.guest, required this.showErrors});
+
+  final GuestRecipient guest;
+  final bool showErrors;
+
+  @override
+  ConsumerState<_GuestForm> createState() => _GuestFormState();
+}
+
+class _GuestFormState extends ConsumerState<_GuestForm> {
+  // Empiezan con lo guardado: se conserva al volver a la reserva (RF-27).
+  late final _name = TextEditingController(text: widget.guest.name);
+  late final _phone = TextEditingController(text: widget.guest.phone);
+  final _phoneFocus = FocusNode();
+
+  /// El WhatsApp con el que se salió del campo, o `null` si se cambió
+  /// después: solo entonces se busca su cuenta (RF-10).
+  String? _checkedPhone;
+
+  /// La admin eligió "Seguir sin cuenta" para [_checkedPhone].
+  bool _keepGuest = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _phoneFocus.addListener(_onPhoneFocus);
+  }
+
+  @override
+  void dispose() {
+    _name.dispose();
+    _phone.dispose();
+    _phoneFocus.dispose();
+    super.dispose();
+  }
+
+  RecipientController get _controller =>
+      ref.read(bookingRecipientProvider.notifier);
+
+  void _onPhoneFocus() {
+    if (_phoneFocus.hasFocus || _phone.text.trim().isEmpty) return;
+    setState(() {
+      _checkedPhone = _phone.text;
+      _keepGuest = false;
+    });
+    final match = _match();
+    if (match == null) return;
+    final l10n = AppLocalizations.of(context)!;
+    SemanticsService.sendAnnouncement(
+      View.of(context),
+      match.isBlocked
+          ? l10n.bookingGuestPhoneBlocked
+          : l10n.bookingGuestPhoneHasAccount(match.displayName),
+      Directionality.of(context),
+    );
+  }
+
+  /// La clienta con cuenta del WhatsApp comprobado, o `null`.
+  UserModel? _match() {
+    final phone = _checkedPhone;
+    final users = ref.read(adminUsersProvider).value;
+    if (phone == null || users == null) return null;
+    return accountWithPhone(users, phone);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final brand = context.brand;
+    // Vuelve a mirar las fichas si cambian (por ejemplo, la bloquean).
+    ref.watch(adminUsersProvider);
+    final match = _match();
+    final errors = widget.showErrors
+        ? guestErrors(widget.guest)
+        : const <GuestField>{};
+    final blocked = match != null && match.isBlocked;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        TextField(
+          controller: _name,
+          cursorColor: brand.accentIcon,
+          style: AppText.sans(size: 16, color: brand.inkStrong),
+          textCapitalization: TextCapitalization.words,
+          maxLength: guestNameMaxLength,
+          // Deja escribir de más para poder avisar (RF-9).
+          maxLengthEnforcement: MaxLengthEnforcement.none,
+          decoration: InputDecoration(
+            labelText: l10n.bookingGuestNameLabel,
+            errorText: errors.contains(GuestField.name)
+                ? l10n.bookingGuestNameError
+                : null,
+          ),
+          onChanged: (name) => _controller.updateGuest(name: name),
+        ),
+        const SizedBox(height: 8),
+        TextField(
+          controller: _phone,
+          focusNode: _phoneFocus,
+          keyboardType: TextInputType.phone,
+          cursorColor: brand.accentIcon,
+          style: AppText.sans(size: 16, color: brand.inkStrong),
+          decoration: InputDecoration(
+            labelText: l10n.bookingGuestPhoneLabel,
+            errorText: blocked
+                ? l10n.bookingGuestPhoneBlocked
+                : errors.contains(GuestField.phone)
+                ? l10n.bookingGuestPhoneError
+                : null,
+            errorMaxLines: 3,
+          ),
+          onChanged: (phone) {
+            if (_checkedPhone != null) setState(() => _checkedPhone = null);
+            _controller.updateGuest(phone: phone);
+          },
+        ),
+        if (match != null && !blocked && !_keepGuest)
+          Semantics(
+            liveRegion: true,
+            child: AppNotice(
+              message: l10n.bookingGuestPhoneHasAccount(match.displayName),
+              actions: [
+                AppNoticeButton(
+                  label: l10n.bookingGuestChooseAccount(match.displayName),
+                  onPressed: () => _controller.chooseAccount(match),
+                ),
+                AppNoticeButton(
+                  label: l10n.bookingGuestKeepGuest,
+                  onPressed: () => setState(() => _keepGuest = true),
+                ),
+              ],
+            ),
+          ),
+        const SizedBox(height: 8),
+        CheckboxListTile(
+          value: widget.guest.consent,
+          onChanged: (value) => _controller.updateGuest(consent: value),
+          controlAffinity: ListTileControlAffinity.leading,
+          contentPadding: EdgeInsets.zero,
+          activeColor: brand.brand,
+          checkColor: brand.onBrand,
+          title: Text(
+            l10n.bookingGuestConsent,
+            style: AppText.sans(size: 14, color: brand.ink, height: 1.4),
+          ),
+        ),
+        if (errors.contains(GuestField.consent))
+          Text(
+            l10n.bookingGuestConsentError,
+            style: AppText.sans(
+              size: 13,
+              weight: FontWeight.w500,
+              color: brand.danger,
+            ),
+          ),
+      ],
+    );
+  }
 }

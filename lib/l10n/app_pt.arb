@@ -389,5 +389,17 @@
   "bookingRecipientGuestAction": "Pessoa sem conta",
   "bookingRecipientSearchAction": "Buscar cliente",
   "bookingRecipientChange": "Trocar",
-  "bookingRecipientActive": "Já tem um horário em {date} às {time}: {service}. Não é possível agendar outro."
+  "bookingRecipientActive": "Já tem um horário em {date} às {time}: {service}. Não é possível agendar outro.",
+  "bookingGuestNameLabel": "Nome",
+  "bookingGuestPhoneLabel": "WhatsApp",
+  "bookingGuestConsent": "A pessoa aceita fornecer seu nome e seu WhatsApp para este horário.",
+  "bookingGuestNameError": "Digite um nome de até 80 caracteres.",
+  "bookingGuestPhoneError": "Digite um WhatsApp válido (de 8 a 15 dígitos).",
+  "bookingGuestConsentError": "Marque a caixa para continuar.",
+  "bookingGuestPhoneHasAccount": "Este WhatsApp é de {name}, que tem conta.",
+  "bookingGuestChooseAccount": "Escolher {name}",
+  "bookingGuestKeepGuest": "Continuar sem conta",
+  "bookingGuestPhoneBlocked": "Este WhatsApp é de uma cliente bloqueada: não é possível agendar.",
+  "bookingMissingRecipient": "Indique para quem é o horário",
+  "bookingMissingSeveral": "Faltam dados para agendar: revise o que está marcado."
 }

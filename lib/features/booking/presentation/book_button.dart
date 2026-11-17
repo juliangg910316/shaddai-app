@@ -10,12 +10,18 @@ import '../../services/logic/price_list_view_logic.dart';
 import '../logic/booking_edit.dart';
 import '../logic/booking_selection.dart';
 import '../logic/salon_time.dart';
+import '../providers/admin_booking_provider.dart';
 import '../providers/booking_provider.dart';
 import 'booking_summary.dart';
 
-/// El texto de lo que falta para agendar (RF-24).
+/// El texto de lo que falta para agendar (RF-24). Con para quién (spec 007,
+/// RF-17), uno propio o, si falta algo más, el que pide revisar lo marcado.
 String missingMessage(AppLocalizations l10n, Set<BookingPart> missing) =>
-    missing.length > 1
+    missing.contains(BookingPart.recipient)
+    ? (missing.length > 1
+          ? l10n.bookingMissingSeveral
+          : l10n.bookingMissingRecipient)
+    : missing.length > 1
     ? l10n.bookingMissingBoth
     : missing.contains(BookingPart.slot)
     ? l10n.bookingMissingSlot
@@ -29,17 +35,21 @@ String missingMessage(AppLocalizations l10n, Set<BookingPart> missing) =>
 /// Con [editing], es "Guardar cambios" de la edición (spec 006, RF-10): avisa
 /// igual de lo que falta y, con todo elegido, llama a [onConfirmed], que se
 /// encarga de confirmar los cambios.
+///
+/// Con [admin], también falta para quién (spec 007, RF-17).
 class BookButton extends ConsumerWidget {
   const BookButton({
     super.key,
     required this.onMissing,
     required this.onConfirmed,
     this.editing = false,
+    this.admin = false,
   });
 
   final VoidCallback onMissing;
   final VoidCallback onConfirmed;
   final bool editing;
+  final bool admin;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -51,6 +61,10 @@ class BookButton extends ConsumerWidget {
       onPressed: () async {
         final missing = missingParts(
           ref.read(bookingSelectionProvider).selection,
+          admin: admin,
+          recipient: admin
+              ? ref.read(bookingRecipientProvider).recipient
+              : null,
         );
         if (missing.isNotEmpty) {
           onMissing();

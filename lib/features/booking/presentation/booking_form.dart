@@ -7,6 +7,7 @@ import '../../../core/widgets/app_widgets.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../navigation/providers/tab_scroll_provider.dart';
 import '../logic/booking_selection.dart';
+import '../providers/admin_booking_provider.dart';
 import '../providers/booking_provider.dart';
 import 'addon_picker.dart';
 import 'book_button.dart';
@@ -55,7 +56,13 @@ class _BookingFormState extends ConsumerState<BookingForm> {
     final brand = context.brand;
     final settingsAsync = ref.watch(calendarSettingsProvider);
     final missing = _showMissing
-        ? missingParts(ref.watch(bookingSelectionProvider).selection)
+        ? missingParts(
+            ref.watch(bookingSelectionProvider).selection,
+            admin: widget.admin,
+            recipient: widget.admin
+                ? ref.watch(bookingRecipientProvider).recipient
+                : null,
+          )
         : const <BookingPart>{};
 
     return ListView(
@@ -79,7 +86,12 @@ class _BookingFormState extends ConsumerState<BookingForm> {
         ),
         const SizedBox(height: 18),
         if (widget.admin) ...[
-          const RecipientPicker(),
+          _MissingFrame(
+            message: missing.contains(BookingPart.recipient)
+                ? l10n.bookingMissingRecipient
+                : null,
+            child: RecipientPicker(showErrors: _showMissing),
+          ),
           const SizedBox(height: 24),
         ],
         BookingSectionTitle(l10n.bookingStepDate),
@@ -111,6 +123,7 @@ class _BookingFormState extends ConsumerState<BookingForm> {
         const SizedBox(height: 24),
         BookButton(
           editing: widget.editing,
+          admin: widget.admin,
           onMissing: () => setState(() => _showMissing = true),
           onConfirmed: widget.onConfirmed,
         ),
