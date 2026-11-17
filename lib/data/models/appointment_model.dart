@@ -5,7 +5,10 @@ import 'booked_service_model.dart';
 /// importe Firebase (spec 005, plan D-6).
 class AppointmentModel {
   final String id;
-  final String clientId;
+
+  /// La cuenta de la clienta, o `null` si es una persona sin cuenta que
+  /// agendó la admin (spec 007, RF-19).
+  final String? clientId;
   final String clientName;
   final String clientPhone;
   final String? clientPhotoUrl;
@@ -18,6 +21,9 @@ class AppointmentModel {
   /// la spec 005 (RF-51).
   final BookedServiceModel? booked;
 
+  /// Si lo agendó la admin (spec 007, RF-19, RF-23).
+  final bool createdByAdmin;
+
   AppointmentModel({
     required this.id,
     required this.clientId,
@@ -29,7 +35,11 @@ class AppointmentModel {
     required this.status,
     required this.createdAt,
     this.booked,
+    this.createdByAdmin = false,
   });
+
+  /// Si el turno es de una clienta con cuenta (spec 007).
+  bool get hasAccount => clientId != null;
 
   static final _epoch = DateTime.fromMillisecondsSinceEpoch(0, isUtc: true);
 
@@ -39,7 +49,10 @@ class AppointmentModel {
   factory AppointmentModel.fromMap(Map<String, dynamic> data, String id) {
     return AppointmentModel(
       id: id,
-      clientId: data['clientId'] ?? '',
+      clientId: switch (data['clientId']) {
+        final String id when id.isNotEmpty => id,
+        _ => null,
+      },
       clientName: data['clientName'] ?? '',
       clientPhone: data['clientPhone'] ?? '',
       clientPhotoUrl: data['clientPhotoUrl'],
@@ -48,9 +61,12 @@ class AppointmentModel {
       status: data['status'] ?? 'waiting_confirmation',
       createdAt: _readDate(data['createdAt']),
       booked: BookedServiceModel.fromMap(data['booked']),
+      createdByAdmin: data['createdByAdmin'] == true,
     );
   }
 
+  /// Escribe `clientId` siempre, también `null`: las reglas comprueban
+  /// `== null` en la persona sin cuenta (spec 007, plan D-3).
   Map<String, dynamic> toMap() {
     return {
       'clientId': clientId,
@@ -61,6 +77,7 @@ class AppointmentModel {
       'endTime': endTime,
       'status': status,
       'createdAt': createdAt,
+      'createdByAdmin': createdByAdmin,
       if (booked != null) 'booked': booked!.toMap(),
     };
   }

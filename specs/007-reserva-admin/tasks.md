@@ -14,20 +14,28 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
 
 ## Bloque A — Datos, lógica y providers
 
-- [ ] **T1. Turno sin cuenta y creado por la admin en el modelo.** RF-19, RF-24
+- [x] **T1. Turno sin cuenta y creado por la admin en el modelo.** RF-19, RF-24
   - Tests: `test/data/models/appointment_model_test.dart`:
     - `clientId` `null`, vacío o que falta se lee como `null` y `hasAccount` es `false`;
     - `createdByAdmin` se lee; falta → `false`;
     - `toMap` escribe `clientId: null` de forma explícita y `createdByAdmin` siempre.
   - Hecho cuando: los tests pasan y el resto de la app compila con `clientId` nullable (la reserva de la clienta sigue escribiendo su `uid` y `createdByAdmin: false`).
+  - Hecha (2026-11-16):
+    - `AppointmentModel.clientId` es `String?` (vacío o que falta → `null`), con `hasAccount`; `createdByAdmin` (por defecto `false`, solo `true` si el campo es `true`). `toMap` escribe `clientId` siempre, también `null` (D-3), y `createdByAdmin`;
+    - no hizo falta tocar más código: la reserva de la clienta ya pasaba su `uid`;
+    - 6 tests nuevos (uno ajustado); suite completa, 1457 en verde.
 
-- [ ] **T2. WhatsApp: normalizar, validar y enlazar.** RF-7, RF-9, RF-10, RF-22, RNF-1
+- [x] **T2. WhatsApp: normalizar, validar y enlazar.** RF-7, RF-9, RF-10, RF-22, RNF-1
   - Tests: `test/features/booking/logic/whatsapp_test.dart` (nuevo), en tabla:
     - `normalizeWhatsApp`: espacios, guiones, paréntesis, `+55`, `55` delante con 12 y 13 dígitos (se quita), `55` como DDD con 10 y 11 dígitos (se queda, D-1), texto sin dígitos;
     - `isValidWhatsApp`: 7, 8, 15 y 16 dígitos tras normalizar;
     - `sameWhatsApp`: con y sin `+55`, dos vacíos (→ no);
     - `whatsAppLink`: con `+`, con `55`, sin código del país (añade `55`).
   - Hecho cuando: los tests pasan.
+  - Hecha (2026-11-16):
+    - `lib/features/booking/logic/whatsapp.dart`: `normalizeWhatsApp`, `isValidWhatsApp`, `sameWhatsApp` y `whatsAppLink` (devuelve `Uri?`, `null` sin dígitos);
+    - D-1 precisada: el `55` también se quita si va detrás de `+`, aunque el número sea corto (`+55 1234567` → 7 dígitos, no válido);
+    - 36 tests nuevos, en tabla; suite completa, 1493 en verde.
 
 - [ ] **T3. Para quién y la búsqueda.** RF-2 a RF-5, RF-7 a RF-11, RF-15, RNF-1
   - Tests: `test/features/booking/logic/recipient_test.dart` (nuevo), en tabla:
@@ -109,7 +117,7 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
 ## Bloque C — Reglas, accesibilidad y cierre
 
 - [ ] **T14. Reglas de Firestore.** RF-2, RF-25, RF-26, RF-30, RNF-5
-  - Tests: no hay tests automáticos de reglas. Se escribe `specs/007-reserva-admin/rules-check.md` con cada caso del simulador:
+  - Tests: `test/core/firestore_rules_test.dart` fija la estructura de las reglas (qué comprueba cada `match`); se amplía primero con los cambios del plan § 2. Lo que permite cada regla no se prueba automáticamente: se escribe `specs/007-reserva-admin/rules-check.md` con cada caso del simulador:
     - la admin crea un turno confirmado para una clienta, para una persona sin cuenta y su turno ocupado (→ sí);
     - la admin crea a su nombre, para otra admin, para una bloqueada, esperando confirmación o sin `createdByAdmin` (→ no);
     - la clienta crea con `createdByAdmin: true` (→ no); su reserva normal (→ sí);

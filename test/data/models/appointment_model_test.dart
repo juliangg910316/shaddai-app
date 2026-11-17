@@ -75,12 +75,80 @@ void main() {
       'startTime': start,
       'endTime': end,
     }, 'ap1');
-    expect(read.clientId, '');
+    expect(read.clientId, isNull);
+    expect(read.hasAccount, isFalse);
+    expect(read.createdByAdmin, isFalse);
     expect(read.clientName, '');
     expect(read.clientPhone, '');
     expect(read.clientPhotoUrl, isNull);
     expect(read.status, 'waiting_confirmation');
     expect(read.createdAt, DateTime.fromMillisecondsSinceEpoch(0, isUtc: true));
+  });
+
+  group('persona sin cuenta y turno de la admin (spec 007, RF-19)', () {
+    test('clientId nulo, vacío o que falta se lee como null', () {
+      for (final data in <Map<String, dynamic>>[
+        {'clientId': null},
+        {'clientId': ''},
+        {},
+      ]) {
+        final read = AppointmentModel.fromMap(data, 'ap1');
+        expect(read.clientId, isNull, reason: '$data');
+        expect(read.hasAccount, isFalse, reason: '$data');
+      }
+    });
+
+    test('con clientId tiene cuenta', () {
+      final read = AppointmentModel.fromMap({'clientId': 'u1'}, 'ap1');
+      expect(read.clientId, 'u1');
+      expect(read.hasAccount, isTrue);
+    });
+
+    test('createdByAdmin se lee; si falta o no es bool, false', () {
+      expect(
+        AppointmentModel.fromMap({
+          'createdByAdmin': true,
+        }, 'ap1').createdByAdmin,
+        isTrue,
+      );
+      expect(
+        AppointmentModel.fromMap({
+          'createdByAdmin': 'sí',
+        }, 'ap1').createdByAdmin,
+        isFalse,
+      );
+      expect(appointment().createdByAdmin, isFalse);
+    });
+
+    test('toMap escribe clientId null de forma explícita y createdByAdmin', () {
+      final guest = AppointmentModel(
+        id: 'ap2',
+        clientId: null,
+        clientName: 'Rosa',
+        clientPhone: '41 99999-1111',
+        startTime: start,
+        endTime: end,
+        status: 'confirmed',
+        createdAt: created,
+        createdByAdmin: true,
+        booked: booked,
+      );
+      final map = guest.toMap();
+      expect(map.containsKey('clientId'), isTrue);
+      expect(map['clientId'], isNull);
+      expect(map['createdByAdmin'], isTrue);
+      expect(map['clientPhotoUrl'], isNull);
+
+      final read = AppointmentModel.fromMap(map, 'ap2');
+      expect(read.hasAccount, isFalse);
+      expect(read.createdByAdmin, isTrue);
+      expect(read.clientName, 'Rosa');
+      expect(read.status, 'confirmed');
+    });
+
+    test('el turno de la clienta escribe createdByAdmin: false', () {
+      expect(appointment().toMap()['createdByAdmin'], isFalse);
+    });
   });
 
   test('el modelo no importa Firebase (plan, D-6)', () {

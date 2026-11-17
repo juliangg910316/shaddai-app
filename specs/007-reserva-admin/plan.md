@@ -88,7 +88,7 @@ match /busySlots/{id} {
 ```
 normalizeWhatsApp(raw):
   digits = solo los dígitos de raw
-  si digits empieza por "55" y tiene 12 dígitos o más: quita el "55"   # D-1
+  si digits empieza por "55" y raw empieza por "+" o tiene 12 dígitos o más: quita el "55"   # D-1
   devuelve digits
 isValidWhatsApp(raw) = 8 <= normalizeWhatsApp(raw).length <= 15
 sameWhatsApp(a, b) = las dos normalizadas no vacías y iguales
@@ -238,7 +238,7 @@ Se borra `bookingAdminNotice`. Nuevos (nombres orientativos):
 `bookingMissingBoth`, `bookingMissingSlot` y `bookingMissingService` se siguen usando. Con dos o más partes que faltan en modo admin, `bookingMissingSeveral`.
 
 ## 7. Decisiones técnicas
-- **D-1. El `55` solo se quita en números de 12 dígitos o más.** En Brasil, `55` también es un DDD (Rio Grande do Sul): "55 99123-4567" tiene 11 dígitos y no lleva el código del país. Con 12 o 13 dígitos (55 + DDD + 8 o 9), el `55` es el del país. *Descartado:* quitar siempre el `55` inicial, que confundiría esos números.
+- **D-1. El `55` solo se quita si va detrás de `+` o en números de 12 dígitos o más.** En Brasil, `55` también es un DDD (Rio Grande do Sul): "55 99123-4567" tiene 11 dígitos y no lleva el código del país. Con 12 o 13 dígitos (55 + DDD + 8 o 9), el `55` es el del país, y escrito como `+55` siempre lo es (precisado en la T2, 2026-11-16). *Descartado:* quitar siempre el `55` inicial, que confundiría esos números.
 - **D-2. El turno activo de una persona se busca entre los turnos que aún no terminaron, filtrando en la app.** Son pocos, y así un turno de una clienta con cuenta también se encuentra por su WhatsApp, sin guardar un campo nuevo con el WhatsApp normalizado. *Descartado:* el campo `clientPhoneKey` con su consulta, que obliga a escribirlo también desde la reserva de la clienta y no sirve para los turnos que ya existen.
 - **D-3. `clientId: null` para la persona sin cuenta, escrito de forma explícita.** Las reglas pueden comprobar `== null`, y un campo que falta las haría fallar. Así "sin cuenta" no necesita un campo propio. *Descartado:* `clientId: ''` y un `hasAccount` aparte, que pueden contradecirse.
 - **D-4. La búsqueda usa la lista de fichas que ya lee la admin (`adminUsersProvider`) y filtra en la app.** Firestore no busca por subcadena ni sin acentos, y las clientas de un salón son pocas. *Descartado:* guardar en cada ficha un nombre sin acentos para consultarlo, que obliga a cambiar todas las fichas.
