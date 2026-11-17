@@ -193,7 +193,7 @@ Son más de 10, pero la spec no se divide (decisión del autor, 2026-11-17).
     - `_checkEdit` no actúa con la sesión de la admin; `recipientActiveAppointmentProvider` no cuenta el turno en edición;
     - 10 tests en `admin_edit_provider_test.dart`. Se comprobó que fallan si se quitan la guarda de `_checkEdit` o el filtro del turno en edición. Suite completa, 1890 en verde.
 
-- [ ] **T12. Guardar la edición de la admin.** RF-26, RF-28 a RF-31, RF-34
+- [x] **T12. Guardar la edición de la admin.** RF-26, RF-28 a RF-31, RF-34
   - Tests, en `admin_edit_provider_test`:
     - `save` sin cambios o con algo sin elegir: no guarda;
     - `save` en cada resultado: `ok`, `slotTaken`, `doesNotFit` (quitan la hora), `recipientBlocked`, `personActive`, `notActive`, `changed`, `failed`;
@@ -204,6 +204,12 @@ Son más de 10, pero la spec no se divide (decisión del autor, 2026-11-17).
       - devuelve el día y el nombre;
     - la vigilancia avisa si el turno se cancela o cambia mientras se edita.
   - Hecho cuando: `AdminEditController.save` y la vigilancia cumplen el plan § 5.
+  - Hecha (2026-11-17):
+    - `AdminEditController.save` devuelve `AdminEditResult(outcome, {active, name, day})`; además de los resultados del plan, `noChanges` e `incomplete` (antes de leer nada). Lee del servidor el turno, los ocupados, los activos, los cierres y la ficha; su propio turno ocupado no cuenta. Con `ok`, cierra la edición (devuelve la reserva a medias);
+    - la persona solo se escribe si cambió, con los datos de su ficha del servidor (o, sin cuenta, sin espacios alrededor); `expected` usa la misma comprobación que la vigilancia;
+    - `adminEditAlert` (pura, en `admin_edit.dart`, también usada por `checkAdminEditBeforeSave`) y `adminEditAlertProvider`, que calla mientras se guarda;
+    - el fake de turnos acepta `adminEditLatency`: el turno guardado llega antes de que termine el guardado, como en Firestore;
+    - 23 tests nuevos en `admin_edit_provider_test`; el de la vigilancia durante el guardado falla sin esa guarda. Suite completa, 1913 en verde.
 
 - [ ] **T13. La vista de edición.** RF-19, RF-22, RF-27, RF-28, RF-34, RF-35
   - Tests: `test/features/admin/admin_edit_view_test.dart` (nuevo):

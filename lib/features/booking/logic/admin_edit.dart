@@ -138,6 +138,33 @@ bool _changedSince(EditOriginal original, AppointmentModel current) {
       now.createdByAdmin != original.createdByAdmin;
 }
 
+/// Lo que avisa la edición de la admin si el turno cambia mientras lo edita
+/// (RF-30).
+enum AdminEditAlert {
+  /// Ya no existe, se canceló o terminó.
+  notActive,
+
+  /// Alguien lo cambió.
+  changed,
+}
+
+/// Si el turno [current] (`null` si ya no existe) ya no es el [original] que
+/// abrió la admin con "ahora" [nowSalon]: no activo antes que cambiado
+/// (RF-30). `null` si sigue igual.
+AdminEditAlert? adminEditAlert(
+  EditOriginal original,
+  AppointmentModel? current,
+  DateTime nowSalon,
+) {
+  if (current == null ||
+      !activeStatuses.contains(current.status) ||
+      !toSalon(current.endTime).isAfter(nowSalon)) {
+    return AdminEditAlert.notActive;
+  }
+  if (_changedSince(original, current)) return AdminEditAlert.changed;
+  return null;
+}
+
 /// Comprueba otra vez, justo antes de guardar, la edición de [original] por
 /// la admin (RF-28). [current] es el turno leído del servidor (`null` si ya
 /// no existe); [recipient], la persona elegida, y [recipientUser], su ficha
@@ -160,12 +187,14 @@ AdminEditCheck checkAdminEditBeforeSave({
   required Iterable<AppointmentModel> active,
   required DateTime nowSalon,
 }) {
-  if (current == null ||
-      !activeStatuses.contains(current.status) ||
-      !toSalon(current.endTime).isAfter(nowSalon)) {
-    return const AdminEditNotActive();
+  switch (adminEditAlert(original, current, nowSalon)) {
+    case AdminEditAlert.notActive:
+      return const AdminEditNotActive();
+    case AdminEditAlert.changed:
+      return const AdminEditChanged();
+    case null:
+      break;
   }
-  if (_changedSince(original, current)) return const AdminEditChanged();
 
   switch (checkRecipient(
     recipient: recipient,

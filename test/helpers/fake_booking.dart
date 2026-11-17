@@ -92,6 +92,11 @@ class FakeBookingRepository implements BookingRepository {
   /// Turnos pedidos a [watchAppointment], en orden.
   final appointmentRequests = <String>[];
 
+  /// Espera, tras enviar el turno guardado y antes de terminar el guardado:
+  /// como Firestore, el turno puede llegar a quien escucha antes de que
+  /// termine la transacción.
+  Duration? adminEditLatency;
+
   AdminEditCheckData? adminEditCheckData;
   Object? adminEditCheckError;
   final adminEditCheckRequests =
@@ -216,6 +221,8 @@ class FakeBookingRepository implements BookingRepository {
         if (s.id != id) s,
       slot,
     ]);
+    final latency = adminEditLatency;
+    if (latency != null) await Future<void>.delayed(latency);
     return true;
   }
 

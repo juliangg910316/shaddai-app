@@ -6,10 +6,12 @@ import 'package:shaddai/data/models/appointment_model.dart';
 import 'package:shaddai/data/models/booked_service_model.dart';
 import 'package:shaddai/data/models/busy_slot_model.dart';
 import 'package:shaddai/data/models/calendar_settings_model.dart';
+import 'package:shaddai/data/models/closure_model.dart';
 import 'package:shaddai/data/models/price_list_model.dart';
 import 'package:shaddai/data/models/user_model.dart';
 import 'package:shaddai/features/admin/providers/admin_provider.dart';
 import 'package:shaddai/features/auth/providers/auth_provider.dart';
+import 'package:shaddai/features/booking/logic/admin_edit.dart';
 import 'package:shaddai/features/booking/logic/bookable_catalog.dart';
 import 'package:shaddai/features/booking/logic/booking_selection.dart';
 import 'package:shaddai/features/booking/logic/free_slots.dart';
@@ -369,5 +371,382 @@ void main() {
 
     expect(recipientState().recipient, isNull);
     expect(recipientState().notices, contains(RecipientNotice.blocked));
+  });
+
+  group('save (RF-26, RF-28 a RF-31, RF-34)', () {
+    Future<AdminEditResult> save() => editor().save();
+
+    /// Abre la edición del turno [appointment] (por defecto, el de Ana).
+    Future<void> edit([AppointmentModel? appointment]) async {
+      final target = appointment ?? anaAppointment();
+      bookings.emitAppointment(target.id, target);
+      bookings.active = [target];
+      await start();
+      c.listen(adminEditAlertProvider, (_, _) {});
+      editor().start(target);
+      await settle();
+    }
+
+    test('sin cambios: no lee ni guarda (RF-26)', () async {
+      await edit();
+      final result = await save();
+      expect(result.outcome, AdminEditOutcome.noChanges);
+      expect(bookings.adminEditCheckRequests, isEmpty);
+      expect(bookings.adminEdits, isEmpty);
+    });
+
+    test('sin hora: no lee ni guarda (RF-34)', () async {
+      await edit();
+      selector().dropSlot();
+      final result = await save();
+      expect(result.outcome, AdminEditOutcome.incomplete);
+      expect(bookings.adminEditCheckRequests, isEmpty);
+    });
+
+    test('sin para quién: no guarda (RF-34)', () async {
+      await edit();
+      selector().selectSlot(slot(at(20, 11)));
+      c.read(bookingRecipientProvider.notifier).clear();
+      expect((await save()).outcome, AdminEditOutcome.incomplete);
+      expect(bookings.adminEdits, isEmpty);
+    });
+
+    test('ok con otra hora: guarda confirmado, sin la persona, y devuelve el '
+        'día y el nombre; la edición se cierra (RF-28)', () async {
+      await edit();
+      selector().selectSlot(slot(at(20, 11)));
+
+      final result = await save();
+
+      expect(result.outcome, AdminEditOutcome.ok);
+      expect(result.day, dayOf(20));
+      expect(result.name, 'Ana Souza');
+      final saved = bookings.adminEdits.single;
+      expect(saved.id, 't1');
+      expect(saved.start, fromSalon(at(20, 11)));
+      expect(saved.end, fromSalon(at(20, 11, 45)));
+      expect(saved.booked.id, 's1');
+      expect(saved.person, isNull);
+      final now = bookings.active.single;
+      expect(now.status, 'confirmed');
+      expect(now.createdByAdmin, isFalse);
+      expect(c.read(adminEditProvider), isNull);
+      expect(c.read(adminEditAlertProvider), isNull);
+      // Lee del servidor el día nuevo, desde "ahora".
+      final request = bookings.adminEditCheckRequests.single;
+      expect(request.appointmentId, 't1');
+      expect(request.from, fromSalon(dayOf(20)));
+      expect(request.now, bookingTestNow);
+    });
+
+    test('un turno esperando confirmación queda confirmado', () async {
+      await edit(
+        AppointmentModel(
+          id: 't1',
+          clientId: 'ana',
+          clientName: 'Ana Souza',
+          clientPhone: '+55 41 99111-0000',
+          startTime: fromSalon(at(20, 10)),
+          endTime: fromSalon(at(20, 10, 45)),
+          status: 'waiting_confirmation',
+          createdAt: DateTime.utc(2026, 11, 1),
+          booked: anaAppointment().booked,
+        ),
+      );
+      selector().selectSlot(slot(at(20, 11)));
+      expect((await save()).outcome, AdminEditOutcome.ok);
+      expect(bookings.active.single.status, 'confirmed');
+    });
+
+    test('con otra persona: la escribe, con los datos de su ficha del '
+        'servidor, y lo marca como de la admin (RF-31)', () async {
+      await edit();
+      c
+          .read(bookingRecipientProvider.notifier)
+          .restore(AccountRecipient.of(bea));
+
+      final result = await save();
+
+      expect(result.outcome, AdminEditOutcome.ok);
+      expect(result.name, 'Beatriz');
+      expect(bookings.adminEdits.single.person, (
+        clientId: 'bea',
+        clientName: 'Beatriz',
+        clientPhone: '+55 41 99222-0000',
+        clientPhotoUrl: null,
+      ));
+      expect(bookings.active.single.createdByAdmin, isTrue);
+      expect(users.fetchRequests, ['bea']);
+    });
+
+    test('a una persona sin cuenta: sin cuenta y con sus datos sin espacios '
+        'alrededor', () async {
+      await edit();
+      c
+          .read(bookingRecipientProvider.notifier)
+          .restore(
+            const GuestRecipient(
+              name: '  Rosa Lima ',
+              phone: ' 41 99333-0000 ',
+              consent: true,
+            ),
+          );
+      expect((await save()).outcome, AdminEditOutcome.ok);
+      expect(bookings.adminEdits.single.person, (
+        clientId: null,
+        clientName: 'Rosa Lima',
+        clientPhone: '41 99333-0000',
+        clientPhotoUrl: null,
+      ));
+    });
+
+    test('la marca de un turno de la admin sigue (RF-31)', () async {
+      await edit(
+        AppointmentModel(
+          id: 't1',
+          clientId: 'ana',
+          clientName: 'Ana Souza',
+          clientPhone: '+55 41 99111-0000',
+          startTime: fromSalon(at(20, 10)),
+          endTime: fromSalon(at(20, 10, 45)),
+          status: 'confirmed',
+          createdAt: DateTime.utc(2026, 11, 1),
+          createdByAdmin: true,
+          booked: anaAppointment().booked,
+        ),
+      );
+      selector().selectSlot(slot(at(20, 11)));
+      await save();
+      expect(bookings.adminEdits.single.person, isNull);
+      expect(bookings.active.single.createdByAdmin, isTrue);
+    });
+
+    test(
+      'hora ocupada: slotTaken, no guarda y quita la hora (RF-29)',
+      () async {
+        await edit();
+        selector().selectSlot(slot(at(20, 11)));
+        bookings.adminEditCheckData = (
+          appointment: anaAppointment(),
+          busy: [
+            BusySlot(
+              id: 'otro',
+              start: fromSalon(at(20, 11)),
+              end: fromSalon(at(20, 12)),
+            ),
+          ],
+          active: [anaAppointment()],
+        );
+
+        expect((await save()).outcome, AdminEditOutcome.slotTaken);
+        expect(bookings.adminEdits, isEmpty);
+        expect(selection().start, isNull);
+        expect(selection().item, s1);
+        expect(c.read(adminEditProvider), 't1');
+      },
+    );
+
+    test('hora dentro de un cierre leído del servidor: slotTaken', () async {
+      await edit();
+      selector().selectSlot(slot(at(20, 11)));
+      final config = c.read(configRepositoryProvider) as FakeConfigRepository;
+      config.closures = [
+        ClosureModel(
+          id: 'c1',
+          start: fromSalon(at(20, 11)),
+          end: fromSalon(at(20, 12)),
+        ),
+      ];
+      expect((await save()).outcome, AdminEditOutcome.slotTaken);
+      expect(config.closureFetches, [fromSalon(dayOf(20))]);
+    });
+
+    test('su propio turno ocupado no cuenta', () async {
+      await edit();
+      selector().selectItem(s2);
+      // s2 dura 60 minutos: de 10:00 a 11:00 pisa su propio turno ocupado.
+      expect((await save()).outcome, AdminEditOutcome.ok);
+    });
+
+    test('no cabe: doesNotFit y quita la hora (RF-29)', () async {
+      await edit();
+      selector().selectSlot(slot(at(20, 11)));
+      bookings.adminEditCheckData = (
+        appointment: anaAppointment(),
+        busy: [
+          BusySlot(
+            id: 'otro',
+            start: fromSalon(at(20, 11, 30)),
+            end: fromSalon(at(20, 12)),
+          ),
+        ],
+        active: [anaAppointment()],
+      );
+      expect((await save()).outcome, AdminEditOutcome.doesNotFit);
+      expect(selection().start, isNull);
+    });
+
+    test('clienta bloqueada: recipientBlocked y la quita (RF-29)', () async {
+      users.serverUsers = [
+        client('ana', 'Ana Souza', '+55 41 99111-0000', blocked: true),
+      ];
+      await edit();
+      selector().selectSlot(slot(at(20, 11)));
+      expect((await save()).outcome, AdminEditOutcome.recipientBlocked);
+      expect(recipientState().recipient, isNull);
+      expect(bookings.adminEdits, isEmpty);
+    });
+
+    test('la nueva persona tiene otro turno activo: personActive con ese '
+        'turno (RF-25)', () async {
+      final beaActive = AppointmentModel(
+        id: 'b1',
+        clientId: 'bea',
+        clientName: 'Beatriz',
+        clientPhone: '+55 41 99222-0000',
+        startTime: fromSalon(at(25, 9)),
+        endTime: fromSalon(at(25, 10)),
+        status: 'confirmed',
+        createdAt: DateTime.utc(2026, 11, 1),
+      );
+      await edit();
+      bookings.active = [anaAppointment(), beaActive];
+      c
+          .read(bookingRecipientProvider.notifier)
+          .restore(AccountRecipient.of(bea));
+
+      final result = await save();
+      expect(result.outcome, AdminEditOutcome.personActive);
+      expect(result.active?.id, 'b1');
+      expect(bookings.adminEdits, isEmpty);
+    });
+
+    test('el turno se canceló: notActive (RF-30)', () async {
+      await edit();
+      selector().selectSlot(slot(at(20, 11)));
+      bookings.emitAppointment(
+        't1',
+        AppointmentModel(
+          id: 't1',
+          clientId: 'ana',
+          clientName: 'Ana Souza',
+          clientPhone: '+55 41 99111-0000',
+          startTime: fromSalon(at(20, 10)),
+          endTime: fromSalon(at(20, 10, 45)),
+          status: 'cancelled',
+          createdAt: DateTime.utc(2026, 11, 1),
+          booked: anaAppointment().booked,
+        ),
+      );
+      expect((await save()).outcome, AdminEditOutcome.notActive);
+      expect(bookings.adminEdits, isEmpty);
+    });
+
+    test('alguien lo cambió: changed (RF-30)', () async {
+      await edit();
+      selector().selectSlot(slot(at(20, 11)));
+      bookings.emitAppointment(
+        't1',
+        AppointmentModel(
+          id: 't1',
+          clientId: 'ana',
+          clientName: 'Ana Souza',
+          clientPhone: '+55 41 99111-0000',
+          startTime: fromSalon(at(20, 14)),
+          endTime: fromSalon(at(20, 14, 45)),
+          status: 'waiting_confirmation',
+          createdAt: DateTime.utc(2026, 11, 1),
+          booked: anaAppointment().booked,
+        ),
+      );
+      expect((await save()).outcome, AdminEditOutcome.changed);
+    });
+
+    test('si cambia entre la lectura y la transacción: changed', () async {
+      await edit();
+      selector().selectSlot(slot(at(20, 11)));
+      // El servidor dice que está igual; la transacción lo ve cancelado.
+      bookings.adminEditCheckData = (
+        appointment: anaAppointment(),
+        busy: const [],
+        active: [anaAppointment()],
+      );
+      bookings.emitAppointment('t1', null);
+      expect((await save()).outcome, AdminEditOutcome.changed);
+      expect(bookings.adminEdits, isEmpty);
+    });
+
+    test('sin conexión: failed, no guarda y conserva lo elegido', () async {
+      await edit();
+      selector().selectSlot(slot(at(20, 11)));
+      bookings.adminEditCheckError = Exception('sin red');
+      expect((await save()).outcome, AdminEditOutcome.failed);
+      expect(selection().start, at(20, 11));
+      expect(c.read(adminEditProvider), 't1');
+    });
+
+    test('si falla al guardar: failed', () async {
+      await edit();
+      selector().selectSlot(slot(at(20, 11)));
+      bookings.updateError = Exception('sin red');
+      expect((await save()).outcome, AdminEditOutcome.failed);
+    });
+  });
+
+  group('adminEditAlertProvider: la vigilancia (RF-30)', () {
+    Future<void> edit() async {
+      bookings.emitAppointment('t1', anaAppointment());
+      await start();
+      c.listen(adminEditAlertProvider, (_, _) {});
+      editor().start(anaAppointment());
+      await settle();
+    }
+
+    test('sin edición o con el turno igual, nada', () async {
+      await edit();
+      expect(c.read(adminEditAlertProvider), isNull);
+      editor().end();
+      await settle();
+      expect(c.read(adminEditAlertProvider), isNull);
+    });
+
+    test('si se cancela o se borra, notActive', () async {
+      await edit();
+      bookings.emitAppointment('t1', null);
+      await settle();
+      expect(c.read(adminEditAlertProvider), AdminEditAlert.notActive);
+    });
+
+    test('el propio guardado no la hace saltar', () async {
+      await edit();
+      final alerts = <AdminEditAlert?>[];
+      c.listen(adminEditAlertProvider, (_, next) => alerts.add(next));
+      selector().selectSlot(slot(at(20, 11)));
+      bookings.adminEditLatency = const Duration(milliseconds: 1);
+
+      expect((await editor().save()).outcome, AdminEditOutcome.ok);
+      await settle();
+      expect(alerts.whereType<AdminEditAlert>(), isEmpty);
+    });
+
+    test('si alguien lo cambia, changed', () async {
+      await edit();
+      bookings.emitAppointment(
+        't1',
+        AppointmentModel(
+          id: 't1',
+          clientId: 'ana',
+          clientName: 'Ana Souza',
+          clientPhone: '+55 41 97777-0000',
+          startTime: fromSalon(at(20, 10)),
+          endTime: fromSalon(at(20, 10, 45)),
+          status: 'confirmed',
+          createdAt: DateTime.utc(2026, 11, 1),
+          booked: anaAppointment().booked,
+        ),
+      );
+      await settle();
+      expect(c.read(adminEditAlertProvider), AdminEditAlert.changed);
+    });
   });
 }
