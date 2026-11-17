@@ -168,4 +168,36 @@ void main() {
     expect(edited.status, 'waiting_confirmation');
     expect(edited.createdByAdmin, isTrue);
   });
+
+  test('la hora de un turno sin cuenta no sale libre para la clienta '
+      '(RF-24)', () async {
+    // Su turno ocupado no lleva de quién es: igual que cualquier otro.
+    bookings = FakeBookingRepository(
+      busy: [
+        BusySlot(
+          id: 'sin-cuenta',
+          start: fromSalon(at(10)),
+          end: fromSalon(at(10, 45)),
+        ),
+      ],
+    );
+    final c = ProviderContainer(
+      overrides: bookingDataOverrides(bookings: bookings, user: testClient),
+    );
+    addTearDown(c.dispose);
+    c.listen(busySlotsProvider, (_, _) {});
+    c.listen(calendarSettingsProvider, (_, _) {});
+    for (var i = 0; i < 5; i++) {
+      await Future<void>.delayed(Duration.zero);
+    }
+
+    final starts = [
+      for (final slot in c.read(
+        freeSlotsOfDayProvider(DateTime.utc(2026, 11, 10)),
+      )!)
+        slot.start,
+    ];
+    expect(starts, isNot(contains(at(10))));
+    expect(starts, contains(at(11)));
+  });
 }

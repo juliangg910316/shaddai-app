@@ -170,9 +170,14 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
     - al editarlo vuelve a esperar confirmación y conserva `createdByAdmin`: el repositorio real usa `update` solo con horas, lo reservado y el estado. El fake reconstruía el turno y perdía la marca: corregido para que se comporte como Firestore. Que la clienta no pueda cambiarla lo garantizan las reglas (T14);
     - 3 tests nuevos; suite completa, 1636 en verde.
 
-- [ ] **T13. La lista de la admin.** RF-22 a RF-24
+- [x] **T13. La lista de la admin.** RF-22 a RF-24
   - Tests: `test/features/admin/admin_appointments_booked_test.dart`: un turno sin cuenta muestra su nombre, su WhatsApp, "Sin cuenta" y las iniciales sin foto; uno con `createdByAdmin`, "Agendado por la admin"; el botón de WhatsApp (48 px, con su nombre para el lector de pantalla) abre `whatsAppLink` en `RecordingLinkLauncher`, también en un turno con cuenta (D-6); las horas libres de la clienta no muestran la hora de un turno sin cuenta.
   - Hecho cuando: los tests pasan. Textos: `adminAppointmentGuest`, `adminAppointmentByAdmin`, `adminAppointmentWhatsApp`.
+  - Hecha (2026-11-17):
+    - la tarjeta del turno marca "SIN CUENTA" y "AGENDADO POR LA ADMIN" (dorado legible, `accentText`) bajo el WhatsApp; sin foto, las iniciales;
+    - el icono de WhatsApp pasa a ser un `IconButton` de 48 px que abre `whatsAppLink(clientPhone)` con `externalLinkLauncherProvider`, en todos los turnos (D-6). Su nombre para el lector de pantalla es el `tooltip` ("Escribir a <nombre> por WhatsApp"): los tests lo buscan con `find.byTooltip` e `isSemantics(tooltip:)`, porque `bySemanticsLabel` no ve los tooltips;
+    - RF-24 ya se cumplía: el turno ocupado de una persona sin cuenta no dice de quién es y tapa su hora como cualquier otro (test en `admin_booked_client_test.dart`);
+    - 7 tests nuevos; suite completa, 1643 en verde.
 
 ## Bloque C — Reglas, accesibilidad y cierre
 

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
+import '../../../core/platform/external_links.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/brand_colors.dart';
 import '../../../core/theme/system_bars.dart';
@@ -11,6 +12,7 @@ import '../../../core/utils/capitalize.dart';
 import '../../../core/widgets/app_widgets.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../booking/logic/salon_time.dart';
+import '../../booking/logic/whatsapp.dart';
 import '../providers/admin_provider.dart';
 import '../../../data/models/appointment_model.dart';
 
@@ -310,6 +312,12 @@ class _AppointmentCard extends ConsumerWidget {
     final hours = DateFormat.Hm(l10n.localeName);
     final startStr = hours.format(toSalon(appointment.startTime));
     final endStr = hours.format(toSalon(appointment.endTime));
+    final whatsApp = whatsAppLink(appointment.clientPhone);
+    // Sin cuenta y creado por la admin (spec 007, RF-22, RF-23).
+    final marks = [
+      if (!appointment.hasAccount) l10n.adminAppointmentGuest,
+      if (appointment.createdByAdmin) l10n.adminAppointmentByAdmin,
+    ];
 
     return FlatCard(
       borderColor: waiting ? brand.goldHairline : brand.hairline,
@@ -368,18 +376,34 @@ class _AppointmentCard extends ConsumerWidget {
                         color: brand.inkMuted,
                       ),
                     ),
+                    for (final mark in marks) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        mark.toUpperCase(),
+                        style: AppText.eyebrow(
+                          size: 10,
+                          spacing: 1.2,
+                          color: brand.accentText,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
-              Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(color: brand.hairlineStrong),
+              // Abre su chat de WhatsApp, también en los turnos con cuenta
+              // (spec 007, RF-22, D-6).
+              IconButton(
+                tooltip: l10n.adminAppointmentWhatsApp(appointment.clientName),
+                onPressed: whatsApp == null
+                    ? null
+                    : () => ref.read(externalLinkLauncherProvider)(whatsApp),
+                style: IconButton.styleFrom(
+                  minimumSize: const Size(48, 48),
+                  shape: CircleBorder(
+                    side: BorderSide(color: brand.hairlineStrong),
+                  ),
                 ),
-                alignment: Alignment.center,
-                child: const WhatsAppIcon(size: 18),
+                icon: const WhatsAppIcon(size: 18),
               ),
             ],
           ),

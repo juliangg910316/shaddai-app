@@ -662,5 +662,14 @@
     "placeholders": {"name": {"type": "String"}}
   },
   "bookingRecipientBlocked": "Esa clienta está bloqueada: ya no se le puede agendar.",
-  "@bookingRecipientBlocked": {"description": "La clienta elegida se bloqueó y se quitó de Para quién (spec 007, RF-15)"}
+  "@bookingRecipientBlocked": {"description": "La clienta elegida se bloqueó y se quitó de Para quién (spec 007, RF-15)"},
+  "adminAppointmentGuest": "Sin cuenta",
+  "@adminAppointmentGuest": {"description": "Marca de un turno de una persona sin cuenta en la lista de la admin (spec 007, RF-22)"},
+  "adminAppointmentByAdmin": "Agendado por la admin",
+  "@adminAppointmentByAdmin": {"description": "Marca de un turno que creó la admin (spec 007, RF-23)"},
+  "adminAppointmentWhatsApp": "Escribir a {name} por WhatsApp",
+  "@adminAppointmentWhatsApp": {
+    "description": "Nombre del botón de WhatsApp de un turno en la lista de la admin (spec 007, RF-22, D-6)",
+    "placeholders": {"name": {"type": "String"}}
+  }
 }

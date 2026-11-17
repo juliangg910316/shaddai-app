@@ -2357,6 +2357,24 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Esa clienta está bloqueada: ya no se le puede agendar.'**
   String get bookingRecipientBlocked;
+
+  /// Marca de un turno de una persona sin cuenta en la lista de la admin (spec 007, RF-22)
+  ///
+  /// In es, this message translates to:
+  /// **'Sin cuenta'**
+  String get adminAppointmentGuest;
+
+  /// Marca de un turno que creó la admin (spec 007, RF-23)
+  ///
+  /// In es, this message translates to:
+  /// **'Agendado por la admin'**
+  String get adminAppointmentByAdmin;
+
+  /// Nombre del botón de WhatsApp de un turno en la lista de la admin (spec 007, RF-22, D-6)
+  ///
+  /// In es, this message translates to:
+  /// **'Escribir a {name} por WhatsApp'**
+  String adminAppointmentWhatsApp(String name);
 }
 
 class _AppLocalizationsDelegate

@@ -1234,4 +1234,15 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get bookingRecipientBlocked =>
       'Essa cliente está bloqueada: não é mais possível agendar para ela.';
+
+  @override
+  String get adminAppointmentGuest => 'Sem conta';
+
+  @override
+  String get adminAppointmentByAdmin => 'Agendado pela admin';
+
+  @override
+  String adminAppointmentWhatsApp(String name) {
+    return 'Escrever para $name pelo WhatsApp';
+  }
 }
