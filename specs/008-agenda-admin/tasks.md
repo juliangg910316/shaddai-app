@@ -48,7 +48,7 @@ Son más de 10, pero la spec no se divide (decisión del autor, 2026-11-17).
     - los providers aún no pasan cierres (T4);
     - 22 tests nuevos en seis archivos; suite completa, 1739 en verde.
 
-- [ ] **T3. Datos de los cierres y del calendario.** RF-8, RF-41, RNF-4
+- [x] **T3. Datos de los cierres y del calendario.** RF-8, RF-41, RNF-4
   - Tests:
     - `closure_model_test` (nuevo): `fromMap` con datos buenos, sin campo y con el fin no posterior al inicio; `toMap` solo con `start` y `end`;
     - `calendar_settings_model_test`: `toMap` sin `blockedDates`, y la lectura de documentos con `blockedDates` igual que antes;
@@ -58,6 +58,12 @@ Son más de 10, pero la spec no se divide (decisión del autor, 2026-11-17).
     - `ConfigRepository` tiene `watchClosures`, `fetchClosures`, `createClosure`, `deleteClosure`, `removeBlockedDate` y `updateEditMargin` (plan § 3);
     - `toMap` ya no escribe `blockedDates`;
     - el fake está listo.
+  - Hecha (2026-11-17):
+    - `ClosureModel` (`closure_model.dart`), con `stored` para la lógica: un registro, sin que `lib/data` importe la capa de features;
+    - `ConfigRepository`: `watchClosures`/`fetchClosures` (`end >= desde`; la segunda, del servidor), `createClosure`, `deleteClosure`, `removeBlockedDate` (`arrayRemove`) y `updateEditMargin` (`set` con `merge`), con `saveTimeout` de 15 s;
+    - `CalendarSettingsModel.toMap` ya no escribe `blockedDates`;
+    - `test/helpers/fake_config.dart`: `FakeConfigRepository`, probado en `test/data/fake_config_test.dart` (filtra por "desde" como Firestore, en vivo, errores y `merge`);
+    - 15 tests nuevos; suite completa, 1754 en verde.
 
 - [ ] **T4. La reserva no ofrece las horas de un cierre.** RF-12 a RF-17
   - Tests: `test/features/booking/booking_closures_test.dart` (nuevo):
