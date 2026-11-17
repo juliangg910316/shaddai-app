@@ -2321,6 +2321,30 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Faltan datos para agendar: revisa lo marcado.'**
   String get bookingMissingSeveral;
+
+  /// Para quién es el turno, primero en el resumen (spec 007, RF-16)
+  ///
+  /// In es, this message translates to:
+  /// **'Para: {name}'**
+  String bookingSummaryFor(String name);
+
+  /// Tras el WhatsApp de una persona sin cuenta en el resumen (spec 007, RF-16)
+  ///
+  /// In es, this message translates to:
+  /// **'sin cuenta'**
+  String get bookingSummaryGuest;
+
+  /// Confirmación de la admin (spec 007, RF-16)
+  ///
+  /// In es, this message translates to:
+  /// **'El turno quedará confirmado.'**
+  String get bookingAdminConfirmNote;
+
+  /// La admin agenda para una clienta con cuenta dentro del margen de edición (spec 007, RF-29)
+  ///
+  /// In es, this message translates to:
+  /// **'{name} no podrá cambiar este turno: falta menos de {margin} para que empiece.'**
+  String bookingAdminMarginWarning(String name, String margin);
 }
 
 class _AppLocalizationsDelegate

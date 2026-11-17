@@ -401,5 +401,9 @@
   "bookingGuestKeepGuest": "Continuar sem conta",
   "bookingGuestPhoneBlocked": "Este WhatsApp é de uma cliente bloqueada: não é possível agendar.",
   "bookingMissingRecipient": "Indique para quem é o horário",
-  "bookingMissingSeveral": "Faltam dados para agendar: revise o que está marcado."
+  "bookingMissingSeveral": "Faltam dados para agendar: revise o que está marcado.",
+  "bookingSummaryFor": "Para: {name}",
+  "bookingSummaryGuest": "sem conta",
+  "bookingAdminConfirmNote": "O horário ficará confirmado.",
+  "bookingAdminMarginWarning": "{name} não poderá alterar este horário: falta menos de {margin} para começar."
 }

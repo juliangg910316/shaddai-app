@@ -10,10 +10,14 @@ import 'package:shaddai/features/booking/logic/recipient.dart';
 import 'package:shaddai/features/booking/logic/salon_time.dart';
 import 'package:shaddai/features/booking/presentation/book_button.dart';
 import 'package:shaddai/features/booking/presentation/booking_view.dart';
+import 'package:shaddai/core/preferences/preferences_logic.dart';
+import 'package:shaddai/features/booking/presentation/recipient_picker.dart';
 import 'package:shaddai/features/booking/providers/admin_booking_provider.dart';
+import 'package:shaddai/features/preferences/providers/preferences_provider.dart';
 import 'package:shaddai/features/navigation/providers/tab_scroll_provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 
+import '../../helpers/booking_steps.dart';
 import '../../helpers/fake_auth.dart';
 import '../../helpers/fake_booking.dart';
 import '../../helpers/fake_session.dart';
@@ -556,4 +560,227 @@ void main() {
       expect(find.textContaining('Ya tiene un turno el'), findsOneWidget);
     });
   });
+
+  group(
+    'lo que falta, resumen y confirmación (RF-14, RF-16, RF-17, RF-29)',
+    () {
+      /// Pantalla alta: "Para quién", el calendario y las horas caben a la vez.
+      void tallView(WidgetTester tester) {
+        tester.view.devicePixelRatio = 1;
+        tester.view.physicalSize = const Size(800, 3000);
+        addTearDown(tester.view.reset);
+      }
+
+      CalendarSettingsModel withMargin(int minutes) {
+        final base = CalendarSettingsModel.defaultSettings();
+        return CalendarSettingsModel(
+          openingHours: base.openingHours,
+          globalSlotDurationMinutes: base.globalSlotDurationMinutes,
+          blockedDates: base.blockedDates,
+          editMarginMinutes: minutes,
+        );
+      }
+
+      Future<void> chooseAna(WidgetTester tester) async {
+        await search(tester, 'souza');
+        await tester.tap(find.text('Ana Souza'));
+        await settle(tester);
+      }
+
+      Finder inDialog(Finder finder) =>
+          find.descendant(of: find.byType(AlertDialog), matching: finder);
+
+      Finder markedFrame(Type part) => find.ancestor(
+        of: find.byType(part),
+        matching: find.byKey(const ValueKey('missingFrame')),
+      );
+
+      testWidgets('sin para quién, hora ni servicio: no confirma, lo dice y '
+          'marca cada parte (RF-17)', (tester) async {
+        tallView(tester);
+        await pump(tester);
+        await tapBook(tester);
+
+        expect(find.text('Confirmar turno'), findsNothing);
+        expect(
+          find.text('Faltan datos para agendar: revisa lo marcado.'),
+          findsOneWidget,
+        );
+        expect(markedFrame(RecipientPicker), findsOneWidget);
+        expect(find.text('Indica para quién es el turno'), findsOneWidget);
+        expect(find.text('Elige una hora'), findsOneWidget);
+        expect(find.text('Elige un servicio'), findsOneWidget);
+      });
+
+      testWidgets('con todo menos para quién, solo marca "Para quién"', (
+        tester,
+      ) async {
+        tallView(tester);
+        await pump(tester);
+        await openBookingConfirmation(tester, settle: () => settle(tester));
+
+        expect(find.text('Confirmar turno'), findsNothing);
+        expect(
+          find.descendant(
+            of: find.byType(SnackBar),
+            matching: find.text('Indica para quién es el turno'),
+          ),
+          findsOneWidget,
+        );
+        await scrollToTop(tester);
+        expect(markedFrame(RecipientPicker), findsOneWidget);
+        expect(find.text('Indica para quién es el turno'), findsNWidgets(2));
+        expect(find.text('Elige una hora'), findsNothing);
+        expect(find.text('Elige un servicio'), findsNothing);
+      });
+
+      testWidgets('con turno activo: no confirma, lo avisa y marca "Para '
+          'quién" (RF-14)', (tester) async {
+        tallView(tester);
+        bookings.active = [anaActive()];
+        await pump(tester);
+        await chooseAna(tester);
+        await openBookingConfirmation(tester, settle: () => settle(tester));
+
+        expect(find.text('Confirmar turno'), findsNothing);
+        const message =
+            'Ya tiene un turno el viernes, 20 de noviembre de 2026 a las 9:00: '
+            'Manicura rusa, Decoración. No se le puede agendar otro.';
+        expect(
+          find.descendant(
+            of: find.byType(SnackBar),
+            matching: find.text(message),
+          ),
+          findsOneWidget,
+        );
+        // También en "Para quién", que queda marcada.
+        await scrollToTop(tester);
+        expect(find.text(message), findsNWidgets(2));
+        expect(find.byType(SnackBar), findsOneWidget);
+        expect(markedFrame(RecipientPicker), findsOneWidget);
+      });
+
+      testWidgets('el resumen y la confirmación empiezan por para quién y '
+          'dicen que quedará confirmado (RF-16)', (tester) async {
+        tallView(tester);
+        await pump(tester);
+        await chooseAna(tester);
+        await openBookingConfirmation(tester, settle: () => settle(tester));
+
+        expect(find.text('Confirmar turno'), findsOneWidget);
+        expect(inDialog(find.text('Para: Ana Souza')), findsOneWidget);
+        expect(inDialog(find.text('+55 41 99111-0000')), findsOneWidget);
+        expect(
+          inDialog(find.text('El turno quedará confirmado.')),
+          findsOneWidget,
+        );
+        expect(find.textContaining('esperando la confirmación'), findsNothing);
+        // Para quién va antes que la fecha.
+        final forY = tester
+            .getTopLeft(inDialog(find.text('Para: Ana Souza')))
+            .dy;
+        final dateY = tester
+            .getTopLeft(inDialog(find.textContaining('noviembre')))
+            .dy;
+        expect(forY, lessThan(dateY));
+
+        // También en el resumen del formulario.
+        await tester.tap(find.text('CANCELAR'));
+        await settle(tester);
+        expect(find.text('Para: Ana Souza'), findsOneWidget);
+      });
+
+      testWidgets('con una persona sin cuenta, lo dice (RF-16)', (
+        tester,
+      ) async {
+        tallView(tester);
+        await pump(tester);
+        await startGuest(tester);
+        await tester.enterText(field('Nombre'), 'Rosa');
+        await tester.enterText(field('WhatsApp'), '41 99333-0000');
+        await tapConsent(tester);
+        await scrollToTop(tester);
+        await openBookingConfirmation(tester, settle: () => settle(tester));
+
+        expect(inDialog(find.text('Para: Rosa')), findsOneWidget);
+        expect(
+          inDialog(find.text('41 99333-0000 · sin cuenta')),
+          findsOneWidget,
+        );
+      });
+
+      testWidgets('dentro del margen, avisa con el nombre de la clienta '
+          '(RF-29)', (tester) async {
+        tallView(tester);
+        await pump(tester, settings: withMargin(180));
+        await chooseAna(tester);
+        // A las 7:00, las 10:00 empiezan dentro de 3 h.
+        await openBookingConfirmation(tester, settle: () => settle(tester));
+
+        expect(
+          inDialog(
+            find.text(
+              'Ana Souza no podrá cambiar este turno: falta menos de 3 h para '
+              'que empiece.',
+            ),
+          ),
+          findsOneWidget,
+        );
+        expect(find.textContaining('No podrás cambiar'), findsNothing);
+      });
+
+      testWidgets('fuera del margen, sin aviso', (tester) async {
+        tallView(tester);
+        await pump(tester, settings: withMargin(60));
+        await chooseAna(tester);
+        await openBookingConfirmation(tester, settle: () => settle(tester));
+        expect(find.text('Confirmar turno'), findsOneWidget);
+        expect(find.textContaining('no podrá cambiar'), findsNothing);
+      });
+
+      testWidgets(
+        'con una persona sin cuenta, nunca avisa del margen (RF-29)',
+        (tester) async {
+          tallView(tester);
+          await pump(tester, settings: withMargin(180));
+          await startGuest(tester);
+          await tester.enterText(field('Nombre'), 'Rosa');
+          await tester.enterText(field('WhatsApp'), '41 99333-0000');
+          await tapConsent(tester);
+          await scrollToTop(tester);
+          await openBookingConfirmation(tester, settle: () => settle(tester));
+
+          expect(find.text('Confirmar turno'), findsOneWidget);
+          expect(find.textContaining('no podrá cambiar'), findsNothing);
+          expect(find.textContaining('No podrás cambiar'), findsNothing);
+        },
+      );
+
+      testWidgets('al cambiar de idioma con la confirmación abierta, se '
+          'traduce', (tester) async {
+        tallView(tester);
+        await pump(tester, settings: withMargin(180));
+        await chooseAna(tester);
+        await openBookingConfirmation(tester, settle: () => settle(tester));
+
+        await appContainer(tester)
+            .read(languagePreferenceProvider.notifier)
+            .select(AppLanguage.pt);
+        await settle(tester);
+        expect(
+          inDialog(find.text('O horário ficará confirmado.')),
+          findsOneWidget,
+        );
+        expect(
+          inDialog(
+            find.text(
+              'Ana Souza não poderá alterar este horário: falta menos de 3 h '
+              'para começar.',
+            ),
+          ),
+          findsOneWidget,
+        );
+      });
+    },
+  );
 }

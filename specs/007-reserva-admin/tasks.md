@@ -134,7 +134,7 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
     - en los tests, tras saltar en la lista hay que dejar pasar varios fotogramas con tiempo antes de tocar: la lista se recoloca con una animación e ignora los toques mientras tanto;
     - 8 tests nuevos; suite completa, 1611 en verde.
 
-- [ ] **T10. Lo que falta, resumen y confirmación.** RF-14, RF-16, RF-17, RF-29
+- [x] **T10. Lo que falta, resumen y confirmación.** RF-14, RF-16, RF-17, RF-29
   - Tests (`admin_booking_view_test.dart`):
     - "Agendar turno" sin para quién, sin hora o sin servicio: no abre la confirmación, dice qué falta y marca cada parte;
     - con la persona con turno activo: no abre la confirmación, avisa y marca "Para quién";
@@ -142,6 +142,12 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
     - con un margen de 60 minutos y una hora dentro: el aviso con el nombre de la clienta con cuenta; nada con una persona sin cuenta;
     - cambio de idioma con la confirmación abierta: se traduce.
   - Hecho cuando: los tests pasan. Textos (`bookingMissingRecipient` y `bookingMissingSeveral` ya llegaron con la T9): `bookingSummaryFor`, `bookingSummaryGuest`, `bookingAdminConfirmNote`, `bookingAdminMarginWarning`.
+  - Hecha (2026-11-16):
+    - `BookingSummary(admin)`: primero "Para: <nombre>" y debajo su WhatsApp, con "· sin cuenta" si no tiene cuenta; en el formulario y en el diálogo;
+    - `BookButton(admin)`: si la persona tiene un turno activo, no abre la confirmación: snackbar con el mismo texto del aviso de "Para quién" y la marca con solo el borde (`_MissingFrame(marked:)`, que ya dice qué pasa);
+    - diálogo: "El turno quedará confirmado." y el aviso del margen con el nombre de la clienta, solo con cuenta;
+    - el borde de lo que falta lleva `ValueKey('missingFrame')` para los tests;
+    - 9 tests nuevos; suite completa, 1620 en verde.
 
 - [ ] **T11. Agendar y lo que pasa después.** RF-15, RF-18 a RF-20, RF-27
   - Tests:

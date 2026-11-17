@@ -64,6 +64,11 @@ class _BookingFormState extends ConsumerState<BookingForm> {
                 : null,
           )
         : const <BookingPart>{};
+    // La persona ya tiene un turno activo: también se marca (RF-14).
+    final recipientActive =
+        _showMissing &&
+        widget.admin &&
+        ref.watch(recipientActiveAppointmentProvider) != null;
 
     return ListView(
       controller: ref.watch(tabScrollControllerProvider(MobileTab.booking)),
@@ -90,6 +95,8 @@ class _BookingFormState extends ConsumerState<BookingForm> {
             message: missing.contains(BookingPart.recipient)
                 ? l10n.bookingMissingRecipient
                 : null,
+            // Su aviso ya sale dentro de "Para quién".
+            marked: recipientActive,
             child: RecipientPicker(showErrors: _showMissing),
           ),
           const SizedBox(height: 24),
@@ -119,7 +126,7 @@ class _BookingFormState extends ConsumerState<BookingForm> {
         const SizedBox(height: 16),
         const AddonPicker(),
         const SizedBox(height: 16),
-        const BookingSummary(),
+        BookingSummary(admin: widget.admin),
         const SizedBox(height: 24),
         BookButton(
           editing: widget.editing,
@@ -140,20 +147,27 @@ class _BookingFormState extends ConsumerState<BookingForm> {
 }
 
 /// Marca una parte sin elegir con un borde y su texto de error (RF-24).
+/// Con [marked] y sin [message], solo el borde: la parte ya dice qué pasa.
 class _MissingFrame extends StatelessWidget {
-  const _MissingFrame({required this.message, required this.child});
+  const _MissingFrame({
+    required this.message,
+    required this.child,
+    this.marked = false,
+  });
 
   /// El texto de lo que falta, o `null` si no falta.
   final String? message;
+  final bool marked;
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
     final message = this.message;
-    if (message == null) return child;
+    if (message == null && !marked) return child;
     final brand = context.brand;
 
     return Container(
+      key: const ValueKey('missingFrame'),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
@@ -164,15 +178,17 @@ class _MissingFrame extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           child,
-          const SizedBox(height: 8),
-          Text(
-            message,
-            style: AppText.sans(
-              size: 14,
-              weight: FontWeight.w500,
-              color: brand.danger,
+          if (message != null) ...[
+            const SizedBox(height: 8),
+            Text(
+              message,
+              style: AppText.sans(
+                size: 14,
+                weight: FontWeight.w500,
+                color: brand.danger,
+              ),
             ),
-          ),
+          ],
         ],
       ),
     );

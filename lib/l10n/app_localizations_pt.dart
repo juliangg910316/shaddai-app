@@ -1209,4 +1209,20 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get bookingMissingSeveral =>
       'Faltam dados para agendar: revise o que está marcado.';
+
+  @override
+  String bookingSummaryFor(String name) {
+    return 'Para: $name';
+  }
+
+  @override
+  String get bookingSummaryGuest => 'sem conta';
+
+  @override
+  String get bookingAdminConfirmNote => 'O horário ficará confirmado.';
+
+  @override
+  String bookingAdminMarginWarning(String name, String margin) {
+    return '$name não poderá alterar este horário: falta menos de $margin para começar.';
+  }
 }

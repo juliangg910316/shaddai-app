@@ -641,5 +641,19 @@
   "bookingMissingRecipient": "Indica para quién es el turno",
   "@bookingMissingRecipient": {"description": "Falta para quién o sus datos (spec 007, RF-17)"},
   "bookingMissingSeveral": "Faltan datos para agendar: revisa lo marcado.",
-  "@bookingMissingSeveral": {"description": "Falta para quién y algo más (spec 007, RF-17)"}
+  "@bookingMissingSeveral": {"description": "Falta para quién y algo más (spec 007, RF-17)"},
+  "bookingSummaryFor": "Para: {name}",
+  "@bookingSummaryFor": {
+    "description": "Para quién es el turno, primero en el resumen (spec 007, RF-16)",
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "bookingSummaryGuest": "sin cuenta",
+  "@bookingSummaryGuest": {"description": "Tras el WhatsApp de una persona sin cuenta en el resumen (spec 007, RF-16)"},
+  "bookingAdminConfirmNote": "El turno quedará confirmado.",
+  "@bookingAdminConfirmNote": {"description": "Confirmación de la admin (spec 007, RF-16)"},
+  "bookingAdminMarginWarning": "{name} no podrá cambiar este turno: falta menos de {margin} para que empiece.",
+  "@bookingAdminMarginWarning": {
+    "description": "La admin agenda para una clienta con cuenta dentro del margen de edición (spec 007, RF-29)",
+    "placeholders": {"name": {"type": "String"}, "margin": {"type": "String"}}
+  }
 }
