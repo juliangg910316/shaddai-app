@@ -170,9 +170,14 @@ Son más de 10, pero la spec no se divide (decisión del autor, 2026-11-17).
     - los pasos de la persona de `checkAdminBeforeSave` salen a `checkRecipient`, que comparten las dos;
     - 50 tests nuevos en `admin_edit_test.dart`; suite completa, 1869 en verde.
 
-- [ ] **T10. Datos de la edición de la admin.** RF-28, RF-30, RF-31
+- [x] **T10. Datos de la edición de la admin.** RF-28, RF-30, RF-31
   - Tests: el fake de turnos implementa `watchAppointment` (`emitAppointment`), `fetchAdminEditCheck` y `updateAppointmentByAdmin`, que respeta `expected` y registra lo guardado. También hay tests del fake: no guarda si `expected` falla y conserva los campos que no se envían.
   - Hecho cuando: `BookingRepository` tiene `watchAppointment`, `fetchAdminEditCheck` y `updateAppointmentByAdmin`: la transacción de plan § 2, con el turno ocupado escrito con `set`.
+  - Hecha (2026-11-17):
+    - `BookingRepository`: `watchAppointment(id)`; `fetchAdminEditCheck` (turno, ocupados del día y activos, del servidor); `updateAppointmentByAdmin` (transacción: horas, lo reservado y `confirmed`; con `person` también la persona, con `clientId` `null` escrito para una persona sin cuenta, y `createdByAdmin: true`; el turno ocupado con `set` de `start`/`end`);
+    - tipos `AdminEditCheckData` y `AppointmentPerson`;
+    - el fake: `watchAppointment`/`emitAppointment`, `fetchAdminEditCheck` (`adminEditCheckData`, `adminEditCheckError`, `adminEditCheckRequests`) y `updateAppointmentByAdmin` (respeta `expected`, conserva lo que no se envía, crea o sustituye el turno ocupado, registra `adminEdits`);
+    - `test/data/fake_booking_test.dart`: 10 tests. Los métodos reales no tienen test, como los demás del repositorio (no hay Firestore falso); se comprueban en el recorrido y en `rules-check.md` (T16). Suite completa, 1879 en verde.
 
 - [ ] **T11. Abrir y cerrar la edición sin perder la reserva a medias.** RF-19, RF-23, RF-24, RF-25, RF-33, RF-35
   - Tests: `test/features/booking/admin_edit_provider_test.dart` (nuevo):

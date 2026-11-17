@@ -27,6 +27,15 @@ import 'package:shaddai/data/repositories/booking_repository.dart';
 ///
 /// Los cierres (spec 008): [fetchActiveAppointments] devuelve [active] o
 /// lanza [activeFetchError], y registra cada "ahora" en [activeFetches].
+///
+/// La edición de la admin (spec 008): [watchAppointment] empieza con el
+/// turno de ese id en [active], [mine] o [created], y cambia con
+/// [emitAppointment]. La comprobación previa devuelve [adminEditCheckData]
+/// (por defecto, ese turno, [busy] y [active]) o lanza
+/// [adminEditCheckError]. El guardado lanza [updateError]; si no, como la
+/// transacción, aplica `expected` y, si vale, cambia el turno (confirmado)
+/// en [active], [mine] y a quien lo escucha, escribe su turno ocupado de
+/// [busy] y lo registra en [adminEdits].
 class FakeBookingRepository implements BookingRepository {
   FakeBookingRepository({
     this.busy = const [],
@@ -75,6 +84,141 @@ class FakeBookingRepository implements BookingRepository {
       <({String appointmentId, DateTime from, DateTime to})>[];
 
   Object? updateError;
+
+  final _appointmentListeners =
+      <({String id, StreamController<AppointmentModel?> controller})>[];
+  final _appointments = <String, AppointmentModel?>{};
+
+  /// Turnos pedidos a [watchAppointment], en orden.
+  final appointmentRequests = <String>[];
+
+  AdminEditCheckData? adminEditCheckData;
+  Object? adminEditCheckError;
+  final adminEditCheckRequests =
+      <({String appointmentId, DateTime from, DateTime to, DateTime now})>[];
+  final adminEdits =
+      <
+        ({
+          String id,
+          DateTime start,
+          DateTime end,
+          BookedServiceModel booked,
+          AppointmentPerson? person,
+        })
+      >[];
+
+  /// El turno [id] tal como lo ve el fake ahora.
+  AppointmentModel? appointmentById(String id) {
+    if (_appointments.containsKey(id)) return _appointments[id];
+    for (final a in [...active, ...mine, ...created]) {
+      if (a.id == id) return a;
+    }
+    return null;
+  }
+
+  /// Cambia el turno [id] (o lo borra con `null`) y lo envía a quien lo
+  /// escucha.
+  void emitAppointment(String id, AppointmentModel? value) {
+    _appointments[id] = value;
+    for (final listener in List.of(_appointmentListeners)) {
+      if (listener.id == id) listener.controller.add(value);
+    }
+  }
+
+  @override
+  Stream<AppointmentModel?> watchAppointment(String id) {
+    appointmentRequests.add(id);
+    late final StreamController<AppointmentModel?> controller;
+    late final ({String id, StreamController<AppointmentModel?> controller})
+    entry;
+    controller = StreamController<AppointmentModel?>(
+      onListen: () => controller.add(appointmentById(id)),
+      onCancel: () => _appointmentListeners.remove(entry),
+    );
+    entry = (id: id, controller: controller);
+    _appointmentListeners.add(entry);
+    return controller.stream;
+  }
+
+  @override
+  Future<AdminEditCheckData> fetchAdminEditCheck({
+    required String appointmentId,
+    required DateTime from,
+    required DateTime to,
+    required DateTime now,
+  }) async {
+    adminEditCheckRequests.add((
+      appointmentId: appointmentId,
+      from: from,
+      to: to,
+      now: now,
+    ));
+    final error = adminEditCheckError;
+    if (error != null) throw error;
+    return adminEditCheckData ??
+        (
+          appointment: appointmentById(appointmentId),
+          busy: busy,
+          active: active,
+        );
+  }
+
+  @override
+  Future<bool> updateAppointmentByAdmin({
+    required String id,
+    required bool Function(AppointmentModel? current) expected,
+    required DateTime start,
+    required DateTime end,
+    required BookedServiceModel booked,
+    AppointmentPerson? person,
+  }) async {
+    final error = updateError;
+    if (error != null) throw error;
+    final current = appointmentById(id);
+    if (!expected(current)) return false;
+    adminEdits.add((
+      id: id,
+      start: start,
+      end: end,
+      booked: booked,
+      person: person,
+    ));
+    if (current != null) {
+      // Como el `update` de Firestore: lo que no se envía no cambia.
+      final updated = AppointmentModel(
+        id: id,
+        clientId: person != null ? person.clientId : current.clientId,
+        clientName: person?.clientName ?? current.clientName,
+        clientPhone: person?.clientPhone ?? current.clientPhone,
+        clientPhotoUrl: person != null
+            ? person.clientPhotoUrl
+            : current.clientPhotoUrl,
+        startTime: start,
+        endTime: end,
+        status: 'confirmed',
+        createdAt: current.createdAt,
+        createdByAdmin: person != null || current.createdByAdmin,
+        booked: booked,
+      );
+      AppointmentModel replace(AppointmentModel a) => a.id == id ? updated : a;
+      if (active.any((a) => a.id == id)) {
+        emitActive([for (final a in active) replace(a)]);
+      }
+      if (mine.any((a) => a.id == id)) {
+        emitMine([for (final a in mine) replace(a)]);
+      }
+      emitAppointment(id, updated);
+    }
+    // Como el `set` de Firestore: crea o sustituye su turno ocupado.
+    final slot = BusySlot(id: id, start: start, end: end);
+    emitBusy([
+      for (final s in busy)
+        if (s.id != id) s,
+      slot,
+    ]);
+    return true;
+  }
+
   final edited =
       <
         ({String id, DateTime start, DateTime end, BookedServiceModel booked})

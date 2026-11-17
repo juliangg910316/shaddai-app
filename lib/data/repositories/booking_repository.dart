@@ -19,6 +19,24 @@ typedef EditCheckData = ({AppointmentModel? appointment, List<BusySlot> busy});
 /// aún no terminaron, de cualquier persona.
 typedef AdminCheckData = ({List<BusySlot> busy, List<AppointmentModel> active});
 
+/// Lo que se lee del servidor justo antes de guardar la edición de la admin
+/// (spec 008, RF-28): el turno tal como está ahora (`null` si ya no existe),
+/// los turnos ocupados del día nuevo y los turnos que aún no terminaron.
+typedef AdminEditCheckData = ({
+  AppointmentModel? appointment,
+  List<BusySlot> busy,
+  List<AppointmentModel> active,
+});
+
+/// La persona a cuyo nombre queda un turno. `clientId` es `null` para una
+/// persona sin cuenta (spec 007).
+typedef AppointmentPerson = ({
+  String? clientId,
+  String clientName,
+  String clientPhone,
+  String? clientPhotoUrl,
+});
+
 /// Turnos (`appointments`) y turnos ocupados (`busySlots`, spec 005, plan
 /// § 2). Un turno y su turno ocupado se escriben siempre juntos.
 class BookingRepository {
@@ -155,6 +173,91 @@ class BookingRepository {
             ..update(
               _busySlots.doc(id),
               encodeDates({'start': start, 'end': end}),
+            );
+          return true;
+        })
+        .timeout(saveTimeout);
+  }
+
+  /// El turno [id] en vivo, o `null` si no existe (spec 008, RF-19, RF-30).
+  /// Lo lee la edición de la admin, también al abrirla desde su dirección en
+  /// Web.
+  Stream<AppointmentModel?> watchAppointment(String id) => _appointments
+      .doc(id)
+      .snapshots()
+      .map((doc) => doc.exists ? _appointment(doc) : null);
+
+  /// Lee **del servidor** el turno [appointmentId], los turnos ocupados que
+  /// empiezan entre [from] y [to] y los que terminan en [now] o después, para
+  /// comprobar la edición de la admin antes de guardarla (spec 008, RF-28).
+  /// Sin conexión falla, como [fetchBookingCheck].
+  Future<AdminEditCheckData> fetchAdminEditCheck({
+    required String appointmentId,
+    required DateTime from,
+    required DateTime to,
+    required DateTime now,
+  }) async {
+    const server = GetOptions(source: Source.server);
+    final results = await Future.wait<Object>([
+      _appointments.doc(appointmentId).get(server),
+      _busySlots
+          .where('start', isGreaterThanOrEqualTo: Timestamp.fromDate(from))
+          .where('start', isLessThan: Timestamp.fromDate(to))
+          .get(server),
+      _endingFrom(now).get(server),
+    ]);
+    final doc = results[0] as DocumentSnapshot<Map<String, dynamic>>;
+    final active = results[2] as QuerySnapshot<Map<String, dynamic>>;
+    return (
+      appointment: doc.exists ? _appointment(doc) : null,
+      busy: _slots(results[1] as QuerySnapshot<Map<String, dynamic>>),
+      active: [for (final doc in active.docs) _appointment(doc)],
+    );
+  }
+
+  /// Guarda la edición de la admin del turno [id] en una transacción (spec
+  /// 008, RF-28, plan § 2): vuelve a leer el turno y, solo si [expected] lo da
+  /// por bueno, cambia su inicio, su fin y lo reservado, lo deja confirmado
+  /// y escribe a la vez su turno ocupado con `set` (plan D-8).
+  ///
+  /// Con [person], cambia la persona y marca el turno como de la admin
+  /// (RF-31); sin ella, la persona y la marca no se tocan. Devuelve `false`
+  /// si el turno ya no es el esperado. Si no termina en [saveTimeout], lanza
+  /// `TimeoutException`.
+  Future<bool> updateAppointmentByAdmin({
+    required String id,
+    required bool Function(AppointmentModel? current) expected,
+    required DateTime start,
+    required DateTime end,
+    required BookedServiceModel booked,
+    AppointmentPerson? person,
+  }) {
+    final appointmentRef = _appointments.doc(id);
+    return _firestore
+        .runTransaction<bool>((transaction) async {
+          final doc = await transaction.get(appointmentRef);
+          if (!expected(doc.exists ? _appointment(doc) : null)) return false;
+          transaction
+            ..update(
+              appointmentRef,
+              encodeDates({
+                'startTime': start,
+                'endTime': end,
+                'booked': booked.toMap(),
+                'status': 'confirmed',
+                if (person != null) ...{
+                  // `null` escrito a propósito para una persona sin cuenta.
+                  'clientId': person.clientId,
+                  'clientName': person.clientName,
+                  'clientPhone': person.clientPhone,
+                  'clientPhotoUrl': person.clientPhotoUrl,
+                  'createdByAdmin': true,
+                },
+              }),
+            )
+            ..set(
+              _busySlots.doc(id),
+              encodeDates(BusySlot(id: id, start: start, end: end).toMap()),
             );
           return true;
         })
