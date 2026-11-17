@@ -201,6 +201,9 @@ class FakeBookingRepository implements BookingRepository {
                 endTime: end,
                 status: 'waiting_confirmation',
                 createdAt: a.createdAt,
+                // Como el `update` de Firestore: los demás campos no cambian
+                // (spec 007, RF-30).
+                createdByAdmin: a.createdByAdmin,
                 booked: booked,
               )
             : a,

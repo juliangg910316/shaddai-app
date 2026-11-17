@@ -162,9 +162,13 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
     - los tests con la app real (Web y Android/iOS) van en `admin_booking_flow_test.dart`, aparte de `admin_booking_view_test.dart`;
     - 13 tests nuevos; suite completa, 1633 en verde.
 
-- [ ] **T12. La clienta ve el turno que le agendó la admin.** RF-21
+- [x] **T12. La clienta ve el turno que le agendó la admin.** RF-21
   - Tests: `test/features/booking/admin_booked_client_test.dart` (nuevo): un turno confirmado con `createdByAdmin` que llega en vivo con la reserva abierta pasa a verse como su turno activo, sin recargar, y en Perfil; se puede editar y al guardar vuelve a esperar confirmación (spec 006).
   - Hecho cuando: los tests pasan (puede que sin cambios de código).
+  - Hecha (2026-11-17), sin cambios de código:
+    - el turno llega en vivo y la reserva pasa del formulario al turno activo ("CONFIRMADA", "Editar turno"); también aparece en Perfil;
+    - al editarlo vuelve a esperar confirmación y conserva `createdByAdmin`: el repositorio real usa `update` solo con horas, lo reservado y el estado. El fake reconstruía el turno y perdía la marca: corregido para que se comporte como Firestore. Que la clienta no pueda cambiarla lo garantizan las reglas (T14);
+    - 3 tests nuevos; suite completa, 1636 en verde.
 
 - [ ] **T13. La lista de la admin.** RF-22 a RF-24
   - Tests: `test/features/admin/admin_appointments_booked_test.dart`: un turno sin cuenta muestra su nombre, su WhatsApp, "Sin cuenta" y las iniciales sin foto; uno con `createdByAdmin`, "Agendado por la admin"; el botón de WhatsApp (48 px, con su nombre para el lector de pantalla) abre `whatsAppLink` en `RecordingLinkLauncher`, también en un turno con cuenta (D-6); las horas libres de la clienta no muestran la hora de un turno sin cuenta.
