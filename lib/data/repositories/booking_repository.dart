@@ -14,6 +14,11 @@ typedef BookingCheckData = ({List<BusySlot> busy, List<AppointmentModel> mine});
 /// los turnos ocupados del día nuevo.
 typedef EditCheckData = ({AppointmentModel? appointment, List<BusySlot> busy});
 
+/// Lo que se lee del servidor justo antes de guardar el turno que agenda la
+/// admin (spec 007, RF-18): los turnos ocupados de ese día y los turnos que
+/// aún no terminaron, de cualquier persona.
+typedef AdminCheckData = ({List<BusySlot> busy, List<AppointmentModel> active});
+
 /// Turnos (`appointments`) y turnos ocupados (`busySlots`, spec 005, plan
 /// § 2). Un turno y su turno ocupado se escriben siempre juntos.
 class BookingRepository {
@@ -154,6 +159,42 @@ class BookingRepository {
           return true;
         })
         .timeout(saveTimeout);
+  }
+
+  Query<Map<String, dynamic>> _endingFrom(DateTime now) => _appointments.where(
+    'endTime',
+    isGreaterThanOrEqualTo: Timestamp.fromDate(now),
+  );
+
+  /// Los turnos que terminan en [now] o después, de cualquier persona, en
+  /// vivo. Solo los lee la admin, para el turno activo de una persona (spec
+  /// 007, RF-14). Un solo campo filtrado: no necesita índice compuesto.
+  Stream<List<AppointmentModel>> watchActiveAppointments(DateTime now) =>
+      _endingFrom(now)
+          .snapshots()
+          .map((snapshot) => snapshot.docs.map(_appointment).toList());
+
+  /// Lee **del servidor** los turnos ocupados que empiezan entre [from] y
+  /// [to] y los turnos que terminan en [now] o después, para comprobar el
+  /// turno de la admin antes de guardarlo (spec 007, RF-18). Sin conexión
+  /// falla, como [fetchBookingCheck].
+  Future<AdminCheckData> fetchAdminBookingCheck({
+    required DateTime from,
+    required DateTime to,
+    required DateTime now,
+  }) async {
+    const server = GetOptions(source: Source.server);
+    final results = await Future.wait([
+      _busySlots
+          .where('start', isGreaterThanOrEqualTo: Timestamp.fromDate(from))
+          .where('start', isLessThan: Timestamp.fromDate(to))
+          .get(server),
+      _endingFrom(now).get(server),
+    ]);
+    return (
+      busy: _slots(results[0]),
+      active: [for (final doc in results[1].docs) _appointment(doc)],
+    );
   }
 
   Stream<List<AppointmentModel>> getAppointmentsForDate(DateTime date) {

@@ -67,8 +67,24 @@ final deviceUtcOffsetProvider = Provider<Duration>(
   (ref) => DateTime.now().timeZoneOffset,
 );
 
+/// Si la sesión es de la admin (spec 007, RF-1, RF-28).
+final isAdminSessionProvider = Provider<bool>(
+  (ref) => ref.watch(
+    currentUserProvider.select((user) => user.value?.role == 'admin'),
+  ),
+);
+
+/// Días de la ventana de reserva de la sesión: 365 para la admin, 60 para
+/// la clienta (spec 007, RF-12).
+final bookingWindowDaysProvider = Provider<int>(
+  (ref) => ref.watch(isAdminSessionProvider)
+      ? adminBookingWindowDays
+      : bookingWindowDays,
+);
+
 /// Turnos ocupados de la ventana de reserva, en vivo (RF-6, D-2). Solo vuelve
-/// a pedirlos cuando cambia el día del salón.
+/// a pedirlos cuando cambia el día del salón o el largo de la ventana (spec
+/// 007, RF-12).
 final busySlotsProvider = StreamProvider<List<BusySlot>>((ref) {
   final clock = ref.watch(clockProvider);
   // Antes del primer valor, el día del reloj: así no se vuelve a pedir la
@@ -76,7 +92,10 @@ final busySlotsProvider = StreamProvider<List<BusySlot>>((ref) {
   final today = ref.watch(
     salonNowProvider.select((now) => salonDay(now.value ?? toSalon(clock()))),
   );
-  final window = bookingWindow(today);
+  final window = bookingWindow(
+    today,
+    days: ref.watch(bookingWindowDaysProvider),
+  );
   final end = window.last.add(const Duration(days: 1));
   return ref
       .watch(bookingRepositoryProvider)
@@ -199,6 +218,7 @@ class BookingSelectionController extends Notifier<BookingSelectionState> {
     ref.listen(bookableCatalogProvider, onChange);
     ref.listen(calendarSettingsProvider, onChange);
     ref.listen(busyRangesProvider, onChange);
+    ref.listen(bookingWindowDaysProvider, onChange);
     ref.listen(salonNowProvider, (_, _) {
       onChange(null, null);
       _checkEdit();
@@ -273,6 +293,7 @@ class BookingSelectionController extends Notifier<BookingSelectionState> {
           ref.read(salonNowProvider).value ??
           toSalon(ref.read(clockProvider)()),
       original: original,
+      windowDays: ref.read(bookingWindowDaysProvider),
     );
   }
 
@@ -335,6 +356,10 @@ class BookingSelectionController extends Notifier<BookingSelectionState> {
 
   /// Tras guardar: conserva solo el día.
   void clear() => _set(BookingSelection(day: selection.day));
+
+  /// Tras agendar la admin: vacía todo, también el día, y vuelve a elegir el
+  /// primero con horas libres, como al abrir (spec 007, RF-20, D-8).
+  void reset() => _set(reconcile(BookingSelection.empty, _context()).selection);
 
   /// La vista llama aquí tras mostrar los avisos.
   void consumeNotices() => state = BookingSelectionState(selection);

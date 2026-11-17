@@ -42,6 +42,19 @@ class UserRepository {
   }
 
   // ADMIN METHODS
+
+  /// Lee **del servidor** la ficha de [uid], o `null` si no existe. La usa
+  /// la admin justo antes de agendar, para no fiarse de una copia vieja
+  /// (spec 007, RF-15, RF-18). Sin conexión falla.
+  Future<UserModel?> fetchUser(String uid) async {
+    final doc = await _firestore
+        .collection('users')
+        .doc(uid)
+        .get(const GetOptions(source: Source.server));
+    final data = doc.data();
+    return doc.exists && data != null ? UserModel.fromMap(data, uid) : null;
+  }
+
   Stream<List<UserModel>> getAllUsers() {
     return _firestore.collection('users').snapshots().map((snapshot) {
       return snapshot.docs

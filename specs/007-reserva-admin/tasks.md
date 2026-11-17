@@ -75,13 +75,21 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
     - los providers y la vista aún no pasan 365 ni el modo admin (T6 y T7);
     - 10 tests nuevos; suite completa, 1564 en verde.
 
-- [ ] **T6. Repositorios y providers de la reserva de la admin.** RF-6, RF-12, RF-14, RF-15, RF-18 a RF-20, RF-27
+- [x] **T6. Repositorios y providers de la reserva de la admin.** RF-6, RF-12, RF-14, RF-15, RF-18 a RF-20, RF-27
   - Tests: `test/features/booking/admin_booking_provider_test.dart` (nuevo), con `FakeBookingRepository` y un `UserRepository` falso ampliados (`watchActiveAppointments`, `fetchAdminBookingCheck`, `fetchUser`):
     - `bookingWindowDaysProvider`: 365 con la admin, 60 con la clienta; `busySlotsProvider` pide 365 días con la admin;
     - `bookingRecipientProvider`: elegir, cambiar, borrador de la persona sin cuenta; conserva todo al dejar de escucharse (RF-27); se vacía al cambiar de cuenta; quita a la clienta si la bloquean (RF-15);
     - `recipientActiveAppointmentProvider`: el turno activo de la elegida, por `uid` y por WhatsApp;
     - `AdminBookingSubmitter`: guarda confirmado, `createdByAdmin: true`, con los datos de la clienta o de la persona sin cuenta (`clientId: null`) (RF-19); cada resultado de la comprobación; `failed` sin conexión, conservando lo elegido; con `ok` vacía la selección (también el día, D-8) y para quién (RF-20).
   - Hecho cuando: los tests pasan. La vista aún no los usa.
+  - Hecha (2026-11-16):
+    - datos: `BookingRepository.watchActiveAppointments` y `fetchAdminBookingCheck` (`endTime >= ahora`, del servidor), `UserRepository.fetchUser` (del servidor);
+    - `booking_provider.dart`: `isAdminSessionProvider`, `bookingWindowDaysProvider` (lo usan `busySlotsProvider` y el contexto de la selección, que se reconcilia si cambia) y `reset()`, que vacía también el día (D-8);
+    - `admin_booking_provider.dart` (nuevo): `bookingRecipientProvider` (`RecipientController`: búsqueda, elegir, persona sin cuenta, avisos; quita a la bloqueada y se vacía al cambiar de cuenta), `recipientSearchProvider`, `adminActiveAppointmentsProvider`, `recipientActiveAppointmentProvider` y `adminBookingSubmitProvider` (`AdminBookingResult` con el turno activo o el nombre);
+    - al guardar, una clienta con cuenta se guarda con los datos **actuales** de su ficha, leída del servidor; una persona sin cuenta, con su nombre y su WhatsApp sin espacios alrededor. Con `recipientBlocked`, la clienta se quita, pero la persona sin cuenta se conserva para corregir su WhatsApp;
+    - fakes: `FakeBookingRepository` (`active`, `emitActive`, `adminCheck*`) y `FakeUserRepository` (`users` en vivo, `serverUsers`, `fetchError`). Ya existía un `testAdmin` en `pump_web_app.dart`: el test usa su propia admin;
+    - `BookingCalendar` aún usa 60 días (T7);
+    - 26 tests nuevos; suite completa, 1590 en verde.
 
 ## Bloque B — Vista
 
