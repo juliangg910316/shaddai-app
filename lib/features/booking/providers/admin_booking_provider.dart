@@ -93,6 +93,12 @@ class RecipientController extends Notifier<RecipientState> {
     );
   }
 
+  /// Pone [recipient] y vacía la búsqueda: la persona del turno al abrir la
+  /// edición de la admin, o la que tenía elegida al cerrarla (spec 008,
+  /// RF-19, RF-33).
+  void restore(Recipient? recipient) =>
+      state = state.copyWith(recipient: () => recipient, query: '');
+
   /// Sin para quién y sin búsqueda.
   void clear() => state = RecipientState(notices: state.notices);
 
@@ -158,10 +164,15 @@ final recipientActiveAppointmentProvider = Provider<AppointmentModel?>((ref) {
   }
   final active = ref.watch(adminActiveAppointmentsProvider).value;
   if (active == null) return null;
+  // El turno que edita la admin no cuenta (spec 008, RF-25).
+  final editingId = ref.watch(editTargetProvider.select((o) => o?.id));
   final now =
       ref.watch(salonNowProvider).value ?? toSalon(ref.read(clockProvider)());
   return activeAppointmentOfPerson(
-    active,
+    [
+      for (final appointment in active)
+        if (appointment.id != editingId) appointment,
+    ],
     uid: uid,
     phone: phone,
     now: fromSalon(now),

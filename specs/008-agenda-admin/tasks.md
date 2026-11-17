@@ -179,7 +179,7 @@ Son más de 10, pero la spec no se divide (decisión del autor, 2026-11-17).
     - el fake: `watchAppointment`/`emitAppointment`, `fetchAdminEditCheck` (`adminEditCheckData`, `adminEditCheckError`, `adminEditCheckRequests`) y `updateAppointmentByAdmin` (respeta `expected`, conserva lo que no se envía, crea o sustituye el turno ocupado, registra `adminEdits`);
     - `test/data/fake_booking_test.dart`: 10 tests. Los métodos reales no tienen test, como los demás del repositorio (no hay Firestore falso); se comprueban en el recorrido y en `rules-check.md` (T16). Suite completa, 1879 en verde.
 
-- [ ] **T11. Abrir y cerrar la edición sin perder la reserva a medias.** RF-19, RF-23, RF-24, RF-25, RF-33, RF-35
+- [x] **T11. Abrir y cerrar la edición sin perder la reserva a medias.** RF-19, RF-23, RF-24, RF-25, RF-33, RF-35
   - Tests: `test/features/booking/admin_edit_provider_test.dart` (nuevo):
     - `start` guarda aparte la selección y "Para quién", y carga la persona, el día, la hora y lo reservado;
     - `end` los devuelve, y `reconcile` los ajusta;
@@ -187,6 +187,11 @@ Son más de 10, pero la spec no se divide (decisión del autor, 2026-11-17).
     - `_checkEdit` no cierra la edición de la admin;
     - una clienta bloqueada se quita con su aviso.
   - Hecho cuando: existe `AdminEditController` con `start`/`end`, y `recipientActiveAppointmentProvider` y `BookingSelectionController` están ajustados (plan § 5).
+  - Hecha (2026-11-17):
+    - `admin_edit_provider.dart`: `adminEditAppointmentProvider(id)` y `AdminEditController` (`adminEditProvider`, el id en edición). `start` guarda aparte la selección y "Para quién" (solo la primera vez), pone `recipientOf` y abre `editTargetProvider`; `end` cierra, devuelve lo guardado y no hace nada sin edición abierta;
+    - `BookingSelectionController.restore(selection)` (pasa por `reconcile`) y `RecipientController.restore(recipient)`;
+    - `_checkEdit` no actúa con la sesión de la admin; `recipientActiveAppointmentProvider` no cuenta el turno en edición;
+    - 10 tests en `admin_edit_provider_test.dart`. Se comprobó que fallan si se quitan la guarda de `_checkEdit` o el filtro del turno en edición. Suite completa, 1890 en verde.
 
 - [ ] **T12. Guardar la edición de la admin.** RF-26, RF-28 a RF-31, RF-34
   - Tests, en `admin_edit_provider_test`:

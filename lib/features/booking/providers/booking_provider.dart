@@ -286,10 +286,14 @@ class BookingSelectionController extends Notifier<BookingSelectionState> {
 
   /// Termina la edición si la bloquean (sin aviso: se ve el de bloqueo) o si
   /// el turno ya no es el activo (avisa, casos límite de la spec 006).
+  ///
+  /// No actúa con la sesión de la admin: su edición es de turnos de otras
+  /// personas y la vigila su propia vista (spec 008, plan § 5).
   void _checkEdit() {
     final original = ref.read(editTargetProvider);
     if (original == null) return;
     final user = ref.read(currentUserProvider).value;
+    if (user?.role == 'admin') return;
     final mine = ref.read(myAppointmentsProvider);
     final target = ref.read(editTargetProvider.notifier);
     if (user != null && user.isBlocked) {
@@ -347,6 +351,10 @@ class BookingSelectionController extends Notifier<BookingSelectionState> {
       state = BookingSelectionState(selection, state.notices);
 
   void selectDay(DateTime day) => _set(pick.selectDay(selection, day));
+
+  /// Vuelve a [saved], ajustado a los datos de ahora: lo que la admin tenía
+  /// a medias al abrir su edición (spec 008, RF-33).
+  void restore(BookingSelection saved) => _apply(reconcile(saved, _context()));
 
   void selectSlot(FreeSlot slot) =>
       _apply(pick.selectSlot(selection, _context(), slot));
