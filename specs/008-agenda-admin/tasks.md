@@ -13,7 +13,7 @@ Son más de 10, pero la spec no se divide (decisión del autor, 2026-11-17).
 
 ## Bloque A — Los cierres en los datos y en la reserva
 
-- [ ] **T1. Lógica pura de los cierres.** RF-3, RF-4, RF-5, RF-8, RF-9, RF-13, RNF-1
+- [x] **T1. Lógica pura de los cierres.** RF-3, RF-4, RF-5, RF-8, RF-9, RF-13, RNF-1
   - Tests: `test/features/booking/closures_test.dart` (nuevo, tablas):
     - `closureRange` de una franja y de unos días;
     - `closureErrors`:
@@ -30,6 +30,9 @@ Son más de 10, pero la spec no se divide (decisión del autor, 2026-11-17).
     - `isClosedAllDay`: una franja que cubre el horario, dos que se unen, un hueco, un día que ya no abre;
     - el archivo no importa Flutter ni Firebase.
   - Hecho cuando: `lib/features/booking/logic/closures.dart` cumple el plan § 4.1 y los tests pasan.
+  - Hecha (2026-11-17):
+    - `closures.dart`: `RangeDraft`/`DaysDraft`, `closureRange`, `closureErrors` (sin "pasado" si el orden está mal; un cierre que empezó y no terminó vale), `closureKind`, `overlaps`, `closureConflicts` (genérica, con `AppointmentTimes`), `closureEntries` (con `StoredClosure`, un registro: no depende aún del modelo de T3; ignora fechas bloqueadas que no son una fecha), `closuresOfDay` e `isClosedAllDay` (unión de cierres que se cruzan o se tocan);
+    - `closures_test.dart`: 49 tests; suite completa, 1717 en verde.
 
 - [ ] **T2. Los cierres en las horas libres y los días.** RF-12, RF-13, RF-14, RF-16, RNF-1
   - Tests, ampliando los que ya existen:
