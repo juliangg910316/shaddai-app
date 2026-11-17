@@ -90,6 +90,8 @@ const _keys = [
   'bookingSummaryGuest',
   'bookingAdminConfirmNote',
   'bookingAdminMarginWarning',
+  'bookingAdminCreated',
+  'bookingRecipientBlocked',
 ];
 
 Map<String, dynamic> _arb(String name) =>

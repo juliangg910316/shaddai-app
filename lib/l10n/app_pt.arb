@@ -405,5 +405,7 @@
   "bookingSummaryFor": "Para: {name}",
   "bookingSummaryGuest": "sem conta",
   "bookingAdminConfirmNote": "O horário ficará confirmado.",
-  "bookingAdminMarginWarning": "{name} não poderá alterar este horário: falta menos de {margin} para começar."
+  "bookingAdminMarginWarning": "{name} não poderá alterar este horário: falta menos de {margin} para começar.",
+  "bookingAdminCreated": "Horário agendado para {name}.",
+  "bookingRecipientBlocked": "Essa cliente está bloqueada: não é mais possível agendar para ela."
 }

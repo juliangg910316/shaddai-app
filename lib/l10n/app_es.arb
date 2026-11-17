@@ -655,5 +655,12 @@
   "@bookingAdminMarginWarning": {
     "description": "La admin agenda para una clienta con cuenta dentro del margen de edición (spec 007, RF-29)",
     "placeholders": {"name": {"type": "String"}, "margin": {"type": "String"}}
-  }
+  },
+  "bookingAdminCreated": "Turno agendado para {name}.",
+  "@bookingAdminCreated": {
+    "description": "La admin agendó el turno (spec 007, RF-20)",
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "bookingRecipientBlocked": "Esa clienta está bloqueada: ya no se le puede agendar.",
+  "@bookingRecipientBlocked": {"description": "La clienta elegida se bloqueó y se quitó de Para quién (spec 007, RF-15)"}
 }

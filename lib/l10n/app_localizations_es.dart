@@ -1222,4 +1222,13 @@ class AppLocalizationsEs extends AppLocalizations {
   String bookingAdminMarginWarning(String name, String margin) {
     return '$name no podrá cambiar este turno: falta menos de $margin para que empiece.';
   }
+
+  @override
+  String bookingAdminCreated(String name) {
+    return 'Turno agendado para $name.';
+  }
+
+  @override
+  String get bookingRecipientBlocked =>
+      'Esa clienta está bloqueada: ya no se le puede agendar.';
 }

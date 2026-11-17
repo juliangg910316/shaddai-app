@@ -1225,4 +1225,13 @@ class AppLocalizationsPt extends AppLocalizations {
   String bookingAdminMarginWarning(String name, String margin) {
     return '$name não poderá alterar este horário: falta menos de $margin para começar.';
   }
+
+  @override
+  String bookingAdminCreated(String name) {
+    return 'Horário agendado para $name.';
+  }
+
+  @override
+  String get bookingRecipientBlocked =>
+      'Essa cliente está bloqueada: não é mais possível agendar para ela.';
 }

@@ -2345,6 +2345,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'{name} no podrá cambiar este turno: falta menos de {margin} para que empiece.'**
   String bookingAdminMarginWarning(String name, String margin);
+
+  /// La admin agendó el turno (spec 007, RF-20)
+  ///
+  /// In es, this message translates to:
+  /// **'Turno agendado para {name}.'**
+  String bookingAdminCreated(String name);
+
+  /// La clienta elegida se bloqueó y se quitó de Para quién (spec 007, RF-15)
+  ///
+  /// In es, this message translates to:
+  /// **'Esa clienta está bloqueada: ya no se le puede agendar.'**
+  String get bookingRecipientBlocked;
 }
 
 class _AppLocalizationsDelegate

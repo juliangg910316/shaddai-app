@@ -149,12 +149,18 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
     - el borde de lo que falta lleva `ValueKey('missingFrame')` para los tests;
     - 9 tests nuevos; suite completa, 1620 en verde.
 
-- [ ] **T11. Agendar y lo que pasa después.** RF-15, RF-18 a RF-20, RF-27
+- [x] **T11. Agendar y lo que pasa después.** RF-15, RF-18 a RF-20, RF-27
   - Tests:
     - `admin_booking_view_test.dart`: tras confirmar, el aviso "Turno agendado para <nombre>" y la vista vacía, en Android/iOS (`pumpMobileApp`) y en Web (`pumpWebApp`, sin el diálogo de volver a la landing); `slotTaken`, `doesNotFit` y `failed` con los avisos de la 005 y lo elegido conservado; `personActive` con su aviso; `recipientBlocked` quita para quién y avisa;
     - "Para quién" y lo elegido se conservan al cambiar de pestaña y al ir a otra página de la app en Web (RF-27);
     - desde el detalle, "Reservar cita" abre la reserva de la admin con el servicio elegido y sin para quién.
   - Hecho cuando: los tests pasan. Textos: `bookingAdminCreated`, `bookingRecipientBlocked`.
+  - Hecha (2026-11-17):
+    - `BookingView._submitAdmin`: con `ok`, "Turno agendado para <nombre>." y la lista vuelve arriba, vacía (también en Web, sin el diálogo de volver a la landing); hora ocupada, no cabe y error, con los avisos de la 005; turno activo, con el texto de su turno; bloqueada, sin guardar: la clienta con cuenta se quita y avisa por los avisos de "Para quién", y la persona sin cuenta se conserva con el aviso de su WhatsApp;
+    - la vista escucha los avisos de "Para quién": si bloquean a la clienta elegida con la reserva abierta, se quita y avisa (RF-15);
+    - `showBookingMessage` (en `booking_notices.dart`): un `SnackBar` que se traduce en su `build` y se anuncia;
+    - los tests con la app real (Web y Android/iOS) van en `admin_booking_flow_test.dart`, aparte de `admin_booking_view_test.dart`;
+    - 13 tests nuevos; suite completa, 1633 en verde.
 
 - [ ] **T12. La clienta ve el turno que le agendó la admin.** RF-21
   - Tests: `test/features/booking/admin_booked_client_test.dart` (nuevo): un turno confirmado con `createdByAdmin` que llega en vivo con la reserva abierta pasa a verse como su turno activo, sin recargar, y en Perfil; se puede editar y al guardar vuelve a esperar confirmación (spec 006).
