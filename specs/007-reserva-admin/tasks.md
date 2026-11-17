@@ -52,11 +52,17 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
     - el nombre se mide sin los espacios de alrededor y en caracteres, no en unidades UTF-16;
     - 39 tests nuevos, en tabla; suite completa, 1532 en verde.
 
-- [ ] **T4. Turno activo de una persona y comprobación al guardar.** RF-11, RF-14, RF-15, RF-18, RNF-1
+- [x] **T4. Turno activo de una persona y comprobación al guardar.** RF-11, RF-14, RF-15, RF-18, RNF-1
   - Tests: `test/features/booking/logic/admin_booking_test.dart` (nuevo), en tabla:
     - `activeAppointmentOfPerson`: por `uid`; por WhatsApp de una persona sin cuenta; una clienta con cuenta que tiene un turno sin cuenta con su WhatsApp; en curso (→ activo); terminado o cancelado (→ no);
     - `checkAdminBeforeSave`: `ok`, `slotTaken`, `doesNotFit`, `personActive`, `recipientBlocked` (ficha bloqueada, inexistente o no clienta; persona sin cuenta con el WhatsApp de una bloqueada), en ese orden de prioridad.
   - Hecho cuando: los tests pasan.
+  - Hecha (2026-11-16):
+    - `lib/features/booking/logic/admin_booking.dart`: `activeAppointmentOfPerson` (por cuenta o por WhatsApp, con el `activeAppointment` de la 005) y `checkAdminBeforeSave`, que devuelve una clase sellada (`AdminCheckOk`, `…RecipientBlocked`, `…PersonActive` con el turno, `…SlotTaken`, `…DoesNotFit`). La prioridad es la de la lista de arriba, de bloqueada a no cabe;
+    - trabaja con `AppointmentModel`, no con un tipo genérico como `booking_rules.dart`: es más simple y la lógica ya importa los modelos;
+    - con cuenta, el turno activo se busca también por el WhatsApp **actual** de su ficha (leída del servidor), no solo por el que tenía al elegirla;
+    - la comprobación de la hora sale de `checkBeforeSave` a `checkSlot` (`booking_rules.dart`), que usan las dos; la 005 no cambia;
+    - 22 tests nuevos; suite completa, 1554 en verde.
 
 - [ ] **T5. Ventana de 365 días y "para quién" en lo que falta.** RF-12, RF-13, RF-17, RNF-1
   - Tests:

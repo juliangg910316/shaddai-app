@@ -65,6 +65,25 @@ BookingCheck checkBeforeSave<T>({
   if (activeAppointment(mine, times: times, now: fromSalon(nowSalon)) != null) {
     return BookingCheck.alreadyActive;
   }
+  return checkSlot(
+    start: start,
+    durationMinutes: durationMinutes,
+    settings: settings,
+    busy: busy,
+    nowSalon: nowSalon,
+  );
+}
+
+/// Si [start] (hora de pared) sigue siendo una hora libre y un servicio de
+/// [durationMinutes] cabe en ella (RF-26). También la usa la reserva de la
+/// admin (spec 007, RF-18). Nunca devuelve [BookingCheck.alreadyActive].
+BookingCheck checkSlot({
+  required DateTime start,
+  required int durationMinutes,
+  required CalendarSettingsModel settings,
+  required Iterable<BusyRange> busy,
+  required DateTime nowSalon,
+}) {
   FreeSlot? slot;
   for (final free in freeSlots(
     day: salonDay(start),
