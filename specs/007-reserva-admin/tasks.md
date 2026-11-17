@@ -37,7 +37,7 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
     - D-1 precisada: el `55` también se quita si va detrás de `+`, aunque el número sea corto (`+55 1234567` → 7 dígitos, no válido);
     - 36 tests nuevos, en tabla; suite completa, 1493 en verde.
 
-- [ ] **T3. Para quién y la búsqueda.** RF-2 a RF-5, RF-7 a RF-11, RF-15, RNF-1
+- [x] **T3. Para quién y la búsqueda.** RF-2 a RF-5, RF-7 a RF-11, RF-15, RNF-1
   - Tests: `test/features/booking/logic/recipient_test.dart` (nuevo), en tabla:
     - `foldText`: mayúsculas y acentos del español y el portugués (á, ã, â, ç, ñ, ü…);
     - `searchClients`: menos de 2 caracteres (→ vacío), nombre sin acentos ni mayúsculas, dígitos del WhatsApp, sin bloqueadas, admins ni cuentas sin WhatsApp, orden alfabético sin acentos, límite de 20;
@@ -45,6 +45,12 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
     - `guestErrors`: nombre vacío, de 80 y de 81 caracteres, WhatsApp no válido, casilla sin marcar;
     - `reconcileRecipient`: la ficha se bloquea, desaparece o deja de ser clienta (→ se quita y avisa); sigue igual (→ sin aviso); persona sin cuenta (→ sin cambios).
   - Hecho cuando: los tests pasan.
+  - Hecha (2026-11-16):
+    - `lib/features/booking/logic/recipient.dart`: `Recipient` (`AccountRecipient`, con `.of(UserModel)`; `GuestRecipient`, con `empty` y `copyWith`), igualdad por valor; `foldText`, `isBookableClient`, `searchClients`, `accountWithPhone`, `GuestField`, `guestErrors` y `reconcileRecipient`;
+    - la búsqueda por dígitos solo se hace si lo escrito parece un número (dígitos, espacios, `+`, `-`, `()` y `.`), y los dígitos se normalizan como un WhatsApp. Así "Ana 2" no ofrece a todas las que tienen un 2 en el número, y "+55 41 9…" encuentra el número guardado sin el 55;
+    - `accountWithPhone`: si dos cuentas tienen el mismo número y una está bloqueada, manda la bloqueada (RF-11);
+    - el nombre se mide sin los espacios de alrededor y en caracteres, no en unidades UTF-16;
+    - 39 tests nuevos, en tabla; suite completa, 1532 en verde.
 
 - [ ] **T4. Turno activo de una persona y comprobación al guardar.** RF-11, RF-14, RF-15, RF-18, RNF-1
   - Tests: `test/features/booking/logic/admin_booking_test.dart` (nuevo), en tabla:
