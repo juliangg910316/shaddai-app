@@ -13,6 +13,7 @@ import 'bookable_catalog.dart';
 import 'booking_edit.dart';
 import 'booking_window.dart';
 import 'free_slots.dart';
+import 'recipient.dart';
 import 'salon_time.dart';
 
 /// Día, hora de inicio, servicio o combo, y adicionales marcados.
@@ -159,6 +160,7 @@ class BookingContext {
     this.busy,
     required this.nowSalon,
     this.original,
+    this.windowDays = bookingWindowDays,
   });
 
   final BookableCatalog? catalog;
@@ -171,6 +173,10 @@ class BookingContext {
   /// El turno en edición, o `null` en una reserva nueva (spec 006). Con él,
   /// su día y su hora valen aunque ya no cumplan las reglas (RF-5, RF-8).
   final EditOriginal? original;
+
+  /// Días de la ventana de reserva: 60 para la clienta, 365 para la admin
+  /// (spec 007, RF-12).
+  final int windowDays;
 
   bool get _scheduleKnown => settings != null && busy != null;
 
@@ -202,7 +208,7 @@ class BookingContext {
   /// Si [day] se puede elegir: con las reglas de la reserva o, en la
   /// edición, también el día original (RF-5, RF-9).
   bool isDaySelectable(DateTime day, CalendarSettingsModel settings) {
-    final window = bookingWindow(nowSalon);
+    final window = bookingWindow(nowSalon, days: windowDays);
     final original = this.original;
     return original == null
         ? isSelectableDay(day, settings, window)
@@ -376,6 +382,7 @@ BookingUpdate reconcile(BookingSelection selection, BookingContext context) {
         nowSalon: context.nowSalon,
         settings: settings,
         hasFreeSlot: (d) => context.freeSlotsOf(d).isNotEmpty,
+        windowDays: context.windowDays,
       );
       if (day != null && next != day) {
         notices.add(const BookingNotice(BookingNoticeKind.dateMoved));
@@ -432,10 +439,22 @@ BookingUpdate reconcile(BookingSelection selection, BookingContext context) {
   );
 }
 
-/// Lo que falta para poder agendar (RF-24).
-enum BookingPart { slot, item }
+/// Lo que falta para poder agendar (RF-24). [recipient], para quién, solo
+/// en la reserva de la admin (spec 007, RF-17).
+enum BookingPart { recipient, slot, item }
 
-Set<BookingPart> missingParts(BookingSelection selection) => {
+/// Lo que falta en [selection]. Con [admin], también para quién: falta si
+/// no hay [recipient] o si es una persona sin cuenta con errores (spec 007,
+/// RF-9, RF-17).
+Set<BookingPart> missingParts(
+  BookingSelection selection, {
+  bool admin = false,
+  Recipient? recipient,
+}) => {
+  if (admin &&
+      (recipient == null ||
+          (recipient is GuestRecipient && guestErrors(recipient).isNotEmpty)))
+    BookingPart.recipient,
   if (selection.start == null) BookingPart.slot,
   if (selection.item == null) BookingPart.item,
 };

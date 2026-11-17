@@ -64,11 +64,16 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
     - la comprobación de la hora sale de `checkBeforeSave` a `checkSlot` (`booking_rules.dart`), que usan las dos; la 005 no cambia;
     - 22 tests nuevos; suite completa, 1554 en verde.
 
-- [ ] **T5. Ventana de 365 días y "para quién" en lo que falta.** RF-12, RF-13, RF-17, RNF-1
+- [x] **T5. Ventana de 365 días y "para quién" en lo que falta.** RF-12, RF-13, RF-17, RNF-1
   - Tests:
     - `test/features/booking/logic/booking_window_test.dart`: `bookingWindow(days: 365)` llega al día 365 y no al 366; los días cerrados y bloqueados siguen fuera; sin `days`, 60 como antes;
     - `booking_selection_test.dart`: con `windowDays: 365`, `reconcile` acepta un día a 200 días; `missingParts` en modo admin añade `recipient` sin para quién y con una persona sin cuenta con errores; fuera del modo admin, sin cambios.
   - Hecho cuando: los tests pasan y los de la 005 y la 006 siguen en verde.
+  - Hecha (2026-11-16):
+    - `booking_window.dart`: `adminBookingWindowDays = 365`, `bookingWindow(nowSalon, {days})` e `initialDay(..., windowDays)`, con 60 por defecto;
+    - `booking_selection.dart`: `BookingContext.windowDays` (60 por defecto), que usan `isDaySelectable` y `reconcile`; `BookingPart.recipient`, y `missingParts(selection, {admin, recipient})`;
+    - los providers y la vista aún no pasan 365 ni el modo admin (T6 y T7);
+    - 10 tests nuevos; suite completa, 1564 en verde.
 
 - [ ] **T6. Repositorios y providers de la reserva de la admin.** RF-6, RF-12, RF-14, RF-15, RF-18 a RF-20, RF-27
   - Tests: `test/features/booking/admin_booking_provider_test.dart` (nuevo), con `FakeBookingRepository` y un `UserRepository` falso ampliados (`watchActiveAppointments`, `fetchAdminBookingCheck`, `fetchUser`):

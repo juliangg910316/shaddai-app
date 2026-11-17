@@ -5,7 +5,9 @@ import 'package:shaddai/data/models/price_list_model.dart';
 import 'package:shaddai/features/booking/logic/bookable_catalog.dart';
 import 'package:shaddai/features/booking/logic/booking_edit.dart';
 import 'package:shaddai/features/booking/logic/booking_selection.dart';
+import 'package:shaddai/features/booking/logic/booking_window.dart';
 import 'package:shaddai/features/booking/logic/free_slots.dart';
+import 'package:shaddai/features/booking/logic/recipient.dart';
 
 // Horas de pared del salón. 2026-11-10 es martes.
 DateTime at(int day, int hour, [int minute = 0]) =>
@@ -96,12 +98,14 @@ BookingContext context({
   bool scheduleKnown = true,
   DateTime? nowSalon,
   EditOriginal? original,
+  int? windowDays,
 }) => BookingContext(
   catalog: catalogKnown ? bookableCatalog(list ?? priceList()) : null,
   settings: scheduleKnown ? (calendar ?? settings()) : null,
   busy: scheduleKnown ? busy : null,
   nowSalon: nowSalon ?? now,
   original: original,
+  windowDays: windowDays ?? bookingWindowDays,
 );
 
 BusyRange busy(DateTime start, DateTime end) => (start: start, end: end);
@@ -495,6 +499,90 @@ void main() {
         ),
         isEmpty,
       );
+    });
+  });
+
+  group('ventana de la admin (spec 007, RF-12, RF-13)', () {
+    // 2027-05-25 es martes, a 196 días.
+    final far = DateTime.utc(2027, 5, 25);
+
+    test('con 365 días, reconcile conserva un día lejano', () {
+      final selection = BookingSelection(day: far);
+      expect(
+        reconcile(selection, context(windowDays: 365)).selection,
+        selection,
+      );
+    });
+
+    test('con 60 días, ese día se cambia por el primero con horas', () {
+      final result = reconcile(BookingSelection(day: far), context());
+      expect(result.selection, BookingSelection(day: tuesday));
+      expect(result.notices, [
+        const BookingNotice(BookingNoticeKind.dateMoved),
+      ]);
+    });
+
+    test('con 365 días, un día cerrado o bloqueado se sigue cambiando', () {
+      // 2027-05-24 es lunes (cerrado).
+      final closed = reconcile(
+        BookingSelection(day: DateTime.utc(2027, 5, 24)),
+        context(windowDays: 365),
+      );
+      expect(closed.selection.day, tuesday);
+      final blocked = reconcile(
+        BookingSelection(day: far),
+        context(
+          windowDays: 365,
+          calendar: settings(blockedDates: ['2027-05-25']),
+        ),
+      );
+      expect(blocked.selection.day, tuesday);
+    });
+  });
+
+  group('missingParts de la admin (spec 007, RF-9, RF-17)', () {
+    final complete = BookingSelection(day: tuesday, start: at(10, 9), item: s1);
+    const ana = AccountRecipient(
+      uid: 'u1',
+      name: 'Ana',
+      phone: '41 99999-0000',
+    );
+    const rosa = GuestRecipient(
+      name: 'Rosa',
+      phone: '41 99999-0000',
+      consent: true,
+    );
+
+    test('sin para quién falta, con lo demás', () {
+      expect(missingParts(complete, admin: true), {BookingPart.recipient});
+      expect(missingParts(BookingSelection(day: tuesday), admin: true), {
+        BookingPart.recipient,
+        BookingPart.slot,
+        BookingPart.item,
+      });
+    });
+
+    test('con una clienta o una persona sin cuenta completa, no falta', () {
+      expect(missingParts(complete, admin: true, recipient: ana), isEmpty);
+      expect(missingParts(complete, admin: true, recipient: rosa), isEmpty);
+    });
+
+    test('una persona sin cuenta con errores cuenta como que falta', () {
+      for (final guest in [
+        rosa.copyWith(name: ''),
+        rosa.copyWith(phone: '123'),
+        rosa.copyWith(consent: false),
+        GuestRecipient.empty,
+      ]) {
+        expect(missingParts(complete, admin: true, recipient: guest), {
+          BookingPart.recipient,
+        }, reason: '$guest');
+      }
+    });
+
+    test('fuera del modo admin, para quién no cuenta', () {
+      expect(missingParts(complete), isEmpty);
+      expect(missingParts(complete, recipient: GuestRecipient.empty), isEmpty);
     });
   });
 
