@@ -65,7 +65,7 @@ Son más de 10, pero la spec no se divide (decisión del autor, 2026-11-17).
     - `test/helpers/fake_config.dart`: `FakeConfigRepository`, probado en `test/data/fake_config_test.dart` (filtra por "desde" como Firestore, en vivo, errores y `merge`);
     - 15 tests nuevos; suite completa, 1754 en verde.
 
-- [ ] **T4. La reserva no ofrece las horas de un cierre.** RF-12 a RF-17
+- [x] **T4. La reserva no ofrece las horas de un cierre.** RF-12 a RF-17
   - Tests: `test/features/booking/booking_closures_test.dart` (nuevo):
     - la reserva de la clienta, su edición y la de la admin no muestran las horas del cierre, y un día cerrado entero no se elige;
     - un cierre que llega en vivo quita la hora elegida y avisa;
@@ -77,6 +77,13 @@ Son más de 10, pero la spec no se divide (decisión del autor, 2026-11-17).
     - `busyRangesProvider`, `freeSlotsOfDayProvider`, `BookingContext` y `BookingCalendar` usan los cierres;
     - los submitters leen `fetchClosures` (plan § 5);
     - `bookingDataOverrides` sustituye el repositorio del calendario por el fake.
+  - Hecha (2026-11-17):
+    - `closuresProvider` (desde hoy a las 0:00 del salón, en vivo) y `closureRangesProvider` (con el error delante de la carga);
+    - `busyRangesProvider` suma los cierres: la rejilla de horas, `freeSlotsOfDayProvider` y su aviso de error los usan sin cambios. `BookingContext` recibe `closures` y el controlador de la selección los escucha;
+    - `BookingCalendar` pasa los cierres a `isSelectableDay`/`isEditDaySelectable`; "Reintentar" del aviso de la agenda también vuelve a pedir los cierres;
+    - los tres submitters leen del servidor los cierres desde el día elegido (`fetchClosureRanges`) y, si fallan, no guardan;
+    - `bookingDataOverrides`/`bookingScheduleOverrides` aceptan `config` (por defecto, un `FakeConfigRepository` vacío). Cuatro archivos de tests con su propio contenedor añaden el fake, o escuchan `closuresProvider` antes de leer las horas libres;
+    - `booking_closures_test.dart`: 13 tests (vista de la clienta, edición, admin a 365 días y los tres guardados); suite completa, 1767 en verde.
 
 ## Bloque B — Cierres de la admin y agenda
 

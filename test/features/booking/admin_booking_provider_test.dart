@@ -21,6 +21,7 @@ import 'package:shaddai/features/services/providers/price_list_provider.dart';
 
 import '../../helpers/fake_auth.dart';
 import '../../helpers/fake_booking.dart';
+import '../../helpers/fake_config.dart';
 import '../../helpers/fake_session.dart';
 
 /// Providers de la reserva de la admin (spec 007, RF-6, RF-12, RF-14,
@@ -130,6 +131,7 @@ void main() {
     c = ProviderContainer(
       overrides: [
         bookingRepositoryProvider.overrideWithValue(bookings),
+        configRepositoryProvider.overrideWithValue(FakeConfigRepository()),
         userRepositoryProvider.overrideWithValue(users),
         currentUserProvider.overrideWith((ref) => session.stream),
         calendarSettingsProvider.overrideWith(

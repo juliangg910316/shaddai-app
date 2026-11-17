@@ -100,6 +100,7 @@ class BookingEditor {
         from: fromSalon(day),
         to: fromSalon(day.add(const Duration(days: 1))),
       );
+      final closures = await fetchClosureRanges(_ref, day);
       final check = checkEditBeforeSave(
         original: original,
         current: data.appointment,
@@ -111,6 +112,7 @@ class BookingEditor {
             if (slot.id != original.id)
               (start: toSalon(slot.start), end: toSalon(slot.end)),
         ],
+        closures: closures,
         nowSalon: toSalon(_ref.read(clockProvider)()),
         marginMinutes: settings.editMarginMinutes,
       );

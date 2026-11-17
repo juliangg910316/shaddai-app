@@ -18,6 +18,7 @@ import 'package:shaddai/features/services/logic/price_list_view_logic.dart';
 import 'package:shaddai/features/services/providers/price_list_provider.dart';
 
 import '../../helpers/fake_booking.dart';
+import '../../helpers/fake_config.dart';
 import '../../helpers/fake_session.dart';
 
 // Horas de pared del salón. "Ahora" es el martes 10/11/2026 a las 7:00
@@ -99,6 +100,7 @@ void main() {
     c = ProviderContainer(
       overrides: [
         bookingRepositoryProvider.overrideWithValue(bookings),
+        configRepositoryProvider.overrideWithValue(FakeConfigRepository()),
         currentUserProvider.overrideWith((ref) => Stream.value(testClient)),
         calendarSettingsProvider.overrideWith((ref) => calendar.stream),
         clockProvider.overrideWithValue(() => bookingTestNow),

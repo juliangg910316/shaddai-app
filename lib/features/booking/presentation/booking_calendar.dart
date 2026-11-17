@@ -53,6 +53,8 @@ class _BookingCalendarState extends ConsumerState<BookingCalendar> {
       ),
     );
     final original = ref.watch(editTargetProvider);
+    // Los días cerrados enteros por un cierre (spec 008, RF-13).
+    final closures = ref.watch(closureRangesProvider).value ?? const [];
     ref.listen(
       bookingSelectionProvider.select((state) => state.selection.day),
       (_, next) {
@@ -68,11 +70,16 @@ class _BookingCalendarState extends ConsumerState<BookingCalendar> {
       days: ref.watch(bookingWindowDaysProvider),
     );
     bool selectable(DateTime d) => original == null
-        ? isSelectableDay(d, settings, window)
-        : isEditDaySelectable(d, settings, window, original);
+        ? isSelectableDay(d, settings, window, closures: closures)
+        : isEditDaySelectable(
+            d,
+            settings,
+            window,
+            original,
+            closures: closures,
+          );
     // En la edición siempre se puede elegir al menos el día original.
-    if (original == null &&
-        !window.days.any((d) => isSelectableDay(d, settings, window))) {
+    if (original == null && !window.days.any(selectable)) {
       return AppNotice(
         message: l10n.bookingNoDaysAvailable,
         actions: const [WhatsappNoticeButton()],

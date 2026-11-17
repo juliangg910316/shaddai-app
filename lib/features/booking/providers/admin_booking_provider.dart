@@ -232,6 +232,7 @@ class AdminBookingSubmitter {
         to: fromSalon(day.add(const Duration(days: 1))),
         now: now,
       );
+      final closures = await fetchClosureRanges(_ref, day);
       final recipientUser = switch (recipient) {
         AccountRecipient(:final uid) =>
           await _ref.read(userRepositoryProvider).fetchUser(uid),
@@ -245,6 +246,7 @@ class AdminBookingSubmitter {
           for (final slot in data.busy)
             (start: toSalon(slot.start), end: toSalon(slot.end)),
         ],
+        closures: closures,
         active: data.active,
         recipient: recipient,
         recipientUser: recipientUser,

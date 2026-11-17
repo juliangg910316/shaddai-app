@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../data/models/appointment_model.dart';
 import '../../../data/models/busy_slot_model.dart';
 import '../../../data/models/calendar_settings_model.dart';
+import '../../../data/models/closure_model.dart';
 import '../../../data/repositories/booking_repository.dart';
 import '../../../data/repositories/config_repository.dart';
 
@@ -102,6 +103,33 @@ final busySlotsProvider = StreamProvider<List<BusySlot>>((ref) {
       .watchBusySlots(fromSalon(window.first), fromSalon(end));
 });
 
+/// Los cierres de la agenda que terminan desde hoy a las 0:00 del salón, en
+/// vivo (spec 008, RF-12, RF-15). Solo vuelve a pedirlos cuando cambia el
+/// día del salón.
+final closuresProvider = StreamProvider<List<ClosureModel>>((ref) {
+  final clock = ref.watch(clockProvider);
+  final today = ref.watch(
+    salonNowProvider.select((now) => salonDay(now.value ?? toSalon(clock()))),
+  );
+  return ref.watch(configRepositoryProvider).watchClosures(fromSalon(today));
+});
+
+/// [closures] en horas de pared del salón, para la lógica.
+List<BusyRange> _closureRangesOf(List<ClosureModel> closures) => [
+  for (final closure in closures)
+    (start: toSalon(closure.start), end: toSalon(closure.end)),
+];
+
+/// [closuresProvider] en horas de pared del salón (spec 008, RF-12). Tras un
+/// error, el error, aunque Riverpod esté reintentando (MEMORY).
+final closureRangesProvider = Provider<AsyncValue<List<BusyRange>>>((ref) {
+  final closures = ref.watch(closuresProvider);
+  if (closures.hasError) {
+    return AsyncError(closures.error!, closures.stackTrace!);
+  }
+  return closures.whenData(_closureRangesOf);
+});
+
 /// El turno en edición, o `null` si no se está editando (spec 006, RF-4,
 /// RF-18). Va en su propio provider, separado de la selección, para no crear
 /// un ciclo de dependencias (plan D-2).
@@ -129,15 +157,25 @@ List<BusyRange> _rangesOf(List<BusySlot> slots, String? editingId) => [
       (start: toSalon(slot.start), end: toSalon(slot.end)),
 ];
 
-/// [busySlotsProvider] en horas de pared del salón, para la lógica. Durante
-/// la edición, sin el turno ocupado del propio turno (spec 006, RF-7).
+/// [busySlotsProvider] en horas de pared del salón, para la lógica, con los
+/// cierres de la agenda, que ocupan su tiempo igual (spec 008, RF-12). Durante
+/// la edición, sin el turno ocupado del propio turno (spec 006, RF-7). Si
+/// falla cualquiera de los dos, el error (RF-48).
 final busyRangesProvider = Provider<AsyncValue<List<BusyRange>>>((ref) {
   final slots = ref.watch(busySlotsProvider);
+  final closures = ref.watch(closureRangesProvider);
   final editingId = ref.watch(editTargetProvider.select((o) => o?.id));
   // Tras un error, Riverpod reintenta solo y el valor queda "cargando" con
   // el error dentro; `whenData` lo perdería (RF-48).
   if (slots.hasError) return AsyncError(slots.error!, slots.stackTrace!);
-  return slots.whenData((slots) => _rangesOf(slots, editingId));
+  if (closures.hasError) {
+    return AsyncError(closures.error!, closures.stackTrace!);
+  }
+  final closureRanges = closures.value;
+  if (closureRanges == null) return const AsyncLoading();
+  return slots.whenData(
+    (slots) => [..._rangesOf(slots, editingId), ...closureRanges],
+  );
 });
 
 /// Lo que se puede reservar de la lista de precios (RF-10, RF-11, RF-43,
@@ -218,6 +256,7 @@ class BookingSelectionController extends Notifier<BookingSelectionState> {
     ref.listen(bookableCatalogProvider, onChange);
     ref.listen(calendarSettingsProvider, onChange);
     ref.listen(busyRangesProvider, onChange);
+    ref.listen(closureRangesProvider, onChange);
     ref.listen(bookingWindowDaysProvider, onChange);
     ref.listen(salonNowProvider, (_, _) {
       onChange(null, null);
@@ -283,12 +322,14 @@ class BookingSelectionController extends Notifier<BookingSelectionState> {
     // antes de que ese provider se recalcule.
     final busySlots = ref.read(busySlotsProvider);
     final slots = busySlots.hasError ? null : busySlots.value;
+    final closures = ref.read(closureRangesProvider);
     return BookingContext(
       catalog: catalog is PriceViewReady<BookableCatalog>
           ? catalog.value
           : null,
       settings: ref.read(calendarSettingsProvider).value,
       busy: slots == null ? null : _rangesOf(slots, original?.id),
+      closures: closures.hasError ? null : closures.value,
       nowSalon:
           ref.read(salonNowProvider).value ??
           toSalon(ref.read(clockProvider)()),
@@ -408,6 +449,14 @@ final selectedFreeSlotProvider = Provider<FreeSlot?>((ref) {
   return null;
 });
 
+/// Lee **del servidor** los cierres que terminan desde el día [day] (hora
+/// de pared) en adelante, en horas de pared, para comprobar un turno antes
+/// de guardarlo (spec 008, RF-12). Si falla, lanza el error.
+Future<List<BusyRange>> fetchClosureRanges(Ref ref, DateTime day) async =>
+    _closureRangesOf(
+      await ref.read(configRepositoryProvider).fetchClosures(fromSalon(day)),
+    );
+
 /// Resultado de "Agendar turno" (RF-26 a RF-31, RF-36).
 enum BookingSubmitResult { ok, slotTaken, doesNotFit, alreadyActive, failed }
 
@@ -443,6 +492,7 @@ class BookingSubmitter {
         from: fromSalon(day),
         to: fromSalon(day.add(const Duration(days: 1))),
       );
+      final closures = await fetchClosureRanges(_ref, day);
       final check = checkBeforeSave(
         start: start,
         durationMinutes: bookable.durationMinutes,
@@ -451,6 +501,7 @@ class BookingSubmitter {
           for (final slot in data.busy)
             (start: toSalon(slot.start), end: toSalon(slot.end)),
         ],
+        closures: closures,
         mine: data.mine,
         times: _timesOf,
         nowSalon: toSalon(_ref.read(clockProvider)()),
