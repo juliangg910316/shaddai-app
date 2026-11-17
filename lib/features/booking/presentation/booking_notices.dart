@@ -61,19 +61,6 @@ class BookingBlockedNotice extends StatelessWidget {
   }
 }
 
-/// La administradora no reserva turnos a su nombre (RF-39).
-class BookingAdminNotice extends StatelessWidget {
-  const BookingAdminNotice({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return AppNotice(
-      message: AppLocalizations.of(context)!.bookingAdminNotice,
-      actions: const [],
-    );
-  }
-}
-
 /// El texto de [notice] en el idioma activo (plan, D-7).
 String bookingNoticeMessage(AppLocalizations l10n, BookingNotice notice) {
   final duration = formatDuration(notice.minutes ?? 0);

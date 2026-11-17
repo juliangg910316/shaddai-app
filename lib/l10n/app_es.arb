@@ -530,8 +530,6 @@
   "@bookingOnlyOneActive": {"description": "Explicación bajo el turno activo (RF-34)"},
   "bookingBlocked": "Tu cuenta no puede reservar turnos. Si crees que es un error, escríbenos por WhatsApp.",
   "@bookingBlocked": {"description": "Aviso para una cuenta bloqueada (RF-38)"},
-  "bookingAdminNotice": "Con la cuenta de administración no se reservan turnos a tu nombre.",
-  "@bookingAdminNotice": {"description": "Aviso para la administradora (RF-39)"},
   "bookingLoadError": "No se pudo cargar la agenda.",
   "@bookingLoadError": {"description": "Error al cargar turnos o calendario (RF-49)"},
   "bookingRetry": "Reintentar",
@@ -589,5 +587,12 @@
   "bookingEditChangedMeanwhile": "Tu turno cambió mientras lo editabas. Revisa cómo está ahora.",
   "@bookingEditChangedMeanwhile": {"description": "Al guardar, alguien cambió el turno (spec 006, RF-15)"},
   "bookingEditSaveError": "No pudimos guardar los cambios. Inténtalo de nuevo.",
-  "@bookingEditSaveError": {"description": "No se pudo guardar la edición (spec 006, RF-16)"}
+  "@bookingEditSaveError": {"description": "No se pudo guardar la edición (spec 006, RF-16)"},
+
+  "bookingAdminTitle": "Agendar un turno",
+  "@bookingAdminTitle": {"description": "Título de la reserva de la admin (spec 007, RF-1)"},
+  "bookingStepRecipient": "Para quién",
+  "@bookingStepRecipient": {"description": "Título de la parte de para quién es el turno (spec 007, RF-1)"},
+  "bookingRecipientSearchLabel": "Nombre o WhatsApp de la clienta",
+  "@bookingRecipientSearchLabel": {"description": "Etiqueta de la búsqueda de clientas (spec 007, RF-3)"}
 }

@@ -93,11 +93,18 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
 
 ## Bloque B — Vista
 
-- [ ] **T7. La admin ve el formulario con "Para quién".** RF-1, RF-12, RF-28
+- [x] **T7. La admin ve el formulario con "Para quién".** RF-1, RF-12, RF-28
   - Tests:
     - `booking_screen_states_test.dart`: la admin ve el formulario con "Para quién" sin nada elegido, no `BookingAdminNotice`, ni un turno activo propio ni "Editar turno";
     - `admin_booking_view_test.dart` (nuevo): el calendario de la admin deja elegir un día a 200 días, no uno cerrado ni uno bloqueado; el de la clienta sigue en 60.
   - Hecho cuando: los tests pasan y `BookingAdminNotice` y `bookingAdminNotice` se han borrado. Textos: `bookingAdminTitle`, `bookingStepRecipient`.
+  - Hecha (2026-11-16):
+    - `BookingView`: con la admin, el formulario en modo admin (`BookingForm(admin: true)`), con título "Agendar un turno" y `RecipientPicker` arriba. "Agendar turno" de la admin aún no guarda: su `onConfirmed` vacío lo sustituye la T11;
+    - `RecipientPicker` (nuevo): el título "Para quién" y la búsqueda, que guarda lo escrito en `bookingRecipientProvider` y empieza con lo guardado (RF-27). Los resultados y la persona sin cuenta llegan en la T8 y la T9;
+    - `BookingCalendar` usa `bookingWindowDaysProvider`;
+    - borrados `BookingAdminNotice` y `bookingAdminNotice`; textos nuevos `bookingAdminTitle`, `bookingStepRecipient` y `bookingRecipientSearchLabel` (este, adelantado de la T8);
+    - los tests de `booking_screen_states_test.dart` sustituyen el repositorio de fichas (`FakeUserRepository`): "Para quién" las lee;
+    - 5 tests nuevos (y 2 cambiados); suite completa, 1595 en verde.
 
 - [ ] **T8. Buscar y elegir a una clienta con cuenta.** RF-3 a RF-6, RF-14
   - Tests (`admin_booking_view_test.dart`):

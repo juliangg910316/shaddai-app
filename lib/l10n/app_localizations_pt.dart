@@ -1025,10 +1025,6 @@ class AppLocalizationsPt extends AppLocalizations {
       'Sua conta não pode agendar horários. Se acha que é um erro, fale conosco pelo WhatsApp.';
 
   @override
-  String get bookingAdminNotice =>
-      'Com a conta de administração não se agendam horários em seu nome.';
-
-  @override
   String get bookingLoadError => 'Não foi possível carregar a agenda.';
 
   @override
@@ -1135,4 +1131,13 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get bookingEditSaveError =>
       'Não conseguimos salvar as alterações. Tente novamente.';
+
+  @override
+  String get bookingAdminTitle => 'Agendar um horário';
+
+  @override
+  String get bookingStepRecipient => 'Para quem';
+
+  @override
+  String get bookingRecipientSearchLabel => 'Nome ou WhatsApp da cliente';
 }

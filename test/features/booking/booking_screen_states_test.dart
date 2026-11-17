@@ -7,12 +7,16 @@ import 'package:shaddai/data/models/appointment_model.dart';
 import 'package:shaddai/data/models/booked_service_model.dart';
 import 'package:shaddai/data/models/price_list_model.dart';
 import 'package:shaddai/data/models/user_model.dart';
+import 'package:shaddai/features/auth/providers/auth_provider.dart';
 import 'package:shaddai/features/booking/logic/salon_time.dart';
 import 'package:shaddai/features/booking/presentation/active_appointment_view.dart';
 import 'package:shaddai/features/booking/presentation/booking_notices.dart';
+import 'package:shaddai/features/booking/presentation/booking_form.dart';
 import 'package:shaddai/features/booking/presentation/booking_view.dart';
+import 'package:shaddai/features/booking/presentation/recipient_picker.dart';
 import 'package:shaddai/features/landing/landing_content.dart';
 
+import '../../helpers/fake_auth.dart';
 import '../../helpers/fake_booking.dart';
 import '../../helpers/fake_price_list.dart';
 import '../../helpers/fake_session.dart';
@@ -93,6 +97,8 @@ void main() {
           nowStream: nowStream,
         ),
         links.override,
+        // "Para quién" de la admin lee las fichas (spec 007).
+        userRepositoryProvider.overrideWithValue(FakeUserRepository()),
       ],
     );
     await settle(tester);
@@ -242,16 +248,39 @@ void main() {
     });
   });
 
-  testWidgets('la admin ve su texto (RF-39)', (tester) async {
+  testWidgets('la admin ve el formulario con "Para quién", sin nada '
+      'elegido (spec 007, RF-1)', (tester) async {
     await pump(tester, user: admin);
 
-    expect(find.byType(BookingAdminNotice), findsOneWidget);
+    expect(find.byType(BookingForm), findsOneWidget);
+    expect(find.byType(RecipientPicker), findsOneWidget);
+    expect(find.text('Para quién'), findsOneWidget);
+    expect(find.text('Agendar un turno'), findsOneWidget);
     expect(
       find.text(
         'Con la cuenta de administración no se reservan turnos a tu nombre.',
       ),
-      findsOneWidget,
+      findsNothing,
     );
+  });
+
+  testWidgets('la admin no ve un turno activo propio ni "Editar turno" '
+      '(spec 007, RF-28)', (tester) async {
+    // La admin de este test tiene el uid de testClient: un turno a ese uid
+    // sería su turno activo si fuera clienta.
+    bookings.mine = [active()];
+    await pump(tester, user: admin);
+
+    expect(find.byType(ActiveAppointmentView), findsNothing);
+    expect(find.text('Editar turno'), findsNothing);
+    expect(find.byType(RecipientPicker), findsOneWidget);
+  });
+
+  testWidgets('la clienta no ve "Para quién"', (tester) async {
+    await pump(tester);
+    expect(find.byType(BookingForm), findsOneWidget);
+    expect(find.byType(RecipientPicker), findsNothing);
+    expect(find.text('Agendar un turno'), findsNothing);
   });
 
   group('error de carga (RF-49)', () {
@@ -271,7 +300,7 @@ void main() {
       await tester.tap(find.text('REINTENTAR'));
       await settle(tester);
       expect(find.byType(BookingLoadErrorNotice), findsNothing);
-      expect(find.byType(BookingAdminNotice), findsOneWidget);
+      expect(find.byType(RecipientPicker), findsOneWidget);
     });
 
     testWidgets('de los turnos: "Reintentar" vuelve a pedirlos', (

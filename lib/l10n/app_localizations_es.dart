@@ -1023,10 +1023,6 @@ class AppLocalizationsEs extends AppLocalizations {
       'Tu cuenta no puede reservar turnos. Si crees que es un error, escríbenos por WhatsApp.';
 
   @override
-  String get bookingAdminNotice =>
-      'Con la cuenta de administración no se reservan turnos a tu nombre.';
-
-  @override
   String get bookingLoadError => 'No se pudo cargar la agenda.';
 
   @override
@@ -1132,4 +1128,13 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get bookingEditSaveError =>
       'No pudimos guardar los cambios. Inténtalo de nuevo.';
+
+  @override
+  String get bookingAdminTitle => 'Agendar un turno';
+
+  @override
+  String get bookingStepRecipient => 'Para quién';
+
+  @override
+  String get bookingRecipientSearchLabel => 'Nombre o WhatsApp de la clienta';
 }

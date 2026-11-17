@@ -350,7 +350,6 @@
   "bookingActiveTitle": "Seu horário",
   "bookingOnlyOneActive": "Você só pode ter um horário pendente por vez. Veja todos os seus horários no seu perfil.",
   "bookingBlocked": "Sua conta não pode agendar horários. Se acha que é um erro, fale conosco pelo WhatsApp.",
-  "bookingAdminNotice": "Com a conta de administração não se agendam horários em seu nome.",
   "bookingLoadError": "Não foi possível carregar a agenda.",
   "bookingRetry": "Tentar novamente",
   "bookingDuration": "Duração",
@@ -379,5 +378,9 @@
   "bookingEditNoChanges": "Você não alterou nada: o horário continua igual.",
   "bookingEditNotEditable": "Já não é possível alterar o horário: falta pouco para começar.",
   "bookingEditChangedMeanwhile": "Seu horário mudou enquanto você o editava. Confira como está agora.",
-  "bookingEditSaveError": "Não conseguimos salvar as alterações. Tente novamente."
+  "bookingEditSaveError": "Não conseguimos salvar as alterações. Tente novamente.",
+
+  "bookingAdminTitle": "Agendar um horário",
+  "bookingStepRecipient": "Para quem",
+  "bookingRecipientSearchLabel": "Nome ou WhatsApp da cliente"
 }

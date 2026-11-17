@@ -33,7 +33,6 @@ const _keys = [
   'bookingActiveTitle',
   'bookingOnlyOneActive',
   'bookingBlocked',
-  'bookingAdminNotice',
   'bookingLoadError',
   'bookingRetry',
   'bookingDuration',
@@ -64,6 +63,10 @@ const _keys = [
   'bookingEditNotEditable',
   'bookingEditChangedMeanwhile',
   'bookingEditSaveError',
+  // Spec 007, plan § 6.
+  'bookingAdminTitle',
+  'bookingStepRecipient',
+  'bookingRecipientSearchLabel',
 ];
 
 Map<String, dynamic> _arb(String name) =>

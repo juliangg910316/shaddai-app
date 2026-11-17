@@ -2012,12 +2012,6 @@ abstract class AppLocalizations {
   /// **'Tu cuenta no puede reservar turnos. Si crees que es un error, escríbenos por WhatsApp.'**
   String get bookingBlocked;
 
-  /// Aviso para la administradora (RF-39)
-  ///
-  /// In es, this message translates to:
-  /// **'Con la cuenta de administración no se reservan turnos a tu nombre.'**
-  String get bookingAdminNotice;
-
   /// Error al cargar turnos o calendario (RF-49)
   ///
   /// In es, this message translates to:
@@ -2195,6 +2189,24 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'No pudimos guardar los cambios. Inténtalo de nuevo.'**
   String get bookingEditSaveError;
+
+  /// Título de la reserva de la admin (spec 007, RF-1)
+  ///
+  /// In es, this message translates to:
+  /// **'Agendar un turno'**
+  String get bookingAdminTitle;
+
+  /// Título de la parte de para quién es el turno (spec 007, RF-1)
+  ///
+  /// In es, this message translates to:
+  /// **'Para quién'**
+  String get bookingStepRecipient;
+
+  /// Etiqueta de la búsqueda de clientas (spec 007, RF-3)
+  ///
+  /// In es, this message translates to:
+  /// **'Nombre o WhatsApp de la clienta'**
+  String get bookingRecipientSearchLabel;
 }
 
 class _AppLocalizationsDelegate

@@ -150,7 +150,8 @@ class _BookingViewState extends ConsumerState<BookingView> {
       ),
       BookingScreenSignedOut() => const BookingSignInPrompt(),
       BookingScreenError() => const _StatePage(child: BookingLoadErrorNotice()),
-      BookingScreenAdmin() => const _StatePage(child: BookingAdminNotice()),
+      // La admin agenda para otra persona (spec 007, RF-1, RF-28).
+      BookingScreenAdmin() => _buildForm(context, admin: true),
       BookingScreenActive(:final appointment, :final isBlocked) => _StatePage(
         child: ActiveAppointmentView(
           appointment: appointment,
@@ -197,7 +198,11 @@ class _BookingViewState extends ConsumerState<BookingView> {
     }
   }
 
-  Widget _buildForm(BuildContext context, {bool editing = false}) {
+  Widget _buildForm(
+    BuildContext context, {
+    bool editing = false,
+    bool admin = false,
+  }) {
     final brand = context.brand;
 
     return Scaffold(
@@ -205,7 +210,13 @@ class _BookingViewState extends ConsumerState<BookingView> {
         children: [
           BookingForm(
             editing: editing,
-            onConfirmed: editing ? _confirmEdit : _submit,
+            admin: admin,
+            // El guardado de la admin llega con la T11 de la spec 007.
+            onConfirmed: editing
+                ? _confirmEdit
+                : admin
+                ? () {}
+                : _submit,
           ),
           if (_isBooking)
             Container(

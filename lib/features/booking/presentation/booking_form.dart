@@ -14,6 +14,7 @@ import 'booking_calendar.dart';
 import 'booking_notices.dart';
 import 'booking_section_title.dart';
 import 'booking_summary.dart';
+import 'recipient_picker.dart';
 import 'service_picker.dart';
 import 'slot_grid.dart';
 
@@ -24,15 +25,20 @@ import 'slot_grid.dart';
 /// Con [editing], es la edición del turno activo (spec 006, RF-4, RF-10,
 /// RF-18): título "Editar turno", "Guardar cambios" y, debajo, "Cancelar",
 /// que vuelve al turno sin cambios.
+///
+/// Con [admin], es la reserva de la admin (spec 007, RF-1): título "Agendar
+/// un turno" y, antes que nada, "Para quién".
 class BookingForm extends ConsumerStatefulWidget {
   const BookingForm({
     super.key,
     required this.onConfirmed,
     this.editing = false,
+    this.admin = false,
   });
 
   final VoidCallback onConfirmed;
   final bool editing;
+  final bool admin;
 
   @override
   ConsumerState<BookingForm> createState() => _BookingFormState();
@@ -63,11 +69,19 @@ class _BookingFormState extends ConsumerState<BookingForm> {
       children: [
         Center(
           child: Text(
-            widget.editing ? l10n.bookingEditTitle : l10n.bookAppointment,
+            widget.editing
+                ? l10n.bookingEditTitle
+                : widget.admin
+                ? l10n.bookingAdminTitle
+                : l10n.bookAppointment,
             style: AppText.serif(size: 24, color: brand.inkStrong),
           ),
         ),
         const SizedBox(height: 18),
+        if (widget.admin) ...[
+          const RecipientPicker(),
+          const SizedBox(height: 24),
+        ],
         BookingSectionTitle(l10n.bookingStepDate),
         const SizedBox(height: 4),
         // Sin calendario no hay fechas ni horas: un solo aviso (RF-48).
