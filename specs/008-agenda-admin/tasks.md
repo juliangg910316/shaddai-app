@@ -87,7 +87,7 @@ Son más de 10, pero la spec no se divide (decisión del autor, 2026-11-17).
 
 ## Bloque B — Cierres de la admin y agenda
 
-- [ ] **T5. Guardar y quitar cierres.** RF-3 a RF-8, RF-11
+- [x] **T5. Guardar y quitar cierres.** RF-3 a RF-8, RF-11
   - Tests: `test/features/admin/admin_closures_provider_test.dart` (nuevo):
     - `save`: con errores no lee ni guarda; con turnos que chocan los devuelve sin guardar; sin choques guarda inicio y fin; si falla devuelve `failed`;
     - la lectura de los turnos activos es del servidor, justo antes de guardar;
@@ -95,6 +95,10 @@ Son más de 10, pero la spec no se divide (decisión del autor, 2026-11-17).
   - Hecho cuando:
     - existen `ClosureController`, `adminClosureEntriesProvider` y `adminDayClosuresProvider`;
     - existe `BookingRepository.fetchActiveAppointments`, también en el fake.
+  - Hecha (2026-11-17):
+    - `admin_closures_provider.dart`: `ClosureController` (`save` devuelve `ClosureSaveInvalid`/`Conflicts`/`Ok`/`Failed`; `delete` borra el cierre o quita la fecha bloqueada), `adminClosureEntriesProvider` (próximos, con el error de los cierres o del calendario) y `adminDayClosuresProvider` (pide los cierres desde el día de la agenda, también si es pasado);
+    - `fetchActiveAppointments(now)` lee del servidor los turnos que terminan desde "ahora"; el fake registra `activeFetches` y acepta `activeFetchError`;
+    - 16 tests; suite completa, 1784 en verde.
 
 - [ ] **T6. Pantalla de cierres.** RF-1, RF-2, RF-7, RF-8, RF-10
   - Tests: `test/features/admin/admin_closures_view_test.dart` (nuevo):

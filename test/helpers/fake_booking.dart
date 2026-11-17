@@ -24,6 +24,9 @@ import 'package:shaddai/data/repositories/booking_repository.dart';
 /// terminaron, en vivo ([emitActive], [failActive]); la comprobación previa
 /// devuelve [adminCheckData] (por defecto, [busy] y [active]) o lanza
 /// [adminCheckError]. Un turno guardado llega también a [active].
+///
+/// Los cierres (spec 008): [fetchActiveAppointments] devuelve [active] o
+/// lanza [activeFetchError], y registra cada "ahora" en [activeFetches].
 class FakeBookingRepository implements BookingRepository {
   FakeBookingRepository({
     this.busy = const [],
@@ -42,6 +45,10 @@ class FakeBookingRepository implements BookingRepository {
 
   /// Instantes pedidos a [watchActiveAppointments], en orden.
   final activeRequests = <DateTime>[];
+
+  /// Instantes pedidos a [fetchActiveAppointments], en orden.
+  final activeFetches = <DateTime>[];
+  Object? activeFetchError;
 
   AdminCheckData? adminCheckData;
   Object? adminCheckError;
@@ -111,6 +118,14 @@ class FakeBookingRepository implements BookingRepository {
   Stream<List<AppointmentModel>> watchActiveAppointments(DateTime now) {
     activeRequests.add(now);
     return _live(_activeListeners, () => active);
+  }
+
+  @override
+  Future<List<AppointmentModel>> fetchActiveAppointments(DateTime now) async {
+    activeFetches.add(now);
+    final error = activeFetchError;
+    if (error != null) throw error;
+    return active;
   }
 
   @override

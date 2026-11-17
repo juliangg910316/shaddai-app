@@ -174,6 +174,15 @@ class BookingRepository {
           .snapshots()
           .map((snapshot) => snapshot.docs.map(_appointment).toList());
 
+  /// Lee **del servidor** los turnos que terminan en [now] o después, de
+  /// cualquier persona, para buscar los que chocan con un cierre justo antes
+  /// de guardarlo (spec 008, RF-5, RF-6). Sin conexión falla.
+  Future<List<AppointmentModel>> fetchActiveAppointments(DateTime now) async {
+    final snapshot = await _endingFrom(now)
+        .get(const GetOptions(source: Source.server));
+    return snapshot.docs.map(_appointment).toList();
+  }
+
   /// Lee **del servidor** los turnos ocupados que empiezan entre [from] y
   /// [to] y los turnos que terminan en [now] o después, para comprobar el
   /// turno de la admin antes de guardarlo (spec 007, RF-18). Sin conexión
