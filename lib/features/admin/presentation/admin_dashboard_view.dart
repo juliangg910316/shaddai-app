@@ -15,6 +15,7 @@ import '../../booking/logic/salon_time.dart';
 import '../../booking/logic/whatsapp.dart';
 import '../providers/admin_provider.dart';
 import '../../../data/models/appointment_model.dart';
+import '../../../data/models/booked_service_model.dart';
 
 class AdminDashboardView extends ConsumerWidget {
   const AdminDashboardView({super.key});
@@ -426,13 +427,7 @@ class _AppointmentCard extends ConsumerWidget {
           if (appointment.booked case final booked?) ...[
             const SizedBox(height: 12),
             Text(
-              [
-                booked.name.of(l10n.localeName),
-                if (booked.addons.isNotEmpty)
-                  booked.addons
-                      .map((addon) => addon.name.of(l10n.localeName))
-                      .join(', '),
-              ].join(' · '),
+              bookedLabel(booked, l10n.localeName),
               style: AppText.sans(size: 14, color: brand.ink, height: 1.4),
             ),
           ],
@@ -491,3 +486,11 @@ class _AppointmentCard extends ConsumerWidget {
     );
   }
 }
+
+/// Lo reservado en un turno: el servicio o combo y sus adicionales, en el
+/// idioma [language]. Lo comparten la agenda y los cierres (spec 008, RF-5).
+String bookedLabel(BookedServiceModel booked, String language) => [
+  booked.name.of(language),
+  if (booked.addons.isNotEmpty)
+    booked.addons.map((addon) => addon.name.of(language)).join(', '),
+].join(' · ');

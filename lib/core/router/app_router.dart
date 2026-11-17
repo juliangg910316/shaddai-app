@@ -10,6 +10,7 @@ import '../../features/auth/providers/auth_provider.dart';
 import '../../features/booking/logic/booking_request.dart';
 import '../../features/booking/presentation/booking_view.dart';
 import '../../features/admin/presentation/admin_dashboard_view.dart';
+import '../../features/admin/presentation/admin_closure_form_view.dart';
 import '../../features/admin/presentation/admin_closures_view.dart';
 import '../../features/admin/presentation/admin_users_view.dart';
 import '../../features/admin/presentation/admin_category_form_view.dart';
@@ -169,6 +170,11 @@ List<RouteBase> _webRoutes() => [
             const WebAccountPage(child: AdminClosuresView()),
       ),
       GoRoute(
+        path: '/admin/closures/new',
+        builder: (context, state) =>
+            const WebAccountPage(child: AdminClosureFormView()),
+      ),
+      GoRoute(
         path: '/admin/services',
         builder: (context, state) =>
             const WebAccountPage(child: AdminServicesView()),
@@ -216,6 +222,10 @@ List<RouteBase> _mobileRoutes() => [
   GoRoute(
     path: '/admin/closures',
     builder: (context, state) => const AdminClosuresView(),
+  ),
+  GoRoute(
+    path: '/admin/closures/new',
+    builder: (context, state) => const AdminClosureFormView(),
   ),
   GoRoute(
     path: '/admin/services',

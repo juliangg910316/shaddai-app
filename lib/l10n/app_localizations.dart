@@ -2441,6 +2441,132 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'No se pudo quitar el cierre. Inténtalo de nuevo.'**
   String get closureDeleteError;
+
+  /// Tipo de cierre: una franja (spec 008, RF-3)
+  ///
+  /// In es, this message translates to:
+  /// **'Unas horas'**
+  String get closureKindRange;
+
+  /// Tipo de cierre: días enteros (spec 008, RF-3)
+  ///
+  /// In es, this message translates to:
+  /// **'Días enteros'**
+  String get closureKindDays;
+
+  /// Fecha de una franja (spec 008, RF-3)
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha'**
+  String get closureDateLabel;
+
+  /// Hora de inicio de una franja (spec 008, RF-3)
+  ///
+  /// In es, this message translates to:
+  /// **'Desde'**
+  String get closureFromLabel;
+
+  /// Hora de fin de una franja (spec 008, RF-3)
+  ///
+  /// In es, this message translates to:
+  /// **'Hasta'**
+  String get closureToLabel;
+
+  /// Primer día de un cierre de días enteros (spec 008, RF-3)
+  ///
+  /// In es, this message translates to:
+  /// **'Primer día'**
+  String get closureFirstDayLabel;
+
+  /// Último día de un cierre de días enteros (spec 008, RF-3)
+  ///
+  /// In es, this message translates to:
+  /// **'Último día'**
+  String get closureLastDayLabel;
+
+  /// Error: la franja no termina después de empezar (spec 008, RF-4)
+  ///
+  /// In es, this message translates to:
+  /// **'La hora de fin debe ser posterior a la de inicio.'**
+  String get closureErrorEndNotAfterStart;
+
+  /// Error: días al revés (spec 008, RF-4)
+  ///
+  /// In es, this message translates to:
+  /// **'El último día no puede ser anterior al primero.'**
+  String get closureErrorDaysReversed;
+
+  /// Error: el cierre ya terminó (spec 008, RF-4)
+  ///
+  /// In es, this message translates to:
+  /// **'Ese tiempo ya pasó.'**
+  String get closureErrorPast;
+
+  /// Error: fecha a más de 365 días (spec 008, RF-4)
+  ///
+  /// In es, this message translates to:
+  /// **'Solo se puede cerrar hasta el {date}.'**
+  String closureErrorTooFar(String date);
+
+  /// Título de los turnos que chocan con un cierre (spec 008, RF-5)
+  ///
+  /// In es, this message translates to:
+  /// **'Hay turnos en ese tiempo'**
+  String get closureConflictsTitle;
+
+  /// Explicación de los turnos que chocan (spec 008, RF-5)
+  ///
+  /// In es, this message translates to:
+  /// **'Muévelos o cancélalos y vuelve a guardar el cierre.'**
+  String get closureConflictsBody;
+
+  /// Aviso tras guardar un cierre (spec 008, RF-6)
+  ///
+  /// In es, this message translates to:
+  /// **'Cierre guardado.'**
+  String get closureSaved;
+
+  /// Error al guardar un cierre (spec 008, RF-11)
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo guardar el cierre. Inténtalo de nuevo.'**
+  String get closureSaveError;
+
+  /// Botón para editar un turno desde el panel (spec 008, RF-5, RF-18)
+  ///
+  /// In es, this message translates to:
+  /// **'Editar'**
+  String get adminAppointmentEdit;
+
+  /// Confirmación al cancelar un turno desde el panel (spec 008, RF-5)
+  ///
+  /// In es, this message translates to:
+  /// **'¿Cancelar el turno de {name}?'**
+  String adminCancelAppointmentTitle(String name);
+
+  /// Texto de la confirmación al cancelar un turno (spec 008, RF-5)
+  ///
+  /// In es, this message translates to:
+  /// **'La hora quedará libre.'**
+  String get adminCancelAppointmentBody;
+
+  /// Botón que confirma la cancelación de un turno (spec 008, RF-5)
+  ///
+  /// In es, this message translates to:
+  /// **'Cancelar turno'**
+  String get adminCancelAppointmentConfirm;
+
+  /// Botón que cierra la confirmación sin cancelar (spec 008, RF-5)
+  ///
+  /// In es, this message translates to:
+  /// **'Volver'**
+  String get adminCancelAppointmentKeep;
+
+  /// Error al cancelar un turno desde los cierres (spec 008, RF-5)
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo cancelar el turno. Inténtalo de nuevo.'**
+  String get adminCancelAppointmentError;
 }
 
 class _AppLocalizationsDelegate

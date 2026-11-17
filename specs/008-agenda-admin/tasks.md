@@ -117,7 +117,7 @@ Son más de 10, pero la spec no se divide (decisión del autor, 2026-11-17).
     - 11 textos nuevos en ES y PT; se reutilizan `bookingTimeRange`, `bookingRetry` y `cancelAction`;
     - `admin_closures_view_test.dart`: 11 tests; suite completa en verde.
 
-- [ ] **T7. Nuevo cierre y turnos que chocan.** RF-3 a RF-6, RF-11
+- [x] **T7. Nuevo cierre y turnos que chocan.** RF-3 a RF-6, RF-11
   - Tests, en `admin_closures_view_test`:
     - "Unas horas" y "Días enteros";
     - las horas, en pasos de 15 minutos;
@@ -129,6 +129,13 @@ Son más de 10, pero la spec no se divide (decisión del autor, 2026-11-17).
   - Hecho cuando:
     - existen `AdminClosureFormView` y la ruta `/admin/closures/new`;
     - "Editar" de un choque lleva a la ruta de edición de T13. Mientras tanto, el test solo comprueba la dirección.
+  - Hecha (2026-11-17):
+    - `AdminClosureFormView` en `/admin/closures/new` (Web y Android/iOS, y en `safeNext`): "Unas horas" (fecha, desde, hasta) o "Días enteros" (primer y último día); horas de 0:00 a 23:45 cada 15 minutos; fechas con `showDatePicker` de hoy a hoy + 365; tras el primer "Guardar", los errores bajo su campo y en vivo;
+    - choques: título, explicación y una tarjeta por turno (fecha, hora, persona y lo reservado) con "Editar" (`openAdminEdit`: `go` en Web, `push` en Android/iOS) y "Cancelar" (confirmación "Volver"/"Cancelar turno"; al cancelar sale de la lista). Cambiar lo elegido borra los choques;
+    - guardado: "Cierre guardado." y vuelta a la lista; si falla, aviso y se conserva lo elegido;
+    - `bookedLabel` sale de la agenda para compartirse;
+    - 21 textos nuevos (ES y PT). Fuera del plan § 6, tres para la confirmación de cancelar: `adminCancelAppointmentConfirm`, `adminCancelAppointmentKeep` y `adminCancelAppointmentError`;
+    - 10 tests nuevos en `admin_closures_view_test`; suite completa, 1812 en verde.
 
 - [ ] **T8. La agenda muestra los cierres y "Editar".** RF-9, RF-10, RF-18
   - Tests, en `admin_appointments_booked_test`:

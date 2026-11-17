@@ -1279,4 +1279,76 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get closureDeleteError =>
       'No se pudo quitar el cierre. Inténtalo de nuevo.';
+
+  @override
+  String get closureKindRange => 'Unas horas';
+
+  @override
+  String get closureKindDays => 'Días enteros';
+
+  @override
+  String get closureDateLabel => 'Fecha';
+
+  @override
+  String get closureFromLabel => 'Desde';
+
+  @override
+  String get closureToLabel => 'Hasta';
+
+  @override
+  String get closureFirstDayLabel => 'Primer día';
+
+  @override
+  String get closureLastDayLabel => 'Último día';
+
+  @override
+  String get closureErrorEndNotAfterStart =>
+      'La hora de fin debe ser posterior a la de inicio.';
+
+  @override
+  String get closureErrorDaysReversed =>
+      'El último día no puede ser anterior al primero.';
+
+  @override
+  String get closureErrorPast => 'Ese tiempo ya pasó.';
+
+  @override
+  String closureErrorTooFar(String date) {
+    return 'Solo se puede cerrar hasta el $date.';
+  }
+
+  @override
+  String get closureConflictsTitle => 'Hay turnos en ese tiempo';
+
+  @override
+  String get closureConflictsBody =>
+      'Muévelos o cancélalos y vuelve a guardar el cierre.';
+
+  @override
+  String get closureSaved => 'Cierre guardado.';
+
+  @override
+  String get closureSaveError =>
+      'No se pudo guardar el cierre. Inténtalo de nuevo.';
+
+  @override
+  String get adminAppointmentEdit => 'Editar';
+
+  @override
+  String adminCancelAppointmentTitle(String name) {
+    return '¿Cancelar el turno de $name?';
+  }
+
+  @override
+  String get adminCancelAppointmentBody => 'La hora quedará libre.';
+
+  @override
+  String get adminCancelAppointmentConfirm => 'Cancelar turno';
+
+  @override
+  String get adminCancelAppointmentKeep => 'Volver';
+
+  @override
+  String get adminCancelAppointmentError =>
+      'No se pudo cancelar el turno. Inténtalo de nuevo.';
 }

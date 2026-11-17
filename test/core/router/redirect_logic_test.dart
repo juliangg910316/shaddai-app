@@ -90,6 +90,7 @@ void main() {
       '/admin/settings',
       '/admin/services',
       '/admin/closures',
+      '/admin/closures/new',
     ]) {
       test('safeNext acepta $next en móvil', () {
         expect(safeNext(next, isWeb: false), next);
@@ -276,6 +277,7 @@ void main() {
       '/admin/settings',
       '/admin/services',
       '/admin/closures',
+      '/admin/closures/new',
     ]) {
       test('$next se acepta', () => expect(safeNext(next, isWeb: true), next));
     }
