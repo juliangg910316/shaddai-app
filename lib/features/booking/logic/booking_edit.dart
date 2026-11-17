@@ -118,9 +118,10 @@ bool isEditDaySelectable(
   DateTime day,
   CalendarSettingsModel settings,
   BookingWindow window,
-  EditOriginal original,
-) =>
-    isSelectableDay(day, settings, window) ||
+  EditOriginal original, {
+  Iterable<BusyRange> closures = const [],
+}) =>
+    isSelectableDay(day, settings, window, closures: closures) ||
     salonDay(day) == salonDay(original.start);
 
 /// Las horas libres de [day] en la edición (RF-5, RF-7, RF-8). [busy] ya no
@@ -340,6 +341,7 @@ EditCheck checkEditBeforeSave({
   required int durationMinutes,
   required CalendarSettingsModel settings,
   required Iterable<BusyRange> busy,
+  Iterable<BusyRange> closures = const [],
   required DateTime nowSalon,
   required int marginMinutes,
 }) {
@@ -367,7 +369,7 @@ EditCheck checkEditBeforeSave({
   for (final free in editFreeSlots(
     day: salonDay(start),
     settings: settings,
-    busy: busy,
+    busy: [...busy, ...closures],
     nowSalon: nowSalon,
     original: original,
   )) {

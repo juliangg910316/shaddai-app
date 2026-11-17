@@ -297,4 +297,50 @@ void main() {
   test('blockedDateKey da yyyy-MM-dd con ceros', () {
     expect(blockedDateKey(DateTime.utc(2026, 1, 5)), '2026-01-05');
   });
+
+  group('con cierres (spec 008, RF-13)', () {
+    final window = bookingWindow(nowTuesday);
+    final wednesday = DateTime.utc(2026, 11, 11);
+
+    test('un día cuyo horario queda entero dentro de cierres no se elige', () {
+      expect(
+        isSelectableDay(
+          wednesday,
+          settings(),
+          window,
+          closures: [(start: wednesday, end: DateTime.utc(2026, 11, 12))],
+        ),
+        isFalse,
+      );
+    });
+
+    test('con un cierre de unas horas, el día se sigue eligiendo', () {
+      expect(
+        isSelectableDay(
+          wednesday,
+          settings(),
+          window,
+          closures: [
+            (
+              start: DateTime.utc(2026, 11, 11, 13),
+              end: DateTime.utc(2026, 11, 11, 14),
+            ),
+          ],
+        ),
+        isTrue,
+      );
+    });
+
+    test('initialDay se salta los días cerrados por cierres', () {
+      expect(
+        initialDay(
+          nowSalon: nowTuesday,
+          settings: settings(),
+          hasFreeSlot: (_) => true,
+          closures: [(start: tuesday, end: DateTime.utc(2026, 11, 12))],
+        ),
+        DateTime.utc(2026, 11, 12),
+      );
+    });
+  });
 }

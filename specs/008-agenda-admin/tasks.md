@@ -34,13 +34,19 @@ Son más de 10, pero la spec no se divide (decisión del autor, 2026-11-17).
     - `closures.dart`: `RangeDraft`/`DaysDraft`, `closureRange`, `closureErrors` (sin "pasado" si el orden está mal; un cierre que empezó y no terminó vale), `closureKind`, `overlaps`, `closureConflicts` (genérica, con `AppointmentTimes`), `closureEntries` (con `StoredClosure`, un registro: no depende aún del modelo de T3; ignora fechas bloqueadas que no son una fecha), `closuresOfDay` e `isClosedAllDay` (unión de cierres que se cruzan o se tocan);
     - `closures_test.dart`: 49 tests; suite completa, 1717 en verde.
 
-- [ ] **T2. Los cierres en las horas libres y los días.** RF-12, RF-13, RF-14, RF-16, RNF-1
+- [x] **T2. Los cierres en las horas libres y los días.** RF-12, RF-13, RF-14, RF-16, RNF-1
   - Tests, ampliando los que ya existen:
     - `free_slots_test`: un cierre al principio, en medio y al final del día; un cierre pegado a un turno; un cierre de varios días; uno que cruza la medianoche. Comprueban horas libres y cobertura;
     - `booking_window_test`: `isSelectableDay` e `initialDay` saltan un día cerrado entero por cierres;
     - `booking_selection_test`: un cierre nuevo quita la hora elegida con `slotGone`;
     - `booking_rules_test`, `booking_edit_test` y `admin_booking_test`: `checkSlot`, `checkEditBeforeSave` y `checkAdminBeforeSave` dan "hora ocupada" o "no cabe" por un cierre.
   - Hecho cuando: `isSelectableDay`, `BookingContext` y las tres comprobaciones reciben los cierres (plan § 4.2), y lo que ya existía sigue en verde.
+  - Hecha (2026-11-17):
+    - `isSelectableDay`, `initialDay` e `isEditDaySelectable` reciben `closures` (por defecto, ninguno): un día con todo su horario dentro de cierres no se elige;
+    - `BookingContext.closures` (`null` mientras no llegan: no se toca la hora ni el día) se suma a los turnos ocupados en `freeSlotsOf`;
+    - `checkSlot`, `checkBeforeSave`, `checkEditBeforeSave` y `checkAdminBeforeSave` reciben `closures` y los suman a `busy`. `freeSlots` no cambia;
+    - los providers aún no pasan cierres (T4);
+    - 22 tests nuevos en seis archivos; suite completa, 1739 en verde.
 
 - [ ] **T3. Datos de los cierres y del calendario.** RF-8, RF-41, RNF-4
   - Tests:

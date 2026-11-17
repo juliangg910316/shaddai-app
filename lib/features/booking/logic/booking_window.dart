@@ -5,6 +5,8 @@ library;
 
 import '../../../core/utils/weekday_key.dart';
 import '../../../data/models/calendar_settings_model.dart';
+import 'closures.dart';
+import 'free_slots.dart';
 import 'salon_time.dart';
 
 /// Días después de hoy que se pueden reservar (los dos incluidos).
@@ -100,31 +102,36 @@ List<DateTime>? dayGrid(DateTime day, CalendarSettingsModel settings) {
   ];
 }
 
-/// Si [day] se puede elegir: dentro de [window], no bloqueado y abierto
-/// (RF-3).
+/// Si [day] se puede elegir: dentro de [window], no bloqueado, abierto
+/// (RF-3) y sin su horario entero dentro de [closures] (spec 008, RF-13).
 bool isSelectableDay(
   DateTime day,
   CalendarSettingsModel settings,
-  BookingWindow window,
-) =>
+  BookingWindow window, {
+  Iterable<BusyRange> closures = const [],
+}) =>
     window.contains(day) &&
     !settings.blockedDates.contains(blockedDateKey(day)) &&
-    openingOf(day, settings) != null;
+    openingOf(day, settings) != null &&
+    !isClosedAllDay(day, settings, closures);
 
 /// El día que se elige al abrir la reserva (RF-1): el primero de la ventana
 /// que se puede elegir y tiene alguna hora libre ([hasFreeSlot]). Si ninguno
 /// tiene, el primero que se puede elegir; si ninguno se puede elegir, `null`
-/// (RF-2). [windowDays] es el largo de la ventana (spec 007, RF-12).
+/// (RF-2). [windowDays] es el largo de la ventana (spec 007, RF-12); los
+/// días cerrados enteros por [closures] no se pueden elegir (spec 008,
+/// RF-13).
 DateTime? initialDay({
   required DateTime nowSalon,
   required CalendarSettingsModel settings,
   required bool Function(DateTime day) hasFreeSlot,
   int windowDays = bookingWindowDays,
+  Iterable<BusyRange> closures = const [],
 }) {
   final window = bookingWindow(nowSalon, days: windowDays);
   DateTime? firstSelectable;
   for (final day in window.days) {
-    if (!isSelectableDay(day, settings, window)) continue;
+    if (!isSelectableDay(day, settings, window, closures: closures)) continue;
     firstSelectable ??= day;
     if (hasFreeSlot(day)) return day;
   }

@@ -85,6 +85,7 @@ AdminBookingCheck checkAdminBeforeSave({
   required int durationMinutes,
   required CalendarSettingsModel settings,
   required Iterable<BusyRange> busy,
+  Iterable<BusyRange> closures = const [],
   required Iterable<AppointmentModel> active,
   required Recipient recipient,
   required UserModel? recipientUser,
@@ -123,6 +124,7 @@ AdminBookingCheck checkAdminBeforeSave({
     durationMinutes: durationMinutes,
     settings: settings,
     busy: busy,
+    closures: closures,
     nowSalon: nowSalon,
   )) {
     BookingCheck.slotTaken => const AdminCheckSlotTaken(),

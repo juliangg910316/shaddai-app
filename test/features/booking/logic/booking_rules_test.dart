@@ -294,4 +294,52 @@ void main() {
       );
     });
   });
+
+  group('checkSlot y checkBeforeSave con cierres (spec 008, RF-12, RF-14)', () {
+    final now = at(7);
+
+    test('una hora dentro de un cierre ya no es libre', () {
+      expect(
+        checkSlot(
+          start: at(9),
+          durationMinutes: 30,
+          settings: settings,
+          busy: const [],
+          closures: [(start: at(9), end: at(10))],
+          nowSalon: now,
+        ),
+        BookingCheck.slotTaken,
+      );
+    });
+
+    test('un servicio que no cabe antes del cierre no cabe', () {
+      expect(
+        checkSlot(
+          start: at(9),
+          durationMinutes: 60,
+          settings: settings,
+          busy: const [],
+          closures: [(start: at(9, 30), end: at(10))],
+          nowSalon: now,
+        ),
+        BookingCheck.doesNotFit,
+      );
+    });
+
+    test('la reserva de la clienta tiene en cuenta los cierres', () {
+      expect(
+        checkBeforeSave(
+          start: at(9),
+          durationMinutes: 30,
+          settings: settings,
+          busy: const [],
+          closures: [(start: at(8), end: at(12))],
+          mine: const <Appt>[],
+          times: timesOf,
+          nowSalon: now,
+        ),
+        BookingCheck.slotTaken,
+      );
+    });
+  });
 }

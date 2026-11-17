@@ -886,4 +886,91 @@ void main() {
       });
     });
   });
+
+  group('cierres (spec 008, RF-12 a RF-16)', () {
+    BookingContext withClosures(
+      List<BusyRange>? closures, {
+      EditOriginal? original,
+    }) => BookingContext(
+      catalog: bookableCatalog(priceList()),
+      settings: settings(),
+      busy: const [],
+      closures: closures,
+      nowSalon: now,
+      original: original,
+    );
+
+    test('las horas de un cierre no son libres, y la cobertura termina donde '
+        'empieza', () {
+      final ctx = withClosures([busy(at(10, 10), at(10, 11))]);
+      final slots = ctx.freeSlotsOf(tuesday);
+      expect(slots.map((s) => s.start), [
+        at(10, 8),
+        at(10, 8, 30),
+        at(10, 9),
+        at(10, 9, 30),
+        at(10, 11),
+        at(10, 11, 30),
+      ]);
+      expect(slots.first.coverageMinutes, 120);
+    });
+
+    test('un cierre nuevo quita la hora elegida y avisa (RF-16)', () {
+      final selection = BookingSelection(
+        day: tuesday,
+        start: at(10, 9),
+        item: s1,
+      );
+      final update = reconcile(
+        selection,
+        withClosures([busy(at(10, 9), at(10, 10))]),
+      );
+      expect(update.selection.start, isNull);
+      expect(update.selection.item, s1);
+      expect(update.notices, const [BookingNotice(BookingNoticeKind.slotGone)]);
+    });
+
+    test(
+      'el servicio que ya no cabe antes del cierre quita la hora (RF-14)',
+      () {
+        final selection = BookingSelection(
+          day: tuesday,
+          start: at(10, 9),
+          item: s1,
+        );
+        final update = reconcile(
+          selection,
+          withClosures([busy(at(10, 9, 30), at(10, 10))]),
+        );
+        expect(update.selection.start, isNull);
+        expect(update.notices, const [
+          BookingNotice(BookingNoticeKind.slotNoLongerFits),
+        ]);
+      },
+    );
+
+    test('un día cerrado entero por un cierre se cambia por el siguiente '
+        '(RF-13)', () {
+      final selection = BookingSelection(day: tuesday);
+      final update = reconcile(
+        selection,
+        withClosures([busy(tuesday, dayOf(11))]),
+      );
+      expect(update.selection.day, dayOf(11));
+      expect(update.notices, const [
+        BookingNotice(BookingNoticeKind.dateMoved),
+      ]);
+    });
+
+    test('mientras los cierres no se conocen, no se toca la hora', () {
+      final selection = BookingSelection(
+        day: tuesday,
+        start: at(10, 9),
+        item: s1,
+      );
+      final update = reconcile(selection, withClosures(null));
+      expect(update.selection, selection);
+      expect(update.notices, isEmpty);
+    });
+  });
 }
