@@ -90,11 +90,11 @@ Si algo falla, vuelve a publicar la copia del paso 1.2 y avisa.
 
 ## Resultado
 
-Pendiente de comprobar por el autor.
+Comprobado por el autor el 2026-11-17.
 
-- [ ] Copia de las reglas anteriores guardada.
-- [ ] Reglas publicadas.
-- [ ] Casos 1 a 24 del simulador correctos.
-- [ ] Casos de la 006 correctos.
-- [ ] La reserva de la admin funciona en la app (paso 4).
-- [ ] Lo que ya existía sigue funcionando.
+- [x] Copia de las reglas anteriores guardada.
+- [x] Reglas publicadas.
+- [x] Casos 1 a 24 del simulador correctos.
+- [x] Casos de la 006 correctos.
+- [x] La reserva de la admin funciona en la app (paso 4).
+- [x] Lo que ya existía sigue funcionando.

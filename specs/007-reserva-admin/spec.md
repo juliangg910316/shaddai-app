@@ -1,5 +1,5 @@
 # Spec 007 — Reserva de la admin
-Estado: aprobada
+Estado: implementada
 
 ## Contexto y objetivo
 Con la spec 005, la admin no puede agendar turnos: no reserva a su propio nombre, y no tiene forma de apuntar los turnos que le piden por WhatsApp, por teléfono o en el salón. Esta spec le deja reservar desde la misma vista de reserva, siempre para otra persona:

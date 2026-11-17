@@ -181,7 +181,7 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
 
 ## Bloque C — Reglas, accesibilidad y cierre
 
-- [ ] **T14. Reglas de Firestore.** RF-2, RF-25, RF-26, RF-30, RNF-5
+- [x] **T14. Reglas de Firestore.** RF-2, RF-25, RF-26, RF-30, RNF-5
   - Tests: `test/core/firestore_rules_test.dart` fija la estructura de las reglas (qué comprueba cada `match`); se amplía primero con los cambios del plan § 2. Lo que permite cada regla no se prueba automáticamente: se escribe `specs/007-reserva-admin/rules-check.md` con cada caso del simulador:
     - la admin crea un turno confirmado para una clienta, para una persona sin cuenta y su turno ocupado (→ sí);
     - la admin crea a su nombre, para otra admin, para una bloqueada, esperando confirmación o sin `createdByAdmin` (→ no);
@@ -190,7 +190,7 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
     - la clienta edita un turno que le agendó la admin sin tocar `createdByAdmin` (→ sí) y cambiándolo (→ no);
     - los casos de la 006 que tocan estas reglas siguen igual.
   - Hecho cuando: `firestore.rules` tiene los cambios del plan § 2 y el autor los comprueba en el simulador.
-  - Hecho en el código (2026-11-17); **falta la comprobación del autor** en el simulador y en la app:
+  - Hecha (2026-11-17); el autor comprobó las reglas en el simulador y en la app el mismo día:
     - `firestore.rules`: la clienta crea con `createdByAdmin` falso o sin él; la admin crea turnos confirmados y marcados para una persona sin cuenta (`clientId == null`) o para una clienta sin bloquear que no es ella (`role == 'cliente'`), con su turno ocupado en el mismo lote; el turno ocupado también lo crea la admin si su turno lo marcó ella. Lectura y edición, sin cambios (RF-26 y RF-30 ya se cumplían);
     - `firestore_rules_test.dart`: 4 tests nuevos de estructura;
     - `rules-check.md`: 24 casos del simulador, con documentos de prueba creados a mano para que el simulador, que no ve lotes, pruebe cada condición por separado; los casos de la 006 y los pasos en la app.
@@ -205,4 +205,4 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
     - fuera de la 007: la cabecera verde del panel no pasa `textContrastGuideline` ("PANEL DE BEIDIS" y el contador) y tiene un icono de 22 px; en la tarjeta se mide solo la tarjeta;
     - `CLAUDE.md` describe la reserva de la admin; `MEMORY.md` recortado;
     - 20 tests nuevos; suite completa, 1667 en verde.
-  - Falta del autor: la comprobación de las reglas (T14) y el recorrido manual de los criterios de finalización (spec § Criterios de finalización).
+  - El autor comprobó las reglas (T14) y el recorrido manual de los criterios de finalización el 2026-11-17: spec implementada.
