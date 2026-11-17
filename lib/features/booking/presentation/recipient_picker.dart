@@ -173,8 +173,10 @@ class _ClientRow extends StatelessWidget {
     final spoken = [user.displayName, phone].join(', ');
 
     return Semantics(
+      container: true,
       button: true,
       label: spoken,
+      onTap: onTap,
       excludeSemantics: true,
       child: InkWell(
         onTap: onTap,
@@ -296,21 +298,26 @@ class _ActiveAppointmentWarning extends ConsumerWidget {
     if (active == null) return const SizedBox.shrink();
     final brand = context.brand;
 
+    // Se anuncia al aparecer, en su propio nodo (RNF-2).
     return Padding(
       padding: const EdgeInsets.only(top: 12),
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: brand.danger, width: 1.5),
-        ),
-        child: Text(
-          activeAppointmentMessage(AppLocalizations.of(context)!, active),
-          style: AppText.sans(
-            size: 14,
-            weight: FontWeight.w500,
-            color: brand.danger,
-            height: 1.4,
+      child: Semantics(
+        container: true,
+        liveRegion: true,
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: brand.danger, width: 1.5),
+          ),
+          child: Text(
+            activeAppointmentMessage(AppLocalizations.of(context)!, active),
+            style: AppText.sans(
+              size: 14,
+              weight: FontWeight.w500,
+              color: brand.danger,
+              height: 1.4,
+            ),
           ),
         ),
       ),
@@ -366,6 +373,11 @@ class _GuestFormState extends ConsumerState<_GuestForm> {
   void initState() {
     super.initState();
     _phoneFocus.addListener(_onPhoneFocus);
+    // Al volver a montarse (la lista lo quitó al desplazarse), el WhatsApp
+    // guardado ya se escribió y se dejó: se vuelve a comprobar (RF-10).
+    if (widget.guest.phone.trim().isNotEmpty) {
+      _checkedPhone = widget.guest.phone;
+    }
   }
 
   @override
@@ -431,6 +443,7 @@ class _GuestFormState extends ConsumerState<_GuestForm> {
           maxLengthEnforcement: MaxLengthEnforcement.none,
           decoration: InputDecoration(
             labelText: l10n.bookingGuestNameLabel,
+            errorStyle: _errorStyle(brand),
             errorText: errors.contains(GuestField.name)
                 ? l10n.bookingGuestNameError
                 : null,
@@ -446,6 +459,7 @@ class _GuestFormState extends ConsumerState<_GuestForm> {
           style: AppText.sans(size: 16, color: brand.inkStrong),
           decoration: InputDecoration(
             labelText: l10n.bookingGuestPhoneLabel,
+            errorStyle: _errorStyle(brand),
             errorText: blocked
                 ? l10n.bookingGuestPhoneBlocked
                 : errors.contains(GuestField.phone)
@@ -460,6 +474,7 @@ class _GuestFormState extends ConsumerState<_GuestForm> {
         ),
         if (match != null && !blocked && !_keepGuest)
           Semantics(
+            container: true,
             liveRegion: true,
             child: AppNotice(
               message: l10n.bookingGuestPhoneHasAccount(match.displayName),
@@ -501,3 +516,8 @@ class _GuestFormState extends ConsumerState<_GuestForm> {
     );
   }
 }
+
+/// Los errores de los campos, en el color de peligro de la marca: el rojo
+/// por defecto no llega a AA sobre el fondo (RNF-2).
+TextStyle _errorStyle(BrandColors brand) =>
+    AppText.sans(size: 12, weight: FontWeight.w500, color: brand.danger);

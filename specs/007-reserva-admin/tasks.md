@@ -195,6 +195,14 @@ Los repositorios no tienen tests propios (tocarían Firebase): su contrato lo fi
     - `firestore_rules_test.dart`: 4 tests nuevos de estructura;
     - `rules-check.md`: 24 casos del simulador, con documentos de prueba creados a mano para que el simulador, que no ve lotes, pruebe cada condición por separado; los casos de la 006 y los pasos en la app.
 
-- [ ] **T15. Accesibilidad y cierre.** RNF-2, RNF-3
+- [x] **T15. Accesibilidad y cierre.** RNF-2, RNF-3
   - Tests: `test/features/booking/admin_booking_accessibility_test.dart` (nuevo): contraste en tema claro y oscuro, objetivos de 48 px, semántica de los resultados, del aviso de WhatsApp con cuenta y del de turno activo, texto al 200 % y 320 px en "Para quién", en la persona sin cuenta, en la confirmación y en la tarjeta de la lista; todas las claves nuevas en ES y PT.
   - Hecho cuando: los tests pasan, `CLAUDE.md` y `MEMORY.md` describen la reserva de la admin, y queda el recorrido manual de los criterios de finalización para el autor.
+  - Hecha (2026-11-17):
+    - `admin_booking_accessibility_test.dart`: contraste en los dos temas, 48 px y semántica en "Para quién" (resultados, clienta con turno activo, persona sin cuenta con errores y el aviso de WhatsApp con cuenta), la confirmación y la tarjeta de la lista; texto al 200 % en 320 px en ES y PT. Las claves nuevas en ES y PT las comprueba `booking_texts_test`;
+    - arreglos que encontraron: los avisos de WhatsApp con cuenta y de turno activo, en su propio nodo (`container: true`) y anunciados; la fila de un resultado se puede pulsar con el lector de pantalla; los errores de los campos de la persona sin cuenta en `brand.danger` (el rojo por defecto daba 2,07:1); `OutlinePillButton` pasa a otra línea con una etiqueta larga; la hora y el estado de la tarjeta de la lista, en un `Wrap`; el aviso del WhatsApp con cuenta no se pierde al volver a montarse el formulario tras desplazar la lista;
+    - la comprobación de contraste de los diálogos pasa a `test/helpers/dialog_contrast.dart` (`expectTextContrast`, para una parte de la pantalla);
+    - fuera de la 007: la cabecera verde del panel no pasa `textContrastGuideline` ("PANEL DE BEIDIS" y el contador) y tiene un icono de 22 px; en la tarjeta se mide solo la tarjeta;
+    - `CLAUDE.md` describe la reserva de la admin; `MEMORY.md` recortado;
+    - 20 tests nuevos; suite completa, 1667 en verde.
+  - Falta del autor: la comprobación de las reglas (T14) y el recorrido manual de los criterios de finalización (spec § Criterios de finalización).
