@@ -96,7 +96,7 @@ Salen 16 tareas, en tres bloques (decisión del autor, 2026-11-18: una sola spec
     - más de 400 turnos → varios lotes.
   - Hecho cuando: `functions/` (`package.json`, `tsconfig.json`, `src/delete_account.ts`) compila, `npm test` pasa y `delete_account.ts` no importa Firebase.
 
-- [ ] **T12. Función invocable y despliegue.** RF-37, RF-42
+- [x] **T12. Función invocable y despliegue.** RF-37, RF-42
   - Tests: `functions/test/index.test.ts`: el adaptador pasa el uid de la sesión (no el de los datos) y traduce los errores de la lógica a `HttpsError`.
   - Hecho cuando: `src/index.ts` exporta `deleteAccount` (v2 `onCall`, `southamerica-east1`) con el almacén de `firebase-admin`, `firebase.json` tiene la entrada `functions`, `npm run build` y `npm test` pasan, y el despliegue queda descrito para el autor (requiere el plan Blaze; lo hace él).
 
