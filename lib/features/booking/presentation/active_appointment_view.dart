@@ -14,6 +14,7 @@ import '../logic/booking_edit.dart';
 import '../logic/salon_time.dart';
 import '../providers/booking_edit_provider.dart';
 import 'booking_notices.dart';
+import 'cancel_appointment.dart';
 
 /// El turno activo de la clienta, en lugar del formulario: lo reservado con
 /// sus adicionales, el día, la franja en hora del salón, el total y el
@@ -23,6 +24,9 @@ import 'booking_notices.dart';
 /// Debajo, según si se puede editar (spec 006, RF-1 a RF-3, RF-22): el botón
 /// "Editar turno", la explicación de que ya no se puede cambiar con WhatsApp,
 /// o el error del calendario con "Reintentar". Bloqueada, solo su aviso (D-6).
+///
+/// Al final, "Cancelar turno" mientras se puede cancelar, también si está
+/// bloqueada (spec 009, RF-8, D-5).
 class ActiveAppointmentView extends ConsumerWidget {
   const ActiveAppointmentView({
     super.key,
@@ -140,6 +144,12 @@ class ActiveAppointmentView extends ConsumerWidget {
           EditAvailability.loading ||
           null => const SizedBox.shrink(),
         },
+        // "Cancelar turno", mientras se puede cancelar; también bloqueada
+        // (spec 009, RF-8, D-5).
+        Padding(
+          padding: const EdgeInsets.only(top: 12),
+          child: CancelAppointmentButton(appointment: appointment),
+        ),
       ],
     );
   }

@@ -33,7 +33,7 @@ Salen 16 tareas, en tres bloques (decisión del autor, 2026-11-18: una sola spec
     - con la edición de ese turno abierta: la cierra y vacía la selección (RF-17).
   - Hecho cuando: `booking_cancel_provider.dart` con `cancelAvailabilityProvider` y `AppointmentCanceller` cumple los tests.
 
-- [ ] **T5. Botón y diálogo de cancelar en Reservas.** RF-8, RF-9, RF-10, RF-12, RF-14, RF-15, RF-16, RNF-4 (plan D-5, D-13)
+- [x] **T5. Botón y diálogo de cancelar en Reservas.** RF-8, RF-9, RF-10, RF-12, RF-14, RF-15, RF-16, RNF-4 (plan D-5, D-13)
   - Tests: `test/features/booking/active_appointment_cancel_test.dart` (nuevo, pantalla con `pumpApp`):
     - "Cancelar turno" junto a "Editar turno";
     - el diálogo muestra el día, la hora del salón y el servicio;

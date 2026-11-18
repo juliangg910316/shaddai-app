@@ -396,6 +396,10 @@ class FakeBookingRepository implements BookingRepository {
 
   Object? cancelError;
 
+  /// Si está, la cancelación espera a que termine antes de releer el turno:
+  /// así un test ve la cancelación en curso.
+  Future<void>? cancelGate;
+
   /// Turnos cancelados por la clienta, en orden.
   final cancelled = <String>[];
 
@@ -404,6 +408,8 @@ class FakeBookingRepository implements BookingRepository {
     required String id,
     required bool Function(AppointmentModel? current) expected,
   }) async {
+    final gate = cancelGate;
+    if (gate != null) await gate;
     final error = cancelError;
     if (error != null) throw error;
     final current = appointmentById(id);

@@ -1419,4 +1419,32 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get adminAgendaNextDay => 'Día siguiente';
+
+  @override
+  String get cancelAppointmentAction => 'Cancelar turno';
+
+  @override
+  String get cancelDialogTitle => '¿Cancelar tu turno?';
+
+  @override
+  String get cancelConfirm => 'Sí, cancelar';
+
+  @override
+  String get cancelKeep => 'No, mantener';
+
+  @override
+  String get cancelDone => 'Tu turno se canceló.';
+
+  @override
+  String get cancelNotCancellable =>
+      'Ya no puedes cancelarlo: falta poco para tu turno. Escríbenos por WhatsApp.';
+
+  @override
+  String get cancelNotActive => 'Este turno ya no está activo.';
+
+  @override
+  String get cancelChanged => 'Tu turno cambió. Revísalo antes de cancelarlo.';
+
+  @override
+  String get cancelFailed => 'No se pudo cancelar. Inténtalo de nuevo.';
 }

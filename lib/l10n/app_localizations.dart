@@ -2669,6 +2669,60 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Día siguiente'**
   String get adminAgendaNextDay;
+
+  /// Botón para cancelar el turno activo (spec 009, RF-8)
+  ///
+  /// In es, this message translates to:
+  /// **'Cancelar turno'**
+  String get cancelAppointmentAction;
+
+  /// Título del diálogo de cancelar (spec 009, RF-9)
+  ///
+  /// In es, this message translates to:
+  /// **'¿Cancelar tu turno?'**
+  String get cancelDialogTitle;
+
+  /// Confirma la cancelación (spec 009, RF-9)
+  ///
+  /// In es, this message translates to:
+  /// **'Sí, cancelar'**
+  String get cancelConfirm;
+
+  /// Cierra el diálogo sin cancelar (spec 009, RF-10)
+  ///
+  /// In es, this message translates to:
+  /// **'No, mantener'**
+  String get cancelKeep;
+
+  /// Aviso tras cancelar (spec 009, RF-12)
+  ///
+  /// In es, this message translates to:
+  /// **'Tu turno se canceló.'**
+  String get cancelDone;
+
+  /// El turno ya está dentro del margen (spec 009, RF-14)
+  ///
+  /// In es, this message translates to:
+  /// **'Ya no puedes cancelarlo: falta poco para tu turno. Escríbenos por WhatsApp.'**
+  String get cancelNotCancellable;
+
+  /// El turno ya se canceló o terminó (spec 009, RF-14)
+  ///
+  /// In es, this message translates to:
+  /// **'Este turno ya no está activo.'**
+  String get cancelNotActive;
+
+  /// Alguien cambió el turno (spec 009, RF-14)
+  ///
+  /// In es, this message translates to:
+  /// **'Tu turno cambió. Revísalo antes de cancelarlo.'**
+  String get cancelChanged;
+
+  /// Error al cancelar, sin detalles (spec 009, RF-15)
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo cancelar. Inténtalo de nuevo.'**
+  String get cancelFailed;
 }
 
 class _AppLocalizationsDelegate

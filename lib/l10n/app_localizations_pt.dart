@@ -1423,4 +1423,32 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get adminAgendaNextDay => 'Próximo dia';
+
+  @override
+  String get cancelAppointmentAction => 'Cancelar horário';
+
+  @override
+  String get cancelDialogTitle => 'Cancelar seu horário?';
+
+  @override
+  String get cancelConfirm => 'Sim, cancelar';
+
+  @override
+  String get cancelKeep => 'Não, manter';
+
+  @override
+  String get cancelDone => 'Seu horário foi cancelado.';
+
+  @override
+  String get cancelNotCancellable =>
+      'Não é mais possível cancelar: falta pouco para o seu horário. Fale conosco pelo WhatsApp.';
+
+  @override
+  String get cancelNotActive => 'Este horário não está mais ativo.';
+
+  @override
+  String get cancelChanged => 'Seu horário mudou. Confira antes de cancelar.';
+
+  @override
+  String get cancelFailed => 'Não foi possível cancelar. Tente novamente.';
 }
