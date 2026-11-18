@@ -151,6 +151,103 @@ void main() {
     });
   });
 
+  group('quién canceló y cuenta eliminada (spec 009, D-1, D-2)', () {
+    test("cancelledBy: 'client' se lee como cancelado por la clienta", () {
+      final read = AppointmentModel.fromMap({
+        'status': 'cancelled',
+        'cancelledBy': 'client',
+      }, 'ap1');
+      expect(read.cancelledByClient, isTrue);
+    });
+
+    test('sin cancelledBy o con otro valor, lo canceló el salón (RF-20)', () {
+      for (final data in <Map<String, dynamic>>[
+        {'status': 'cancelled'},
+        {'status': 'cancelled', 'cancelledBy': null},
+        {'status': 'cancelled', 'cancelledBy': 'admin'},
+        {'status': 'cancelled', 'cancelledBy': true},
+      ]) {
+        expect(
+          AppointmentModel.fromMap(data, 'ap1').cancelledByClient,
+          isFalse,
+          reason: '$data',
+        );
+      }
+    });
+
+    test('accountDeleted se lee; si falta o no es true, false (RF-35)', () {
+      expect(
+        AppointmentModel.fromMap({
+          'accountDeleted': true,
+        }, 'ap1').accountDeleted,
+        isTrue,
+      );
+      for (final data in <Map<String, dynamic>>[
+        {},
+        {'accountDeleted': false},
+        {'accountDeleted': 'sí'},
+      ]) {
+        expect(
+          AppointmentModel.fromMap(data, 'ap1').accountDeleted,
+          isFalse,
+          reason: '$data',
+        );
+      }
+    });
+
+    test('un turno de una cuenta eliminada conserva nombre y WhatsApp', () {
+      final read = AppointmentModel.fromMap({
+        'clientId': 'u1',
+        'clientName': 'Ana',
+        'clientPhone': '41 99999-0000',
+        'clientPhotoUrl': null,
+        'accountDeleted': true,
+        'status': 'cancelled',
+        'cancelledBy': 'client',
+      }, 'ap1');
+      expect(read.clientName, 'Ana');
+      expect(read.clientPhone, '41 99999-0000');
+      expect(read.clientPhotoUrl, isNull);
+      expect(read.hasAccount, isTrue);
+      expect(read.accountDeleted, isTrue);
+      expect(read.cancelledByClient, isTrue);
+    });
+
+    test('toMap no escribe cancelledBy ni accountDeleted', () {
+      final map = AppointmentModel(
+        id: 'ap1',
+        clientId: 'u1',
+        clientName: 'Ana',
+        clientPhone: '41 99999-0000',
+        startTime: start,
+        endTime: end,
+        status: 'cancelled',
+        createdAt: created,
+        cancelledByClient: true,
+        accountDeleted: true,
+      ).toMap();
+      expect(map.containsKey('cancelledBy'), isFalse);
+      expect(map.containsKey('accountDeleted'), isFalse);
+    });
+
+    test('un turno nuevo no está cancelado por la clienta ni eliminado', () {
+      expect(appointment().cancelledByClient, isFalse);
+      expect(appointment().accountDeleted, isFalse);
+    });
+
+    test('un turno antiguo sin lo reservado sigue leyéndose (RF-44)', () {
+      final read = AppointmentModel.fromMap({
+        'clientId': 'u1',
+        'startTime': start,
+        'endTime': end,
+        'status': 'confirmed',
+      }, 'ap1');
+      expect(read.booked, isNull);
+      expect(read.cancelledByClient, isFalse);
+      expect(read.accountDeleted, isFalse);
+    });
+  });
+
   test('el modelo no importa Firebase (plan, D-6)', () {
     final source = File('lib/data/models/appointment_model.dart')
         .readAsStringSync();
