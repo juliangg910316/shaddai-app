@@ -86,7 +86,7 @@ Salen 16 tareas, en tres bloques (decisión del autor, 2026-11-18: una sola spec
 
 ## Bloque C — Borrar la cuenta
 
-- [ ] **T11. Proyecto `functions/` y lógica del borrado.** RF-34, RF-35, RF-39, RF-40, RF-42 (plan D-8, D-10)
+- [x] **T11. Proyecto `functions/` y lógica del borrado.** RF-34, RF-35, RF-39, RF-40, RF-42 (plan D-8, D-10)
   - Tests: `functions/test/delete_account.test.ts` (`node --test`, almacén en memoria):
     - sin uid → `unauthenticated`; admin → `permission-denied`; bloqueada → `failed-precondition` (`blocked`), sin tocar nada;
     - cancela solo el activo (también dentro del margen), con `cancelledBy: 'client'`, y borra su turno ocupado;
