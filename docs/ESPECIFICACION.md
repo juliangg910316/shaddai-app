@@ -85,7 +85,7 @@ Mapa aprobado el 2026-10-20, en orden. El 2026-10-24 el autor dividió las reser
 | 006-editar-turno | La clienta edita su turno activo (día, hora, servicio) fuera del margen de edición; vuelve a esperar confirmación | spec en borrador (2026-10-24; puesta al día con la 006 el 2026-11-16) |
 | 007-reserva-admin | La admin reserva para una clienta con cuenta o una persona sin cuenta (nombre y WhatsApp) | spec en borrador (2026-10-24; puesta al día con la 006 el 2026-11-16) |
 | 008-agenda-admin | Agenda de la admin: cerrar franjas de horas o días enteros (descanso, enfermedad), editar cualquier turno (día, hora, servicio y clienta) y cambiar el margen de edición | spec, plan y tareas aprobados (2026-11-17) |
-| 009-perfil | Perfil y mis turnos (incluido cancelar el turno) | spec aprobada |
+| 009-perfil | Perfil y mis turnos (incluido cancelar el turno) | plan aprobado |
 | 010-admin | Panel de administración | sin empezar |
 | 011-notificaciones-push | Aviso push a la admin con cada cita nueva | sin empezar |
 | 012-reglas-seguridad | Reglas de seguridad de Firestore (lo que no cubren las specs anteriores, como solapes y un turno activo en el servidor) | sin empezar |
