@@ -278,6 +278,13 @@ Son más de 10, pero la spec no se divide (decisión del autor, 2026-11-17).
     - los casos de las specs 005 a 007 que tocan estas reglas;
     - los pasos en la app.
   - Hecho cuando: `firestore.rules` tiene los cambios del plan § 2 y el autor los comprueba en el simulador.
+  - Hecha la parte del código (2026-11-17); **falta la comprobación del autor en el simulador**, así que sigue sin marcar:
+    - `firestore.rules`: colección `closures`; la edición de la admin en `appointments`; la admin crea y cambia el turno ocupado de cualquier turno con sus mismas horas; `settings/calendar` separa `create`/`update`/`delete` y valida el margen con `validEditMargin()` (en `update`, solo si cambia, D-7);
+    - cambio deliberado respecto a la 007: la admin puede crear el turno ocupado de un turno que no marcó (caso 15 de su `rules-check.md`, ahora permitido), por el `set` de la edición (D-8);
+    - `firestore_rules_test`: 9 tests nuevos o cambiados (31 en total). El de la 007 "la clienta no toca la marca" mira ahora solo la parte de la clienta;
+    - `rules-check.md`: 39 casos del simulador, el margen `double` guardado a mano, los casos de las specs 006 y 007 y los pasos en la app;
+    - no se pudieron compilar las reglas en local: el emulador pide Java 21 y la máquina tiene 17;
+    - Suite completa, 1972 en verde.
 
 - [ ] **T17. Accesibilidad y cierre.** RNF-2, RNF-3
   - Tests: `test/features/admin/admin_agenda_accessibility_test.dart` (nuevo). Cubre la lista de cierres, el formulario y sus choques, la agenda con cierres, la edición de la admin con su diálogo y el margen:
