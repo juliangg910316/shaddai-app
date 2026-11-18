@@ -104,7 +104,7 @@ Salen 16 tareas, en tres bloques (decisión del autor, 2026-11-18: una sola spec
   - Tests: `test/data/account_repository_test.dart` (nuevo, con un `FirebaseFunctions` falso): éxito; `failed-precondition` con `blocked` → `blocked`; `permission-denied` → `notAllowed`; otro error o sin conexión → `failed`. `FakeAccountRepository` en `fake_auth.dart`.
   - Hecho cuando: `cloud_functions` está en `pubspec.yaml` (aprobada), `AccountRepository` y su fake cumplen los tests.
 
-- [ ] **T14. "Eliminar mi cuenta" en el perfil.** RF-31, RF-32, RF-33, RF-36, RF-38, RF-39, RF-40, RNF-4, RNF-5
+- [x] **T14. "Eliminar mi cuenta" en el perfil.** RF-31, RF-32, RF-33, RF-36, RF-38, RF-39, RF-40, RNF-4, RNF-5
   - Tests:
     - `test/features/profile/account_deletion_test.dart` (nuevo, lógica): `accountDeletionAccess` y `deletionWordMatches` (mayúsculas, espacios, palabra de otro idioma).
     - `test/features/profile/delete_account_test.dart` (nuevo, pantalla): la clienta ve "Eliminar mi cuenta" y la admin no; bloqueada ve el aviso con WhatsApp; cancelar en el paso 1 o 2 no llama a nada; la palabra en ES (`ELIMINAR`) y PT (`EXCLUIR`) activa el botón; en curso, sin doble envío; éxito → sesión cerrada, aviso e `/home` (móvil) o `/` (Web, con `pumpWebApp`); fallo → texto y "Reintentar"; `blocked` → su texto.

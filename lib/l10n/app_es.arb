@@ -823,5 +823,21 @@
   "whatsAppSaved": "Tu WhatsApp se actualizó.",
   "@whatsAppSaved": {"description": "Aviso tras cambiar el WhatsApp (spec 009, RF-28)"},
   "whatsAppSaveFailed": "No se pudo guardar. Inténtalo de nuevo.",
-  "@whatsAppSaveFailed": {"description": "Error al cambiar el WhatsApp, sin detalles técnicos (spec 009, RF-30)"}
+  "@whatsAppSaveFailed": {"description": "Error al cambiar el WhatsApp, sin detalles técnicos (spec 009, RF-30)"},
+  "deleteAccountAction": "Eliminar mi cuenta",
+  "@deleteAccountAction": {"description": "Botón y título para borrar la cuenta (spec 009, RF-31)"},
+  "deleteAccountExplain": "Se cancelará tu turno activo y se borrarán tu cuenta, tu nombre, tu correo, tu foto y tu WhatsApp. El salón conservará tus turnos, con tu nombre y tu WhatsApp, para su agenda.",
+  "@deleteAccountExplain": {"description": "Qué se borra y qué se conserva (spec 009, RF-32)"},
+  "deleteAccountContinue": "Continuar",
+  "@deleteAccountContinue": {"description": "Pasa a escribir la palabra de confirmación (spec 009, RF-32)"},
+  "deleteAccountWord": "ELIMINAR",
+  "@deleteAccountWord": {"description": "Palabra que se escribe para confirmar el borrado (spec 009, D-11)"},
+  "deleteAccountTypeWord": "Escribe {word} para confirmar",
+  "@deleteAccountTypeWord": {"description": "Pide escribir la palabra de confirmación (spec 009, RF-32)", "placeholders": {"word": {"type": "String"}}},
+  "deleteAccountDone": "Tu cuenta se eliminó.",
+  "@deleteAccountDone": {"description": "Aviso tras borrar la cuenta (spec 009, RF-36)"},
+  "deleteAccountFailed": "No se pudo eliminar la cuenta. Inténtalo de nuevo.",
+  "@deleteAccountFailed": {"description": "Error al borrar la cuenta, sin detalles (spec 009, RF-39)"},
+  "deleteAccountBlocked": "Para eliminar tu cuenta, habla con el salón.",
+  "@deleteAccountBlocked": {"description": "Una clienta bloqueada no puede borrar su cuenta (spec 009, RF-40)"}
 }

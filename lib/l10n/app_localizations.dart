@@ -2813,6 +2813,54 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'No se pudo guardar. Inténtalo de nuevo.'**
   String get whatsAppSaveFailed;
+
+  /// Botón y título para borrar la cuenta (spec 009, RF-31)
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar mi cuenta'**
+  String get deleteAccountAction;
+
+  /// Qué se borra y qué se conserva (spec 009, RF-32)
+  ///
+  /// In es, this message translates to:
+  /// **'Se cancelará tu turno activo y se borrarán tu cuenta, tu nombre, tu correo, tu foto y tu WhatsApp. El salón conservará tus turnos, con tu nombre y tu WhatsApp, para su agenda.'**
+  String get deleteAccountExplain;
+
+  /// Pasa a escribir la palabra de confirmación (spec 009, RF-32)
+  ///
+  /// In es, this message translates to:
+  /// **'Continuar'**
+  String get deleteAccountContinue;
+
+  /// Palabra que se escribe para confirmar el borrado (spec 009, D-11)
+  ///
+  /// In es, this message translates to:
+  /// **'ELIMINAR'**
+  String get deleteAccountWord;
+
+  /// Pide escribir la palabra de confirmación (spec 009, RF-32)
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe {word} para confirmar'**
+  String deleteAccountTypeWord(String word);
+
+  /// Aviso tras borrar la cuenta (spec 009, RF-36)
+  ///
+  /// In es, this message translates to:
+  /// **'Tu cuenta se eliminó.'**
+  String get deleteAccountDone;
+
+  /// Error al borrar la cuenta, sin detalles (spec 009, RF-39)
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo eliminar la cuenta. Inténtalo de nuevo.'**
+  String get deleteAccountFailed;
+
+  /// Una clienta bloqueada no puede borrar su cuenta (spec 009, RF-40)
+  ///
+  /// In es, this message translates to:
+  /// **'Para eliminar tu cuenta, habla con el salón.'**
+  String get deleteAccountBlocked;
 }
 
 class _AppLocalizationsDelegate

@@ -1493,4 +1493,33 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get whatsAppSaveFailed => 'No se pudo guardar. Inténtalo de nuevo.';
+
+  @override
+  String get deleteAccountAction => 'Eliminar mi cuenta';
+
+  @override
+  String get deleteAccountExplain =>
+      'Se cancelará tu turno activo y se borrarán tu cuenta, tu nombre, tu correo, tu foto y tu WhatsApp. El salón conservará tus turnos, con tu nombre y tu WhatsApp, para su agenda.';
+
+  @override
+  String get deleteAccountContinue => 'Continuar';
+
+  @override
+  String get deleteAccountWord => 'ELIMINAR';
+
+  @override
+  String deleteAccountTypeWord(String word) {
+    return 'Escribe $word para confirmar';
+  }
+
+  @override
+  String get deleteAccountDone => 'Tu cuenta se eliminó.';
+
+  @override
+  String get deleteAccountFailed =>
+      'No se pudo eliminar la cuenta. Inténtalo de nuevo.';
+
+  @override
+  String get deleteAccountBlocked =>
+      'Para eliminar tu cuenta, habla con el salón.';
 }

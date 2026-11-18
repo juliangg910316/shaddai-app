@@ -483,5 +483,13 @@
   "changeWhatsAppTitle": "Alterar WhatsApp",
   "whatsAppSaveAction": "Salvar",
   "whatsAppSaved": "Seu WhatsApp foi atualizado.",
-  "whatsAppSaveFailed": "Não foi possível salvar. Tente novamente."
+  "whatsAppSaveFailed": "Não foi possível salvar. Tente novamente.",
+  "deleteAccountAction": "Excluir minha conta",
+  "deleteAccountExplain": "Seu horário ativo será cancelado e sua conta, nome, e-mail, foto e WhatsApp serão apagados. O salão manterá seus horários, com seu nome e WhatsApp, na agenda.",
+  "deleteAccountContinue": "Continuar",
+  "deleteAccountWord": "EXCLUIR",
+  "deleteAccountTypeWord": "Digite {word} para confirmar",
+  "deleteAccountDone": "Sua conta foi excluída.",
+  "deleteAccountFailed": "Não foi possível excluir a conta. Tente novamente.",
+  "deleteAccountBlocked": "Para excluir sua conta, fale com o salão."
 }

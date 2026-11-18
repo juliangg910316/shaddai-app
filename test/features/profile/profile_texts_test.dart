@@ -39,6 +39,15 @@ const _keys = [
   'whatsAppSaveAction',
   'whatsAppSaved',
   'whatsAppSaveFailed',
+  // T14: eliminar la cuenta.
+  'deleteAccountAction',
+  'deleteAccountExplain',
+  'deleteAccountContinue',
+  'deleteAccountWord',
+  'deleteAccountTypeWord',
+  'deleteAccountDone',
+  'deleteAccountFailed',
+  'deleteAccountBlocked',
 ];
 
 /// Las claves que dejan de usarse con el perfil nuevo (plan § 8).

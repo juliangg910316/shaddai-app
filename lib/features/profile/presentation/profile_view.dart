@@ -14,7 +14,9 @@ import '../../booking/providers/booking_provider.dart';
 import '../../navigation/providers/tab_scroll_provider.dart';
 import '../../services/presentation/price_list_notices.dart';
 import '../providers/profile_provider.dart';
+import '../logic/account_deletion.dart';
 import 'change_whatsapp_dialog.dart';
+import 'delete_account_dialog.dart';
 import 'profile_cards.dart';
 
 /// El perfil (spec 009): cabecera con "Cerrar sesión", identidad, acceso al
@@ -148,6 +150,33 @@ class ProfileView extends ConsumerWidget {
               SectionHeading(l10n.profileAccountTitle),
               const SizedBox(height: 16),
               _WhatsAppRow(phone: user.phoneNumber ?? ''),
+              // Eliminar la cuenta: la clienta; bloqueada, el aviso; la admin,
+              // nada (spec 009, RF-31, RF-40).
+              switch (accountDeletionAccess(
+                role: user.role,
+                isBlocked: user.isBlocked,
+              )) {
+                AccountDeletionAccess.hidden => const SizedBox.shrink(),
+                AccountDeletionAccess.blocked => Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: AppNotice(
+                    message: l10n.deleteAccountBlocked,
+                    actions: const [WhatsappNoticeButton()],
+                  ),
+                ),
+                AccountDeletionAccess.allowed => Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: OutlinePillButton(
+                      key: const ValueKey('profile-delete-account'),
+                      label: l10n.deleteAccountAction.toUpperCase(),
+                      color: brand.danger,
+                      onPressed: () => showDeleteAccountDialog(context),
+                    ),
+                  ),
+                ),
+              },
 
               // En Web, tema e idioma están en la barra superior
               // (spec 002, RF-31).
