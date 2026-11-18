@@ -264,6 +264,36 @@ class BookingRepository {
         .timeout(saveTimeout);
   }
 
+  /// La clienta cancela su turno [id] en una transacción (spec 009, RF-11,
+  /// RF-14, plan D-3): vuelve a leer el turno y, solo si [expected] lo da por
+  /// bueno, lo deja cancelado por ella (`cancelledBy: 'client'`) y borra a la
+  /// vez su turno ocupado, para que la hora quede libre (RF-13). Las reglas
+  /// exigen las dos cosas juntas.
+  ///
+  /// [expected] recibe el turno releído (`null` si ya no existe), así quien
+  /// llama sabe también por qué no se canceló. Devuelve `false` si no lo da
+  /// por bueno. Si no termina en [saveTimeout], lanza `TimeoutException`
+  /// (RF-15).
+  Future<bool> cancelByClient({
+    required String id,
+    required bool Function(AppointmentModel? current) expected,
+  }) {
+    final appointmentRef = _appointments.doc(id);
+    return _firestore
+        .runTransaction<bool>((transaction) async {
+          final doc = await transaction.get(appointmentRef);
+          if (!expected(doc.exists ? _appointment(doc) : null)) return false;
+          transaction
+            ..update(appointmentRef, {
+              'status': 'cancelled',
+              'cancelledBy': 'client',
+            })
+            ..delete(_busySlots.doc(id));
+          return true;
+        })
+        .timeout(saveTimeout);
+  }
+
   Query<Map<String, dynamic>> _endingFrom(DateTime now) => _appointments.where(
     'endTime',
     isGreaterThanOrEqualTo: Timestamp.fromDate(now),

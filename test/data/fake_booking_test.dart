@@ -212,6 +212,99 @@ void main() {
     });
   });
 
+  // Cancelación de la clienta (spec 009, T3): como la transacción de
+  // Firestore, relee el turno, lo cancela si `expected` lo da por bueno y
+  // borra a la vez su turno ocupado.
+  group('cancelByClient', () {
+    late FakeBookingRepository mineRepo;
+
+    setUp(() {
+      mineRepo = FakeBookingRepository(
+        mine: [appt()],
+        active: [appt()],
+        busy: [
+          BusySlot(id: 't1', start: start, end: end),
+          BusySlot(
+            id: 'otro',
+            start: start.add(const Duration(hours: 2)),
+            end: end.add(const Duration(hours: 2)),
+          ),
+        ],
+      );
+    });
+
+    test('lo cancela por la clienta, conserva lo demás y libera la hora '
+        '(RF-11, RF-13)', () async {
+      final mineValues = <List<AppointmentModel>>[];
+      mineRepo.getClientAppointments('ana').listen(mineValues.add);
+      final busyValues = <List<BusySlot>>[];
+      mineRepo.watchBusySlots(start, end).listen(busyValues.add);
+      final seen = <AppointmentModel?>[];
+
+      final ok = await mineRepo.cancelByClient(
+        id: 't1',
+        expected: (current) {
+          seen.add(current);
+          return true;
+        },
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      expect(ok, isTrue);
+      expect(seen.single?.status, 'waiting_confirmation');
+      for (final saved in [mineRepo.mine.single, mineRepo.active.single]) {
+        expect(saved.status, 'cancelled');
+        expect(saved.cancelledByClient, isTrue);
+        expect(saved.startTime, start);
+        expect(saved.endTime, end);
+        expect(saved.booked, booked);
+        expect(saved.clientName, 'Ana');
+        expect(saved.clientPhotoUrl, 'ana.png');
+        expect(saved.createdAt, DateTime.utc(2026, 11, 1));
+      }
+      expect(mineValues.last.single.status, 'cancelled');
+      expect([for (final s in mineRepo.busy) s.id], ['otro']);
+      expect([for (final s in busyValues.last) s.id], ['otro']);
+      expect(mineRepo.appointmentById('t1')?.status, 'cancelled');
+      expect(mineRepo.cancelled, ['t1']);
+    });
+
+    test('si expected no lo da por bueno, no cambia nada (RF-14)', () async {
+      final ok = await mineRepo.cancelByClient(
+        id: 't1',
+        expected: (_) => false,
+      );
+      expect(ok, isFalse);
+      expect(mineRepo.mine.single.status, 'waiting_confirmation');
+      expect(mineRepo.busy, hasLength(2));
+      expect(mineRepo.cancelled, isEmpty);
+    });
+
+    test('un turno que no existe llega a expected como null', () async {
+      AppointmentModel? seen = appt();
+      final ok = await mineRepo.cancelByClient(
+        id: 'nada',
+        expected: (current) {
+          seen = current;
+          return current != null;
+        },
+      );
+      expect(ok, isFalse);
+      expect(seen, isNull);
+    });
+
+    test('lanza cancelError sin cambiar nada (RF-15)', () async {
+      mineRepo.cancelError = Exception('sin red');
+      await expectLater(
+        mineRepo.cancelByClient(id: 't1', expected: (_) => true),
+        throwsException,
+      );
+      expect(mineRepo.mine.single.status, 'waiting_confirmation');
+      expect(mineRepo.busy, hasLength(2));
+      expect(mineRepo.cancelled, isEmpty);
+    });
+  });
+
   test('AppointmentPerson es un registro con la persona', () {
     const AppointmentPerson person = (
       clientId: 'bea',

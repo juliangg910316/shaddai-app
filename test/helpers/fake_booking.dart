@@ -36,6 +36,12 @@ import 'package:shaddai/data/repositories/booking_repository.dart';
 /// transacción, aplica `expected` y, si vale, cambia el turno (confirmado)
 /// en [active], [mine] y a quien lo escucha, escribe su turno ocupado de
 /// [busy] y lo registra en [adminEdits].
+///
+/// La cancelación de la clienta (spec 009): [cancelByClient] lanza
+/// [cancelError]; si no, como la transacción, aplica `expected` al turno de
+/// ese id y, si vale, lo deja cancelado por la clienta en [mine], [active] y
+/// a quien lo escucha, quita su turno ocupado de [busy] y lo registra en
+/// [cancelled].
 class FakeBookingRepository implements BookingRepository {
   FakeBookingRepository({
     this.busy = const [],
@@ -383,6 +389,56 @@ class FakeBookingRepository implements BookingRepository {
       emitBusy([
         for (final slot in busy)
           slot.id == id ? BusySlot(id: id, start: start, end: end) : slot,
+      ]);
+    }
+    return true;
+  }
+
+  Object? cancelError;
+
+  /// Turnos cancelados por la clienta, en orden.
+  final cancelled = <String>[];
+
+  @override
+  Future<bool> cancelByClient({
+    required String id,
+    required bool Function(AppointmentModel? current) expected,
+  }) async {
+    final error = cancelError;
+    if (error != null) throw error;
+    final current = appointmentById(id);
+    if (!expected(current)) return false;
+    cancelled.add(id);
+    if (current != null) {
+      // Como el `update` de Firestore: lo que no se envía no cambia.
+      final updated = AppointmentModel(
+        id: id,
+        clientId: current.clientId,
+        clientName: current.clientName,
+        clientPhone: current.clientPhone,
+        clientPhotoUrl: current.clientPhotoUrl,
+        startTime: current.startTime,
+        endTime: current.endTime,
+        status: 'cancelled',
+        createdAt: current.createdAt,
+        booked: current.booked,
+        createdByAdmin: current.createdByAdmin,
+        cancelledByClient: true,
+        accountDeleted: current.accountDeleted,
+      );
+      AppointmentModel replace(AppointmentModel a) => a.id == id ? updated : a;
+      if (mine.any((a) => a.id == id)) {
+        emitMine([for (final a in mine) replace(a)]);
+      }
+      if (active.any((a) => a.id == id)) {
+        emitActive([for (final a in active) replace(a)]);
+      }
+      emitAppointment(id, updated);
+    }
+    if (busy.any((slot) => slot.id == id)) {
+      emitBusy([
+        for (final slot in busy)
+          if (slot.id != id) slot,
       ]);
     }
     return true;

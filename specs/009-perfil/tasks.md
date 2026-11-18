@@ -20,7 +20,7 @@ Salen 16 tareas, en tres bloques (decisión del autor, 2026-11-18: una sola spec
     - `test/features/profile/profile_appointments_test.dart` (nuevo): `profileAppointments` (activo y resto, orden descendente, sin activo, lista vacía) y `historyLabel` (cancelado por ti, por el salón, sin `cancelledBy`, realizado, no confirmado, `upcoming`).
   - Hecho cuando: `lib/features/booking/logic/cancel_appointment.dart` y `lib/features/profile/logic/profile_appointments.dart` existen, sin imports de Flutter ni Firebase, y los tests pasan.
 
-- [ ] **T3. Cancelar en la capa de datos.** RF-11, RF-13, RF-14, RF-15
+- [x] **T3. Cancelar en la capa de datos.** RF-11, RF-13, RF-14, RF-15
   - Tests: ampliar `FakeBookingRepository` con `cancelByClient` (aplica `expected` como la transacción; cambia el turno a `cancelled` con `cancelledBy` en `mine` y `active`; quita su turno ocupado de `busy`; lo registra en `cancelled`; o lanza `cancelError`) y probar el fake en `test/data/fake_booking_test.dart` (ok, `expected` falso sin cambios, error).
   - Hecho cuando: `BookingRepository.cancelByClient` hace la transacción del plan D-3 con `saveTimeout`, el fake la imita y los tests pasan.
 
