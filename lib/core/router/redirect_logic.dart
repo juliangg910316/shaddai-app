@@ -41,9 +41,11 @@ const _allowedNext = {
   '/admin/closures/new',
 };
 
-/// La edición de un turno por la admin (spec 008): `/admin/appointments/<id>/edit`.
+/// La edición de un turno por la admin (spec 008):
+/// `/admin/appointments/<id>/edit` o, abierta desde un cierre en Web,
+/// `/admin/closures/new/appointments/<id>/edit`.
 final _adminEditPath = RegExp(
-  r'^/admin/appointments/[A-Za-z0-9_-]{1,64}/edit$',
+  r'^/admin(/closures/new)?/appointments/[A-Za-z0-9_-]{1,64}/edit$',
 );
 
 bool _isAllowed(String? next, Set<String> allowed) =>

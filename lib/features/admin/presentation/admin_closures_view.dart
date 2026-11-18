@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 import '../../../core/theme/app_text.dart';
@@ -12,6 +11,7 @@ import '../../booking/logic/closures.dart';
 import '../../booking/providers/booking_provider.dart';
 import '../../services/presentation/price_list_notices.dart';
 import '../providers/admin_closures_provider.dart';
+import 'admin_navigation.dart';
 
 /// Los cierres próximos de la agenda, con "Quitar" y "Nuevo cierre" (spec
 /// 008, RF-1, RF-2, RF-7, RF-8, RF-10, RF-11). Igual en Web y en
@@ -60,7 +60,8 @@ class AdminClosuresView extends ConsumerWidget {
           Align(
             alignment: AlignmentDirectional.centerStart,
             child: TextButton.icon(
-              onPressed: () => context.push('/admin/closures/new'),
+              onPressed: () =>
+                  openAdminPage(context, ref, '/admin/closures/new'),
               icon: const Icon(Icons.add),
               label: Text(
                 l10n.adminClosuresNew.toUpperCase(),

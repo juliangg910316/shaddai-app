@@ -316,13 +316,23 @@ void main() {
       router = GoRouter(
         initialLocation: '/admin/closures',
         routes: [
+          // Como en la app: en Web, anidadas (spec 008, Navegación).
           GoRoute(
             path: '/admin/closures',
             builder: (context, state) => const AdminClosuresView(),
-          ),
-          GoRoute(
-            path: '/admin/closures/new',
-            builder: (context, state) => const AdminClosureFormView(),
+            routes: [
+              GoRoute(
+                path: 'new',
+                builder: (context, state) => const AdminClosureFormView(),
+                routes: [
+                  GoRoute(
+                    path: 'appointments/:id/edit',
+                    builder: (context, state) =>
+                        Text('editar ${state.pathParameters['id']}'),
+                  ),
+                ],
+              ),
+            ],
           ),
           GoRoute(
             path: '/admin/appointments/:id/edit',
@@ -590,15 +600,17 @@ void main() {
         );
         await settle(tester);
 
-        // En Android/iOS con `push`: la página de arriba es la edición.
-        expect(
-          router.routerDelegate.currentConfiguration.last.matchedLocation,
-          '/admin/appointments/a1/edit',
-        );
         if (web) {
-          // En Web con `go`: la dirección cambia (plan D-5).
+          // En Web con `go`, hija del cierre: la dirección cambia y el
+          // formulario sigue debajo (plan D-5, Navegación).
           expect(
             router.routeInformationProvider.value.uri.path,
+            '/admin/closures/new/appointments/a1/edit',
+          );
+        } else {
+          // En Android/iOS con `push`: la página de arriba es la edición.
+          expect(
+            router.routerDelegate.currentConfiguration.last.matchedLocation,
             '/admin/appointments/a1/edit',
           );
         }

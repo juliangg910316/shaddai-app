@@ -184,48 +184,41 @@ class _AdminSettingsViewState extends ConsumerState<AdminSettingsView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Con el texto grande, "Cerrado" y su interruptor bajan a otra
-                // línea. El lector de pantalla lee el día, "Cerrado" y el
-                // interruptor juntos (spec 008, RNF-2).
+                // El día a la izquierda y "Cerrado" con su interruptor al
+                // extremo derecho; si no caben (texto grande), "Cerrado" baja
+                // a otra línea, también a la derecha. El lector de pantalla
+                // lee el día, "Cerrado" y el interruptor juntos (spec 008,
+                // RNF-2).
                 MergeSemantics(
-                  child: Wrap(
-                    alignment: WrapAlignment.spaceBetween,
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      Text(
-                        dayNames[dayKey]!,
-                        style: AppText.serif(size: 19, color: brand.inkStrong),
+                  child: _DayHeader(
+                    day: Text(
+                      dayNames[dayKey]!,
+                      style: AppText.serif(size: 19, color: brand.inkStrong),
+                    ),
+                    closed: Text(
+                      l10n.closedLabel,
+                      style: AppText.eyebrow(
+                        size: 10,
+                        spacing: 1.6,
+                        color: schedule.isClosed
+                            ? brand.danger
+                            : brand.inkMuted,
                       ),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            l10n.closedLabel,
-                            style: AppText.eyebrow(
-                              size: 10,
-                              spacing: 1.6,
-                              color: schedule.isClosed
-                                  ? brand.danger
-                                  : brand.inkMuted,
-                            ),
-                          ),
-                          Switch(
-                            value: schedule.isClosed,
-                            activeThumbColor: brand.danger,
-                            inactiveThumbColor: brand.inkMuted,
-                            onChanged: (val) {
-                              setState(() {
-                                _tempHours[dayKey] = DaySchedule(
-                                  open: schedule.open,
-                                  close: schedule.close,
-                                  isClosed: val,
-                                );
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-                    ],
+                    ),
+                    toggle: Switch(
+                      value: schedule.isClosed,
+                      activeThumbColor: brand.danger,
+                      inactiveThumbColor: brand.inkMuted,
+                      onChanged: (val) {
+                        setState(() {
+                          _tempHours[dayKey] = DaySchedule(
+                            open: schedule.open,
+                            close: schedule.close,
+                            isClosed: val,
+                          );
+                        });
+                      },
+                    ),
                   ),
                 ),
                 if (!schedule.isClosed) ...[
@@ -363,6 +356,67 @@ class _MarginSection extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// La cabecera de un día en los ajustes: [day] a la izquierda y [closed]
+/// con [toggle] al extremo derecho, en una línea si caben (con al menos
+/// 24 px entre ellos). Si no, [closed] y [toggle] bajan a la línea
+/// siguiente, también a la derecha (spec 008, RNF-2).
+class _DayHeader extends StatelessWidget {
+  const _DayHeader({
+    required this.day,
+    required this.closed,
+    required this.toggle,
+  });
+
+  final Text day;
+  final Text closed;
+  final Widget toggle;
+
+  /// Ancho de un `Switch` con su zona táctil de 48 px.
+  static const _toggleWidth = 60.0;
+  static const _minGap = 24.0;
+
+  double _width(BuildContext context, Text text) {
+    final painter = TextPainter(
+      text: TextSpan(text: text.data, style: text.style),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+      maxLines: 1,
+    )..layout();
+    final width = painter.width;
+    painter.dispose();
+    return width;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final end = Row(mainAxisSize: MainAxisSize.min, children: [closed, toggle]);
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final needed =
+            _width(context, day) +
+            _minGap +
+            _width(context, closed) +
+            _toggleWidth;
+        if (needed <= constraints.maxWidth) {
+          return Row(
+            children: [
+              Expanded(child: day),
+              end,
+            ],
+          );
+        }
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            day,
+            Align(alignment: AlignmentDirectional.centerEnd, child: end),
+          ],
+        );
+      },
     );
   }
 }

@@ -144,7 +144,7 @@ class AdminDashboardView extends ConsumerWidget {
   }
 }
 
-class _AdminHeader extends StatelessWidget {
+class _AdminHeader extends ConsumerWidget {
   final DateTime selectedDate;
   final int totalCount;
   final int waitingCount;
@@ -160,7 +160,7 @@ class _AdminHeader extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
     final brand = context.brand;
     final longDate = capitalizeFirst(
@@ -221,7 +221,8 @@ class _AdminHeader extends StatelessWidget {
                 // Cierres de la agenda (spec 008, RF-1).
                 IconButton(
                   tooltip: l10n.adminClosuresTitle,
-                  onPressed: () => context.push('/admin/closures'),
+                  onPressed: () =>
+                      openAdminPage(context, ref, '/admin/closures'),
                   icon: Icon(
                     Icons.event_busy_outlined,
                     size: 22,

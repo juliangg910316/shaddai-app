@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shaddai/core/widgets/app_widgets.dart';
 import 'package:shaddai/data/models/calendar_settings_model.dart';
 import 'package:shaddai/features/admin/presentation/admin_settings_view.dart';
 import 'package:shaddai/features/booking/providers/booking_provider.dart';
@@ -14,10 +16,11 @@ import '../../helpers/pump_app.dart';
 void main() {
   Future<void> open(
     WidgetTester tester,
-    Stream<CalendarSettingsModel> Function() settings,
-  ) async {
+    Stream<CalendarSettingsModel> Function() settings, {
+    Size size = const Size(800, 2400),
+  }) async {
     tester.view.devicePixelRatio = 1;
-    tester.view.physicalSize = const Size(800, 2400);
+    tester.view.physicalSize = size;
     addTearDown(tester.view.reset);
     await pumpApp(
       tester,
@@ -82,5 +85,64 @@ void main() {
     await open(tester, () => Stream.error(Exception('sin red')));
     expect(find.byType(CircularProgressIndicator), findsNothing);
     expect(find.textContaining('REINTENTAR'), findsOneWidget);
+  });
+
+  /// La tarjeta del lunes: "Cerrado" y su interruptor van al extremo
+  /// derecho, separados del nombre del día (spec 008, RNF-2).
+  void expectClosedAtRight(WidgetTester tester) {
+    final card = find.ancestor(
+      of: find.text('Lunes'),
+      matching: find.byType(FlatCard),
+    );
+    final toggle = find.descendant(of: card, matching: find.byType(Switch));
+    final label = find.descendant(of: card, matching: find.text('CERRADO'));
+    // A la derecha: el interruptor acaba donde acaba el contenido de la
+    // tarjeta (su margen derecho es de 12 px).
+    expect(
+      tester.getRect(toggle).right,
+      closeTo(tester.getRect(card).right - 12, 1),
+    );
+    // Separado del día: entre "Lunes" y "CERRADO" hay más de 24 px, o están
+    // en líneas distintas.
+    // Lo que ocupan las letras del día, no su caja.
+    final box = tester.getRect(find.text('Lunes'));
+    final letters = tester
+        .renderObject<RenderParagraph>(find.text('Lunes'))
+        .getMaxIntrinsicWidth(double.infinity);
+    final day = box.topLeft & Size(letters, box.height);
+    final closed = tester.getRect(label);
+    expect(
+      closed.left - day.right > 24 || closed.top >= day.bottom,
+      isTrue,
+      reason: 'Lunes $day, CERRADO $closed',
+    );
+  }
+
+  testWidgets('"Cerrado" y su interruptor van al extremo derecho', (
+    tester,
+  ) async {
+    await open(
+      tester,
+      () => Stream.value(CalendarSettingsModel.defaultSettings()),
+    );
+    expectClosedAtRight(tester);
+    // En una línea: el día, centrado con el interruptor.
+    expect(
+      tester.getCenter(find.text('Lunes')).dy,
+      closeTo(tester.getCenter(find.byType(Switch).first).dy, 1),
+    );
+  });
+
+  testWidgets('con el texto al 200 % en 320 px, bajan de línea, también a la '
+      'derecha', (tester) async {
+    tester.platformDispatcher.textScaleFactorTestValue = 2;
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+    await open(
+      tester,
+      () => Stream.value(CalendarSettingsModel.defaultSettings()),
+      size: const Size(320, 6000),
+    );
+    expect(tester.takeException(), isNull);
+    expectClosedAtRight(tester);
   });
 }

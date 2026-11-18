@@ -12,6 +12,7 @@ import '../../../l10n/app_localizations.dart';
 import '../../booking/logic/booking_window.dart';
 import '../../booking/logic/closures.dart';
 import '../../booking/logic/salon_time.dart';
+import '../../booking/providers/admin_edit_provider.dart';
 import '../../booking/providers/booking_provider.dart';
 import '../providers/admin_closures_provider.dart';
 import '../providers/admin_provider.dart';
@@ -153,6 +154,18 @@ class _AdminClosureFormViewState extends ConsumerState<AdminClosureFormView> {
     );
   }
 
+  /// Al terminar la edición de un turno que chocaba, vuelve a pedir los
+  /// choques: el turno pudo moverse fuera del cierre (spec 008,
+  /// Navegación). Si no se pueden leer, deja la lista como estaba.
+  Future<void> _recheckConflicts() async {
+    final draft = _draft;
+    final conflicts = await ref
+        .read(closureControllerProvider)
+        .conflicts(draft);
+    if (!mounted || conflicts == null || _conflicts == null) return;
+    setState(() => _conflicts = conflicts.isEmpty ? null : conflicts);
+  }
+
   Future<void> _pickDay(
     DateTime current,
     ValueChanged<DateTime> onPicked,
@@ -182,6 +195,11 @@ class _AdminClosureFormViewState extends ConsumerState<AdminClosureFormView> {
     final brand = context.brand;
     final locale = l10n.localeName;
     final date = DateFormat.yMMMMEEEEd(locale);
+    ref.listen(adminEditProvider, (previous, next) {
+      if (previous != null && next == null && _conflicts != null) {
+        _recheckConflicts();
+      }
+    });
     final nowSalon =
         ref.watch(salonNowProvider).value ?? toSalon(ref.read(clockProvider)());
     final errors = _submitted
@@ -364,7 +382,12 @@ class _AdminClosureFormViewState extends ConsumerState<AdminClosureFormView> {
                   padding: const EdgeInsets.only(bottom: 12),
                   child: _ConflictCard(
                     appointment: appointment,
-                    onEdit: () => openAdminEdit(context, ref, appointment.id),
+                    onEdit: () => openAdminEdit(
+                      context,
+                      ref,
+                      appointment.id,
+                      fromClosure: true,
+                    ),
                     onCancel: () => _cancel(appointment),
                   ),
                 ),

@@ -1,5 +1,5 @@
 # Spec 008 — Agenda de la admin
-Estado: aprobada
+Estado: implementada
 
 ## Contexto y objetivo
 Hoy la admin solo cambia el horario de cada día de la semana, y confirma o cancela turnos en la agenda de su panel. No puede:

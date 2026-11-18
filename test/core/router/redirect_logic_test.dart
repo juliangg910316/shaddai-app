@@ -281,6 +281,8 @@ void main() {
       '/admin/closures',
       '/admin/closures/new',
       '/admin/appointments/t1/edit',
+      // Abierta desde los turnos que chocan con un cierre (Navegación).
+      '/admin/closures/new/appointments/t1/edit',
     ]) {
       test('$next se acepta', () => expect(safeNext(next, isWeb: true), next));
     }
@@ -292,6 +294,8 @@ void main() {
       '/admin/appointments/a.b/edit',
       '/admin/appointments/t1/edit?x=1',
       '/admin/appointments/t1/edit/more',
+      '/admin/closures/appointments/t1/edit',
+      '/admin/closures/new/appointments/t1',
     ]) {
       test('$next se cambia por /', () {
         expect(safeNext(next, isWeb: true), '/');

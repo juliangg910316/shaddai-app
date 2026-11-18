@@ -129,11 +129,11 @@ Si algo falla, vuelve a publicar la copia del paso 1.2 y avisa.
 
 ## Resultado
 
-Reglas comprobadas por el autor en el simulador el 2026-11-17. El paso 4 (en la app) queda para el recorrido de `/sdd-validate`.
+Reglas comprobadas por el autor en el simulador el 2026-11-17. El paso 4 (en la app) se confirmó en el recorrido de `/sdd-validate` el mismo día.
 
 - [x] Copia de las reglas anteriores guardada.
 - [x] Reglas publicadas, sin errores de sintaxis.
 - [x] Casos 1 a 39 del simulador correctos.
 - [x] Margen `double` guardado a mano (§ 3.5) correcto.
 - [x] Casos de las specs 006 y 007 correctos (con el 15 de la 007 ahora permitido).
-- [ ] Todo funciona en la app (paso 4).
+- [x] Todo funciona en la app (paso 4): confirmado en el recorrido de `/sdd-validate` (2026-11-17).

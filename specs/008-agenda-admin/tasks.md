@@ -308,3 +308,13 @@ Son más de 10, pero la spec no se divide (decisión del autor, 2026-11-17).
     - 3 claves nuevas (ES y PT): `closureDeleteFor`, `adminAgendaPreviousDay`, `adminAgendaNextDay`;
     - `CLAUDE.md` describe los cierres, la edición de la admin, el margen, las rutas y las reglas; `MEMORY.md`, al día;
     - Suite completa, 2001 en verde. Quedan para el autor la T16 en el simulador y el recorrido manual (`/sdd-validate`).
+
+## Validación (2026-11-17)
+- Tests que faltaban: RF-20 (la edición usa la ventana de 365 días y guarda un día a más de 60) y RF-23/RF-24 en pantalla (cambiar a otra clienta con el buscador, a una persona sin cuenta, y la casilla ya marcada al corregir el nombre de un turno sin cuenta), en `admin_edit_view_test`.
+- Fallo del recorrido (paso 4): al editar un turno que choca con un cierre, se volvía al panel en lugar de al cierre (spec, Navegación). En Web, la edición iba a `/admin`; en Android/iOS volvía al cierre, pero la lista de choques seguía mostrando el turno ya movido. Arreglo:
+  - en Web, `/admin` → `closures` → `new` → `appointments/:id/edit` son rutas anidadas y se abren con `go` (`openAdminPage`); `closeAdminEdit` vuelve al cierre si la dirección está debajo de él; las direcciones no cambian;
+  - al terminar una edición, el formulario vuelve a pedir los choques (`ClosureController.conflicts`);
+  - tests: `closure_conflict_edit_test` (guardar, cancelar y "atrás" del navegador, en Android/iOS y Web) y la redirección acepta la dirección nueva.
+- Ajustes del horario (visto en Web): "CERRADO" quedaba pegado al nombre del día, porque el `Wrap` de la T17 se encogía al ancho de su contenido. Ahora `_DayHeader` pone el día a la izquierda y "Cerrado" con su interruptor al extremo derecho; si no caben (texto al 200 % en 320 px), bajan a otra línea, también a la derecha. Tests en `admin_settings_view_test`.
+- Suite completa: 2015 en verde.
+- Recorrido manual aprobado por el autor (2026-11-17): spec implementada.

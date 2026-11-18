@@ -6,6 +6,7 @@ import '../../../data/models/appointment_model.dart';
 import '../../../data/models/closure_model.dart';
 import '../../booking/logic/booking_rules.dart';
 import '../../booking/logic/closures.dart';
+import '../../booking/logic/free_slots.dart';
 import '../../booking/logic/salon_time.dart';
 import '../../booking/providers/booking_provider.dart';
 import 'admin_provider.dart';
@@ -133,15 +134,7 @@ class ClosureController {
 
     final range = closureRange(draft);
     try {
-      final active = await _ref
-          .read(bookingRepositoryProvider)
-          .fetchActiveAppointments(now);
-      final conflicts = closureConflicts(
-        range,
-        active,
-        times: _timesOf,
-        nowSalon: nowSalon,
-      );
+      final conflicts = await _fetchConflicts(range, now);
       if (conflicts.isNotEmpty) return ClosureSaveConflicts(conflicts);
       await _ref
           .read(configRepositoryProvider)
@@ -157,6 +150,36 @@ class ClosureController {
       return const ClosureSaveFailed();
     }
     return const ClosureSaveOk();
+  }
+
+  /// Los turnos activos que chocan ahora con [draft], leídos del servidor,
+  /// sin guardar nada: el formulario los vuelve a pedir al terminar la
+  /// edición de uno (spec 008, Navegación). `null` si [draft] no vale o no
+  /// se pueden leer.
+  Future<List<AppointmentModel>?> conflicts(ClosureDraft draft) async {
+    final now = _ref.read(clockProvider)();
+    if (closureErrors(draft, nowSalon: toSalon(now)).isNotEmpty) return null;
+    try {
+      return await _fetchConflicts(closureRange(draft), now);
+    } catch (error) {
+      debugPrint('No se pudieron comprobar los choques del cierre: $error');
+      return null;
+    }
+  }
+
+  Future<List<AppointmentModel>> _fetchConflicts(
+    BusyRange range,
+    DateTime now,
+  ) async {
+    final active = await _ref
+        .read(bookingRepositoryProvider)
+        .fetchActiveAppointments(now);
+    return closureConflicts(
+      range,
+      active,
+      times: _timesOf,
+      nowSalon: toSalon(now),
+    );
   }
 
   /// Quita [entry]: borra el cierre o quita la fecha bloqueada existente

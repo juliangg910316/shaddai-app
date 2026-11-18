@@ -11,12 +11,14 @@ import 'package:shaddai/data/models/user_model.dart';
 import 'package:shaddai/features/admin/presentation/admin_dashboard_view.dart';
 import 'package:shaddai/features/admin/presentation/admin_edit_view.dart';
 import 'package:shaddai/features/admin/providers/admin_provider.dart';
+import 'package:shaddai/features/booking/logic/booking_selection.dart';
 import 'package:shaddai/features/booking/logic/recipient.dart';
 import 'package:shaddai/features/booking/logic/salon_time.dart';
 import 'package:shaddai/features/booking/providers/admin_booking_provider.dart';
 import 'package:shaddai/features/booking/providers/admin_edit_provider.dart';
 import 'package:shaddai/features/booking/providers/booking_provider.dart';
 import 'package:shaddai/features/preferences/providers/preferences_provider.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 import '../../helpers/fake_auth.dart';
 import '../../helpers/fake_booking.dart';
@@ -314,6 +316,135 @@ void main() {
     expect(find.byType(AdminDashboardView), findsOneWidget);
     expect(bookings.adminEdits, isEmpty);
     expect(appContainer(tester).read(adminEditProvider), isNull);
+  });
+
+  testWidgets('la ventana es la de la admin, 365 días; y guarda un día a más '
+      'de 60 (RF-20)', (tester) async {
+    await open(tester);
+    final calendar = tester.widget<TableCalendar<dynamic>>(
+      find.byType(TableCalendar),
+    );
+    expect(calendar.lastDay, DateTime.utc(2027, 11, 10));
+    // Viernes 28/5/2027, a 199 días: se puede elegir.
+    expect(calendar.enabledDayPredicate!(DateTime.utc(2027, 5, 28)), isTrue);
+
+    final c = appContainer(tester);
+    final selection = c.read(bookingSelectionProvider).selection;
+    c
+        .read(bookingSelectionProvider.notifier)
+        .restore(
+          BookingSelection(
+            day: DateTime.utc(2027, 5, 28),
+            start: DateTime.utc(2027, 5, 28, 11),
+            item: selection.item,
+            addonIds: selection.addonIds,
+          ),
+        );
+    await settle(tester);
+    await saveChanges(tester);
+    await tap(tester, inDialog(find.text('CONFIRMAR')));
+
+    expect(
+      bookings.adminEdits.single.start,
+      fromSalon(DateTime.utc(2027, 5, 28, 11)),
+    );
+  });
+
+  group('"Para quién" en la edición (RF-23, RF-24)', () {
+    Future<void> change(WidgetTester tester) =>
+        tap(tester, find.text('CAMBIAR'));
+
+    Future<void> confirm(WidgetTester tester) async {
+      await saveChanges(tester);
+      await tap(tester, inDialog(find.text('CONFIRMAR')));
+    }
+
+    testWidgets('cambia a otra clienta con cuenta con el buscador', (
+      tester,
+    ) async {
+      await open(tester);
+      await change(tester);
+      await tester.enterText(
+        find.widgetWithText(TextField, 'Nombre o WhatsApp de la clienta'),
+        'beat',
+      );
+      await settle(tester);
+      await tap(tester, find.text('Beatriz'));
+      await confirm(tester);
+
+      final person = bookings.adminEdits.single.person!;
+      expect(person.clientId, 'bea');
+      expect(person.clientName, 'Beatriz');
+    });
+
+    testWidgets('cambia a una persona sin cuenta, con su nombre, su WhatsApp '
+        'y la casilla', (tester) async {
+      await open(tester);
+      await change(tester);
+      await tap(tester, find.text('PERSONA SIN CUENTA'));
+      final fields = find.byType(TextField);
+      await tester.enterText(fields.at(0), 'Carla Lima');
+      await tester.enterText(fields.at(1), '41 99333-0000');
+      await settle(tester);
+      await tap(
+        tester,
+        find.text(
+          'La persona acepta dar su nombre y su WhatsApp para este turno.',
+        ),
+      );
+      await confirm(tester);
+
+      final person = bookings.adminEdits.single.person!;
+      expect(person.clientId, isNull);
+      expect(person.clientName, 'Carla Lima');
+    });
+
+    testWidgets('el turno de una persona sin cuenta llega con la casilla '
+        'marcada, y se corrige su nombre', (tester) async {
+      final guest = AppointmentModel(
+        id: 'g1',
+        clientId: null,
+        clientName: 'Dora Reis',
+        clientPhone: '+55 41 99444-0000',
+        startTime: fromSalon(at(20, 10)),
+        endTime: fromSalon(at(20, 10, 45)),
+        status: 'confirmed',
+        createdAt: DateTime.utc(2026, 11, 1),
+        createdByAdmin: true,
+        booked: anaAppointment().booked,
+      );
+      bookings
+        ..active = [guest]
+        ..busy = [
+          BusySlot(
+            id: 'g1',
+            start: fromSalon(at(20, 10)),
+            end: fromSalon(at(20, 10, 45)),
+          ),
+        ];
+      await open(tester, id: 'g1');
+
+      final consent = tester.widget<CheckboxListTile>(
+        find.ancestor(
+          of: find.text(
+            'La persona acepta dar su nombre y su WhatsApp para este turno.',
+          ),
+          matching: find.byType(CheckboxListTile),
+        ),
+      );
+      expect(consent.value, isTrue);
+      final name = find.byType(TextField).first;
+      expect(tester.widget<TextField>(name).controller!.text, 'Dora Reis');
+      await tester.enterText(name, 'Dora Reis Lima');
+      // Sale del campo, como al agendar (spec 007).
+      await tester.tap(find.byType(TextField).at(1));
+      await settle(tester);
+      await confirm(tester);
+
+      final person = bookings.adminEdits.single.person!;
+      expect(person.clientId, isNull);
+      expect(person.clientName, 'Dora Reis Lima');
+    });
   });
 
   testWidgets('si el turno se cancela mientras se edita, lo avisa y vuelve a '
