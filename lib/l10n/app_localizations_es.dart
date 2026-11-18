@@ -156,17 +156,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get adminPanelButtonLabel => 'PANEL DE ADMINISTRADOR';
 
   @override
-  String get myAppointmentsTitle => 'Mis reservas';
-
-  @override
   String get myAppointmentsLoadError =>
       'No pudimos cargar tus reservas. Inténtalo de nuevo.';
-
-  @override
-  String get noAppointmentsYet => 'Todavía no tienes reservas.';
-
-  @override
-  String get bookAnotherAppointmentAction => 'RESERVAR OTRO TURNO';
 
   @override
   String get statusConfirmedClient => 'CONFIRMADA';
@@ -1456,4 +1447,22 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get profileBookAction => 'Reservar';
+
+  @override
+  String get profileHistoryTitle => 'Historial';
+
+  @override
+  String get historyCancelledByYou => 'CANCELADO POR TI';
+
+  @override
+  String get historyCancelledBySalon => 'CANCELADO POR EL SALÓN';
+
+  @override
+  String get historyDone => 'REALIZADO';
+
+  @override
+  String get historyNotConfirmed => 'NO CONFIRMADO';
+
+  @override
+  String get profileAppointmentsRetry => 'REINTENTAR';
 }

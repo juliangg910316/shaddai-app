@@ -380,29 +380,11 @@ abstract class AppLocalizations {
   /// **'PANEL DE ADMINISTRADOR'**
   String get adminPanelButtonLabel;
 
-  /// No description provided for @myAppointmentsTitle.
-  ///
-  /// In es, this message translates to:
-  /// **'Mis reservas'**
-  String get myAppointmentsTitle;
-
   /// No description provided for @myAppointmentsLoadError.
   ///
   /// In es, this message translates to:
   /// **'No pudimos cargar tus reservas. Inténtalo de nuevo.'**
   String get myAppointmentsLoadError;
-
-  /// No description provided for @noAppointmentsYet.
-  ///
-  /// In es, this message translates to:
-  /// **'Todavía no tienes reservas.'**
-  String get noAppointmentsYet;
-
-  /// No description provided for @bookAnotherAppointmentAction.
-  ///
-  /// In es, this message translates to:
-  /// **'RESERVAR OTRO TURNO'**
-  String get bookAnotherAppointmentAction;
 
   /// No description provided for @statusConfirmedClient.
   ///
@@ -2741,6 +2723,42 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Reservar'**
   String get profileBookAction;
+
+  /// Título del historial del perfil (spec 009, RF-20)
+  ///
+  /// In es, this message translates to:
+  /// **'Historial'**
+  String get profileHistoryTitle;
+
+  /// Etiqueta de un turno que canceló la clienta (spec 009, RF-20)
+  ///
+  /// In es, this message translates to:
+  /// **'CANCELADO POR TI'**
+  String get historyCancelledByYou;
+
+  /// Etiqueta de un turno que canceló el salón (spec 009, RF-20)
+  ///
+  /// In es, this message translates to:
+  /// **'CANCELADO POR EL SALÓN'**
+  String get historyCancelledBySalon;
+
+  /// Etiqueta de un turno confirmado que ya terminó (spec 009, RF-20)
+  ///
+  /// In es, this message translates to:
+  /// **'REALIZADO'**
+  String get historyDone;
+
+  /// Etiqueta de un turno que terminó sin confirmarse (spec 009, RF-21)
+  ///
+  /// In es, this message translates to:
+  /// **'NO CONFIRMADO'**
+  String get historyNotConfirmed;
+
+  /// Vuelve a pedir los turnos del perfil (spec 009, RF-24)
+  ///
+  /// In es, this message translates to:
+  /// **'REINTENTAR'**
+  String get profileAppointmentsRetry;
 }
 
 class _AppLocalizationsDelegate

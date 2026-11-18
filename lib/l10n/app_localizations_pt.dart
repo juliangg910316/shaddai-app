@@ -157,17 +157,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get adminPanelButtonLabel => 'PAINEL DE ADMINISTRADOR';
 
   @override
-  String get myAppointmentsTitle => 'Meus horários';
-
-  @override
   String get myAppointmentsLoadError =>
       'Não foi possível carregar seus horários. Tente novamente.';
-
-  @override
-  String get noAppointmentsYet => 'Você ainda não tem horários marcados.';
-
-  @override
-  String get bookAnotherAppointmentAction => 'AGENDAR OUTRO HORÁRIO';
 
   @override
   String get statusConfirmedClient => 'CONFIRMADA';
@@ -1460,4 +1451,22 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get profileBookAction => 'Agendar';
+
+  @override
+  String get profileHistoryTitle => 'Histórico';
+
+  @override
+  String get historyCancelledByYou => 'CANCELADO POR VOCÊ';
+
+  @override
+  String get historyCancelledBySalon => 'CANCELADO PELO SALÃO';
+
+  @override
+  String get historyDone => 'REALIZADO';
+
+  @override
+  String get historyNotConfirmed => 'NÃO CONFIRMADO';
+
+  @override
+  String get profileAppointmentsRetry => 'TENTAR NOVAMENTE';
 }

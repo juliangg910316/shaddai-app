@@ -56,10 +56,7 @@
 
   "myProfileTitle": "Meu Perfil",
   "adminPanelButtonLabel": "PAINEL DE ADMINISTRADOR",
-  "myAppointmentsTitle": "Meus horários",
   "myAppointmentsLoadError": "Não foi possível carregar seus horários. Tente novamente.",
-  "noAppointmentsYet": "Você ainda não tem horários marcados.",
-  "bookAnotherAppointmentAction": "AGENDAR OUTRO HORÁRIO",
 
   "statusConfirmedClient": "CONFIRMADA",
   "statusCancelledClient": "CANCELADA",
@@ -471,5 +468,11 @@
   "cancelFailed": "Não foi possível cancelar. Tente novamente.",
   "profileNextAppointmentTitle": "Seu próximo horário",
   "profileNoUpcoming": "Você não tem horários marcados.",
-  "profileBookAction": "Agendar"
+  "profileBookAction": "Agendar",
+  "profileHistoryTitle": "Histórico",
+  "historyCancelledByYou": "CANCELADO POR VOCÊ",
+  "historyCancelledBySalon": "CANCELADO PELO SALÃO",
+  "historyDone": "REALIZADO",
+  "historyNotConfirmed": "NÃO CONFIRMADO",
+  "profileAppointmentsRetry": "TENTAR NOVAMENTE"
 }

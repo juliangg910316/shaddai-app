@@ -20,6 +20,20 @@ const _keys = [
   'profileNextAppointmentTitle',
   'profileNoUpcoming',
   'profileBookAction',
+  // T7: el historial.
+  'profileHistoryTitle',
+  'historyCancelledByYou',
+  'historyCancelledBySalon',
+  'historyDone',
+  'historyNotConfirmed',
+  'profileAppointmentsRetry',
+];
+
+/// Las claves que dejan de usarse con el perfil nuevo (plan § 8).
+const _removed = [
+  'myAppointmentsTitle',
+  'noAppointmentsYet',
+  'bookAnotherAppointmentAction',
 ];
 
 Map<String, dynamic> _arb(String name) =>
@@ -34,6 +48,7 @@ void main() {
       for (final key in _keys) {
         expect((texts[key] as String).trim(), isNotEmpty, reason: key);
       }
+      expect(_removed.where(texts.containsKey), isEmpty);
     });
   }
 }

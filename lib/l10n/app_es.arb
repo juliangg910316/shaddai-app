@@ -56,10 +56,7 @@
 
   "myProfileTitle": "Mi Perfil",
   "adminPanelButtonLabel": "PANEL DE ADMINISTRADOR",
-  "myAppointmentsTitle": "Mis reservas",
   "myAppointmentsLoadError": "No pudimos cargar tus reservas. Inténtalo de nuevo.",
-  "noAppointmentsYet": "Todavía no tienes reservas.",
-  "bookAnotherAppointmentAction": "RESERVAR OTRO TURNO",
 
   "statusConfirmedClient": "CONFIRMADA",
   "statusCancelledClient": "CANCELADA",
@@ -796,5 +793,17 @@
   "profileNoUpcoming": "No tienes turnos próximos.",
   "@profileNoUpcoming": {"description": "El perfil sin turno activo (spec 009, RF-5)"},
   "profileBookAction": "Reservar",
-  "@profileBookAction": {"description": "Botón para reservar desde el perfil sin turno activo (spec 009, RF-5)"}
+  "@profileBookAction": {"description": "Botón para reservar desde el perfil sin turno activo (spec 009, RF-5)"},
+  "profileHistoryTitle": "Historial",
+  "@profileHistoryTitle": {"description": "Título del historial del perfil (spec 009, RF-20)"},
+  "historyCancelledByYou": "CANCELADO POR TI",
+  "@historyCancelledByYou": {"description": "Etiqueta de un turno que canceló la clienta (spec 009, RF-20)"},
+  "historyCancelledBySalon": "CANCELADO POR EL SALÓN",
+  "@historyCancelledBySalon": {"description": "Etiqueta de un turno que canceló el salón (spec 009, RF-20)"},
+  "historyDone": "REALIZADO",
+  "@historyDone": {"description": "Etiqueta de un turno confirmado que ya terminó (spec 009, RF-20)"},
+  "historyNotConfirmed": "NO CONFIRMADO",
+  "@historyNotConfirmed": {"description": "Etiqueta de un turno que terminó sin confirmarse (spec 009, RF-21)"},
+  "profileAppointmentsRetry": "REINTENTAR",
+  "@profileAppointmentsRetry": {"description": "Vuelve a pedir los turnos del perfil (spec 009, RF-24)"}
 }

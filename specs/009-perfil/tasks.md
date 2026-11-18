@@ -57,7 +57,7 @@ Salen 16 tareas, en tres bloques (decisión del autor, 2026-11-18: una sola spec
     - el turno cambia en el stream y el perfil lo muestra sin recargar.
   - Hecho cuando: `profileAppointmentsProvider` y `ProfileActiveCard` existen y el perfil los muestra.
 
-- [ ] **T7. Historial y estructura del perfil.** RF-20, RF-21, RF-22, RF-23, RF-24, RF-43, RNF-1 (plan D-12)
+- [x] **T7. Historial y estructura del perfil.** RF-20, RF-21, RF-22, RF-23, RF-24, RF-43, RNF-1 (plan D-12)
   - Tests: ampliar `profile_view_test.dart`:
     - historial del más reciente al más antiguo, cada uno con su etiqueta y sin acciones;
     - sin historial no hay sección;
