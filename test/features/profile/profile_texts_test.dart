@@ -16,6 +16,10 @@ const _keys = [
   'cancelNotActive',
   'cancelChanged',
   'cancelFailed',
+  // T6: el turno activo en el perfil.
+  'profileNextAppointmentTitle',
+  'profileNoUpcoming',
+  'profileBookAction',
 ];
 
 Map<String, dynamic> _arb(String name) =>

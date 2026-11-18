@@ -2723,6 +2723,24 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'No se pudo cancelar. Inténtalo de nuevo.'**
   String get cancelFailed;
+
+  /// Título del turno activo en el perfil (spec 009, RF-1)
+  ///
+  /// In es, this message translates to:
+  /// **'Tu próximo turno'**
+  String get profileNextAppointmentTitle;
+
+  /// El perfil sin turno activo (spec 009, RF-5)
+  ///
+  /// In es, this message translates to:
+  /// **'No tienes turnos próximos.'**
+  String get profileNoUpcoming;
+
+  /// Botón para reservar desde el perfil sin turno activo (spec 009, RF-5)
+  ///
+  /// In es, this message translates to:
+  /// **'Reservar'**
+  String get profileBookAction;
 }
 
 class _AppLocalizationsDelegate

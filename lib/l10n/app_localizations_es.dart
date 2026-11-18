@@ -1447,4 +1447,13 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get cancelFailed => 'No se pudo cancelar. Inténtalo de nuevo.';
+
+  @override
+  String get profileNextAppointmentTitle => 'Tu próximo turno';
+
+  @override
+  String get profileNoUpcoming => 'No tienes turnos próximos.';
+
+  @override
+  String get profileBookAction => 'Reservar';
 }

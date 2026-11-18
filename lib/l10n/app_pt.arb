@@ -468,5 +468,8 @@
   "cancelNotCancellable": "Não é mais possível cancelar: falta pouco para o seu horário. Fale conosco pelo WhatsApp.",
   "cancelNotActive": "Este horário não está mais ativo.",
   "cancelChanged": "Seu horário mudou. Confira antes de cancelar.",
-  "cancelFailed": "Não foi possível cancelar. Tente novamente."
+  "cancelFailed": "Não foi possível cancelar. Tente novamente.",
+  "profileNextAppointmentTitle": "Seu próximo horário",
+  "profileNoUpcoming": "Você não tem horários marcados.",
+  "profileBookAction": "Agendar"
 }

@@ -122,6 +122,43 @@ class ActiveAppointmentView extends ConsumerWidget {
           l10n.bookingOnlyOneActive,
           style: AppText.sans(size: 14, color: brand.inkMuted, height: 1.5),
         ),
+        ActiveAppointmentActions(
+          appointment: appointment,
+          isBlocked: isBlocked,
+        ),
+      ],
+    );
+  }
+}
+
+/// Lo que va bajo el turno activo, en Reservas y en el perfil (spec 009,
+/// D-13): el aviso de bloqueo; "Editar turno", la explicación de que ya no se
+/// puede cambiar con WhatsApp, o el error del calendario con "Reintentar"
+/// (spec 006, RF-1 a RF-3, RF-22); y "Cancelar turno" mientras se puede
+/// cancelar, también bloqueada (spec 009, RF-8, D-5).
+///
+/// [onEdit] se llama después de abrir la edición: el perfil lo usa para ir a
+/// Reservas.
+class ActiveAppointmentActions extends ConsumerWidget {
+  const ActiveAppointmentActions({
+    super.key,
+    required this.appointment,
+    this.isBlocked = false,
+    this.onEdit,
+  });
+
+  final AppointmentModel appointment;
+  final bool isBlocked;
+  final VoidCallback? onEdit;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
         if (isBlocked) const BookingBlockedNotice(),
         switch (ref.watch(editAvailabilityProvider)) {
           EditAvailability.editable => Padding(
@@ -129,8 +166,10 @@ class ActiveAppointmentView extends ConsumerWidget {
             child: GoldPillButton(
               label: l10n.bookingEditAction.toUpperCase(),
               // La edición es otra lista, que empieza arriba (RF-4).
-              onPressed: () =>
-                  ref.read(editTargetProvider.notifier).start(appointment),
+              onPressed: () {
+                ref.read(editTargetProvider.notifier).start(appointment);
+                onEdit?.call();
+              },
             ),
           ),
           EditAvailability.closed => AppNotice(
@@ -144,8 +183,6 @@ class ActiveAppointmentView extends ConsumerWidget {
           EditAvailability.loading ||
           null => const SizedBox.shrink(),
         },
-        // "Cancelar turno", mientras se puede cancelar; también bloqueada
-        // (spec 009, RF-8, D-5).
         Padding(
           padding: const EdgeInsets.only(top: 12),
           child: CancelAppointmentButton(appointment: appointment),

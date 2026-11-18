@@ -12,8 +12,9 @@ import '../../../data/models/appointment_model.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../preferences/presentation/preferences_section.dart';
-import '../../booking/providers/booking_provider.dart';
 import '../../navigation/providers/tab_scroll_provider.dart';
+import '../providers/profile_provider.dart';
+import 'profile_cards.dart';
 
 class ProfileView extends ConsumerWidget {
   const ProfileView({super.key});
@@ -23,7 +24,7 @@ class ProfileView extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final userAsync = ref.watch(currentUserProvider);
     final user = userAsync.value;
-    final appointmentsAsync = ref.watch(myAppointmentsProvider);
+    final appointmentsAsync = ref.watch(profileAppointmentsProvider);
     final isWeb = ref.watch(isWebProvider);
 
     // Sin sesión: Preferencias y acceso al inicio de sesión (RF-25).
@@ -128,7 +129,7 @@ class ProfileView extends ConsumerWidget {
 
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: SectionHeading(l10n.myAppointmentsTitle),
+              child: SectionHeading(l10n.profileNextAppointmentTitle),
             ),
             const SizedBox(height: 16),
 
@@ -156,30 +157,24 @@ class ProfileView extends ConsumerWidget {
                   ),
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
                   children: [
-                    if (appointments.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 26),
-                        child: Center(
-                          child: Text(
-                            l10n.noAppointmentsYet,
-                            style: AppText.sans(
-                              size: 13,
-                              weight: FontWeight.w300,
-                              color: brand.inkMuted,
-                            ),
-                          ),
-                        ),
+                    // Su turno activo o, sin él, la invitación a reservar
+                    // (spec 009, RF-1, RF-5).
+                    if (appointments.active case final active?)
+                      ProfileActiveCard(
+                        appointment: active,
+                        isBlocked: user.isBlocked,
                       )
                     else
-                      for (final appointment in appointments) ...[
+                      const ProfileNoUpcoming(),
+                    if (appointments.history.isNotEmpty) ...[
+                      const SizedBox(height: 28),
+                      SectionHeading(l10n.myAppointmentsTitle),
+                      const SizedBox(height: 16),
+                      for (final appointment in appointments.history) ...[
                         _AppointmentCard(appointment: appointment),
                         const SizedBox(height: 12),
                       ],
-                    const SizedBox(height: 10),
-                    OutlinePillButton(
-                      label: l10n.bookAnotherAppointmentAction,
-                      onPressed: () => context.go('/booking'),
-                    ),
+                    ],
                     // En Web, tema e idioma están en la barra superior
                     // (spec 002, RF-31).
                     if (!isWeb) ...[

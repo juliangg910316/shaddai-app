@@ -46,7 +46,7 @@ Salen 16 tareas, en tres bloques (decisión del autor, 2026-11-18: una sola spec
     - `profile_texts_test.dart` con las claves de cancelar en ES y PT.
   - Hecho cuando: `cancel_appointment.dart` (presentación) existe, `ActiveAppointmentView` lo usa y los tests pasan.
 
-- [ ] **T6. Tarjeta del turno activo en el perfil.** RF-1, RF-2, RF-3, RF-4, RF-5, RF-6, RF-7, RF-8, RF-44
+- [x] **T6. Tarjeta del turno activo en el perfil.** RF-1, RF-2, RF-3, RF-4, RF-5, RF-6, RF-7, RF-8, RF-44
   - Tests: `test/features/profile/profile_view_test.dart` (nuevo):
     - activo con día, fecha y `HH:mm – HH:mm` en hora del salón (`TZ=Europe/Lisbon` para verlo en rojo), servicio, adicionales y estado;
     - turno antiguo sin servicio;

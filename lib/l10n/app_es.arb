@@ -790,5 +790,11 @@
   "cancelChanged": "Tu turno cambió. Revísalo antes de cancelarlo.",
   "@cancelChanged": {"description": "Alguien cambió el turno (spec 009, RF-14)"},
   "cancelFailed": "No se pudo cancelar. Inténtalo de nuevo.",
-  "@cancelFailed": {"description": "Error al cancelar, sin detalles (spec 009, RF-15)"}
+  "@cancelFailed": {"description": "Error al cancelar, sin detalles (spec 009, RF-15)"},
+  "profileNextAppointmentTitle": "Tu próximo turno",
+  "@profileNextAppointmentTitle": {"description": "Título del turno activo en el perfil (spec 009, RF-1)"},
+  "profileNoUpcoming": "No tienes turnos próximos.",
+  "@profileNoUpcoming": {"description": "El perfil sin turno activo (spec 009, RF-5)"},
+  "profileBookAction": "Reservar",
+  "@profileBookAction": {"description": "Botón para reservar desde el perfil sin turno activo (spec 009, RF-5)"}
 }

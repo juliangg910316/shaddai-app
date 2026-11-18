@@ -1451,4 +1451,13 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get cancelFailed => 'Não foi possível cancelar. Tente novamente.';
+
+  @override
+  String get profileNextAppointmentTitle => 'Seu próximo horário';
+
+  @override
+  String get profileNoUpcoming => 'Você não tem horários marcados.';
+
+  @override
+  String get profileBookAction => 'Agendar';
 }
