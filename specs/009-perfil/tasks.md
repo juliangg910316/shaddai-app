@@ -24,7 +24,7 @@ Salen 16 tareas, en tres bloques (decisión del autor, 2026-11-18: una sola spec
   - Tests: ampliar `FakeBookingRepository` con `cancelByClient` (aplica `expected` como la transacción; cambia el turno a `cancelled` con `cancelledBy` en `mine` y `active`; quita su turno ocupado de `busy`; lo registra en `cancelled`; o lanza `cancelError`) y probar el fake en `test/data/fake_booking_test.dart` (ok, `expected` falso sin cambios, error).
   - Hecho cuando: `BookingRepository.cancelByClient` hace la transacción del plan D-3 con `saveTimeout`, el fake la imita y los tests pasan.
 
-- [ ] **T4. Controlador de cancelar.** RF-3, RF-4, RF-7, RF-11, RF-12, RF-14, RF-15, RF-17
+- [x] **T4. Controlador de cancelar.** RF-3, RF-4, RF-7, RF-11, RF-12, RF-14, RF-15, RF-17
   - Tests: `test/features/booking/booking_cancel_test.dart` (nuevo, con el fake):
     - `cancelAvailabilityProvider` cambia de cancelable a cerrado al avanzar `salonNowProvider` (RF-7);
     - `cancel`: `ok` y el turno sale de `mine` activo;
