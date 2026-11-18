@@ -300,7 +300,12 @@ class FakeBookingRepository implements BookingRepository {
   @override
   Stream<List<AppointmentModel>> getClientAppointments(String clientId) {
     clientRequests.add(clientId);
-    return _live(_mineListeners, () => mine);
+    return _live(_mineListeners, () => mine).map(
+      (all) => [
+        for (final a in all)
+          if (a.clientId == clientId) a,
+      ],
+    );
   }
 
   @override

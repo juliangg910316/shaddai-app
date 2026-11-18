@@ -116,7 +116,8 @@ class _SessionUserRepository extends FakeUserRepository {
 /// sesión, para cambiarla en el test.
 ///
 /// La lista de precios es [priceListRepository] o, si no se pasa, la de la
-/// carga inicial (spec 004). Los turnos de la clienta son [appointments].
+/// carga inicial (spec 004). Los turnos de la clienta son [appointments] o,
+/// con `null`, los del repositorio de turnos, en vivo.
 ///
 /// Con [reduceMotion] (por defecto), el sistema pide reducir las animaciones:
 /// la franja animada de la landing se para y `pumpAndSettle` puede terminar.
@@ -133,7 +134,7 @@ Future<FakeWebSession> pumpWebApp(
   bool reduceMotion = true,
   List<Override> overrides = const [],
   PriceListRepository? priceListRepository,
-  List<AppointmentModel> appointments = const [],
+  List<AppointmentModel>? appointments = const [],
 }) => _pumpRealApp(
   tester,
   isWeb: true,
@@ -167,7 +168,7 @@ Future<FakeWebSession> pumpMobileApp(
   bool reduceMotion = true,
   List<Override> overrides = const [],
   PriceListRepository? priceListRepository,
-  List<AppointmentModel> appointments = const [],
+  List<AppointmentModel>? appointments = const [],
 }) => _pumpRealApp(
   tester,
   isWeb: false,
@@ -204,7 +205,7 @@ Future<FakeWebSession> _pumpRealApp(
   required bool reduceMotion,
   required List<Override> overrides,
   required PriceListRepository? priceListRepository,
-  required List<AppointmentModel> appointments,
+  required List<AppointmentModel>? appointments,
 }) async {
   await loadAppFonts();
   if (reduceMotion) {
@@ -244,9 +245,12 @@ Future<FakeWebSession> _pumpRealApp(
           ref.watch(authStateProvider);
           return Stream.value(webSession.user);
         }),
-        myAppointmentsProvider.overrideWith(
-          (ref) => Stream.value(appointments),
-        ),
+        // Sin [appointments], los de la clienta llegan en vivo del
+        // repositorio de turnos, como en la app.
+        if (appointments != null)
+          myAppointmentsProvider.overrideWith(
+            (ref) => Stream.value(appointments),
+          ),
         priceListRepositoryProvider.overrideWithValue(
           priceListRepository ??
               FakePriceListRepository(stored: initialTestPriceList()),

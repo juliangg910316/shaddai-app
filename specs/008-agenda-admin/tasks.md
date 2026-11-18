@@ -234,7 +234,7 @@ Son más de 10, pero la spec no se divide (decisión del autor, 2026-11-17).
     - 13 tests en `admin_edit_view_test` y 6 en `redirect_logic_test`. Suite completa, 1935 en verde.
     - Para la T14: en Web, `WebShell` cierra `editTargetProvider` cuando el navegador sale de `/booking`, también durante la edición de la admin; debe dejarla a su vista. Y en Android/iOS, con la pestaña Reservas montada debajo, sus avisos de la selección podrían salir dos veces.
 
-- [ ] **T14. Flujos completos de la edición.** RF-32, RF-33, RF-35
+- [x] **T14. Flujos completos de la edición.** RF-32, RF-33, RF-35
   - Tests:
     - `test/features/admin/admin_edit_flow_test.dart` (nuevo, `pumpMobileApp` y `pumpWebApp`):
       - en Android/iOS la pestaña Reservas sigue montada y conserva lo que la admin tenía a medio agendar;
@@ -242,6 +242,12 @@ Son más de 10, pero la spec no se divide (decisión del autor, 2026-11-17).
       - después, Reservar muestra lo que tenía;
     - `test/features/booking/admin_edited_client_test.dart` (nuevo): la clienta ve el cambio sin recargar en Reservas y en Perfil; si cambia la persona, la clienta anterior deja de verlo y la nueva lo ve.
   - Hecho cuando: los dos tests pasan sin cambios fuera de lo que piden.
+  - Hecha (2026-11-17):
+    - `admin_edit_flow_test` (3 tests) y `admin_edited_client_test` (5 tests: Reservas en Android/iOS y Web, Perfil, y el cambio de persona para la clienta anterior y la nueva);
+    - cambio de código: en Android/iOS, con Reservas montada debajo, un aviso de la edición salía dos veces. `BookingView` deja sus avisos a la vista de la edición mientras `adminEditProvider` tiene un turno (el test falló antes del arreglo);
+    - lo anotado en la T13 sobre `WebShell` no hizo falta: "atrás" del navegador durante la edición de la admin sale sin guardar, sin avisos y devuelve lo que tenía, sin cambios;
+    - ayudas de test: `getClientAppointments` del repositorio falso filtra por `clientId`, como la consulta de Firestore (sin romper ningún test); `pumpWebApp`/`pumpMobileApp` aceptan `appointments: null` para recibir los turnos en vivo; el historial del navegador pasa a `test/helpers/browser_history.dart` (`booking_edit_web_test` lo usa);
+    - Suite completa, 1943 en verde.
 
 ## Bloque D — Margen, reglas y cierre
 

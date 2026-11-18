@@ -13,6 +13,7 @@ import '../logic/booking_edit.dart';
 import '../logic/booking_rules.dart';
 import '../logic/recipient.dart';
 import '../providers/admin_booking_provider.dart';
+import '../providers/admin_edit_provider.dart';
 import '../providers/booking_edit_provider.dart';
 import '../providers/booking_provider.dart';
 import 'active_appointment_view.dart';
@@ -178,7 +179,9 @@ class _BookingViewState extends ConsumerState<BookingView> {
       _,
       notices,
     ) {
-      if (notices.isEmpty) return;
+      // Mientras la admin edita un turno, los avisos los muestra la vista de
+      // la edición (spec 008); esta pestaña puede seguir montada debajo.
+      if (notices.isEmpty || ref.read(adminEditProvider) != null) return;
       ref.read(bookingRecipientProvider.notifier).consumeNotices();
       for (final notice in notices) {
         switch (notice) {
@@ -198,7 +201,8 @@ class _BookingViewState extends ConsumerState<BookingView> {
       _,
       notices,
     ) {
-      if (notices.isEmpty) return;
+      // Igual que arriba.
+      if (notices.isEmpty || ref.read(adminEditProvider) != null) return;
       ref.read(bookingSelectionProvider.notifier).consumeNotices();
       for (final notice in notices) {
         showBookingNotice(context, notice);
