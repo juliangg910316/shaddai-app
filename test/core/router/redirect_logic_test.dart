@@ -89,6 +89,10 @@ void main() {
       '/admin/users',
       '/admin/settings',
       '/admin/services',
+      '/admin/closures',
+      '/admin/closures/new',
+      '/admin/appointments/t1/edit',
+      '/admin/appointments/0b8e-4f1a_X/edit',
     ]) {
       test('safeNext acepta $next en móvil', () {
         expect(safeNext(next, isWeb: false), next);
@@ -274,8 +278,28 @@ void main() {
       '/admin/users',
       '/admin/settings',
       '/admin/services',
+      '/admin/closures',
+      '/admin/closures/new',
+      '/admin/appointments/t1/edit',
+      // Abierta desde los turnos que chocan con un cierre (Navegación).
+      '/admin/closures/new/appointments/t1/edit',
     ]) {
       test('$next se acepta', () => expect(safeNext(next, isWeb: true), next));
+    }
+
+    // La edición de un turno (spec 008): solo con un id válido.
+    for (final next in [
+      '/admin/appointments//edit',
+      '/admin/appointments/t1',
+      '/admin/appointments/a.b/edit',
+      '/admin/appointments/t1/edit?x=1',
+      '/admin/appointments/t1/edit/more',
+      '/admin/closures/appointments/t1/edit',
+      '/admin/closures/new/appointments/t1',
+    ]) {
+      test('$next se cambia por /', () {
+        expect(safeNext(next, isWeb: true), '/');
+      });
     }
 
     for (final next in [

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:shaddai/data/models/calendar_settings_model.dart';
+import 'package:shaddai/data/models/closure_model.dart';
+import 'package:shaddai/features/booking/logic/salon_time.dart';
 import 'package:shaddai/core/widgets/app_widgets.dart';
 import 'package:shaddai/data/models/appointment_model.dart';
 import 'package:shaddai/data/models/booked_service_model.dart';
 import 'package:shaddai/data/models/price_list_model.dart';
-import 'package:shaddai/data/repositories/config_repository.dart';
 import 'package:shaddai/features/admin/presentation/admin_dashboard_view.dart';
 import 'package:shaddai/features/admin/providers/admin_provider.dart';
 import 'package:shaddai/features/auth/providers/auth_provider.dart';
@@ -12,12 +15,16 @@ import 'package:shaddai/features/booking/providers/booking_provider.dart';
 
 import '../../helpers/fake_auth.dart';
 import '../../helpers/fake_booking.dart';
+import '../../helpers/fake_config.dart';
+import '../../helpers/fake_session.dart';
 import '../../helpers/pump_app.dart';
 import '../../helpers/recording_link_launcher.dart';
 
 /// Un turno de las 9:00 a las 10:30 (o de [start] a [end]), con lo
 /// reservado si [booked].
 AppointmentModel appointment({
+  String id = 't1',
+  String status = 'waiting_confirmation',
   bool booked = true,
   DateTime? start,
   DateTime? end,
@@ -26,14 +33,14 @@ AppointmentModel appointment({
   String phone = '+55 41 99999-0000',
   bool createdByAdmin = false,
 }) => AppointmentModel(
-  id: 't1',
+  id: id,
   clientId: clientId,
   clientName: name,
   clientPhone: phone,
   createdByAdmin: createdByAdmin,
   startTime: start ?? DateTime(2026, 11, 20, 9),
   endTime: end ?? DateTime(2026, 11, 20, 10, 30),
-  status: 'waiting_confirmation',
+  status: status,
   createdAt: DateTime(2026, 11, 10),
   booked: booked
       ? const BookedServiceModel(
@@ -58,44 +65,216 @@ AppointmentModel appointment({
       : null,
 );
 
-/// El panel no lee ni guarda ajustes en estos tests.
-class _UnusedConfigRepository implements ConfigRepository {
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
+/// Hora de pared del salón del viernes 20/11/2026 (o del día [day]).
+DateTime at(int hour, [int minute = 0, int day = 20]) =>
+    DateTime.utc(2026, 11, day, hour, minute);
+
+/// Un turno de [start] a [end] (horas de pared del salón).
+AppointmentModel timed(
+  String id,
+  DateTime start,
+  DateTime end, {
+  String status = 'confirmed',
+}) => appointment(
+  id: id,
+  status: status,
+  name: 'Clienta $id',
+  start: fromSalon(start),
+  end: fromSalon(end),
+);
+
+ClosureModel closure(String id, DateTime start, DateTime end) =>
+    ClosureModel(id: id, start: fromSalon(start), end: fromSalon(end));
 
 void main() {
   late FakeBookingRepository bookings;
+  late FakeConfigRepository config;
   late RecordingLinkLauncher links;
+  late GoRouter router;
 
   setUp(() {
     bookings = FakeBookingRepository();
+    config = FakeConfigRepository();
     links = RecordingLinkLauncher();
   });
 
+  /// La agenda del viernes 20 con [shown] (o los turnos [all]) y "ahora"
+  /// [now] (por defecto, el martes 10 a las 7:00 del salón).
   Future<void> pump(
     WidgetTester tester,
-    AppointmentModel shown, {
+    AppointmentModel? shown, {
+    List<AppointmentModel>? all,
     String language = 'es',
+    DateTime? now,
   }) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(800, 1600);
     addTearDown(tester.view.reset);
+    final instant = now ?? bookingTestNow;
+    router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => const AdminDashboardView(),
+        ),
+        GoRoute(
+          path: '/admin/appointments/:id/edit',
+          builder: (context, state) =>
+              Text('editar ${state.pathParameters['id']}'),
+        ),
+      ],
+    );
     await pumpApp(
       tester,
       stored: {'language': language},
-      home: const AdminDashboardView(),
+      router: router,
       overrides: [
         bookingRepositoryProvider.overrideWithValue(bookings),
         userRepositoryProvider.overrideWithValue(FakeUserRepository()),
-        configRepositoryProvider.overrideWithValue(_UnusedConfigRepository()),
+        configRepositoryProvider.overrideWithValue(config),
+        clockProvider.overrideWithValue(() => instant),
+        salonNowProvider.overrideWith((ref) => Stream.value(toSalon(instant))),
         adminSelectedDateProvider.overrideWith((ref) => DateTime(2026, 11, 20)),
-        adminAppointmentsProvider.overrideWith((ref) => Stream.value([shown])),
+        adminAppointmentsProvider.overrideWith(
+          (ref) => Stream.value(all ?? [?shown]),
+        ),
         links.override,
       ],
     );
     await tester.pumpAndSettle();
   }
+
+  Finder appointmentCard(String id) =>
+      find.byKey(ValueKey('agenda-appointment-$id'));
+  Finder closureCard(String id) => find.byKey(ValueKey('agenda-closure-$id'));
+
+  group('los cierres del día (RF-9, RF-10)', () {
+    testWidgets('salen entre los turnos, en orden de hora, con "CERRADO" y '
+        'sus horas', (tester) async {
+      config.closures = [closure('c1', at(12), at(13))];
+      await pump(
+        tester,
+        null,
+        all: [timed('t2', at(15), at(16)), timed('t1', at(9), at(10))],
+      );
+
+      expect(
+        find.descendant(of: closureCard('c1'), matching: find.text('CERRADO')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: closureCard('c1'),
+          matching: find.text('12:00 – 13:00'),
+        ),
+        findsOneWidget,
+      );
+      final ys = [
+        tester.getTopLeft(appointmentCard('t1')).dy,
+        tester.getTopLeft(closureCard('c1')).dy,
+        tester.getTopLeft(appointmentCard('t2')).dy,
+      ];
+      expect(ys, orderedEquals([...ys]..sort()));
+    });
+
+    testWidgets('sin turnos, el cierre se ve en lugar de "No hay reservas"', (
+      tester,
+    ) async {
+      config.closures = [closure('c1', at(12), at(13))];
+      await pump(tester, null);
+      expect(closureCard('c1'), findsOneWidget);
+      expect(find.text('No hay reservas para este día.'), findsNothing);
+    });
+
+    testWidgets('un cierre de varios días sale en cada uno, como "Todo el '
+        'día"', (tester) async {
+      config.closures = [closure('d', at(0, 0, 19), at(0, 0, 22))];
+      await pump(tester, null);
+      expect(
+        find.descendant(
+          of: closureCard('d'),
+          matching: find.text('Todo el día'),
+        ),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.byIcon(Icons.chevron_right));
+      await tester.pumpAndSettle();
+      expect(closureCard('d'), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.chevron_right));
+      await tester.pumpAndSettle();
+      expect(closureCard('d'), findsNothing);
+    });
+
+    testWidgets('una fecha bloqueada del día también sale', (tester) async {
+      config.settings = CalendarSettingsModel(
+        openingHours: CalendarSettingsModel.defaultSettings().openingHours,
+        globalSlotDurationMinutes: 30,
+        blockedDates: const ['2026-11-20'],
+      );
+      await pump(tester, null);
+      expect(closureCard('2026-11-20'), findsOneWidget);
+    });
+
+    testWidgets('si fallan, el aviso y "Reintentar", y los turnos siguen '
+        '(RF-10)', (tester) async {
+      await pump(tester, timed('t1', at(9), at(10)));
+      config.failClosures(Exception('sin red'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('No se pudieron cargar los cierres.'), findsOneWidget);
+      expect(appointmentCard('t1'), findsOneWidget);
+
+      final requests = config.closureRequests.length;
+      await tester.tap(find.text('REINTENTAR'));
+      await tester.pumpAndSettle();
+      expect(find.text('No se pudieron cargar los cierres.'), findsNothing);
+      expect(config.closureRequests.length, greaterThan(requests));
+    });
+  });
+
+  group('"Editar" (RF-18)', () {
+    Finder editIn(String id) =>
+        find.descendant(of: appointmentCard(id), matching: find.text('EDITAR'));
+
+    testWidgets('solo en los activos que no han terminado: también en uno en '
+        'curso; nunca en uno cancelado ni en uno terminado', (tester) async {
+      await pump(
+        tester,
+        null,
+        now: fromSalon(at(9, 30)),
+        all: [
+          timed('terminado', at(8), at(9)),
+          timed('en-curso', at(9), at(10)),
+          timed('esperando', at(11), at(12), status: 'waiting_confirmation'),
+          timed('cancelado', at(13), at(14), status: 'cancelled'),
+        ],
+      );
+
+      expect(editIn('terminado'), findsNothing);
+      expect(editIn('en-curso'), findsOneWidget);
+      expect(editIn('esperando'), findsOneWidget);
+      expect(editIn('cancelado'), findsNothing);
+    });
+
+    testWidgets('lleva a la edición del turno y mide 48 px', (tester) async {
+      await pump(tester, timed('t1', at(9), at(10)));
+      final button = find.ancestor(
+        of: editIn('t1'),
+        matching: find.byType(OutlinedButton),
+      );
+      expect(tester.getSize(button).height, greaterThanOrEqualTo(48));
+
+      await tester.tap(editIn('t1'));
+      await tester.pumpAndSettle();
+      expect(
+        router.routerDelegate.currentConfiguration.last.matchedLocation,
+        '/admin/appointments/t1/edit',
+      );
+      expect(find.text('editar t1'), findsOneWidget);
+    });
+  });
 
   for (final (language, line) in [
     ('es', 'Manicura rusa · Decoración, Brillo'),

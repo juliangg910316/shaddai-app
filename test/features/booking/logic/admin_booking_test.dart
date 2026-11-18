@@ -356,4 +356,41 @@ void main() {
     expect(source, isNot(contains('package:flutter')));
     expect(source, isNot(contains('cloud_firestore')));
   });
+
+  group('checkAdminBeforeSave con cierres (spec 008, RF-12, RF-14)', () {
+    final nowSalon = at(7);
+    const ana = AccountRecipient(
+      uid: 'u1',
+      name: 'Ana',
+      phone: '41 99999-0000',
+    );
+
+    AdminBookingCheck check(int duration, List<BusyRange> closures) =>
+        checkAdminBeforeSave(
+          start: at(9),
+          durationMinutes: duration,
+          settings: settings,
+          busy: const [],
+          closures: closures,
+          active: const [],
+          recipient: ana,
+          recipientUser: user('u1'),
+          users: const [],
+          nowSalon: nowSalon,
+        );
+
+    test('una hora dentro de un cierre → hora ocupada', () {
+      expect(
+        check(30, [(start: at(9), end: at(10))]),
+        isA<AdminCheckSlotTaken>(),
+      );
+    });
+
+    test('un servicio que no cabe antes del cierre → no cabe', () {
+      expect(
+        check(60, [(start: at(9, 30), end: at(10))]),
+        isA<AdminCheckDoesNotFit>(),
+      );
+    });
+  });
 }

@@ -18,6 +18,7 @@ import '../../helpers/fake_auth.dart';
 import '../../helpers/fake_booking.dart';
 import '../../helpers/fake_session.dart';
 import '../../helpers/pump_app.dart';
+import '../../helpers/fake_config.dart';
 
 /// Texto técnico de los errores falsos: nunca debe verse.
 const _technical = 'permission-denied';
@@ -283,6 +284,7 @@ void main() {
         stored: {'language': 'es'},
         home: const AdminDashboardView(),
         overrides: [
+          configRepositoryProvider.overrideWithValue(FakeConfigRepository()),
           adminAppointmentsProvider.overrideWith(
             (ref) => Stream.error(technical),
           ),

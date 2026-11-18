@@ -2,65 +2,46 @@
 
 ## Estado actual (2026-11-17)
 - Se unifica `shaddai-app` (Firebase, reservas, admin) con `../shaddai-web` (landing y design system). SDD en `.claude/skills/`. Mapa: 005 reservas, 006 editar turno, 007 reserva de la admin, 008 agenda admin, 009 perfil, 010 admin, 011 push, 012 reglas, 013 publicación (las specs 001-004 citan la numeración original).
-- **Implementadas** con recorrido del autor: 001 a 004 (2026-10-23), 005-reservas (2026-11-05), 006-editar-turno (2026-11-15), 007-reserva-admin (2026-11-17, rama `spec/007-reserva-admin`, 1667 tests; reglas comprobadas en el simulador y en la app).
-- 007, decisiones que el autor revisó en el recorrido: D-1 (el 55 solo se quita tras `+` o con 12+ dígitos, porque 55 también es DDD), D-6 (enlace a WhatsApp en todos los turnos), D-8 (tras agendar se vacía también el día). Hallazgo fuera de la 007, sin arreglar: en la cabecera verde del panel de la admin, "PANEL DE BEIDIS" y el contador (`onBrandMuted`, 10-11 px, w300) no pasan `textContrastGuideline`, y un icono mide 22 px (candidato para la 010).
-- Decisiones vigentes: `settings/priceList` único, céntimos, transacciones (004); `busySlots` solo con inicio y fin, en lote con el turno (005); copia `booked` en el turno; Curitiba = −3 h fijo; lógica pura en `lib/features/booking/logic/`; 1 turno activo hasta su fin, 60 días (admin 365); margen de edición `settings/calendar.editMarginMinutes` (solo en la consola hasta la 008); `clientId: null` = persona sin cuenta y `createdByAdmin` (007).
+- **Implementadas** con recorrido del autor: 001 a 004 (2026-10-23), 005 (2026-11-05), 006 (2026-11-15), 007 y 008 (2026-11-17; 2015 tests; reglas comprobadas en el simulador y en la app). **Siguiente: 009 perfil.**
+- Decisiones de la 007 revisadas por el autor: el 55 solo se quita tras `+` o con 12+ dígitos (55 también es DDD); WhatsApp en todos los turnos; tras agendar se vacía también el día.
+- 008: la edición abierta desde un cierre vuelve al cierre (en Web, `/admin` → `closures` → `new` → `appointments/:id/edit` anidadas y con `go`). Cambio deliberado: el caso 15 de las reglas de la 007 pasa a permitido (`set` del turno ocupado en la edición).
+- Decisiones vigentes: `settings/priceList` único, céntimos, transacciones (004); `busySlots` solo con inicio y fin, en lote con el turno; copia `booked` en el turno; Curitiba = −3 h fijo; lógica pura en `lib/features/booking/logic/`; 1 turno activo hasta su fin, 60 días (admin 365); margen `settings/calendar.editMarginMinutes` (la admin lo cambia en Horarios); cierres en `closures`; `clientId: null` = sin cuenta, `createdByAdmin` (007).
 - Requisitos comunes RC-1 a RC-4: propuesta, pendiente de revisión del autor. Sin implementar: token FCM y permisos, Cloud Functions.
 
 ## Decisiones (y por qué)
 - Nombre comercial **Studio Shaddai**; marca = sello SVG de shaddai-web (`BrandLogo`, `flutter_svg` aprobado). Identificadores `com.juliangg.shaddai` sin cambiar.
-- Repo base `shaddai-app` y su arquitectura feature-first: ya tiene Firebase en las 3 plataformas. No se traen Dio/Retrofit, `Result<T>` ni la estructura de carpetas de la web.
-- Diseño de shaddai-web: Cormorant Garamond + Inter incluidas en la app, ES/PT guardado, tema claro/oscuro/**sistema por defecto**. Preferencias solo en el dispositivo.
-- Mismas funciones en las 3 plataformas, **UI separada**: Web = landing con barra superior; Android/iOS = barra inferior (`NavigationBar`).
-- Servicios y precios irán a **Firestore** (spec 004). Hosting web en **Hostinger** (dshaddai.com).
-- **Tests primero** (decisión del autor). `CLAUDE.md` es la guía para los agentes.
-- Sin cuentas de desarrollador, política de privacidad ni fecha de publicación todavía.
+- Repo base `shaddai-app`, feature-first: ya tiene Firebase en las 3 plataformas. Sin Dio/Retrofit, `Result<T>` ni las carpetas de la web.
+- Diseño de shaddai-web: Cormorant Garamond + Inter, ES/PT, tema claro/oscuro/**sistema por defecto**; preferencias solo en el dispositivo.
+- Mismas funciones en las 3 plataformas, **UI separada**: Web = landing con barra superior; Android/iOS = `NavigationBar`. Hosting web en **Hostinger** (dshaddai.com).
+- **Tests primero** (decisión del autor). `CLAUDE.md` es la guía para los agentes. Sin cuentas de desarrollador, política de privacidad ni fecha de publicación todavía.
 
-## Pendientes que se resuelven en las specs
-- 005: el turno no guarda el servicio elegido (`AppointmentModel`); reservar desde el detalle con el servicio ya elegido.
-- 013: `firebase.json` sin la entrada de Web (sí está en `firebase_options.dart`; volver a ejecutar `flutterfire configure`); `web/manifest.json` es la plantilla de Flutter; clave de Google Maps para web; nombre bajo el icono "shaddai"/"Shaddai" (Android/iOS).
-- Sin spec asignada: claves `.arb` sin uso `adminTab` y `selectedOption`. `AuthRepository.signInWithGoogle` devuelve `null` también ante errores de Google, y no se ve ningún aviso.
+## Pendientes
+- 009: Perfil formatea `startTime` sin pasarlo a la hora del salón.
+- 010: en la cabecera verde del panel, "PANEL DE BEIDIS" y el contador (`onBrandMuted`, 10-11 px, w300) no pasan `textContrastGuideline`.
+- 013: `firebase.json` sin la entrada de Web (volver a ejecutar `flutterfire configure`); `web/manifest.json` es la plantilla; clave de Google Maps para web; nombre bajo el icono (Android/iOS).
+- Sin spec: claves `.arb` sin uso `adminTab` y `selectedOption`; `AuthRepository.signInWithGoogle` devuelve `null` también ante errores de Google, sin aviso.
 
 ## Errores a evitar
-- Esta máquina está en −03:00 (= Curitiba): un test de hora del salón pasa sin el arreglo. Para verlo en rojo, `TZ=Europe/Lisbon flutter test …`.
-- Web en local: siempre `--web-port 5050` (`.vscode/launch.json`; el 5000 lo ocupa el Receptor AirPlay de macOS). Google solo acepta orígenes registrados en el cliente OAuth web (`http://localhost:5050`); con otro puerto da `origin_mismatch`. Al publicar, registrar también `https://dshaddai.com`.
-- `DateFormat.Hm('es')` da "9:00" y `'pt'`, "09:00": en los tests, buscar la hora con el formato del idioma.
-- Riverpod 3 reintenta solo un provider que falla: queda `AsyncLoading` con el error dentro, y `whenData` lo pierde. Comprobar `hasError` antes que `isLoading`.
-- Tests de la reserva: `ListView` construye poco fuera de la pantalla; para volver al calendario, `tabScrollControllerProvider(MobileTab.booking).jumpTo(0)`. `TableCalendar` tiene construidos los meses de al lado: buscar los días con `.hitTestable()`.
-- `adminControllerProvider` crea los repositorios de reservas, usuarias y ajustes: un test que toque sus botones debe sustituir los tres, o llega a Firebase.
-- Una vista con `BookingView` necesita sustituir también `myAppointmentsProvider` (`sessionOverrides` o `bookingDataOverrides`), o muestra el aviso de error.
-- Riverpod 3: `ref.read(provider.future)` de un provider que nadie escucha se queda en pausa y no termina (el test se cuelga). Leer `.value` de algo que la pantalla ya escucha, o escucharlo en el test.
-- Un `StreamProvider` que lee otro con `.value` vuelve a construirse (y a suscribirse a Firestore) con cada valor: usar `select` sobre lo que importa (el día, el `uid`). En los tests de la reserva, fijar `salonNowProvider` (`bookingDataOverrides`) para no dejar su temporizador de 30 s pendiente.
-- `DateTime ==` exige el mismo instante **y** la misma zona (UTC o local): comparar instantes con `isAtSameMomentAs`. Las fechas de Firestore llegan en hora local (`decodeDates`); la hora del salón se obtiene con `toSalon`.
-- Flutter 3.47.8 (2026-11-02): `dart format lib test` reformatea 27 archivos que no se tocaron (líneas en blanco entre grupos de imports y cortes de línea). El autor decidió dejar ese formato (2026-11-02).
-- Tests con `tomorrow()`/`DateTime.now()` se rompen al cambiar de mes: un nombre de mes fijo ("outubro") o un mes de 6 semanas que baja las horas fuera de la pantalla de 800×600. Usar fechas fijas e inyectar "ahora" (`clockProvider` en la 005), o calcular el mes y dar alto de sobra.
-- Cada Mac tiene su propia clave de depuración de Android: si el inicio de sesión con Google falla con `[16] Account reauth failed` / `canceled`, falta su SHA-1 en Firebase (app Android → Agregar huella digital) y hay que volver a descargar `google-services.json`. Ver la SHA-1 con el `keytool` de Android Studio (`/Applications/Android Studio.app/Contents/jbr/Contents/Home/bin/keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android`).
-- `currentUserProvider` escucha la ficha en vivo desde la 005 (T7). Los fakes de `UserRepository` necesitan `watchUser`, y los tests de providers con varios streams encadenados necesitan varias vueltas del bucle (`Future.delayed(Duration.zero)` × 5) antes de comprobar.
-- `textContrastGuideline` falla con un texto pequeño dentro de un `Container` con borde ajustado (lee el borde como fondo): la etiqueta "Oculto" va sin borde. Y no leas `adminServicesControllerProvider` en `build`: crea `ConfigRepository` con Firebase real y rompe los tests; léelo al pulsar. Tampoco mide bien un texto de 10 px en w400 (títulos `AppText.eyebrow`): los de la reserva van a 12 px en w600.
-- Los errores nunca se muestran en crudo: textos `.arb` sin `{error}` y el detalle a `debugPrint`. El login emite `AuthFailure`.
-- Riverpod 3: `Override` viene de `flutter_riverpod/misc.dart`. `final x = a ?? ref.watch(p)` puede inferirse nullable: anotar el tipo.
-- Editar `.arb` como texto (añadir al final, borrar línea a línea), no con `json.dump`: quita las líneas en blanco que agrupan las claves.
-- En macOS, `grep` no entiende `\b`: para buscar usos de una clave, Python con `(?![A-Za-z0-9_])` o `grep -w`.
-- Rutas anidadas (`ShellRoute`/`StatefulShellRoute`):
-  - llevan `BlockSemantics`: la página va en `Semantics(container: true)` para no ocultar la barra;
-  - sin nada enfocable, Tab no sale de la página;
-  - no limitar el ancho del navegador anidado: la página que sale se dibuja con ese ancho en la transición.
-- Lo que tiene que caber con el texto grande: dejar que crezca o pase a otra fila, no reducirlo (baja de 48 px).
-- Un diálogo que aparece o se cierra no está en el árbol de semántica mientras se anima: `pump()` sin duración no avanza el tiempo. Tras abrirlo, `pump(300 ms)`; tras cerrarlo, `pump()` y `pump(300 ms)`.
-- go_router 18: para saber si una navegación viene del navegador (atrás/adelante) o de la app, mirar `routeInformationProvider.value.state` **dentro del aviso** (`RouteInformationState` = app; el `Map` del historial = navegador). Después del aviso el router escribe el `Map` sin avisar. En tests, el navegador se simula guardando `routeInformationUpdated` y devolviéndolo con `pushRouteInformation` (`booking_edit_web_test.dart`).
-- `textContrastGuideline` no mide los textos de un nodo con `excludeSemantics` (p. ej., una fila con una frase propia para el lector de pantalla): medir esos textos aparte con `contrastRatio` (`booking_edit_accessibility_test.dart`).
-- `textContrastGuideline` toma como fondo lo que tapa a medias un texto (barra superior o inferior, botón flotante): medir el contenido sin ellos (la página o la pestaña sola).
-- go_router en Web: `push` no cambia la dirección del navegador. Para una página con dirección propia y la de debajo conservada, usar una ruta hija y `go`. Una página tapada por otra no tiene tamaño: desplazarla en el fotograma siguiente a quitar la de encima.
-- Contenido que llega de Firestore después del primer fotograma cambia la altura de la landing: lo que salta a una sección debe volver a colocarse al llegar (`LandingPage._reopenWhenPricesLoad`); los tests que montan secciones a mano necesitan un `pump()` extra.
-- Riverpod 3: al invalidar un `StreamProvider`, `.value` conserva el dato anterior mientras recarga; comprobar `isLoading` si hay que mostrar la carga (p. ej. tras "Reintentar").
-- Los tests con el router real (`pumpWebApp`, `pumpMobileApp`):
-  - arrancan en la dirección pedida (`defaultRouteNameTestValue`);
-  - cargan las fuentes reales;
-  - reducen animaciones;
-  - necesitan repositorios de autenticación falsos.
-- En la consola de Firebase, los números de las reglas: `editMarginMinutes` como `int64`. Con `double`, `duration.value` falla y la regla deniega (`PERMISSION_DENIED`), aunque la app lo lea bien. Un documento creado a mano debe tener todos los campos que lee la app.
-- Un `SnackBar` con `backgroundColor: brand.danger` necesita su propio color de texto (`brand.background`): el del tema es `onBrand` (dorado), que no se lee sobre el peligro.
-- Tests con la lista de la reserva: tras `jumpTo`/`ensureVisible`, la lista puede recolocarse con una animación que ignora los toques (el `tap` avisa "would not hit test"). Dejar pasar varios fotogramas con tiempo (`pump(100 ms)` × 10) antes de tocar.
-- `ConsumerState`: no crear con `late final x = …ref.read…` algo que `dispose` usa; si nunca se usó, se crea en `dispose` y falla. Crearlo en `initState`.
-- Tests de semántica: `ensureSemantics()` se cierra con `dispose()` dentro del test (`addTearDown` llega tarde); el nombre de un `IconButton` es su `tooltip`, que `bySemanticsLabel` no encuentra: usar `find.byTooltip` / `isSemantics(tooltip:)` (`containsSemantics` está obsoleto).
-- Accesibilidad (007): un `Semantics(liveRegion:)` o una fila con frase propia necesita `container: true`, o se funde con el texto vecino; con `excludeSemantics`, dar `onTap` al `Semantics`. Un texto en un `Row` sin `Flexible` (botones con etiqueta larga, hora y estado) se desborda al 200 % en 320 px. Los errores de un `TextField` llevan `errorStyle` con `brand.danger`. Para medir solo una parte de la pantalla: `expectTextContrast` (`test/helpers/dialog_contrast.dart`).
+- **Entorno.** Esta Mac está en −03:00 (= Curitiba): para ver en rojo un test de hora del salón, `TZ=Europe/Lisbon flutter test …`. Web en local siempre en `--web-port 5050` (el 5000 es de AirPlay; Google solo acepta orígenes registrados; al publicar, registrar `https://dshaddai.com`). Cada Mac tiene su clave de depuración de Android: si Google falla con `[16] Account reauth failed`, falta su SHA-1 en Firebase (`keytool` de Android Studio sobre `~/.android/debug.keystore`) y hay que bajar otra vez `google-services.json`. `dart format` reformatea archivos no tocados desde Flutter 3.47.8: el autor lo acepta.
+- **Archivos.** Editar `.arb` como texto (añadir al final), no con `json.dump`. En macOS, `grep` no entiende `\b`: usar `grep -w` o Python.
+- **Fechas.** `DateFormat.Hm('es')` da "9:00" y `'pt'` "09:00". `DateTime ==` exige el mismo instante y la misma zona: usar `isAtSameMomentAs`; Firestore devuelve hora local, y la del salón se saca con `toSalon`. En tests, fechas fijas y "ahora" inyectado (`clockProvider`), nunca `DateTime.now()`.
+- **Riverpod 3.**
+  - Un provider que falla queda `AsyncLoading` con el error dentro: mirar `hasError` antes que `isLoading`. Al invalidar un `StreamProvider`, `.value` conserva el dato anterior.
+  - `ref.read(p.future)` de un provider que nadie escucha no termina. Un `StreamProvider` que lee otro con `.value` se reconstruye con cada valor: usar `select`.
+  - `Override` viene de `flutter_riverpod/misc.dart`. `final x = a ?? ref.watch(p)` puede salir nullable: anotar el tipo.
+  - Un provider no se cambia mientras se desmonta el árbol: hacerlo en una microtarea y comprobar `ref.mounted`. En un `ConsumerState`, crear en `initState` lo que use `dispose`.
+- **Fakes y overrides.** `adminControllerProvider` crea los repositorios de reservas, usuarias y ajustes: sustituir los tres. Una vista con `BookingView` necesita también `myAppointmentsProvider`. Fijar `salonNowProvider` (temporizador de 30 s). Los fakes de `UserRepository` necesitan `watchUser`, y varios streams encadenados necesitan varias vueltas (`Future.delayed(Duration.zero)` × 5).
+- **Tests de pantalla.**
+  - Listas: `ListView` construye poco fuera de la pantalla; para volver arriba, `jumpTo(0)` del `tabScrollControllerProvider`. Tras `jumpTo`/`ensureVisible`, dejar pasar `pump(100 ms)` × 10 antes de tocar. `TableCalendar` tiene construidos los meses de al lado: `.hitTestable()`.
+  - Un diálogo que se anima no está en la semántica: tras abrirlo, `pump(300 ms)`.
+  - `find.byType` solo encuentra el tipo exacto: para `OutlinedButton` y compañía, `byWidgetPredicate((w) => w is ButtonStyleButton)`.
+- **Accesibilidad.**
+  - `textContrastGuideline` toma como fondo lo que tapa un texto (barras, botón flotante) o el borde de un `Container` ajustado, no mide nodos con `excludeSemantics` ni bien un texto de 10 px en w400. Medir partes con `expectTextContrast` o `contrastRatio`.
+  - `ensureSemantics()` se cierra dentro del test. El nombre de un `IconButton` es su `tooltip`: `find.byTooltip` / `isSemantics(tooltip:)`.
+  - Un `Semantics(liveRegion:)` o una fila con frase propia necesita `container: true`; con `excludeSemantics`, `onTap` en el `Semantics`.
+  - Con el texto al 200 % en 320 px, dejar crecer o pasar a otra línea, no reducir. Un texto en un `Row` sin `Flexible` se desborda. Para algo a cada extremo que baje de línea, `Wrap` no separa y `OverflowBar` alinea igual a todos: medir y elegir `Row` o `Column` (`_DayHeader`).
+  - Un `SnackBar` sobre `brand.danger` lleva texto `brand.background`. Los errores de un `TextField`, `errorStyle` con `brand.danger`. Los errores nunca en crudo: textos `.arb` y el detalle a `debugPrint`.
+- **go_router.** En Web, `push` no cambia la dirección: para una página con dirección propia y la de debajo conservada, ruta hija y `go`. Para saber si una navegación viene del navegador, mirar `routeInformationProvider.value.state` dentro del aviso (en tests, `BrowserHistory`). Una página tapada por otra no tiene tamaño. Las rutas anidadas llevan `BlockSemantics`: la página va en `Semantics(container: true)`.
+- **Landing.** Lo que llega de Firestore tras el primer fotograma cambia la altura: lo que salta a una sección debe recolocarse (`_reopenWhenPricesLoad`).
+- **Reserva y edición.** No leer `adminServicesControllerProvider` en `build` (crea Firebase real). Al cerrar una edición, vaciar la selección antes de quitar `editTargetProvider`, o el turno recién guardado avisa "ya no está disponible". Un `DropdownButtonFormField` con `initialValue` se rehace con una clave que cambie tras cada guardado.
+- **Firebase.** En la consola, `editMarginMinutes` como `int64`: con `double` la regla deniega. Un documento creado a mano debe tener todos los campos que lee la app.

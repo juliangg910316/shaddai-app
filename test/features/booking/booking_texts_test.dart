@@ -131,6 +131,36 @@ void main() {
     }
   });
 
+  test('todas las claves del plan § 6 de la spec 008, y las que se añadieron '
+      'al implementarla, están en español y en portugués (RNF-3)', () {
+    final plan = File('specs/008-agenda-admin/plan.md').readAsStringSync();
+    final start = plan.indexOf('## 6.');
+    final section = plan.substring(start, plan.indexOf('## 7.', start));
+    final keys = {
+      for (final match in RegExp(
+        r'^\| `([A-Za-z]+)` \|',
+        multiLine: true,
+      ).allMatches(section))
+        match.group(1)!,
+      // Añadidas en las tareas (T7 y T17).
+      'adminCancelAppointmentConfirm',
+      'adminCancelAppointmentKeep',
+      'adminCancelAppointmentError',
+      'closureDeleteFor',
+      'adminAgendaPreviousDay',
+      'adminAgendaNextDay',
+    };
+    expect(keys, hasLength(greaterThanOrEqualTo(40)));
+    final es = _arb('app_es.arb');
+    final pt = _arb('app_pt.arb');
+    for (final key in keys) {
+      for (final (name, texts) in [('es', es), ('pt', pt)]) {
+        expect(texts[key], isA<String>(), reason: '$name: $key');
+        expect((texts[key] as String).trim(), isNotEmpty, reason: key);
+      }
+    }
+  });
+
   test('los textos con duración y franja la incluyen', () {
     final es = AppLocalizationsEs();
     final pt = AppLocalizationsPt();

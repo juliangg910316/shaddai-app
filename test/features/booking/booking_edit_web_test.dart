@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shaddai/data/models/appointment_model.dart';
@@ -12,6 +11,7 @@ import 'package:shaddai/features/booking/presentation/booking_form.dart';
 import 'package:shaddai/features/booking/providers/booking_provider.dart';
 import 'package:shaddai/features/navigation/presentation/web_top_bar.dart';
 
+import '../../helpers/browser_history.dart';
 import '../../helpers/fake_booking.dart';
 import '../../helpers/fake_price_list.dart';
 import '../../helpers/fake_session.dart';
@@ -41,55 +41,11 @@ final appointment = AppointmentModel(
   ),
 );
 
-/// Una entrada del historial del navegador: la dirección y el estado que la
-/// app le dio al escribirla.
-typedef HistoryEntry = ({String location, Object? state});
-
 Finder _inTopBar(String text) =>
     find.descendant(of: find.byType(WebTopBar), matching: find.text(text));
 
 void main() {
-  /// Lo que la app escribe en el historial del navegador, en orden.
-  late List<HistoryEntry> history;
-
-  /// Guarda lo que la app escribe en el historial, como el navegador.
-  void recordHistory(WidgetTester tester) {
-    history = [];
-    final messenger = tester.binding.defaultBinaryMessenger;
-    messenger.setMockMethodCallHandler(SystemChannels.navigation, (call) async {
-      if (call.method == 'routeInformationUpdated') {
-        final args = call.arguments as Map;
-        history.add((
-          location: (args['uri'] ?? args['location']) as String,
-          state: args['state'],
-        ));
-      }
-      return null;
-    });
-    addTearDown(
-      () => messenger.setMockMethodCallHandler(SystemChannels.navigation, null),
-    );
-  }
-
-  /// "Atrás" o "adelante" del navegador: devuelve una entrada del historial
-  /// con su estado, como hace el navegador.
-  Future<void> browserGoesTo(WidgetTester tester, String location) async {
-    final entry = history.lastWhere(
-      (e) => Uri.parse(e.location).path == location,
-    );
-    final message = const JSONMethodCodec().encodeMethodCall(
-      MethodCall('pushRouteInformation', {
-        'location': entry.location,
-        'state': entry.state,
-      }),
-    );
-    await tester.binding.defaultBinaryMessenger.handlePlatformMessage(
-      SystemChannels.navigation.name,
-      message,
-      (_) {},
-    );
-    await settleWeb(tester);
-  }
+  final browser = BrowserHistory();
 
   Future<void> tap(WidgetTester tester, Finder finder) async {
     await tester.ensureVisible(finder);
@@ -104,7 +60,7 @@ void main() {
   /// La app en Web, en la landing; "Reservar" de la barra superior y
   /// "Editar turno", y elige las 11:00.
   Future<void> openEdit(WidgetTester tester) async {
-    recordHistory(tester);
+    browser.record(tester);
     await pumpWebApp(
       tester,
       location: '/',
@@ -137,10 +93,10 @@ void main() {
 
     webRouter(tester).go('/');
     await settleWeb(tester);
-    await browserGoesTo(tester, '/booking');
+    await browser.goTo(tester, '/booking');
     webRouter(tester).push('/services/service/spa');
     await settleWeb(tester);
-    await browserGoesTo(tester, '/');
+    await browser.goTo(tester, '/');
 
     expect(fromApp, [true, false, true, false]);
   });
@@ -170,12 +126,12 @@ void main() {
       'volver, se ve el turno (RF-20)', (tester) async {
     await openEdit(tester);
 
-    await browserGoesTo(tester, '/');
+    await browser.goTo(tester, '/');
     expect(webLocation(tester).path, '/');
     expect(appContainer(tester).read(editTargetProvider), isNull);
 
     // "Adelante": de vuelta en la reserva, el turno sin cambios.
-    await browserGoesTo(tester, '/booking');
+    await browser.goTo(tester, '/booking');
     expect(webLocation(tester).path, '/booking');
     expect(find.byType(BookingForm), findsNothing);
     expect(find.byType(ActiveAppointmentView), findsOneWidget);

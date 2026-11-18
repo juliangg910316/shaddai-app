@@ -2375,6 +2375,300 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Escribir a {name} por WhatsApp'**
   String adminAppointmentWhatsApp(String name);
+
+  /// Título de la pantalla de cierres y del botón del panel (spec 008, RF-1)
+  ///
+  /// In es, this message translates to:
+  /// **'Cierres'**
+  String get adminClosuresTitle;
+
+  /// Lista de cierres vacía (spec 008, RF-2)
+  ///
+  /// In es, this message translates to:
+  /// **'No hay cierres próximos.'**
+  String get adminClosuresEmpty;
+
+  /// Botón para crear un cierre (spec 008, RF-2, RF-3)
+  ///
+  /// In es, this message translates to:
+  /// **'Nuevo cierre'**
+  String get adminClosuresNew;
+
+  /// Error al cargar los cierres (spec 008, RF-10)
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudieron cargar los cierres.'**
+  String get adminClosuresLoadError;
+
+  /// Cierre de días enteros (spec 008, RF-1)
+  ///
+  /// In es, this message translates to:
+  /// **'Todo el día'**
+  String get closureAllDay;
+
+  /// Cierre de varios días: el primero y el último (spec 008, RF-1)
+  ///
+  /// In es, this message translates to:
+  /// **'Del {first} al {last}'**
+  String closureDaysRange(String first, String last);
+
+  /// Botón para quitar un cierre (spec 008, RF-7)
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar'**
+  String get closureDeleteAction;
+
+  /// Título de la confirmación al quitar un cierre (spec 008, RF-7)
+  ///
+  /// In es, this message translates to:
+  /// **'¿Quitar este cierre?'**
+  String get closureDeleteTitle;
+
+  /// Texto de la confirmación al quitar un cierre (spec 008, RF-7)
+  ///
+  /// In es, this message translates to:
+  /// **'Esas horas volverán a estar libres para reservar.'**
+  String get closureDeleteBody;
+
+  /// Aviso tras quitar un cierre (spec 008, RF-7)
+  ///
+  /// In es, this message translates to:
+  /// **'Cierre quitado.'**
+  String get closureDeleted;
+
+  /// Error al quitar un cierre (spec 008, RF-11)
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo quitar el cierre. Inténtalo de nuevo.'**
+  String get closureDeleteError;
+
+  /// Tipo de cierre: una franja (spec 008, RF-3)
+  ///
+  /// In es, this message translates to:
+  /// **'Unas horas'**
+  String get closureKindRange;
+
+  /// Tipo de cierre: días enteros (spec 008, RF-3)
+  ///
+  /// In es, this message translates to:
+  /// **'Días enteros'**
+  String get closureKindDays;
+
+  /// Fecha de una franja (spec 008, RF-3)
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha'**
+  String get closureDateLabel;
+
+  /// Hora de inicio de una franja (spec 008, RF-3)
+  ///
+  /// In es, this message translates to:
+  /// **'Desde'**
+  String get closureFromLabel;
+
+  /// Hora de fin de una franja (spec 008, RF-3)
+  ///
+  /// In es, this message translates to:
+  /// **'Hasta'**
+  String get closureToLabel;
+
+  /// Primer día de un cierre de días enteros (spec 008, RF-3)
+  ///
+  /// In es, this message translates to:
+  /// **'Primer día'**
+  String get closureFirstDayLabel;
+
+  /// Último día de un cierre de días enteros (spec 008, RF-3)
+  ///
+  /// In es, this message translates to:
+  /// **'Último día'**
+  String get closureLastDayLabel;
+
+  /// Error: la franja no termina después de empezar (spec 008, RF-4)
+  ///
+  /// In es, this message translates to:
+  /// **'La hora de fin debe ser posterior a la de inicio.'**
+  String get closureErrorEndNotAfterStart;
+
+  /// Error: días al revés (spec 008, RF-4)
+  ///
+  /// In es, this message translates to:
+  /// **'El último día no puede ser anterior al primero.'**
+  String get closureErrorDaysReversed;
+
+  /// Error: el cierre ya terminó (spec 008, RF-4)
+  ///
+  /// In es, this message translates to:
+  /// **'Ese tiempo ya pasó.'**
+  String get closureErrorPast;
+
+  /// Error: fecha a más de 365 días (spec 008, RF-4)
+  ///
+  /// In es, this message translates to:
+  /// **'Solo se puede cerrar hasta el {date}.'**
+  String closureErrorTooFar(String date);
+
+  /// Título de los turnos que chocan con un cierre (spec 008, RF-5)
+  ///
+  /// In es, this message translates to:
+  /// **'Hay turnos en ese tiempo'**
+  String get closureConflictsTitle;
+
+  /// Explicación de los turnos que chocan (spec 008, RF-5)
+  ///
+  /// In es, this message translates to:
+  /// **'Muévelos o cancélalos y vuelve a guardar el cierre.'**
+  String get closureConflictsBody;
+
+  /// Aviso tras guardar un cierre (spec 008, RF-6)
+  ///
+  /// In es, this message translates to:
+  /// **'Cierre guardado.'**
+  String get closureSaved;
+
+  /// Error al guardar un cierre (spec 008, RF-11)
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo guardar el cierre. Inténtalo de nuevo.'**
+  String get closureSaveError;
+
+  /// Botón para editar un turno desde el panel (spec 008, RF-5, RF-18)
+  ///
+  /// In es, this message translates to:
+  /// **'Editar'**
+  String get adminAppointmentEdit;
+
+  /// Confirmación al cancelar un turno desde el panel (spec 008, RF-5)
+  ///
+  /// In es, this message translates to:
+  /// **'¿Cancelar el turno de {name}?'**
+  String adminCancelAppointmentTitle(String name);
+
+  /// Texto de la confirmación al cancelar un turno (spec 008, RF-5)
+  ///
+  /// In es, this message translates to:
+  /// **'La hora quedará libre.'**
+  String get adminCancelAppointmentBody;
+
+  /// Botón que confirma la cancelación de un turno (spec 008, RF-5)
+  ///
+  /// In es, this message translates to:
+  /// **'Cancelar turno'**
+  String get adminCancelAppointmentConfirm;
+
+  /// Botón que cierra la confirmación sin cancelar (spec 008, RF-5)
+  ///
+  /// In es, this message translates to:
+  /// **'Volver'**
+  String get adminCancelAppointmentKeep;
+
+  /// Error al cancelar un turno desde los cierres (spec 008, RF-5)
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo cancelar el turno. Inténtalo de nuevo.'**
+  String get adminCancelAppointmentError;
+
+  /// Marca de un cierre en la agenda del día (spec 008, RF-9)
+  ///
+  /// In es, this message translates to:
+  /// **'Cerrado'**
+  String get adminAgendaClosed;
+
+  /// Guardar cambios sin cambios (spec 008, RF-26)
+  ///
+  /// In es, this message translates to:
+  /// **'No cambiaste nada.'**
+  String get adminEditNoChanges;
+
+  /// Edición de la admin guardada (spec 008, RF-28)
+  ///
+  /// In es, this message translates to:
+  /// **'Turno de {name} guardado.'**
+  String adminEditSaved(String name);
+
+  /// El turno en edición ya no está activo (spec 008, RF-30)
+  ///
+  /// In es, this message translates to:
+  /// **'Ese turno ya no está activo: se canceló o terminó.'**
+  String get adminEditNotActive;
+
+  /// Alguien cambió el turno en edición (spec 008, RF-30)
+  ///
+  /// In es, this message translates to:
+  /// **'Alguien cambió ese turno mientras lo editabas. Revisa cómo está ahora.'**
+  String get adminEditChanged;
+
+  /// El turno a editar no existe (spec 008)
+  ///
+  /// In es, this message translates to:
+  /// **'No se encontró ese turno.'**
+  String get adminEditNotFound;
+
+  /// Botón para volver a la agenda (spec 008)
+  ///
+  /// In es, this message translates to:
+  /// **'Volver a la agenda'**
+  String get adminEditBackToAgenda;
+
+  /// Título de la sección del margen (spec 008, RF-36)
+  ///
+  /// In es, this message translates to:
+  /// **'Margen de edición'**
+  String get settingsEditMarginTitle;
+
+  /// Explicación del margen (spec 008, RF-36)
+  ///
+  /// In es, this message translates to:
+  /// **'Hasta cuánto antes del turno puede cambiarlo la clienta.'**
+  String get settingsEditMarginHelp;
+
+  /// Opción de margen 0 (spec 008, RF-36)
+  ///
+  /// In es, this message translates to:
+  /// **'Sin margen'**
+  String get settingsEditMarginNone;
+
+  /// Opción de margen en horas (spec 008, RF-36)
+  ///
+  /// In es, this message translates to:
+  /// **'{hours, plural, =1{1 hora} other{{hours} horas}}'**
+  String settingsEditMarginHours(int hours);
+
+  /// Margen guardado que no es una opción (spec 008, RF-37)
+  ///
+  /// In es, this message translates to:
+  /// **'{hours} h {minutes} min'**
+  String settingsEditMarginCustom(int hours, int minutes);
+
+  /// Aviso al guardar el margen (spec 008, RF-38)
+  ///
+  /// In es, this message translates to:
+  /// **'Margen guardado.'**
+  String get settingsEditMarginSaved;
+
+  /// Error al guardar el margen (spec 008, RF-39)
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo guardar el margen.'**
+  String get settingsEditMarginError;
+
+  /// Nombre de "Quitar" de un cierre para el lector de pantalla (spec 008, RNF-2)
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar el cierre: {dates}, {hours}'**
+  String closureDeleteFor(String dates, String hours);
+
+  /// Botón del día anterior en la agenda (spec 008, RNF-2)
+  ///
+  /// In es, this message translates to:
+  /// **'Día anterior'**
+  String get adminAgendaPreviousDay;
+
+  /// Botón del día siguiente en la agenda (spec 008, RNF-2)
+  ///
+  /// In es, this message translates to:
+  /// **'Día siguiente'**
+  String get adminAgendaNextDay;
 }
 
 class _AppLocalizationsDelegate

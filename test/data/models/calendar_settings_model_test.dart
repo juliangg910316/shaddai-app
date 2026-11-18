@@ -73,18 +73,29 @@ void main() {
     expect(CalendarSettingsModel.defaultSettings().editMarginMinutes, 0);
   });
 
-  test('toMap no escribe el margen, para que guardar el horario no lo pise '
-      '(D-4)', () {
+  test('toMap no escribe el margen ni las fechas bloqueadas, para que '
+      'guardar el horario no los pise (spec 006, D-4; spec 008, D-6, '
+      'RF-41)', () {
     final settings = CalendarSettingsModel.fromMap(
       calendar({'editMarginMinutes': 30}),
     );
-    expect(settings.toMap().containsKey('editMarginMinutes'), isFalse);
     expect(settings.toMap(), {
       'openingHours': {
         'monday': {'open': '09:00', 'close': '18:00', 'isClosed': false},
       },
       'globalSlotDurationMinutes': 30,
-      'blockedDates': ['2026-12-25'],
     });
+  });
+
+  test('las fechas bloqueadas existentes se siguen leyendo (spec 008, '
+      'RNF-4)', () {
+    expect(CalendarSettingsModel.fromMap(calendar()).blockedDates, [
+      '2026-12-25',
+    ]);
+    expect(
+      CalendarSettingsModel.fromMap({...calendar(), 'blockedDates': null})
+          .blockedDates,
+      isEmpty,
+    );
   });
 }

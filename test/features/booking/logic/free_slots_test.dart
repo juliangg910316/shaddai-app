@@ -200,4 +200,73 @@ void main() {
       isNot(FreeSlot(start: at(8), coverageMinutes: 30)),
     );
   });
+
+  group('con cierres (spec 008, RF-12, RF-14)', () {
+    // Un cierre ocupa su tiempo como un turno ocupado más.
+    final settings = opening('08:00', '12:00');
+    List<String> slots(List<BusyRange> ranges) => describe(
+      freeSlots(
+        day: tuesday,
+        settings: settings,
+        busy: ranges,
+        nowSalon: earlier,
+      ),
+    );
+
+    test('al principio del día', () {
+      expect(slots([busy(at(8), at(9, 30))]), [
+        '9:30/150',
+        '10:00/120',
+        '10:30/90',
+        '11:00/60',
+        '11:30/30',
+      ]);
+    });
+
+    test('en medio: la cobertura termina donde empieza el cierre', () {
+      expect(slots([busy(at(10), at(11))]), [
+        '8:00/120',
+        '8:30/90',
+        '9:00/60',
+        '9:30/30',
+        '11:00/60',
+        '11:30/30',
+      ]);
+    });
+
+    test('al final del día', () {
+      expect(slots([busy(at(11), at(12))]), [
+        '8:00/180',
+        '8:30/150',
+        '9:00/120',
+        '9:30/90',
+        '10:00/60',
+        '10:30/30',
+      ]);
+    });
+
+    test('pegado a un turno ocupado', () {
+      expect(slots([busy(at(8), at(9)), busy(at(9), at(10, 15))]), [
+        '10:30/90',
+        '11:00/60',
+        '11:30/30',
+      ]);
+    });
+
+    test('unos días enteros que incluyen el día: ninguna hora', () {
+      expect(
+        slots([busy(DateTime.utc(2026, 11, 9), DateTime.utc(2026, 11, 12))]),
+        isEmpty,
+      );
+    });
+
+    test('un cierre que empezó la noche anterior y termina a media mañana', () {
+      expect(slots([busy(at(22, 0, 9), at(10))]), [
+        '10:00/120',
+        '10:30/90',
+        '11:00/60',
+        '11:30/30',
+      ]);
+    });
+  });
 }

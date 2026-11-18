@@ -22,6 +22,7 @@ import 'package:shaddai/features/services/logic/price_list_view_logic.dart';
 import 'package:shaddai/features/services/providers/price_list_provider.dart';
 
 import '../../helpers/fake_booking.dart';
+import '../../helpers/fake_config.dart';
 import '../../helpers/fake_session.dart';
 
 /// Martes 10 de noviembre de 2026 a las 10:00 en Curitiba.
@@ -62,6 +63,7 @@ void main() {
     final c = ProviderContainer(
       overrides: [
         bookingRepositoryProvider.overrideWithValue(bookings),
+        configRepositoryProvider.overrideWithValue(FakeConfigRepository()),
         clockProvider.overrideWithValue(() => nowInstant),
         currentUserProvider.overrideWith(
           (ref) => user?.call() ?? Stream.value(testClient),

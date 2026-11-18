@@ -158,6 +158,7 @@ class BookingContext {
     this.catalog,
     this.settings,
     this.busy,
+    this.closures = const [],
     required this.nowSalon,
     this.original,
     this.windowDays = bookingWindowDays,
@@ -168,6 +169,10 @@ class BookingContext {
 
   /// Sin el propio turno durante la edición (spec 006, RF-7).
   final List<BusyRange>? busy;
+
+  /// Los cierres de la agenda, en hora de pared (spec 008, RF-12). `null`
+  /// mientras no han llegado.
+  final List<BusyRange>? closures;
   final DateTime nowSalon;
 
   /// El turno en edición, o `null` en una reserva nueva (spec 006). Con él,
@@ -178,15 +183,21 @@ class BookingContext {
   /// (spec 007, RF-12).
   final int windowDays;
 
-  bool get _scheduleKnown => settings != null && busy != null;
+  bool get _scheduleKnown =>
+      settings != null && busy != null && closures != null;
 
-  /// Las horas libres del día de [day], o ninguna si el calendario o los
-  /// turnos ocupados aún no han llegado. En la edición, con su hora original
-  /// (`editFreeSlots`).
+  /// Las horas libres del día de [day], o ninguna si el calendario, los
+  /// turnos ocupados o los cierres aún no han llegado. En la edición, con su
+  /// hora original (`editFreeSlots`). Los cierres ocupan su tiempo como un
+  /// turno más (spec 008, RF-12, RF-14).
   List<FreeSlot> freeSlotsOf(DateTime day) {
     final settings = this.settings;
-    final busy = this.busy;
-    if (settings == null || busy == null) return const [];
+    final known = this.busy;
+    final closures = this.closures;
+    if (settings == null || known == null || closures == null) {
+      return const [];
+    }
+    final busy = [...known, ...closures];
     final original = this.original;
     if (original != null) {
       return editFreeSlots(
@@ -210,9 +221,16 @@ class BookingContext {
   bool isDaySelectable(DateTime day, CalendarSettingsModel settings) {
     final window = bookingWindow(nowSalon, days: windowDays);
     final original = this.original;
+    final closures = this.closures ?? const [];
     return original == null
-        ? isSelectableDay(day, settings, window)
-        : isEditDaySelectable(day, settings, window, original);
+        ? isSelectableDay(day, settings, window, closures: closures)
+        : isEditDaySelectable(
+            day,
+            settings,
+            window,
+            original,
+            closures: closures,
+          );
   }
 
   /// La duración de [ref], o `null` si no se conoce o no está disponible.
@@ -383,6 +401,7 @@ BookingUpdate reconcile(BookingSelection selection, BookingContext context) {
         settings: settings,
         hasFreeSlot: (d) => context.freeSlotsOf(d).isNotEmpty,
         windowDays: context.windowDays,
+        closures: context.closures ?? const [],
       );
       if (day != null && next != day) {
         notices.add(const BookingNotice(BookingNoticeKind.dateMoved));

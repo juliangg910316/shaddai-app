@@ -615,4 +615,68 @@ void main() {
       expect(check(), EditCheck.ok);
     });
   });
+
+  group('con cierres (spec 008, RF-12, RF-14)', () {
+    final o = original(at(9), at(10));
+    final current = AppointmentModel(
+      id: 't1',
+      clientId: 'c1',
+      clientName: 'Ana',
+      clientPhone: '+55',
+      startTime: fromSalon(at(9)),
+      endTime: fromSalon(at(10)),
+      status: 'confirmed',
+      createdAt: fromSalon(at(7)),
+      booked: booked,
+    );
+
+    EditCheck check(DateTime start, int duration, List<BusyRange> closures) =>
+        checkEditBeforeSave(
+          original: o,
+          current: current,
+          start: start,
+          durationMinutes: duration,
+          settings: settings,
+          busy: const [],
+          closures: closures,
+          nowSalon: at(7),
+          marginMinutes: 0,
+        );
+
+    test('una hora nueva dentro de un cierre → slotTaken', () {
+      expect(
+        check(at(10, 30), 60, [(start: at(10, 30), end: at(11))]),
+        EditCheck.slotTaken,
+      );
+    });
+
+    test('un servicio que no cabe antes del cierre → doesNotFit', () {
+      expect(
+        check(at(10, 30), 60, [(start: at(11), end: at(12))]),
+        EditCheck.doesNotFit,
+      );
+    });
+
+    test('isEditDaySelectable: otro día cerrado por cierres no se elige; el '
+        'día original sí (spec 006, RF-5)', () {
+      final window = bookingWindow(at(7));
+      final thursday = at(0, 0, 26);
+      final closures = [(start: thursday, end: at(0, 0, 27))];
+      expect(
+        isEditDaySelectable(thursday, settings, window, o, closures: closures),
+        isFalse,
+      );
+      final onThursday = original(at(9, 0, 26), at(10, 0, 26));
+      expect(
+        isEditDaySelectable(
+          thursday,
+          settings,
+          window,
+          onThursday,
+          closures: closures,
+        ),
+        isTrue,
+      );
+    });
+  });
 }

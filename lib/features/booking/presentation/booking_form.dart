@@ -28,18 +28,31 @@ import 'slot_grid.dart';
 /// que vuelve al turno sin cambios.
 ///
 /// Con [admin], es la reserva de la admin (spec 007, RF-1): título "Agendar
-/// un turno" y, antes que nada, "Para quién".
+/// un turno" y, antes que nada, "Para quién". Con los dos, la edición de un
+/// turno por la admin (spec 008, RF-19).
+///
+/// [scrollController] es por defecto el de la pestaña Reservas; la edición
+/// de la admin, en otra ruta mientras la pestaña sigue montada, trae el suyo.
+/// [onCancel] es lo que hace "Cancelar" en la edición; por defecto, cerrarla.
 class BookingForm extends ConsumerStatefulWidget {
   const BookingForm({
     super.key,
     required this.onConfirmed,
     this.editing = false,
     this.admin = false,
+    this.scrollController,
+    this.onCancel,
+    this.showTitle = true,
   });
+
+  /// Sin título cuando la página ya lo lleva en su barra.
+  final bool showTitle;
 
   final VoidCallback onConfirmed;
   final bool editing;
   final bool admin;
+  final ScrollController? scrollController;
+  final VoidCallback? onCancel;
 
   @override
   ConsumerState<BookingForm> createState() => _BookingFormState();
@@ -71,7 +84,9 @@ class _BookingFormState extends ConsumerState<BookingForm> {
         ref.watch(recipientActiveAppointmentProvider) != null;
 
     return ListView(
-      controller: ref.watch(tabScrollControllerProvider(MobileTab.booking)),
+      controller:
+          widget.scrollController ??
+          ref.watch(tabScrollControllerProvider(MobileTab.booking)),
       padding: EdgeInsets.fromLTRB(
         20,
         MediaQuery.of(context).padding.top + 14,
@@ -79,17 +94,19 @@ class _BookingFormState extends ConsumerState<BookingForm> {
         32,
       ),
       children: [
-        Center(
-          child: Text(
-            widget.editing
-                ? l10n.bookingEditTitle
-                : widget.admin
-                ? l10n.bookingAdminTitle
-                : l10n.bookAppointment,
-            style: AppText.serif(size: 24, color: brand.inkStrong),
+        if (widget.showTitle) ...[
+          Center(
+            child: Text(
+              widget.editing
+                  ? l10n.bookingEditTitle
+                  : widget.admin
+                  ? l10n.bookingAdminTitle
+                  : l10n.bookAppointment,
+              style: AppText.serif(size: 24, color: brand.inkStrong),
+            ),
           ),
-        ),
-        const SizedBox(height: 18),
+          const SizedBox(height: 18),
+        ],
         if (widget.admin) ...[
           _MissingFrame(
             message: missing.contains(BookingPart.recipient)
@@ -138,7 +155,9 @@ class _BookingFormState extends ConsumerState<BookingForm> {
           const SizedBox(height: 12),
           OutlinePillButton(
             label: l10n.cancelAction,
-            onPressed: () => ref.read(editTargetProvider.notifier).end(),
+            onPressed:
+                widget.onCancel ??
+                () => ref.read(editTargetProvider.notifier).end(),
           ),
         ],
       ],

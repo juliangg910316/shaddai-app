@@ -35,6 +35,7 @@ class BookingLoadErrorNotice extends ConsumerWidget {
             if (schedule) {
               ref.invalidate(calendarSettingsProvider);
               ref.invalidate(busySlotsProvider);
+              ref.invalidate(closuresProvider);
             } else {
               ref.invalidate(currentUserProvider);
               ref.invalidate(myAppointmentsProvider);

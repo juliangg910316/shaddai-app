@@ -6,6 +6,9 @@ import 'package:shaddai/features/admin/presentation/admin_dashboard_view.dart';
 import 'package:shaddai/features/admin/providers/admin_provider.dart';
 
 import '../../helpers/pump_app.dart';
+import '../../helpers/fake_config.dart';
+
+import 'package:shaddai/features/booking/providers/booking_provider.dart';
 
 String _capitalized(String text) => text[0].toUpperCase() + text.substring(1);
 
@@ -18,6 +21,7 @@ void main() {
       stored: {'language': language},
       home: const AdminDashboardView(),
       overrides: [
+        configRepositoryProvider.overrideWithValue(FakeConfigRepository()),
         adminSelectedDateProvider.overrideWith((ref) => day),
         adminAppointmentsProvider.overrideWith((ref) => Stream.value(const [])),
       ],

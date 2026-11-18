@@ -58,6 +58,7 @@ BookingCheck checkBeforeSave<T>({
   required int durationMinutes,
   required CalendarSettingsModel settings,
   required Iterable<BusyRange> busy,
+  Iterable<BusyRange> closures = const [],
   required Iterable<T> mine,
   required AppointmentTimes Function(T appointment) times,
   required DateTime nowSalon,
@@ -70,25 +71,29 @@ BookingCheck checkBeforeSave<T>({
     durationMinutes: durationMinutes,
     settings: settings,
     busy: busy,
+    closures: closures,
     nowSalon: nowSalon,
   );
 }
 
 /// Si [start] (hora de pared) sigue siendo una hora libre y un servicio de
 /// [durationMinutes] cabe en ella (RF-26). También la usa la reserva de la
-/// admin (spec 007, RF-18). Nunca devuelve [BookingCheck.alreadyActive].
+/// admin (spec 007, RF-18). Los cierres de [closures] ocupan su tiempo como
+/// un turno más (spec 008, RF-12, RF-14). Nunca devuelve
+/// [BookingCheck.alreadyActive].
 BookingCheck checkSlot({
   required DateTime start,
   required int durationMinutes,
   required CalendarSettingsModel settings,
   required Iterable<BusyRange> busy,
+  Iterable<BusyRange> closures = const [],
   required DateTime nowSalon,
 }) {
   FreeSlot? slot;
   for (final free in freeSlots(
     day: salonDay(start),
     settings: settings,
-    busy: busy,
+    busy: [...busy, ...closures],
     nowSalon: nowSalon,
   )) {
     if (free.start == start) slot = free;

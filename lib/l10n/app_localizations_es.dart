@@ -1242,4 +1242,181 @@ class AppLocalizationsEs extends AppLocalizations {
   String adminAppointmentWhatsApp(String name) {
     return 'Escribir a $name por WhatsApp';
   }
+
+  @override
+  String get adminClosuresTitle => 'Cierres';
+
+  @override
+  String get adminClosuresEmpty => 'No hay cierres próximos.';
+
+  @override
+  String get adminClosuresNew => 'Nuevo cierre';
+
+  @override
+  String get adminClosuresLoadError => 'No se pudieron cargar los cierres.';
+
+  @override
+  String get closureAllDay => 'Todo el día';
+
+  @override
+  String closureDaysRange(String first, String last) {
+    return 'Del $first al $last';
+  }
+
+  @override
+  String get closureDeleteAction => 'Quitar';
+
+  @override
+  String get closureDeleteTitle => '¿Quitar este cierre?';
+
+  @override
+  String get closureDeleteBody =>
+      'Esas horas volverán a estar libres para reservar.';
+
+  @override
+  String get closureDeleted => 'Cierre quitado.';
+
+  @override
+  String get closureDeleteError =>
+      'No se pudo quitar el cierre. Inténtalo de nuevo.';
+
+  @override
+  String get closureKindRange => 'Unas horas';
+
+  @override
+  String get closureKindDays => 'Días enteros';
+
+  @override
+  String get closureDateLabel => 'Fecha';
+
+  @override
+  String get closureFromLabel => 'Desde';
+
+  @override
+  String get closureToLabel => 'Hasta';
+
+  @override
+  String get closureFirstDayLabel => 'Primer día';
+
+  @override
+  String get closureLastDayLabel => 'Último día';
+
+  @override
+  String get closureErrorEndNotAfterStart =>
+      'La hora de fin debe ser posterior a la de inicio.';
+
+  @override
+  String get closureErrorDaysReversed =>
+      'El último día no puede ser anterior al primero.';
+
+  @override
+  String get closureErrorPast => 'Ese tiempo ya pasó.';
+
+  @override
+  String closureErrorTooFar(String date) {
+    return 'Solo se puede cerrar hasta el $date.';
+  }
+
+  @override
+  String get closureConflictsTitle => 'Hay turnos en ese tiempo';
+
+  @override
+  String get closureConflictsBody =>
+      'Muévelos o cancélalos y vuelve a guardar el cierre.';
+
+  @override
+  String get closureSaved => 'Cierre guardado.';
+
+  @override
+  String get closureSaveError =>
+      'No se pudo guardar el cierre. Inténtalo de nuevo.';
+
+  @override
+  String get adminAppointmentEdit => 'Editar';
+
+  @override
+  String adminCancelAppointmentTitle(String name) {
+    return '¿Cancelar el turno de $name?';
+  }
+
+  @override
+  String get adminCancelAppointmentBody => 'La hora quedará libre.';
+
+  @override
+  String get adminCancelAppointmentConfirm => 'Cancelar turno';
+
+  @override
+  String get adminCancelAppointmentKeep => 'Volver';
+
+  @override
+  String get adminCancelAppointmentError =>
+      'No se pudo cancelar el turno. Inténtalo de nuevo.';
+
+  @override
+  String get adminAgendaClosed => 'Cerrado';
+
+  @override
+  String get adminEditNoChanges => 'No cambiaste nada.';
+
+  @override
+  String adminEditSaved(String name) {
+    return 'Turno de $name guardado.';
+  }
+
+  @override
+  String get adminEditNotActive =>
+      'Ese turno ya no está activo: se canceló o terminó.';
+
+  @override
+  String get adminEditChanged =>
+      'Alguien cambió ese turno mientras lo editabas. Revisa cómo está ahora.';
+
+  @override
+  String get adminEditNotFound => 'No se encontró ese turno.';
+
+  @override
+  String get adminEditBackToAgenda => 'Volver a la agenda';
+
+  @override
+  String get settingsEditMarginTitle => 'Margen de edición';
+
+  @override
+  String get settingsEditMarginHelp =>
+      'Hasta cuánto antes del turno puede cambiarlo la clienta.';
+
+  @override
+  String get settingsEditMarginNone => 'Sin margen';
+
+  @override
+  String settingsEditMarginHours(int hours) {
+    String _temp0 = intl.Intl.pluralLogic(
+      hours,
+      locale: localeName,
+      other: '$hours horas',
+      one: '1 hora',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String settingsEditMarginCustom(int hours, int minutes) {
+    return '$hours h $minutes min';
+  }
+
+  @override
+  String get settingsEditMarginSaved => 'Margen guardado.';
+
+  @override
+  String get settingsEditMarginError => 'No se pudo guardar el margen.';
+
+  @override
+  String closureDeleteFor(String dates, String hours) {
+    return 'Quitar el cierre: $dates, $hours';
+  }
+
+  @override
+  String get adminAgendaPreviousDay => 'Día anterior';
+
+  @override
+  String get adminAgendaNextDay => 'Día siguiente';
 }

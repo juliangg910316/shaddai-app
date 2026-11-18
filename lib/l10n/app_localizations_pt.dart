@@ -1245,4 +1245,182 @@ class AppLocalizationsPt extends AppLocalizations {
   String adminAppointmentWhatsApp(String name) {
     return 'Escrever para $name pelo WhatsApp';
   }
+
+  @override
+  String get adminClosuresTitle => 'Fechamentos';
+
+  @override
+  String get adminClosuresEmpty => 'Não há fechamentos próximos.';
+
+  @override
+  String get adminClosuresNew => 'Novo fechamento';
+
+  @override
+  String get adminClosuresLoadError =>
+      'Não foi possível carregar os fechamentos.';
+
+  @override
+  String get closureAllDay => 'Dia inteiro';
+
+  @override
+  String closureDaysRange(String first, String last) {
+    return 'De $first a $last';
+  }
+
+  @override
+  String get closureDeleteAction => 'Remover';
+
+  @override
+  String get closureDeleteTitle => 'Remover este fechamento?';
+
+  @override
+  String get closureDeleteBody =>
+      'Esses horários voltarão a ficar livres para reserva.';
+
+  @override
+  String get closureDeleted => 'Fechamento removido.';
+
+  @override
+  String get closureDeleteError =>
+      'Não foi possível remover o fechamento. Tente de novo.';
+
+  @override
+  String get closureKindRange => 'Algumas horas';
+
+  @override
+  String get closureKindDays => 'Dias inteiros';
+
+  @override
+  String get closureDateLabel => 'Data';
+
+  @override
+  String get closureFromLabel => 'Das';
+
+  @override
+  String get closureToLabel => 'Até';
+
+  @override
+  String get closureFirstDayLabel => 'Primeiro dia';
+
+  @override
+  String get closureLastDayLabel => 'Último dia';
+
+  @override
+  String get closureErrorEndNotAfterStart =>
+      'O horário final deve ser depois do inicial.';
+
+  @override
+  String get closureErrorDaysReversed =>
+      'O último dia não pode ser anterior ao primeiro.';
+
+  @override
+  String get closureErrorPast => 'Esse período já passou.';
+
+  @override
+  String closureErrorTooFar(String date) {
+    return 'Só é possível fechar até $date.';
+  }
+
+  @override
+  String get closureConflictsTitle => 'Há horários marcados nesse período';
+
+  @override
+  String get closureConflictsBody =>
+      'Mova-os ou cancele-os e salve o fechamento de novo.';
+
+  @override
+  String get closureSaved => 'Fechamento salvo.';
+
+  @override
+  String get closureSaveError =>
+      'Não foi possível salvar o fechamento. Tente de novo.';
+
+  @override
+  String get adminAppointmentEdit => 'Editar';
+
+  @override
+  String adminCancelAppointmentTitle(String name) {
+    return 'Cancelar o horário de $name?';
+  }
+
+  @override
+  String get adminCancelAppointmentBody => 'O horário ficará livre.';
+
+  @override
+  String get adminCancelAppointmentConfirm => 'Cancelar horário';
+
+  @override
+  String get adminCancelAppointmentKeep => 'Voltar';
+
+  @override
+  String get adminCancelAppointmentError =>
+      'Não foi possível cancelar o horário. Tente de novo.';
+
+  @override
+  String get adminAgendaClosed => 'Fechado';
+
+  @override
+  String get adminEditNoChanges => 'Você não mudou nada.';
+
+  @override
+  String adminEditSaved(String name) {
+    return 'Horário de $name salvo.';
+  }
+
+  @override
+  String get adminEditNotActive =>
+      'Esse horário não está mais ativo: foi cancelado ou terminou.';
+
+  @override
+  String get adminEditChanged =>
+      'Alguém mudou esse horário enquanto você editava. Veja como está agora.';
+
+  @override
+  String get adminEditNotFound => 'Não foi possível encontrar esse horário.';
+
+  @override
+  String get adminEditBackToAgenda => 'Voltar para a agenda';
+
+  @override
+  String get settingsEditMarginTitle => 'Prazo para alterações';
+
+  @override
+  String get settingsEditMarginHelp =>
+      'Até quanto tempo antes do horário a cliente pode alterá-lo.';
+
+  @override
+  String get settingsEditMarginNone => 'Sem prazo';
+
+  @override
+  String settingsEditMarginHours(int hours) {
+    String _temp0 = intl.Intl.pluralLogic(
+      hours,
+      locale: localeName,
+      other: '$hours horas',
+      one: '1 hora',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String settingsEditMarginCustom(int hours, int minutes) {
+    return '$hours h $minutes min';
+  }
+
+  @override
+  String get settingsEditMarginSaved => 'Prazo salvo.';
+
+  @override
+  String get settingsEditMarginError => 'Não foi possível salvar o prazo.';
+
+  @override
+  String closureDeleteFor(String dates, String hours) {
+    return 'Remover o fechamento: $dates, $hours';
+  }
+
+  @override
+  String get adminAgendaPreviousDay => 'Dia anterior';
+
+  @override
+  String get adminAgendaNextDay => 'Próximo dia';
 }

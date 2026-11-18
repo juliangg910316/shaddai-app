@@ -11,6 +11,7 @@ import 'package:shaddai/features/navigation/presentation/main_scaffold.dart';
 import 'package:shaddai/features/profile/presentation/profile_view.dart';
 
 import 'fake_booking.dart';
+import 'fake_config.dart';
 
 /// Usuaria de prueba con sesión y WhatsApp registrado.
 final testClient = UserModel(
@@ -58,13 +59,15 @@ final bookingTestNow = DateTime.utc(2026, 11, 10, 10);
 /// - "ahora" fijo [now] (por defecto, [bookingTestNow]), sin el temporizador
 ///   de `salonNowProvider`;
 /// - dispositivo con la diferencia con UTC [deviceOffset] (por defecto, la
-///   del salón).
+///   del salón);
+/// - cierres de [config] (por defecto, ninguno; spec 008).
 ///
 /// Para cambiarlos durante el test, [userStream] sustituye a la sesión y
 /// [nowStream] a "ahora" (horas de pared del salón); se vuelven a llamar al
 /// invalidar su provider.
 List<Override> bookingDataOverrides({
   required FakeBookingRepository bookings,
+  FakeConfigRepository? config,
   UserModel? user,
   bool signedIn = true,
   CalendarSettingsModel? settings,
@@ -81,6 +84,7 @@ List<Override> bookingDataOverrides({
     ),
     ...bookingScheduleOverrides(
       bookings: bookings,
+      config: config,
       settings: settings,
       now: now,
       deviceOffset: deviceOffset,
@@ -94,6 +98,7 @@ List<Override> bookingDataOverrides({
 /// (`pumpWebApp`, `pumpMobileApp`).
 List<Override> bookingScheduleOverrides({
   required FakeBookingRepository bookings,
+  FakeConfigRepository? config,
   CalendarSettingsModel? settings,
   DateTime? now,
   Duration deviceOffset = salonUtcOffset,
@@ -103,6 +108,9 @@ List<Override> bookingScheduleOverrides({
   final instant = now ?? bookingTestNow;
   return [
     bookingRepositoryProvider.overrideWithValue(bookings),
+    configRepositoryProvider.overrideWithValue(
+      config ?? FakeConfigRepository(),
+    ),
     calendarSettingsProvider.overrideWith(
       (ref) =>
           settingsStream?.call() ??

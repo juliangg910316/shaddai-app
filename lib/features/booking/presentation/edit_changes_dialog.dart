@@ -9,7 +9,9 @@ import '../../../l10n/app_localizations.dart';
 import '../../services/logic/price_list_view_logic.dart';
 import '../../services/providers/price_list_provider.dart';
 import '../logic/booking_edit.dart';
+import '../providers/admin_booking_provider.dart';
 import '../providers/booking_provider.dart';
+import 'book_button.dart';
 
 /// Pide confirmar los cambios de la edición (spec 006, RF-11): el turno de
 /// antes y el de después, con lo que cambia marcado, y el aviso de que
@@ -17,61 +19,72 @@ import '../providers/booking_provider.dart';
 ///
 /// El antes y el después se calculan dentro del diálogo: si cambia el idioma
 /// con el diálogo abierto, también cambian sus textos.
-Future<bool?> confirmEditChanges(BuildContext context) => showDialog<bool>(
-  context: context,
-  builder: (context) {
-    final l10n = AppLocalizations.of(context)!;
-    final brand = context.brand;
-    return AlertDialog(
-      title: Text(l10n.bookingEditConfirmTitle),
-      content: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const _CurrentChanges(),
-            const SizedBox(height: 16),
-            Text(
-              l10n.bookingEditConfirmPending,
-              style: AppText.sans(size: 14, color: brand.inkMuted),
+///
+/// Con [admin], es la edición de la admin (spec 008, RF-27): empieza por
+/// para quién, dice que el turno quedará confirmado y, con una clienta con
+/// cuenta, avisa si ya no lo podrá cambiar por el margen.
+Future<bool?> confirmEditChanges(BuildContext context, {bool admin = false}) =>
+    showDialog<bool>(
+      context: context,
+      builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
+        final brand = context.brand;
+        return AlertDialog(
+          title: Text(l10n.bookingEditConfirmTitle),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _CurrentChanges(admin: admin),
+                const SizedBox(height: 16),
+                Text(
+                  admin
+                      ? l10n.bookingAdminConfirmNote
+                      : l10n.bookingEditConfirmPending,
+                  style: AppText.sans(size: 14, color: brand.inkMuted),
+                ),
+                if (admin) const BookingMarginWarning(admin: true),
+              ],
+            ),
+          ),
+          actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(
+                l10n.cancelAction,
+                style: AppText.sans(
+                  size: 12,
+                  weight: FontWeight.w500,
+                  spacing: 1.2,
+                  color: brand.inkMuted,
+                ),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(
+                l10n.confirmAction,
+                style: AppText.sans(
+                  size: 12,
+                  weight: FontWeight.w600,
+                  spacing: 1.2,
+                  color: brand.onBrand,
+                ),
+              ),
             ),
           ],
-        ),
-      ),
-      actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(false),
-          child: Text(
-            l10n.cancelAction,
-            style: AppText.sans(
-              size: 12,
-              weight: FontWeight.w500,
-              spacing: 1.2,
-              color: brand.inkMuted,
-            ),
-          ),
-        ),
-        ElevatedButton(
-          onPressed: () => Navigator.of(context).pop(true),
-          child: Text(
-            l10n.confirmAction,
-            style: AppText.sans(
-              size: 12,
-              weight: FontWeight.w600,
-              spacing: 1.2,
-              color: brand.onBrand,
-            ),
-          ),
-        ),
-      ],
+        );
+      },
     );
-  },
-);
 
-/// El antes (el turno en edición) y el después (lo elegido ahora).
+/// El antes (el turno en edición) y el después (lo elegido ahora). Con
+/// [admin], también la persona.
 class _CurrentChanges extends ConsumerWidget {
-  const _CurrentChanges();
+  const _CurrentChanges({required this.admin});
+
+  final bool admin;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -82,7 +95,16 @@ class _CurrentChanges extends ConsumerWidget {
       _ => null,
     };
     if (original == null || after == null) return const SizedBox.shrink();
-    return EditChangesTable(before: draftOfOriginal(original), after: after);
+    final recipient = admin
+        ? ref.watch(bookingRecipientProvider).recipient
+        : null;
+    return EditChangesTable(
+      before: draftOfOriginal(original),
+      after: after,
+      person: recipient == null
+          ? null
+          : (before: original.clientName, after: recipient.name.trim()),
+    );
   }
 }
 
@@ -90,15 +112,19 @@ class _CurrentChanges extends ConsumerWidget {
 /// fin, servicio, adicionales, duración y total). En las que cambian, el
 /// valor de antes, una flecha y el de después en negrita, y "cambia" para el
 /// lector de pantalla; en las demás, un solo valor.
+///
+/// Con [person], la primera fila es para quién (spec 008, RF-27).
 class EditChangesTable extends StatelessWidget {
   const EditChangesTable({
     super.key,
     required this.before,
     required this.after,
+    this.person,
   });
 
   final BookingDraft before;
   final BookingDraft after;
+  final ({String before, String after})? person;
 
   @override
   Widget build(BuildContext context) {
@@ -109,6 +135,13 @@ class EditChangesTable extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
+        if (person case (:final before, :final after))
+          _ChangeRow(
+            label: l10n.bookingStepRecipient,
+            before: before,
+            after: after,
+            changed: before != after,
+          ),
         for (final field in EditField.values)
           _ChangeRow(
             label: editFieldLabel(l10n, field),

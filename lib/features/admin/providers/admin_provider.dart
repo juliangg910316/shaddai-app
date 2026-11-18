@@ -41,6 +41,10 @@ class AdminController {
   Future<void> updateSettings(CalendarSettingsModel settings) async {
     await _configRepo.updateSettings(settings);
   }
+
+  /// Guarda solo el margen de edición (spec 008, RF-38, RF-41).
+  Future<void> updateEditMargin(int minutes) =>
+      _configRepo.updateEditMargin(minutes);
 }
 
 final adminControllerProvider = Provider((ref) {

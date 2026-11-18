@@ -37,7 +37,19 @@ const _allowedNext = {
   '/admin/users',
   '/admin/settings',
   '/admin/services',
+  '/admin/closures',
+  '/admin/closures/new',
 };
+
+/// La edición de un turno por la admin (spec 008):
+/// `/admin/appointments/<id>/edit` o, abierta desde un cierre en Web,
+/// `/admin/closures/new/appointments/<id>/edit`.
+final _adminEditPath = RegExp(
+  r'^/admin(/closures/new)?/appointments/[A-Za-z0-9_-]{1,64}/edit$',
+);
+
+bool _isAllowed(String? next, Set<String> allowed) =>
+    next != null && (allowed.contains(next) || _adminEditPath.hasMatch(next));
 
 /// En Android/iOS también se vuelve a las pestañas Inicio y Servicios.
 const _allowedNextMobile = {..._allowedNext, '/home', '/services'};
@@ -84,8 +96,8 @@ String? _safeBooking(String next) {
 String safeNext(String? next, {required bool isWeb}) {
   final booking = next == null ? null : _safeBooking(next);
   if (booking != null) return booking;
-  if (isWeb) return next == '/' || _allowedNext.contains(next) ? next! : '/';
-  return _allowedNextMobile.contains(next) ? next! : '/home';
+  if (isWeb) return next == '/' || _isAllowed(next, _allowedNext) ? next! : '/';
+  return _isAllowed(next, _allowedNextMobile) ? next! : '/home';
 }
 
 String _withNext(String path, String next) =>

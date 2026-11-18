@@ -129,7 +129,7 @@ class BookButton extends ConsumerWidget {
                     : l10n.bookingConfirmPending,
                 style: AppText.sans(size: 14, color: brand.inkMuted),
               ),
-              _MarginWarning(admin: admin),
+              BookingMarginWarning(admin: admin),
             ],
           ),
         ),
@@ -193,8 +193,8 @@ class _ActiveText extends StatelessWidget {
 ///
 /// Con [admin], el aviso nombra a la clienta, y no sale para una persona sin
 /// cuenta, que no edita (spec 007, RF-29).
-class _MarginWarning extends ConsumerWidget {
-  const _MarginWarning({required this.admin});
+class BookingMarginWarning extends ConsumerWidget {
+  const BookingMarginWarning({super.key, required this.admin});
 
   final bool admin;
 

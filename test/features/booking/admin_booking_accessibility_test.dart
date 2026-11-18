@@ -7,7 +7,6 @@ import 'package:shaddai/data/models/appointment_model.dart';
 import 'package:shaddai/data/models/booked_service_model.dart';
 import 'package:shaddai/data/models/price_list_model.dart';
 import 'package:shaddai/data/models/user_model.dart';
-import 'package:shaddai/data/repositories/config_repository.dart';
 import 'package:shaddai/features/admin/presentation/admin_dashboard_view.dart';
 import 'package:shaddai/features/admin/providers/admin_provider.dart';
 import 'package:shaddai/features/auth/providers/auth_provider.dart';
@@ -24,6 +23,7 @@ import '../../helpers/fake_price_list.dart';
 import '../../helpers/fake_session.dart';
 import '../../helpers/pump_app.dart';
 import '../../helpers/pump_web_app.dart';
+import '../../helpers/fake_config.dart';
 
 /// Accesibilidad de la reserva de la admin (spec 007, RNF-2): contraste en
 /// los dos temas, objetivos de 48 px, lector de pantalla, y texto al 200 %
@@ -83,12 +83,6 @@ final guestAppointment = AppointmentModel(
   createdAt: DateTime.utc(2026, 11, 10),
   createdByAdmin: true,
 );
-
-/// El panel no lee ni guarda ajustes en estos tests.
-class _UnusedConfigRepository implements ConfigRepository {
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
 
 Future<void> settle(WidgetTester tester) async {
   for (var i = 0; i < 5; i++) {
@@ -154,7 +148,7 @@ void main() {
       overrides: [
         bookingRepositoryProvider.overrideWithValue(bookings),
         userRepositoryProvider.overrideWithValue(FakeUserRepository()),
-        configRepositoryProvider.overrideWithValue(_UnusedConfigRepository()),
+        configRepositoryProvider.overrideWithValue(FakeConfigRepository()),
         adminSelectedDateProvider.overrideWith((ref) => DateTime(2026, 11, 20)),
         adminAppointmentsProvider.overrideWith(
           (ref) => Stream.value([guestAppointment]),

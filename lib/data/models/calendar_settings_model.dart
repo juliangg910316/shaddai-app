@@ -93,8 +93,10 @@ class CalendarSettingsModel {
     );
   }
 
-  /// No escribe `editMarginMinutes`: la admin guarda con `merge: true`, así
-  /// que guardar el horario no pisa el margen (spec 006, plan D-4).
+  /// No escribe `editMarginMinutes` ni `blockedDates`: la admin guarda con
+  /// `merge: true`, así que guardar el horario no pisa el margen (spec 006,
+  /// plan D-4) ni vuelve a poner una fecha bloqueada que se acaba de quitar
+  /// (spec 008, plan D-6). Cada uno se guarda con su propio método.
   Map<String, dynamic> toMap() {
     final hoursMap = <String, dynamic>{};
     openingHours.forEach((key, value) {
@@ -103,7 +105,6 @@ class CalendarSettingsModel {
     return {
       'openingHours': hoursMap,
       'globalSlotDurationMinutes': globalSlotDurationMinutes,
-      'blockedDates': blockedDates,
     };
   }
 }

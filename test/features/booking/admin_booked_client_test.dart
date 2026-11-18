@@ -186,6 +186,7 @@ void main() {
     );
     addTearDown(c.dispose);
     c.listen(busySlotsProvider, (_, _) {});
+    c.listen(closuresProvider, (_, _) {});
     c.listen(calendarSettingsProvider, (_, _) {});
     for (var i = 0; i < 5; i++) {
       await Future<void>.delayed(Duration.zero);
