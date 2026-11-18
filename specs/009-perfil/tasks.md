@@ -100,7 +100,7 @@ Salen 16 tareas, en tres bloques (decisión del autor, 2026-11-18: una sola spec
   - Tests: `functions/test/index.test.ts`: el adaptador pasa el uid de la sesión (no el de los datos) y traduce los errores de la lógica a `HttpsError`.
   - Hecho cuando: `src/index.ts` exporta `deleteAccount` (v2 `onCall`, `southamerica-east1`) con el almacén de `firebase-admin`, `firebase.json` tiene la entrada `functions`, `npm run build` y `npm test` pasan, y el despliegue queda descrito para el autor (requiere el plan Blaze; lo hace él).
 
-- [ ] **T13. Llamada desde la app.** RF-37, RF-39, RF-40
+- [x] **T13. Llamada desde la app.** RF-37, RF-39, RF-40
   - Tests: `test/data/account_repository_test.dart` (nuevo, con un `FirebaseFunctions` falso): éxito; `failed-precondition` con `blocked` → `blocked`; `permission-denied` → `notAllowed`; otro error o sin conexión → `failed`. `FakeAccountRepository` en `fake_auth.dart`.
   - Hecho cuando: `cloud_functions` está en `pubspec.yaml` (aprobada), `AccountRepository` y su fake cumplen los tests.
 

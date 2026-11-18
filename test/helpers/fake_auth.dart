@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shaddai/data/models/appointment_model.dart';
 import 'package:shaddai/data/models/user_model.dart';
 import 'package:shaddai/data/repositories/auth_repository.dart';
+import 'package:shaddai/data/repositories/account_repository.dart';
 import 'package:shaddai/data/repositories/booking_repository.dart';
 import 'package:shaddai/data/repositories/user_repository.dart';
 
@@ -205,4 +206,21 @@ class RecordingBookingRepository implements BookingRepository {
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+/// Borrar la cuenta sin la función real (spec 009): devuelve [failure]
+/// (`null` = bien), después de esperar a [gate] si está, y cuenta las
+/// llamadas.
+class FakeAccountRepository implements AccountRepository {
+  AccountDeletionFailure? failure;
+  Future<void>? gate;
+  int calls = 0;
+
+  @override
+  Future<AccountDeletionFailure?> deleteAccount() async {
+    calls++;
+    final wait = gate;
+    if (wait != null) await wait;
+    return failure;
+  }
 }
