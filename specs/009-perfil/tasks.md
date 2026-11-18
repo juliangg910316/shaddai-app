@@ -68,7 +68,7 @@ Salen 16 tareas, en tres bloques (decisión del autor, 2026-11-18: una sola spec
     - Ajustar `profile_dates_test.dart` y `web_profile_test.dart` a la nueva estructura (sin cambiar lo que comprueban).
   - Hecho cuando: el perfil es una sola lista (cabecera, identidad, panel, activo, historial, preferencias), `ProfileHistoryCard` sustituye a `_AppointmentCard`, se borran las claves que dejan de usarse y los tests pasan.
 
-- [ ] **T8. Marca "Cancelado por la clienta" en la agenda.** RF-18
+- [x] **T8. Marca "Cancelado por la clienta" en la agenda.** RF-18
   - Tests: ampliar el test de la agenda de la admin: un turno cancelado con `cancelledBy: 'client'` muestra la marca, en ES y PT; uno cancelado sin el campo no.
   - Hecho cuando: `_AppointmentCard` muestra la marca y los tests pasan.
 

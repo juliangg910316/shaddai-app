@@ -401,4 +401,47 @@ void main() {
       semantics.dispose();
     });
   });
+
+  group('turnos cancelados por la clienta (spec 009, RF-18)', () {
+    /// [base] cancelado; por la clienta si [byClient].
+    AppointmentModel cancelled({bool byClient = true}) {
+      final base = appointment(status: 'cancelled');
+      return AppointmentModel(
+        id: base.id,
+        clientId: base.clientId,
+        clientName: base.clientName,
+        clientPhone: base.clientPhone,
+        startTime: base.startTime,
+        endTime: base.endTime,
+        status: base.status,
+        createdAt: base.createdAt,
+        booked: base.booked,
+        cancelledByClient: byClient,
+      );
+    }
+
+    testWidgets('el que canceló la clienta lo dice', (tester) async {
+      await pump(tester, cancelled());
+      expect(find.text('CANCELADO'), findsOneWidget);
+      expect(find.text('CANCELADO POR LA CLIENTA'), findsOneWidget);
+    });
+
+    testWidgets('en portugués', (tester) async {
+      await pump(tester, cancelled(), language: 'pt');
+      expect(find.text('CANCELADO PELA CLIENTE'), findsOneWidget);
+    });
+
+    testWidgets('uno cancelado sin cancelledBy (por el salón) no la lleva', (
+      tester,
+    ) async {
+      await pump(tester, cancelled(byClient: false));
+      expect(find.text('CANCELADO'), findsOneWidget);
+      expect(find.text('CANCELADO POR LA CLIENTA'), findsNothing);
+    });
+
+    testWidgets('uno activo tampoco', (tester) async {
+      await pump(tester, appointment());
+      expect(find.text('CANCELADO POR LA CLIENTA'), findsNothing);
+    });
+  });
 }

@@ -2759,6 +2759,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'REINTENTAR'**
   String get profileAppointmentsRetry;
+
+  /// Marca de la agenda: lo canceló la clienta (spec 009, RF-18)
+  ///
+  /// In es, this message translates to:
+  /// **'Cancelado por la clienta'**
+  String get adminAppointmentCancelledByClient;
 }
 
 class _AppLocalizationsDelegate

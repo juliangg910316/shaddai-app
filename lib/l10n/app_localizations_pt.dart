@@ -1469,4 +1469,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get profileAppointmentsRetry => 'TENTAR NOVAMENTE';
+
+  @override
+  String get adminAppointmentCancelledByClient => 'Cancelado pela cliente';
 }

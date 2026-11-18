@@ -474,5 +474,6 @@
   "historyCancelledBySalon": "CANCELADO PELO SALÃO",
   "historyDone": "REALIZADO",
   "historyNotConfirmed": "NÃO CONFIRMADO",
-  "profileAppointmentsRetry": "TENTAR NOVAMENTE"
+  "profileAppointmentsRetry": "TENTAR NOVAMENTE",
+  "adminAppointmentCancelledByClient": "Cancelado pela cliente"
 }

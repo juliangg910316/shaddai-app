@@ -27,6 +27,8 @@ const _keys = [
   'historyDone',
   'historyNotConfirmed',
   'profileAppointmentsRetry',
+  // T8: la marca en la agenda de la admin.
+  'adminAppointmentCancelledByClient',
 ];
 
 /// Las claves que dejan de usarse con el perfil nuevo (plan § 8).
