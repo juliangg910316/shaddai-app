@@ -29,6 +29,8 @@ const _keys = [
   'profileAppointmentsRetry',
   // T8: la marca en la agenda de la admin.
   'adminAppointmentCancelledByClient',
+  // T9: el campo de WhatsApp.
+  'whatsAppInvalid',
 ];
 
 /// Las claves que dejan de usarse con el perfil nuevo (plan § 8).

@@ -475,5 +475,6 @@
   "historyDone": "REALIZADO",
   "historyNotConfirmed": "NÃO CONFIRMADO",
   "profileAppointmentsRetry": "TENTAR NOVAMENTE",
-  "adminAppointmentCancelledByClient": "Cancelado pela cliente"
+  "adminAppointmentCancelledByClient": "Cancelado pela cliente",
+  "whatsAppInvalid": "Digite um número de WhatsApp válido (de 8 a 15 dígitos)."
 }

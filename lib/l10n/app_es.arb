@@ -807,5 +807,7 @@
   "profileAppointmentsRetry": "REINTENTAR",
   "@profileAppointmentsRetry": {"description": "Vuelve a pedir los turnos del perfil (spec 009, RF-24)"},
   "adminAppointmentCancelledByClient": "Cancelado por la clienta",
-  "@adminAppointmentCancelledByClient": {"description": "Marca de la agenda: lo canceló la clienta (spec 009, RF-18)"}
+  "@adminAppointmentCancelledByClient": {"description": "Marca de la agenda: lo canceló la clienta (spec 009, RF-18)"},
+  "whatsAppInvalid": "Escribe un número de WhatsApp válido (de 8 a 15 dígitos).",
+  "@whatsAppInvalid": {"description": "Error del campo de WhatsApp del registro y del perfil (spec 009, RF-27)"}
 }

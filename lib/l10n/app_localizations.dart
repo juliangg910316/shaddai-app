@@ -2765,6 +2765,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Cancelado por la clienta'**
   String get adminAppointmentCancelledByClient;
+
+  /// Error del campo de WhatsApp del registro y del perfil (spec 009, RF-27)
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe un número de WhatsApp válido (de 8 a 15 dígitos).'**
+  String get whatsAppInvalid;
 }
 
 class _AppLocalizationsDelegate

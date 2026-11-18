@@ -74,7 +74,7 @@ Salen 16 tareas, en tres bloques (decisión del autor, 2026-11-18: una sola spec
 
 ## Bloque B — WhatsApp
 
-- [ ] **T9. Campo de WhatsApp compartido y captura.** RF-26, RF-27 (plan D-7)
+- [x] **T9. Campo de WhatsApp compartido y captura.** RF-26, RF-27 (plan D-7)
   - Tests: ampliar el test de la captura del WhatsApp: un número inválido (letras, 7 dígitos) muestra el error junto al campo y no guarda; uno válido guarda y sigue como hoy. Test del `WhatsAppField`: número escrito, error con `brand.danger`, texto de consentimiento.
   - Hecho cuando: `lib/core/widgets/whatsapp_field.dart` existe, `PhoneCaptureView` lo usa con `isValidWhatsApp` y los tests pasan.
 

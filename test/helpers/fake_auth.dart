@@ -124,6 +124,13 @@ class FakeUserRepository implements UserRepository {
   @override
   Future<void> saveUser(UserModel user) async => saved.add(user);
 
+  /// Números guardados con [updatePhoneNumber], en orden.
+  final phoneUpdates = <({String uid, String phone})>[];
+
+  @override
+  Future<void> updatePhoneNumber(String uid, String phoneNumber) async =>
+      phoneUpdates.add((uid: uid, phone: phoneNumber));
+
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

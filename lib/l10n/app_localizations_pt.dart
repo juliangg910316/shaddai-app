@@ -1472,4 +1472,8 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get adminAppointmentCancelledByClient => 'Cancelado pela cliente';
+
+  @override
+  String get whatsAppInvalid =>
+      'Digite um número de WhatsApp válido (de 8 a 15 dígitos).';
 }
