@@ -151,7 +151,7 @@ void main() {
   group('"Quitar" (RF-7, RF-8, RF-11)', () {
     Future<void> tapRemove(WidgetTester tester, String id) async {
       await tester.tap(
-        find.descendant(of: card(id), matching: find.byTooltip('Quitar')),
+        find.descendant(of: card(id), matching: find.byType(IconButton)),
       );
       await settle(tester);
     }
@@ -232,13 +232,7 @@ void main() {
       config.closures = [closure('c1', at(11, 13), at(11, 14))];
       await pump(tester);
       final size = tester.getSize(
-        find.ancestor(
-          of: find.descendant(
-            of: card('c1'),
-            matching: find.byTooltip('Quitar'),
-          ),
-          matching: find.byType(IconButton),
-        ),
+        find.descendant(of: card('c1'), matching: find.byType(IconButton)),
       );
       expect(size.width, greaterThanOrEqualTo(48));
       expect(size.height, greaterThanOrEqualTo(48));

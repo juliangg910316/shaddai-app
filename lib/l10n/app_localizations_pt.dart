@@ -1412,4 +1412,15 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get settingsEditMarginError => 'Não foi possível salvar o prazo.';
+
+  @override
+  String closureDeleteFor(String dates, String hours) {
+    return 'Remover o fechamento: $dates, $hours';
+  }
+
+  @override
+  String get adminAgendaPreviousDay => 'Dia anterior';
+
+  @override
+  String get adminAgendaNextDay => 'Próximo dia';
 }

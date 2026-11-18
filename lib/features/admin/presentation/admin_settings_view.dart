@@ -154,6 +154,7 @@ class _AdminSettingsViewState extends ConsumerState<AdminSettingsView> {
             )
           else
             IconButton(
+              tooltip: l10n.adminSave,
               icon: Icon(Icons.check, color: brand.inkStrong),
               onPressed: _saveSettings,
             ),
@@ -183,42 +184,49 @@ class _AdminSettingsViewState extends ConsumerState<AdminSettingsView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      dayNames[dayKey]!,
-                      style: AppText.serif(size: 19, color: brand.inkStrong),
-                    ),
-                    Row(
-                      children: [
-                        Text(
-                          l10n.closedLabel,
-                          style: AppText.eyebrow(
-                            size: 10,
-                            spacing: 1.6,
-                            color: schedule.isClosed
-                                ? brand.danger
-                                : brand.inkMuted,
+                // Con el texto grande, "Cerrado" y su interruptor bajan a otra
+                // línea. El lector de pantalla lee el día, "Cerrado" y el
+                // interruptor juntos (spec 008, RNF-2).
+                MergeSemantics(
+                  child: Wrap(
+                    alignment: WrapAlignment.spaceBetween,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Text(
+                        dayNames[dayKey]!,
+                        style: AppText.serif(size: 19, color: brand.inkStrong),
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            l10n.closedLabel,
+                            style: AppText.eyebrow(
+                              size: 10,
+                              spacing: 1.6,
+                              color: schedule.isClosed
+                                  ? brand.danger
+                                  : brand.inkMuted,
+                            ),
                           ),
-                        ),
-                        Switch(
-                          value: schedule.isClosed,
-                          activeThumbColor: brand.danger,
-                          inactiveThumbColor: brand.inkMuted,
-                          onChanged: (val) {
-                            setState(() {
-                              _tempHours[dayKey] = DaySchedule(
-                                open: schedule.open,
-                                close: schedule.close,
-                                isClosed: val,
-                              );
-                            });
-                          },
-                        ),
-                      ],
-                    ),
-                  ],
+                          Switch(
+                            value: schedule.isClosed,
+                            activeThumbColor: brand.danger,
+                            inactiveThumbColor: brand.inkMuted,
+                            onChanged: (val) {
+                              setState(() {
+                                _tempHours[dayKey] = DaySchedule(
+                                  open: schedule.open,
+                                  close: schedule.close,
+                                  isClosed: val,
+                                );
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
                 if (!schedule.isClosed) ...[
                   const SizedBox(height: 10),

@@ -238,19 +238,21 @@ class _AdminHeader extends StatelessWidget {
                     color: brand.onBrand,
                   ),
                 ),
-                const SizedBox(width: 6),
-                GestureDetector(
-                  onTap: () => context.push('/admin/users'),
-                  child: Icon(
+                // Clientas y horarios: botones de 48 px con nombre, como los
+                // de arriba (spec 008, RNF-2).
+                IconButton(
+                  tooltip: l10n.adminClientsTitle,
+                  onPressed: () => context.push('/admin/users'),
+                  icon: Icon(
                     Icons.group_outlined,
                     size: 22,
                     color: brand.onBrand,
                   ),
                 ),
-                const SizedBox(width: 18),
-                GestureDetector(
-                  onTap: () => context.push('/admin/settings'),
-                  child: Icon(
+                IconButton(
+                  tooltip: l10n.scheduleSettingsTitle,
+                  onPressed: () => context.push('/admin/settings'),
+                  icon: Icon(
                     Icons.settings_outlined,
                     size: 22,
                     color: brand.onBrand,
@@ -269,9 +271,10 @@ class _AdminHeader extends StatelessWidget {
               ),
               child: Row(
                 children: [
+                  // 48 px y con nombre (spec 008, RNF-2).
                   IconButton(
+                    tooltip: l10n.adminAgendaPreviousDay,
                     onPressed: onPreviousDay,
-                    visualDensity: VisualDensity.compact,
                     icon: Icon(Icons.chevron_left, color: brand.onBrand),
                   ),
                   Expanded(
@@ -286,8 +289,8 @@ class _AdminHeader extends StatelessWidget {
                     ),
                   ),
                   IconButton(
+                    tooltip: l10n.adminAgendaNextDay,
                     onPressed: onNextDay,
-                    visualDensity: VisualDensity.compact,
                     icon: Icon(Icons.chevron_right, color: brand.onBrand),
                   ),
                 ],

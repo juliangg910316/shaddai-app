@@ -286,7 +286,7 @@ Son más de 10, pero la spec no se divide (decisión del autor, 2026-11-17).
     - no se pudieron compilar las reglas en local: el emulador pide Java 21 y la máquina tiene 17;
     - Suite completa, 1972 en verde.
 
-- [ ] **T17. Accesibilidad y cierre.** RNF-2, RNF-3
+- [x] **T17. Accesibilidad y cierre.** RNF-2, RNF-3
   - Tests: `test/features/admin/admin_agenda_accessibility_test.dart` (nuevo). Cubre la lista de cierres, el formulario y sus choques, la agenda con cierres, la edición de la admin con su diálogo y el margen:
     - contraste en tema claro y oscuro;
     - objetivos de 48 px;
@@ -299,3 +299,12 @@ Son más de 10, pero la spec no se divide (decisión del autor, 2026-11-17).
     - `CLAUDE.md` describe los cierres, la edición de la admin y el margen;
     - `MEMORY.md` está al día;
     - el recorrido manual de los criterios de finalización queda para el autor.
+  - Hecha (2026-11-17):
+    - `admin_agenda_accessibility_test` (28 tests): contraste, 48 px y nombres en los dos temas, en la lista de cierres, el formulario con errores y con choques, la agenda con un cierre y "Editar", la edición, su diálogo y el margen; lector de pantalla; 200 % en 320 px en ES y PT. `booking_texts_test` comprueba las claves del plan § 6 y las añadidas, en ES y PT;
+    - arreglos que pidieron los tests:
+      - "Quitar" de cada cierre dice qué cierre quita (`closureDeleteFor`);
+      - en la cabecera de la agenda, "Clientes" y "Horarios" pasan de iconos de 22 px sin nombre a `IconButton` con nombre, y las flechas de día, de 40 px sin nombre a 48 px con "Día anterior"/"Día siguiente";
+      - en los ajustes, el ✓ de guardar el horario tiene nombre ("Guardar"), y la fila de cada día pasa a `Wrap` con su semántica unida (al 200 % en 320 px se desbordaba);
+    - 3 claves nuevas (ES y PT): `closureDeleteFor`, `adminAgendaPreviousDay`, `adminAgendaNextDay`;
+    - `CLAUDE.md` describe los cierres, la edición de la admin, el margen, las rutas y las reglas; `MEMORY.md`, al día;
+    - Suite completa, 2001 en verde. Quedan para el autor la T16 en el simulador y el recorrido manual (`/sdd-validate`).

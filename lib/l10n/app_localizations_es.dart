@@ -1408,4 +1408,15 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsEditMarginError => 'No se pudo guardar el margen.';
+
+  @override
+  String closureDeleteFor(String dates, String hours) {
+    return 'Quitar el cierre: $dates, $hours';
+  }
+
+  @override
+  String get adminAgendaPreviousDay => 'Día anterior';
+
+  @override
+  String get adminAgendaNextDay => 'Día siguiente';
 }

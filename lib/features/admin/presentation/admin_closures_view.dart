@@ -198,7 +198,8 @@ class _ClosureTile extends ConsumerWidget {
             ),
           ),
           IconButton(
-            tooltip: l10n.closureDeleteAction,
+            // Dice qué cierre quita: todos los botones son iguales (RNF-2).
+            tooltip: l10n.closureDeleteFor(labels.dates, labels.hours),
             icon: const Icon(Icons.delete_outline),
             color: brand.ink,
             onPressed: () => _remove(context, ref),

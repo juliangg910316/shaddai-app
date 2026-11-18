@@ -2651,6 +2651,24 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'No se pudo guardar el margen.'**
   String get settingsEditMarginError;
+
+  /// Nombre de "Quitar" de un cierre para el lector de pantalla (spec 008, RNF-2)
+  ///
+  /// In es, this message translates to:
+  /// **'Quitar el cierre: {dates}, {hours}'**
+  String closureDeleteFor(String dates, String hours);
+
+  /// Botón del día anterior en la agenda (spec 008, RNF-2)
+  ///
+  /// In es, this message translates to:
+  /// **'Día anterior'**
+  String get adminAgendaPreviousDay;
+
+  /// Botón del día siguiente en la agenda (spec 008, RNF-2)
+  ///
+  /// In es, this message translates to:
+  /// **'Día siguiente'**
+  String get adminAgendaNextDay;
 }
 
 class _AppLocalizationsDelegate

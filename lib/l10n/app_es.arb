@@ -766,5 +766,11 @@
   "settingsEditMarginSaved": "Margen guardado.",
   "@settingsEditMarginSaved": {"description": "Aviso al guardar el margen (spec 008, RF-38)"},
   "settingsEditMarginError": "No se pudo guardar el margen.",
-  "@settingsEditMarginError": {"description": "Error al guardar el margen (spec 008, RF-39)"}
+  "@settingsEditMarginError": {"description": "Error al guardar el margen (spec 008, RF-39)"},
+  "closureDeleteFor": "Quitar el cierre: {dates}, {hours}",
+  "@closureDeleteFor": {"description": "Nombre de \"Quitar\" de un cierre para el lector de pantalla (spec 008, RNF-2)", "placeholders": {"dates": {"type": "String"}, "hours": {"type": "String"}}},
+  "adminAgendaPreviousDay": "Día anterior",
+  "@adminAgendaPreviousDay": {"description": "Botón del día anterior en la agenda (spec 008, RNF-2)"},
+  "adminAgendaNextDay": "Día siguiente",
+  "@adminAgendaNextDay": {"description": "Botón del día siguiente en la agenda (spec 008, RNF-2)"}
 }

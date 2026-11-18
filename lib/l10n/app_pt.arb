@@ -456,5 +456,8 @@
   "settingsEditMarginHours": "{hours, plural, =1{1 hora} other{{hours} horas}}",
   "settingsEditMarginCustom": "{hours} h {minutes} min",
   "settingsEditMarginSaved": "Prazo salvo.",
-  "settingsEditMarginError": "Não foi possível salvar o prazo."
+  "settingsEditMarginError": "Não foi possível salvar o prazo.",
+  "closureDeleteFor": "Remover o fechamento: {dates}, {hours}",
+  "adminAgendaPreviousDay": "Dia anterior",
+  "adminAgendaNextDay": "Próximo dia"
 }
