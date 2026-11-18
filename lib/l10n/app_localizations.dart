@@ -2573,6 +2573,42 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Cerrado'**
   String get adminAgendaClosed;
+
+  /// Guardar cambios sin cambios (spec 008, RF-26)
+  ///
+  /// In es, this message translates to:
+  /// **'No cambiaste nada.'**
+  String get adminEditNoChanges;
+
+  /// Edición de la admin guardada (spec 008, RF-28)
+  ///
+  /// In es, this message translates to:
+  /// **'Turno de {name} guardado.'**
+  String adminEditSaved(String name);
+
+  /// El turno en edición ya no está activo (spec 008, RF-30)
+  ///
+  /// In es, this message translates to:
+  /// **'Ese turno ya no está activo: se canceló o terminó.'**
+  String get adminEditNotActive;
+
+  /// Alguien cambió el turno en edición (spec 008, RF-30)
+  ///
+  /// In es, this message translates to:
+  /// **'Alguien cambió ese turno mientras lo editabas. Revisa cómo está ahora.'**
+  String get adminEditChanged;
+
+  /// El turno a editar no existe (spec 008)
+  ///
+  /// In es, this message translates to:
+  /// **'No se encontró ese turno.'**
+  String get adminEditNotFound;
+
+  /// Botón para volver a la agenda (spec 008)
+  ///
+  /// In es, this message translates to:
+  /// **'Volver a la agenda'**
+  String get adminEditBackToAgenda;
 }
 
 class _AppLocalizationsDelegate

@@ -16,3 +16,14 @@ void openAdminEdit(BuildContext context, WidgetRef ref, String id) {
     context.push(location);
   }
 }
+
+/// Sale de la edición de un turno a la agenda (spec 008, RF-28, RF-30,
+/// RF-35): en Android/iOS vuelve atrás si se llegó desde el panel; si no, y
+/// en Web, va a `/admin`.
+void closeAdminEdit(BuildContext context, WidgetRef ref) {
+  if (!ref.read(isWebProvider) && context.canPop()) {
+    context.pop();
+  } else {
+    context.go('/admin');
+  }
+}

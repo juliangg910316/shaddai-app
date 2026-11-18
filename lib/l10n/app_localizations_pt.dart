@@ -1358,4 +1358,26 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get adminAgendaClosed => 'Fechado';
+
+  @override
+  String get adminEditNoChanges => 'Você não mudou nada.';
+
+  @override
+  String adminEditSaved(String name) {
+    return 'Horário de $name salvo.';
+  }
+
+  @override
+  String get adminEditNotActive =>
+      'Esse horário não está mais ativo: foi cancelado ou terminou.';
+
+  @override
+  String get adminEditChanged =>
+      'Alguém mudou esse horário enquanto você editava. Veja como está agora.';
+
+  @override
+  String get adminEditNotFound => 'Não foi possível encontrar esse horário.';
+
+  @override
+  String get adminEditBackToAgenda => 'Voltar para a agenda';
 }

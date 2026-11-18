@@ -443,5 +443,11 @@
   "adminCancelAppointmentConfirm": "Cancelar horário",
   "adminCancelAppointmentKeep": "Voltar",
   "adminCancelAppointmentError": "Não foi possível cancelar o horário. Tente de novo.",
-  "adminAgendaClosed": "Fechado"
+  "adminAgendaClosed": "Fechado",
+  "adminEditNoChanges": "Você não mudou nada.",
+  "adminEditSaved": "Horário de {name} salvo.",
+  "adminEditNotActive": "Esse horário não está mais ativo: foi cancelado ou terminou.",
+  "adminEditChanged": "Alguém mudou esse horário enquanto você editava. Veja como está agora.",
+  "adminEditNotFound": "Não foi possível encontrar esse horário.",
+  "adminEditBackToAgenda": "Voltar para a agenda"
 }

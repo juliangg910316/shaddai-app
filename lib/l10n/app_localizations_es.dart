@@ -1354,4 +1354,26 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get adminAgendaClosed => 'Cerrado';
+
+  @override
+  String get adminEditNoChanges => 'No cambiaste nada.';
+
+  @override
+  String adminEditSaved(String name) {
+    return 'Turno de $name guardado.';
+  }
+
+  @override
+  String get adminEditNotActive =>
+      'Ese turno ya no está activo: se canceló o terminó.';
+
+  @override
+  String get adminEditChanged =>
+      'Alguien cambió ese turno mientras lo editabas. Revisa cómo está ahora.';
+
+  @override
+  String get adminEditNotFound => 'No se encontró ese turno.';
+
+  @override
+  String get adminEditBackToAgenda => 'Volver a la agenda';
 }

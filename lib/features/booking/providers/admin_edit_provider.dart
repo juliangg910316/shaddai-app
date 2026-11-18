@@ -52,13 +52,17 @@ class AdminEditController extends Notifier<String?> {
   }
 
   /// Cierra la edición y devuelve lo que la admin tenía a medias, ajustado a
-  /// los datos de ahora (RF-33, RF-35). Sin edición abierta, no hace nada.
+  /// los datos de ahora (RF-33, RF-35). Sin edición abierta, o si la app ya
+  /// se cerró (la vista la cierra al desmontarse), no hace nada.
   void end() {
-    if (state == null) return;
+    if (!ref.mounted || state == null) return;
+    final selector = ref.read(bookingSelectionProvider.notifier);
+    // Primero sin la hora de la edición: al quitar el turno en edición, su
+    // tiempo ocupado (ya guardado en la hora nueva) vuelve a contar, y esa
+    // hora se avisaría como perdida.
+    selector.restore(BookingSelection.empty);
     ref.read(editTargetProvider.notifier).end();
-    ref
-        .read(bookingSelectionProvider.notifier)
-        .restore(_savedSelection ?? BookingSelection.empty);
+    selector.restore(_savedSelection ?? BookingSelection.empty);
     ref.read(bookingRecipientProvider.notifier).restore(_savedRecipient);
     _savedSelection = null;
     _savedRecipient = null;

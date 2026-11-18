@@ -737,5 +737,20 @@
   "adminCancelAppointmentError": "No se pudo cancelar el turno. Inténtalo de nuevo.",
   "@adminCancelAppointmentError": {"description": "Error al cancelar un turno desde los cierres (spec 008, RF-5)"},
   "adminAgendaClosed": "Cerrado",
-  "@adminAgendaClosed": {"description": "Marca de un cierre en la agenda del día (spec 008, RF-9)"}
+  "@adminAgendaClosed": {"description": "Marca de un cierre en la agenda del día (spec 008, RF-9)"},
+  "adminEditNoChanges": "No cambiaste nada.",
+  "@adminEditNoChanges": {"description": "Guardar cambios sin cambios (spec 008, RF-26)"},
+  "adminEditSaved": "Turno de {name} guardado.",
+  "@adminEditSaved": {
+    "description": "Edición de la admin guardada (spec 008, RF-28)",
+    "placeholders": {"name": {"type": "String"}}
+  },
+  "adminEditNotActive": "Ese turno ya no está activo: se canceló o terminó.",
+  "@adminEditNotActive": {"description": "El turno en edición ya no está activo (spec 008, RF-30)"},
+  "adminEditChanged": "Alguien cambió ese turno mientras lo editabas. Revisa cómo está ahora.",
+  "@adminEditChanged": {"description": "Alguien cambió el turno en edición (spec 008, RF-30)"},
+  "adminEditNotFound": "No se encontró ese turno.",
+  "@adminEditNotFound": {"description": "El turno a editar no existe (spec 008)"},
+  "adminEditBackToAgenda": "Volver a la agenda",
+  "@adminEditBackToAgenda": {"description": "Botón para volver a la agenda (spec 008)"}
 }

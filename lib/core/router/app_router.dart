@@ -11,6 +11,7 @@ import '../../features/booking/logic/booking_request.dart';
 import '../../features/booking/presentation/booking_view.dart';
 import '../../features/admin/presentation/admin_dashboard_view.dart';
 import '../../features/admin/presentation/admin_closure_form_view.dart';
+import '../../features/admin/presentation/admin_edit_view.dart';
 import '../../features/admin/presentation/admin_closures_view.dart';
 import '../../features/admin/presentation/admin_users_view.dart';
 import '../../features/admin/presentation/admin_category_form_view.dart';
@@ -174,6 +175,15 @@ List<RouteBase> _webRoutes() => [
         builder: (context, state) =>
             const WebAccountPage(child: AdminClosureFormView()),
       ),
+      // La edición de un turno por la admin (spec 008, RF-19).
+      GoRoute(
+        path: '/admin/appointments/:id/edit',
+        builder: (context, state) => WebAccountPage(
+          child: AdminAppointmentEditView(
+            appointmentId: state.pathParameters['id']!,
+          ),
+        ),
+      ),
       GoRoute(
         path: '/admin/services',
         builder: (context, state) =>
@@ -226,6 +236,12 @@ List<RouteBase> _mobileRoutes() => [
   GoRoute(
     path: '/admin/closures/new',
     builder: (context, state) => const AdminClosureFormView(),
+  ),
+  // La edición de un turno por la admin (spec 008, RF-19).
+  GoRoute(
+    path: '/admin/appointments/:id/edit',
+    builder: (context, state) =>
+        AdminAppointmentEditView(appointmentId: state.pathParameters['id']!),
   ),
   GoRoute(
     path: '/admin/services',

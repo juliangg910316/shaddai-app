@@ -432,6 +432,10 @@ void main() {
       expect(now.createdByAdmin, isFalse);
       expect(c.read(adminEditProvider), isNull);
       expect(c.read(adminEditAlertProvider), isNull);
+      // Su nuevo turno ocupado no hace avisar de que la hora editada se
+      // perdió.
+      await settle();
+      expect(c.read(bookingSelectionProvider).notices, isEmpty);
       // Lee del servidor el día nuevo, desde "ahora".
       final request = bookings.adminEditCheckRequests.single;
       expect(request.appointmentId, 't1');

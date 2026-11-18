@@ -211,7 +211,7 @@ Son más de 10, pero la spec no se divide (decisión del autor, 2026-11-17).
     - el fake de turnos acepta `adminEditLatency`: el turno guardado llega antes de que termine el guardado, como en Firestore;
     - 23 tests nuevos en `admin_edit_provider_test`; el de la vigilancia durante el guardado falla sin esa guarda. Suite completa, 1913 en verde.
 
-- [ ] **T13. La vista de edición.** RF-19, RF-22, RF-27, RF-28, RF-34, RF-35
+- [x] **T13. La vista de edición.** RF-19, RF-22, RF-27, RF-28, RF-34, RF-35
   - Tests: `test/features/admin/admin_edit_view_test.dart` (nuevo):
     - se abre desde la agenda con todo cargado, con "Guardar cambios" y "Cancelar";
     - sin cambios: lo avisa y no abre el diálogo;
@@ -225,6 +225,14 @@ Son más de 10, pero la spec no se divide (decisión del autor, 2026-11-17).
     - `BookingForm` recibe `scrollController`;
     - `BookButton` y `confirmEditChanges` tienen el modo de la admin;
     - los textos están en ES y PT.
+  - Hecha (2026-11-17):
+    - `AdminAppointmentEditView` (`lib/features/admin/presentation/admin_edit_view.dart`) y la ruta `/admin/appointments/:id/edit` en Android/iOS y Web; `safeNext` la acepta solo con un id válido. `closeAdminEdit` vuelve atrás en Android/iOS si se llegó desde el panel; si no, y en Web, va a `/admin`;
+    - la vista empieza la edición una vez, en el fotograma siguiente; sin el turno, o si ya no está activo, el aviso y "Volver a la agenda". Al desmontarse, cierra la edición en una microtarea (no se cambia un provider mientras se desmonta el árbol); `end()` no hace nada si la app ya se cerró;
+    - `BookingForm` recibe `scrollController`, `onCancel` y `showTitle` (el título va en la barra de la página). El aviso del margen de `BookButton` pasa a ser público (`BookingMarginWarning`); `confirmEditChanges(admin: true)` añade la fila "Para quién", "quedará confirmado" y ese aviso;
+    - arreglo en `AdminEditController.end`: se vacía la selección antes de quitar el turno en edición. Si no, tras guardar, el turno ocupado nuevo contaba como ajeno y salía "La hora elegida ya no está disponible" (lo detectan un test del provider y los dos de guardar de la vista);
+    - 6 textos nuevos (ES y PT), como en el plan § 6;
+    - 13 tests en `admin_edit_view_test` y 6 en `redirect_logic_test`. Suite completa, 1935 en verde.
+    - Para la T14: en Web, `WebShell` cierra `editTargetProvider` cuando el navegador sale de `/booking`, también durante la edición de la admin; debe dejarla a su vista. Y en Android/iOS, con la pestaña Reservas montada debajo, sus avisos de la selección podrían salir dos veces.
 
 - [ ] **T14. Flujos completos de la edición.** RF-32, RF-33, RF-35
   - Tests:
