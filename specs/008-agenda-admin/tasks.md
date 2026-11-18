@@ -270,7 +270,7 @@ Son más de 10, pero la spec no se divide (decisión del autor, 2026-11-17).
     - 7 textos nuevos (ES y PT), como en el plan § 6;
     - Suite completa, 1965 en verde.
 
-- [ ] **T16. Reglas de Firestore.** RF-42, RF-43, RF-44, RNF-5
+- [x] **T16. Reglas de Firestore.** RF-42, RF-43, RF-44, RNF-5
   - Tests: `test/core/firestore_rules_test.dart` amplía la estructura con `closures`, la edición de la admin en `appointments` y `busySlots`, y el margen en `settings/calendar`.
   - `specs/008-agenda-admin/rules-check.md` (nuevo) recoge:
     - los casos del simulador de cierres, de la edición de la admin y del margen;
@@ -278,7 +278,7 @@ Son más de 10, pero la spec no se divide (decisión del autor, 2026-11-17).
     - los casos de las specs 005 a 007 que tocan estas reglas;
     - los pasos en la app.
   - Hecho cuando: `firestore.rules` tiene los cambios del plan § 2 y el autor los comprueba en el simulador.
-  - Hecha la parte del código (2026-11-17); **falta la comprobación del autor en el simulador**, así que sigue sin marcar:
+  - Hecha (2026-11-17); el autor comprobó las reglas en el simulador (2026-11-17):
     - `firestore.rules`: colección `closures`; la edición de la admin en `appointments`; la admin crea y cambia el turno ocupado de cualquier turno con sus mismas horas; `settings/calendar` separa `create`/`update`/`delete` y valida el margen con `validEditMargin()` (en `update`, solo si cambia, D-7);
     - cambio deliberado respecto a la 007: la admin puede crear el turno ocupado de un turno que no marcó (caso 15 de su `rules-check.md`, ahora permitido), por el `set` de la edición (D-8);
     - `firestore_rules_test`: 9 tests nuevos o cambiados (31 en total). El de la 007 "la clienta no toca la marca" mira ahora solo la parte de la clienta;
