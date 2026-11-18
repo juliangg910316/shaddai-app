@@ -14,7 +14,7 @@ Salen 16 tareas, en tres bloques (decisión del autor, 2026-11-18: una sola spec
   - Tests: ampliar `test/data/models/appointment_model_test.dart`: `cancelledBy: 'client'` → `cancelledByClient`; sin el campo o con otro valor → `false`; `accountDeleted: true` y ausente; `toMap` no escribe ninguno de los dos; un turno antiguo sin `booked` sigue leyéndose.
   - Hecho cuando: `AppointmentModel` expone `cancelledByClient` y `accountDeleted` y los tests pasan.
 
-- [ ] **T2. Lógica pura de cancelar y del perfil.** RF-1, RF-3, RF-4, RF-5, RF-7, RF-14, RF-20, RF-21, RF-22
+- [x] **T2. Lógica pura de cancelar y del perfil.** RF-1, RF-3, RF-4, RF-5, RF-7, RF-14, RF-20, RF-21, RF-22
   - Tests (tablas, "ahora" fijo):
     - `test/features/booking/cancel_appointment_test.dart` (nuevo): `cancelAvailability` (cancelable, borde exacto del margen, margen 0, ya empezado, carga, error) y `checkCancelBeforeSave` (no existe, cancelado, terminado → `notActive`; otra hora, otro fin u otro servicio → `changed`; solo confirmado → `ok`; dentro del margen → `notCancellable`).
     - `test/features/profile/profile_appointments_test.dart` (nuevo): `profileAppointments` (activo y resto, orden descendente, sin activo, lista vacía) y `historyLabel` (cancelado por ti, por el salón, sin `cancelledBy`, realizado, no confirmado, `upcoming`).
