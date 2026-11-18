@@ -2771,6 +2771,48 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Escribe un número de WhatsApp válido (de 8 a 15 dígitos).'**
   String get whatsAppInvalid;
+
+  /// Sección de la cuenta en el perfil (spec 009, RF-25)
+  ///
+  /// In es, this message translates to:
+  /// **'Tu cuenta'**
+  String get profileAccountTitle;
+
+  /// Etiqueta del WhatsApp en el perfil (spec 009, RF-25)
+  ///
+  /// In es, this message translates to:
+  /// **'WhatsApp'**
+  String get profileWhatsAppLabel;
+
+  /// Abre el cambio del WhatsApp (spec 009, RF-25)
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar'**
+  String get changeAction;
+
+  /// Título del diálogo para cambiar el WhatsApp (spec 009, RF-26)
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar WhatsApp'**
+  String get changeWhatsAppTitle;
+
+  /// Guarda el WhatsApp nuevo (spec 009, RF-28)
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar'**
+  String get whatsAppSaveAction;
+
+  /// Aviso tras cambiar el WhatsApp (spec 009, RF-28)
+  ///
+  /// In es, this message translates to:
+  /// **'Tu WhatsApp se actualizó.'**
+  String get whatsAppSaved;
+
+  /// Error al cambiar el WhatsApp, sin detalles técnicos (spec 009, RF-30)
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo guardar. Inténtalo de nuevo.'**
+  String get whatsAppSaveFailed;
 }
 
 class _AppLocalizationsDelegate

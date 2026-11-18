@@ -14,6 +14,7 @@ import '../../booking/providers/booking_provider.dart';
 import '../../navigation/providers/tab_scroll_provider.dart';
 import '../../services/presentation/price_list_notices.dart';
 import '../providers/profile_provider.dart';
+import 'change_whatsapp_dialog.dart';
 import 'profile_cards.dart';
 
 /// El perfil (spec 009): cabecera con "Cerrar sesión", identidad, acceso al
@@ -46,103 +47,116 @@ class ProfileView extends ConsumerWidget {
 
     return Scaffold(
       body: SafeArea(
-        child: ListView(
+        // Una sola columna con desplazamiento, construida entera: el perfil
+        // es corto, y así la cuenta y las preferencias existen aunque estén
+        // fuera de la pantalla (para el lector de pantalla y para los tests).
+        child: SingleChildScrollView(
           controller: ref.watch(tabScrollControllerProvider(MobileTab.profile)),
           padding: const EdgeInsets.fromLTRB(20, 6, 20, 28),
-          children: [
-            // Cabecera: título centrado y salida a la derecha
-            Row(
-              children: [
-                const SizedBox(width: 48),
-                Expanded(
-                  child: Text(
-                    l10n.myProfileTitle,
-                    textAlign: TextAlign.center,
-                    style: AppText.serif(size: 24, color: brand.inkStrong),
-                  ),
-                ),
-                IconButton(
-                  tooltip: l10n.accountSignOut,
-                  icon: Icon(Icons.logout, size: 22, color: brand.inkMuted),
-                  onPressed: () {
-                    // En Web, primero a la landing: el perfil sin sesión
-                    // llevaría al login (spec 002, RF-28).
-                    if (isWeb) context.go('/');
-                    ref.read(authControllerProvider.notifier).signOut();
-                  },
-                ),
-              ],
-            ),
-
-            // Identidad
-            Padding(
-              padding: const EdgeInsets.fromLTRB(0, 20, 0, 18),
-              child: Column(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Cabecera: título centrado y salida a la derecha
+              Row(
                 children: [
-                  InitialsAvatar(
-                    photoUrl: user.photoUrl,
-                    name: user.displayName,
-                    size: 96,
-                    goldBorder: true,
-                    serifInitials: true,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    user.displayName,
-                    textAlign: TextAlign.center,
-                    style: AppText.serif(size: 26, color: brand.inkStrong),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    user.phoneNumber ?? user.email,
-                    textAlign: TextAlign.center,
-                    style: AppText.sans(
-                      size: 14,
-                      weight: FontWeight.w300,
-                      color: brand.inkMuted,
+                  const SizedBox(width: 48),
+                  Expanded(
+                    child: Text(
+                      l10n.myProfileTitle,
+                      textAlign: TextAlign.center,
+                      style: AppText.serif(size: 24, color: brand.inkStrong),
                     ),
+                  ),
+                  IconButton(
+                    tooltip: l10n.accountSignOut,
+                    icon: Icon(Icons.logout, size: 22, color: brand.inkMuted),
+                    onPressed: () {
+                      // En Web, primero a la landing: el perfil sin sesión
+                      // llevaría al login (spec 002, RF-28).
+                      if (isWeb) context.go('/');
+                      ref.read(authControllerProvider.notifier).signOut();
+                    },
                   ),
                 ],
               ),
-            ),
 
-            // Acceso al panel (solo visible para admin)
-            if (user.role == 'admin')
+              // Identidad
               Padding(
-                padding: const EdgeInsets.only(bottom: 20),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () => context.push('/admin'),
-                    icon: Icon(
-                      Icons.admin_panel_settings_outlined,
-                      color: brand.onBrand,
-                      size: 18,
+                padding: const EdgeInsets.fromLTRB(0, 20, 0, 18),
+                child: Column(
+                  children: [
+                    InitialsAvatar(
+                      photoUrl: user.photoUrl,
+                      name: user.displayName,
+                      size: 96,
+                      goldBorder: true,
+                      serifInitials: true,
                     ),
-                    label: Text(
-                      l10n.adminPanelButtonLabel,
+                    const SizedBox(height: 16),
+                    Text(
+                      user.displayName,
+                      textAlign: TextAlign.center,
+                      style: AppText.serif(size: 26, color: brand.inkStrong),
+                    ),
+                    const SizedBox(height: 4),
+                    // El WhatsApp va en "Tu cuenta", con "Cambiar".
+                    Text(
+                      user.email,
+                      textAlign: TextAlign.center,
                       style: AppText.sans(
-                        size: 12,
-                        weight: FontWeight.w500,
-                        spacing: 2,
+                        size: 14,
+                        weight: FontWeight.w300,
+                        color: brand.inkMuted,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Acceso al panel (solo visible para admin)
+              if (user.role == 'admin')
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () => context.push('/admin'),
+                      icon: Icon(
+                        Icons.admin_panel_settings_outlined,
                         color: brand.onBrand,
+                        size: 18,
+                      ),
+                      label: Text(
+                        l10n.adminPanelButtonLabel,
+                        style: AppText.sans(
+                          size: 12,
+                          weight: FontWeight.w500,
+                          spacing: 2,
+                          color: brand.onBrand,
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
 
-            SectionHeading(l10n.profileNextAppointmentTitle),
-            const SizedBox(height: 16),
-            const _ProfileAppointments(),
+              SectionHeading(l10n.profileNextAppointmentTitle),
+              const SizedBox(height: 16),
+              const _ProfileAppointments(),
 
-            // En Web, tema e idioma están en la barra superior
-            // (spec 002, RF-31).
-            if (!isWeb) ...[
-              const SizedBox(height: 32),
-              const PreferencesSection(),
+              // Tu cuenta: el WhatsApp con "Cambiar" (spec 009, RF-25).
+              const SizedBox(height: 28),
+              SectionHeading(l10n.profileAccountTitle),
+              const SizedBox(height: 16),
+              _WhatsAppRow(phone: user.phoneNumber ?? ''),
+
+              // En Web, tema e idioma están en la barra superior
+              // (spec 002, RF-31).
+              if (!isWeb) ...[
+                const SizedBox(height: 32),
+                const PreferencesSection(),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -245,6 +259,54 @@ class _GuestProfile extends ConsumerWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// El WhatsApp de la clienta con "Cambiar" (spec 009, RF-25).
+class _WhatsAppRow extends StatelessWidget {
+  const _WhatsAppRow({required this.phone});
+
+  final String phone;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final brand = context.brand;
+
+    return FlatCard(
+      key: const ValueKey('profile-whatsapp'),
+      borderColor: brand.hairline,
+      child: Wrap(
+        alignment: WrapAlignment.spaceBetween,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 12,
+        runSpacing: 10,
+        children: [
+          MergeSemantics(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  l10n.profileWhatsAppLabel.toUpperCase(),
+                  style: AppText.eyebrow(color: brand.inkMuted),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  phone,
+                  style: AppText.sans(size: 16, color: brand.inkStrong),
+                ),
+              ],
+            ),
+          ),
+          OutlinePillButton(
+            key: const ValueKey('profile-whatsapp-change'),
+            label: l10n.changeAction.toUpperCase(),
+            onPressed: () => showChangeWhatsAppDialog(context, phone),
+          ),
+        ],
       ),
     );
   }

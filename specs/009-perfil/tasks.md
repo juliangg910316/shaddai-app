@@ -78,7 +78,7 @@ Salen 16 tareas, en tres bloques (decisión del autor, 2026-11-18: una sola spec
   - Tests: ampliar el test de la captura del WhatsApp: un número inválido (letras, 7 dígitos) muestra el error junto al campo y no guarda; uno válido guarda y sigue como hoy. Test del `WhatsAppField`: número escrito, error con `brand.danger`, texto de consentimiento.
   - Hecho cuando: `lib/core/widgets/whatsapp_field.dart` existe, `PhoneCaptureView` lo usa con `isValidWhatsApp` y los tests pasan.
 
-- [ ] **T10. Cambiar el WhatsApp desde el perfil.** RF-25, RF-26, RF-27, RF-28, RF-29, RF-30
+- [x] **T10. Cambiar el WhatsApp desde el perfil.** RF-25, RF-26, RF-27, RF-28, RF-29, RF-30
   - Tests:
     - ampliar `FakeUserRepository` con `updateWhatsApp` (registra la ficha y el id del turno, emite la ficha, o lanza);
     - `test/features/profile/change_whatsapp_test.dart` (nuevo): WhatsApp y "Cambiar" en el perfil; el diálogo trae el número actual; inválido → error junto al campo; válido con turno activo → guarda la ficha y el id de ese turno, y el perfil muestra el número nuevo; sin turno activo → solo la ficha; "Cancelar" conserva el número; fallo → aviso y el número anterior.

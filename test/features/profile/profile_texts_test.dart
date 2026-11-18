@@ -31,6 +31,14 @@ const _keys = [
   'adminAppointmentCancelledByClient',
   // T9: el campo de WhatsApp.
   'whatsAppInvalid',
+  // T10: cambiar el WhatsApp.
+  'profileAccountTitle',
+  'profileWhatsAppLabel',
+  'changeAction',
+  'changeWhatsAppTitle',
+  'whatsAppSaveAction',
+  'whatsAppSaved',
+  'whatsAppSaveFailed',
 ];
 
 /// Las claves que dejan de usarse con el perfil nuevo (plan § 8).

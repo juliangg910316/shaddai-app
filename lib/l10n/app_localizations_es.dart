@@ -1472,4 +1472,25 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get whatsAppInvalid =>
       'Escribe un número de WhatsApp válido (de 8 a 15 dígitos).';
+
+  @override
+  String get profileAccountTitle => 'Tu cuenta';
+
+  @override
+  String get profileWhatsAppLabel => 'WhatsApp';
+
+  @override
+  String get changeAction => 'Cambiar';
+
+  @override
+  String get changeWhatsAppTitle => 'Cambiar WhatsApp';
+
+  @override
+  String get whatsAppSaveAction => 'Guardar';
+
+  @override
+  String get whatsAppSaved => 'Tu WhatsApp se actualizó.';
+
+  @override
+  String get whatsAppSaveFailed => 'No se pudo guardar. Inténtalo de nuevo.';
 }

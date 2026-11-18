@@ -809,5 +809,19 @@
   "adminAppointmentCancelledByClient": "Cancelado por la clienta",
   "@adminAppointmentCancelledByClient": {"description": "Marca de la agenda: lo canceló la clienta (spec 009, RF-18)"},
   "whatsAppInvalid": "Escribe un número de WhatsApp válido (de 8 a 15 dígitos).",
-  "@whatsAppInvalid": {"description": "Error del campo de WhatsApp del registro y del perfil (spec 009, RF-27)"}
+  "@whatsAppInvalid": {"description": "Error del campo de WhatsApp del registro y del perfil (spec 009, RF-27)"},
+  "profileAccountTitle": "Tu cuenta",
+  "@profileAccountTitle": {"description": "Sección de la cuenta en el perfil (spec 009, RF-25)"},
+  "profileWhatsAppLabel": "WhatsApp",
+  "@profileWhatsAppLabel": {"description": "Etiqueta del WhatsApp en el perfil (spec 009, RF-25)"},
+  "changeAction": "Cambiar",
+  "@changeAction": {"description": "Abre el cambio del WhatsApp (spec 009, RF-25)"},
+  "changeWhatsAppTitle": "Cambiar WhatsApp",
+  "@changeWhatsAppTitle": {"description": "Título del diálogo para cambiar el WhatsApp (spec 009, RF-26)"},
+  "whatsAppSaveAction": "Guardar",
+  "@whatsAppSaveAction": {"description": "Guarda el WhatsApp nuevo (spec 009, RF-28)"},
+  "whatsAppSaved": "Tu WhatsApp se actualizó.",
+  "@whatsAppSaved": {"description": "Aviso tras cambiar el WhatsApp (spec 009, RF-28)"},
+  "whatsAppSaveFailed": "No se pudo guardar. Inténtalo de nuevo.",
+  "@whatsAppSaveFailed": {"description": "Error al cambiar el WhatsApp, sin detalles técnicos (spec 009, RF-30)"}
 }
