@@ -2609,6 +2609,48 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Volver a la agenda'**
   String get adminEditBackToAgenda;
+
+  /// Título de la sección del margen (spec 008, RF-36)
+  ///
+  /// In es, this message translates to:
+  /// **'Margen de edición'**
+  String get settingsEditMarginTitle;
+
+  /// Explicación del margen (spec 008, RF-36)
+  ///
+  /// In es, this message translates to:
+  /// **'Hasta cuánto antes del turno puede cambiarlo la clienta.'**
+  String get settingsEditMarginHelp;
+
+  /// Opción de margen 0 (spec 008, RF-36)
+  ///
+  /// In es, this message translates to:
+  /// **'Sin margen'**
+  String get settingsEditMarginNone;
+
+  /// Opción de margen en horas (spec 008, RF-36)
+  ///
+  /// In es, this message translates to:
+  /// **'{hours, plural, =1{1 hora} other{{hours} horas}}'**
+  String settingsEditMarginHours(int hours);
+
+  /// Margen guardado que no es una opción (spec 008, RF-37)
+  ///
+  /// In es, this message translates to:
+  /// **'{hours} h {minutes} min'**
+  String settingsEditMarginCustom(int hours, int minutes);
+
+  /// Aviso al guardar el margen (spec 008, RF-38)
+  ///
+  /// In es, this message translates to:
+  /// **'Margen guardado.'**
+  String get settingsEditMarginSaved;
+
+  /// Error al guardar el margen (spec 008, RF-39)
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo guardar el margen.'**
+  String get settingsEditMarginError;
 }
 
 class _AppLocalizationsDelegate

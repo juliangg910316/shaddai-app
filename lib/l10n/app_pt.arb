@@ -449,5 +449,12 @@
   "adminEditNotActive": "Esse horário não está mais ativo: foi cancelado ou terminou.",
   "adminEditChanged": "Alguém mudou esse horário enquanto você editava. Veja como está agora.",
   "adminEditNotFound": "Não foi possível encontrar esse horário.",
-  "adminEditBackToAgenda": "Voltar para a agenda"
+  "adminEditBackToAgenda": "Voltar para a agenda",
+  "settingsEditMarginTitle": "Prazo para alterações",
+  "settingsEditMarginHelp": "Até quanto tempo antes do horário a cliente pode alterá-lo.",
+  "settingsEditMarginNone": "Sem prazo",
+  "settingsEditMarginHours": "{hours, plural, =1{1 hora} other{{hours} horas}}",
+  "settingsEditMarginCustom": "{hours} h {minutes} min",
+  "settingsEditMarginSaved": "Prazo salvo.",
+  "settingsEditMarginError": "Não foi possível salvar o prazo."
 }

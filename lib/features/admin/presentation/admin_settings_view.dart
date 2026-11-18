@@ -6,6 +6,7 @@ import '../../../core/theme/brand_colors.dart';
 import '../../../core/widgets/app_widgets.dart';
 import '../../../data/models/calendar_settings_model.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../booking/logic/edit_margin.dart';
 import '../../booking/presentation/booking_notices.dart';
 import '../../booking/providers/booking_provider.dart';
 import '../providers/admin_provider.dart';
@@ -52,6 +53,38 @@ class _AdminSettingsViewState extends ConsumerState<AdminSettingsView> {
     close: '18:00',
     isClosed: true,
   );
+
+  /// El margen elegido mientras se guarda; después manda el guardado
+  /// (RF-38, RF-39).
+  int? _savingMargin;
+
+  /// Cuántos guardados del margen terminaron: rehace el desplegable para
+  /// que muestre el margen de verdad, aunque el guardado falle enseguida.
+  int _marginSaves = 0;
+
+  /// Guarda solo el margen (RF-38, RF-41). Si falla, lo dice y vuelve a
+  /// mostrar el que había (RF-39).
+  Future<void> _saveMargin(int minutes) async {
+    setState(() => _savingMargin = minutes);
+    var saved = true;
+    try {
+      await ref.read(adminControllerProvider).updateEditMargin(minutes);
+    } catch (error) {
+      debugPrint('No se pudo guardar el margen: $error');
+      saved = false;
+    }
+    if (!mounted) return;
+    setState(() {
+      _savingMargin = null;
+      _marginSaves++;
+    });
+    showBookingMessage(
+      context,
+      (l10n) =>
+          saved ? l10n.settingsEditMarginSaved : l10n.settingsEditMarginError,
+      isError: !saved,
+    );
+  }
 
   Future<void> _saveSettings() async {
     setState(() => _isLoading = true);
@@ -128,10 +161,18 @@ class _AdminSettingsViewState extends ConsumerState<AdminSettingsView> {
       ),
       body: ListView.separated(
         padding: const EdgeInsets.all(20),
-        itemCount: _daysOrder.length,
-        separatorBuilder: (_, index) => const SizedBox(height: 12),
+        itemCount: _daysOrder.length + 1,
+        separatorBuilder: (_, index) => SizedBox(height: index == 0 ? 24 : 12),
         itemBuilder: (context, index) {
-          final dayKey = _daysOrder[index];
+          if (index == 0) {
+            return _MarginSection(
+              key: ValueKey(_marginSaves),
+              margin:
+                  _savingMargin ?? settingsAsync.value?.editMarginMinutes ?? 0,
+              onChanged: _savingMargin == null ? _saveMargin : null,
+            );
+          }
+          final dayKey = _daysOrder[index - 1];
           final schedule = _tempHours[dayKey] ?? _closedDay;
 
           return FlatCard(
@@ -232,6 +273,87 @@ class _AdminSettingsViewState extends ConsumerState<AdminSettingsView> {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+/// El nombre de un margen: "Sin margen", en horas o, si no es una de las
+/// opciones, en horas y minutos (RF-36, RF-37).
+String marginLabel(AppLocalizations l10n, int minutes) {
+  if (minutes == 0) return l10n.settingsEditMarginNone;
+  final parts = marginParts(minutes);
+  return parts.minutes == 0
+      ? l10n.settingsEditMarginHours(parts.hours)
+      : l10n.settingsEditMarginCustom(parts.hours, parts.minutes);
+}
+
+/// "Margen de edición": su explicación y el desplegable de las opciones
+/// (spec 008, RF-36 a RF-39). Sin [onChanged], mientras se guarda, no se
+/// puede cambiar.
+class _MarginSection extends StatelessWidget {
+  const _MarginSection({
+    super.key,
+    required this.margin,
+    required this.onChanged,
+  });
+
+  final int margin;
+  final ValueChanged<int>? onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final brand = context.brand;
+    final onChanged = this.onChanged;
+
+    return FlatCard(
+      padding: const EdgeInsets.fromLTRB(18, 14, 18, 18),
+      borderColor: brand.goldHairlineSoft,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.settingsEditMarginTitle,
+            style: AppText.serif(size: 19, color: brand.inkStrong),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            l10n.settingsEditMarginHelp,
+            style: AppText.sans(size: 14, color: brand.inkMuted),
+          ),
+          const SizedBox(height: 12),
+          // Rehace el campo cuando el margen cambia desde fuera: al volver al
+          // que había tras un error o al llegar el guardado.
+          KeyedSubtree(
+            key: ValueKey(margin),
+            // Sin etiqueta visible (el título está encima); el lector de
+            // pantalla la recibe igual.
+            child: Semantics(
+              label: l10n.settingsEditMarginTitle,
+              child: DropdownButtonFormField<int>(
+                key: const ValueKey('edit-margin'),
+                initialValue: margin,
+                isExpanded: true,
+                items: [
+                  for (final minutes in marginChoices(margin))
+                    DropdownMenuItem(
+                      value: minutes,
+                      child: Text(
+                        marginLabel(l10n, minutes),
+                        style: AppText.sans(size: 15, color: brand.inkStrong),
+                      ),
+                    ),
+                ],
+                onChanged: onChanged == null
+                    ? null
+                    : (value) {
+                        if (value != null && value != margin) onChanged(value);
+                      },
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

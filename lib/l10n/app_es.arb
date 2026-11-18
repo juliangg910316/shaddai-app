@@ -752,5 +752,19 @@
   "adminEditNotFound": "No se encontró ese turno.",
   "@adminEditNotFound": {"description": "El turno a editar no existe (spec 008)"},
   "adminEditBackToAgenda": "Volver a la agenda",
-  "@adminEditBackToAgenda": {"description": "Botón para volver a la agenda (spec 008)"}
+  "@adminEditBackToAgenda": {"description": "Botón para volver a la agenda (spec 008)"},
+  "settingsEditMarginTitle": "Margen de edición",
+  "@settingsEditMarginTitle": {"description": "Título de la sección del margen (spec 008, RF-36)"},
+  "settingsEditMarginHelp": "Hasta cuánto antes del turno puede cambiarlo la clienta.",
+  "@settingsEditMarginHelp": {"description": "Explicación del margen (spec 008, RF-36)"},
+  "settingsEditMarginNone": "Sin margen",
+  "@settingsEditMarginNone": {"description": "Opción de margen 0 (spec 008, RF-36)"},
+  "settingsEditMarginHours": "{hours, plural, =1{1 hora} other{{hours} horas}}",
+  "@settingsEditMarginHours": {"description": "Opción de margen en horas (spec 008, RF-36)", "placeholders": {"hours": {"type": "int"}}},
+  "settingsEditMarginCustom": "{hours} h {minutes} min",
+  "@settingsEditMarginCustom": {"description": "Margen guardado que no es una opción (spec 008, RF-37)", "placeholders": {"hours": {"type": "int"}, "minutes": {"type": "int"}}},
+  "settingsEditMarginSaved": "Margen guardado.",
+  "@settingsEditMarginSaved": {"description": "Aviso al guardar el margen (spec 008, RF-38)"},
+  "settingsEditMarginError": "No se pudo guardar el margen.",
+  "@settingsEditMarginError": {"description": "Error al guardar el margen (spec 008, RF-39)"}
 }

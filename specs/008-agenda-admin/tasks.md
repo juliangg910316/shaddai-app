@@ -251,7 +251,7 @@ Son más de 10, pero la spec no se divide (decisión del autor, 2026-11-17).
 
 ## Bloque D — Margen, reglas y cierre
 
-- [ ] **T15. Margen de edición en los ajustes.** RF-36 a RF-41, RNF-1
+- [x] **T15. Margen de edición en los ajustes.** RF-36 a RF-41, RNF-1
   - Tests:
     - `test/features/booking/edit_margin_test.dart` (nuevo, tablas): `marginChoices` y `marginParts`;
     - `test/features/admin/admin_settings_margin_test.dart` (nuevo):
@@ -262,6 +262,13 @@ Son más de 10, pero la spec no se divide (decisión del autor, 2026-11-17).
       - "Guardar" del horario no escribe el margen ni `blockedDates`;
     - `booking_edit_margin_live_test` (nuevo): la clienta ve aparecer y desaparecer "Editar turno" al cambiar el margen.
   - Hecho cuando: `lib/features/booking/logic/edit_margin.dart`, la sección del margen de `AdminSettingsView` y `AdminController.updateEditMargin` cumplen el plan.
+  - Hecha (2026-11-17):
+    - `edit_margin.dart`: `editMarginOptions`, `marginChoices` y `marginParts` (12 tests de tabla);
+    - `AdminSettingsView`: la sección "Margen de edición" va antes de los días, con su explicación y un desplegable. El título hace de nombre del campo para el lector de pantalla, sin repetirse a la vista. `marginLabel` da "Sin margen", "N horas" o "N h M min". Al elegir, guarda solo el margen y avisa; si falla, avisa y el desplegable vuelve al margen guardado (un contador rehace el campo tras cada guardado; el test de RF-39 falla sin él);
+    - `AdminController.updateEditMargin`. "Guardar" del horario no cambió: ya no escribía el margen ni `blockedDates`, y ahora lo prueba un test;
+    - `booking_edit_margin_live_test` (Android/iOS y Web): el margen que guarda la admin llega a la clienta por el repositorio. Pasó sin cambios, como preveía el plan (RF-40 ya se cumplía);
+    - 7 textos nuevos (ES y PT), como en el plan § 6;
+    - Suite completa, 1965 en verde.
 
 - [ ] **T16. Reglas de Firestore.** RF-42, RF-43, RF-44, RNF-5
   - Tests: `test/core/firestore_rules_test.dart` amplía la estructura con `closures`, la edición de la admin en `appointments` y `busySlots`, y el margen en `settings/calendar`.

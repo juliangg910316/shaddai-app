@@ -1376,4 +1376,36 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get adminEditBackToAgenda => 'Volver a la agenda';
+
+  @override
+  String get settingsEditMarginTitle => 'Margen de edición';
+
+  @override
+  String get settingsEditMarginHelp =>
+      'Hasta cuánto antes del turno puede cambiarlo la clienta.';
+
+  @override
+  String get settingsEditMarginNone => 'Sin margen';
+
+  @override
+  String settingsEditMarginHours(int hours) {
+    String _temp0 = intl.Intl.pluralLogic(
+      hours,
+      locale: localeName,
+      other: '$hours horas',
+      one: '1 hora',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String settingsEditMarginCustom(int hours, int minutes) {
+    return '$hours h $minutes min';
+  }
+
+  @override
+  String get settingsEditMarginSaved => 'Margen guardado.';
+
+  @override
+  String get settingsEditMarginError => 'No se pudo guardar el margen.';
 }
