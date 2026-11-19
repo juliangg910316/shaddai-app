@@ -5,7 +5,7 @@ Spec: `specs/010-admin/spec.md` · Plan: `specs/010-admin/plan.md` (aprobados el
 
 Cada tarea: tests primero (rojo), luego el código (verde); `dart format lib test` sin cambios, `flutter analyze` sin avisos y `flutter test` en verde. Tras cambiar un `.arb`, `flutter gen-l10n`. Nunca Firebase real en los tests.
 
-- [ ] **T1. Lógica pura de la agenda** (`admin/logic/admin_agenda.dart`, plan § 4). RF-1 a RF-11, RF-15
+- [x] **T1. Lógica pura de la agenda** (`admin/logic/admin_agenda.dart`, plan § 4). RF-1 a RF-11, RF-15
   - Tests: `test/features/admin/admin_agenda_logic_test.dart`:
     - `agendaDay`, `agendaToday`, `agendaRange` (también con `TZ=Asia/Tokyo`);
     - `agendaPickerBounds` y `agendaPickerInitial` (dentro, antes y después de los límites);
