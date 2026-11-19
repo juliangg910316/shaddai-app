@@ -10,6 +10,7 @@ import '../../auth/providers/auth_provider.dart';
 import '../../booking/logic/salon_time.dart';
 import '../../booking/providers/booking_provider.dart';
 import '../logic/admin_agenda.dart';
+import '../logic/admin_clients.dart';
 
 /// El día que muestra la agenda: un día del salón (`DateTime.utc` a las
 /// 0:00 con la fecha de Curitiba). Empieza en hoy del salón (spec 010, RF-2,
@@ -40,6 +41,15 @@ final adminAppointmentsProvider = StreamProvider<List<AppointmentModel>>((ref) {
 
 final adminUsersProvider = StreamProvider<List<UserModel>>((ref) {
   return ref.watch(userRepositoryProvider).getAllUsers();
+});
+
+/// Las clientas para la lista del panel: sin admins y por nombre (spec 010,
+/// RF-19, RF-20). Con error si no se pudieron cargar: el error manda
+/// (MEMORY).
+final adminClientsProvider = Provider<AsyncValue<List<UserModel>>>((ref) {
+  final users = ref.watch(adminUsersProvider);
+  if (users.hasError) return AsyncError(users.error!, users.stackTrace!);
+  return users.whenData(clientsForAdmin);
 });
 
 class AdminController {

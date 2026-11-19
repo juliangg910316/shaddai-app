@@ -495,5 +495,13 @@
   "adminAppointmentUnconfirmed": "Não confirmado",
   "adminConfirmFailed": "Não foi possível confirmar. Tente novamente.",
   "adminCancelDone": "Horário cancelado.",
-  "adminCancelChanged": "O horário mudou. Confira antes de cancelar."
+  "adminCancelChanged": "O horário mudou. Confira antes de cancelar.",
+  "adminBlockSwitch": "Bloquear {name}",
+  "adminBlockTitle": "Bloquear {name}?",
+  "adminBlockBody": "Não poderá entrar nem agendar.",
+  "adminBlockConfirm": "Sim, bloquear",
+  "adminUnblockTitle": "Desbloquear {name}?",
+  "adminUnblockBody": "Poderá voltar a entrar e agendar.",
+  "adminUnblockConfirm": "Sim, desbloquear",
+  "adminDialogBack": "Não, voltar"
 }

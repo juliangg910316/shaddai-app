@@ -93,7 +93,7 @@ Cada tarea: tests primero (rojo), luego el código (verde); `dart format lib tes
     - las claves `adminCancelDone` y `adminCancelChanged` están en los dos `.arb`, y las tres del diálogo antiguo eliminadas;
     - los tests de la 008 siguen en verde.
 
-- [ ] **T8. Lista de clientas** (plan § 6 y § 7). RF-19 a RF-24, RF-33
+- [x] **T8. Lista de clientas** (plan § 6 y § 7). RF-19 a RF-24, RF-33
   - Tests: `test/features/admin/admin_clients_view_test.dart`:
     - sin admins y en orden;
     - avatar, nombre, WhatsApp o correo, y estado;

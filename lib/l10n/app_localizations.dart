@@ -2885,6 +2885,54 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'El turno cambió. Revísalo antes de cancelarlo.'**
   String get adminCancelChanged;
+
+  /// Nombre del interruptor de bloqueo de una clienta para el lector de pantalla (spec 010, RNF-2)
+  ///
+  /// In es, this message translates to:
+  /// **'Bloquear a {name}'**
+  String adminBlockSwitch(String name);
+
+  /// Título del diálogo de bloquear a una clienta (spec 010, RF-25)
+  ///
+  /// In es, this message translates to:
+  /// **'¿Bloquear a {name}?'**
+  String adminBlockTitle(String name);
+
+  /// Qué supone bloquear a una clienta (spec 010, RF-25)
+  ///
+  /// In es, this message translates to:
+  /// **'No podrá iniciar sesión ni reservar.'**
+  String get adminBlockBody;
+
+  /// Confirma el bloqueo (spec 010, RF-27)
+  ///
+  /// In es, this message translates to:
+  /// **'Sí, bloquear'**
+  String get adminBlockConfirm;
+
+  /// Título del diálogo de desbloquear a una clienta (spec 010, RF-29)
+  ///
+  /// In es, this message translates to:
+  /// **'¿Desbloquear a {name}?'**
+  String adminUnblockTitle(String name);
+
+  /// Qué supone desbloquear a una clienta (spec 010, RF-29)
+  ///
+  /// In es, this message translates to:
+  /// **'Podrá volver a iniciar sesión y reservar.'**
+  String get adminUnblockBody;
+
+  /// Confirma el desbloqueo (spec 010, RF-30)
+  ///
+  /// In es, this message translates to:
+  /// **'Sí, desbloquear'**
+  String get adminUnblockConfirm;
+
+  /// Cierra el diálogo de bloquear o desbloquear sin cambiar nada (spec 010, RF-31)
+  ///
+  /// In es, this message translates to:
+  /// **'No, volver'**
+  String get adminDialogBack;
 }
 
 class _AppLocalizationsDelegate

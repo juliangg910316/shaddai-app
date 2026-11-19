@@ -1535,4 +1535,34 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get adminCancelChanged =>
       'El turno cambió. Revísalo antes de cancelarlo.';
+
+  @override
+  String adminBlockSwitch(String name) {
+    return 'Bloquear a $name';
+  }
+
+  @override
+  String adminBlockTitle(String name) {
+    return '¿Bloquear a $name?';
+  }
+
+  @override
+  String get adminBlockBody => 'No podrá iniciar sesión ni reservar.';
+
+  @override
+  String get adminBlockConfirm => 'Sí, bloquear';
+
+  @override
+  String adminUnblockTitle(String name) {
+    return '¿Desbloquear a $name?';
+  }
+
+  @override
+  String get adminUnblockBody => 'Podrá volver a iniciar sesión y reservar.';
+
+  @override
+  String get adminUnblockConfirm => 'Sí, desbloquear';
+
+  @override
+  String get adminDialogBack => 'No, volver';
 }

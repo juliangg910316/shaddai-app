@@ -1540,4 +1540,34 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get adminCancelChanged =>
       'O horário mudou. Confira antes de cancelar.';
+
+  @override
+  String adminBlockSwitch(String name) {
+    return 'Bloquear $name';
+  }
+
+  @override
+  String adminBlockTitle(String name) {
+    return 'Bloquear $name?';
+  }
+
+  @override
+  String get adminBlockBody => 'Não poderá entrar nem agendar.';
+
+  @override
+  String get adminBlockConfirm => 'Sim, bloquear';
+
+  @override
+  String adminUnblockTitle(String name) {
+    return 'Desbloquear $name?';
+  }
+
+  @override
+  String get adminUnblockBody => 'Poderá voltar a entrar e agendar.';
+
+  @override
+  String get adminUnblockConfirm => 'Sim, desbloquear';
+
+  @override
+  String get adminDialogBack => 'Não, voltar';
 }

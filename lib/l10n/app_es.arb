@@ -847,5 +847,21 @@
   "adminCancelDone": "Turno cancelado.",
   "@adminCancelDone": {"description": "Aviso tras cancelar un turno desde la agenda o un cierre (spec 010, RF-18)"},
   "adminCancelChanged": "El turno cambió. Revísalo antes de cancelarlo.",
-  "@adminCancelChanged": {"description": "El turno cambió con el diálogo de cancelar abierto: no se cancela (spec 010, RF-15)"}
+  "@adminCancelChanged": {"description": "El turno cambió con el diálogo de cancelar abierto: no se cancela (spec 010, RF-15)"},
+  "adminBlockSwitch": "Bloquear a {name}",
+  "@adminBlockSwitch": {"description": "Nombre del interruptor de bloqueo de una clienta para el lector de pantalla (spec 010, RNF-2)", "placeholders": {"name": {"type": "String"}}},
+  "adminBlockTitle": "¿Bloquear a {name}?",
+  "@adminBlockTitle": {"description": "Título del diálogo de bloquear a una clienta (spec 010, RF-25)", "placeholders": {"name": {"type": "String"}}},
+  "adminBlockBody": "No podrá iniciar sesión ni reservar.",
+  "@adminBlockBody": {"description": "Qué supone bloquear a una clienta (spec 010, RF-25)"},
+  "adminBlockConfirm": "Sí, bloquear",
+  "@adminBlockConfirm": {"description": "Confirma el bloqueo (spec 010, RF-27)"},
+  "adminUnblockTitle": "¿Desbloquear a {name}?",
+  "@adminUnblockTitle": {"description": "Título del diálogo de desbloquear a una clienta (spec 010, RF-29)", "placeholders": {"name": {"type": "String"}}},
+  "adminUnblockBody": "Podrá volver a iniciar sesión y reservar.",
+  "@adminUnblockBody": {"description": "Qué supone desbloquear a una clienta (spec 010, RF-29)"},
+  "adminUnblockConfirm": "Sí, desbloquear",
+  "@adminUnblockConfirm": {"description": "Confirma el desbloqueo (spec 010, RF-30)"},
+  "adminDialogBack": "No, volver",
+  "@adminDialogBack": {"description": "Cierra el diálogo de bloquear o desbloquear sin cambiar nada (spec 010, RF-31)"}
 }
