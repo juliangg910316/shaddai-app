@@ -1,5 +1,5 @@
 # Spec 009 — Perfil y mis turnos
-Estado: aprobada
+Estado: implementada
 
 ## Contexto y objetivo
 Hoy el perfil muestra la foto, el nombre y el WhatsApp de la clienta y una lista plana de todos sus turnos (fecha, hora y estado). Le faltan cosas:

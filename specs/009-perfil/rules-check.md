@@ -108,8 +108,10 @@ Si algo falla, vuelve a publicar la copia del paso 1.2 y avisa.
 
 ## Resultado
 
-- [ ] Copia de las reglas anteriores guardada.
-- [ ] Reglas publicadas, sin errores de sintaxis.
-- [ ] Casos 1 a 28 del simulador correctos.
-- [ ] Casos de las specs 006 y 008 correctos.
-- [ ] Todo funciona en la app (paso 4).
+Reglas comprobadas por el autor en el simulador y en la app el 2026-11-18, en el recorrido de `/sdd-validate`.
+
+- [x] Copia de las reglas anteriores guardada.
+- [x] Reglas publicadas, sin errores de sintaxis.
+- [x] Casos 1 a 28 del simulador correctos.
+- [x] Casos de las specs 006 y 008 correctos.
+- [x] Todo funciona en la app (paso 4).
