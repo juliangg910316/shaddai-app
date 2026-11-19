@@ -15,7 +15,7 @@ Cada tarea: tests primero (rojo), luego el código (verde); `dart format lib tes
     - `checkAdminConfirmBeforeSave`.
   - Hecho cuando: el archivo no importa Flutter ni Firebase y sus tests pasan, también con `TZ=Asia/Tokyo`.
 
-- [ ] **T2. Lógica pura de las clientas** (`admin/logic/admin_clients.dart`, plan § 4). RF-19, RF-20, RF-26, RF-28
+- [x] **T2. Lógica pura de las clientas** (`admin/logic/admin_clients.dart`, plan § 4). RF-19, RF-20, RF-26, RF-28
   - Tests: `test/features/admin/admin_clients_logic_test.dart`:
     - `clientsForAdmin` sin admins, ordenada sin mayúsculas ni acentos, con empates estables;
     - `clientActiveAppointment` solo por `clientId`: un turno sin cuenta con su WhatsApp no cuenta, y uno terminado o cancelado tampoco;
