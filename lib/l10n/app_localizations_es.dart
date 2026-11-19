@@ -1525,4 +1525,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get adminAppointmentAccountDeleted => 'Cuenta eliminada';
+
+  @override
+  String get adminAgendaToday => 'Hoy';
+
+  @override
+  String get adminAgendaPickDate => 'Elegir fecha';
 }

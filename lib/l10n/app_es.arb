@@ -841,5 +841,9 @@
   "deleteAccountBlocked": "Para eliminar tu cuenta, habla con el salón.",
   "@deleteAccountBlocked": {"description": "Una clienta bloqueada no puede borrar su cuenta (spec 009, RF-40)"},
   "adminAppointmentAccountDeleted": "Cuenta eliminada",
-  "@adminAppointmentAccountDeleted": {"description": "Marca de la agenda: la clienta borró su cuenta (spec 009, RF-35)"}
+  "@adminAppointmentAccountDeleted": {"description": "Marca de la agenda: la clienta borró su cuenta (spec 009, RF-35)"},
+  "adminAgendaToday": "Hoy",
+  "@adminAgendaToday": {"description": "Botón de la agenda que vuelve al día de hoy del salón (spec 010, RF-3)"},
+  "adminAgendaPickDate": "Elegir fecha",
+  "@adminAgendaPickDate": {"description": "Nombre del botón de la fecha de la agenda, que abre el calendario (spec 010, RF-4)"}
 }

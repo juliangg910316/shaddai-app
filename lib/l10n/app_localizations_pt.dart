@@ -1529,4 +1529,10 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get adminAppointmentAccountDeleted => 'Conta excluída';
+
+  @override
+  String get adminAgendaToday => 'Hoje';
+
+  @override
+  String get adminAgendaPickDate => 'Escolher data';
 }

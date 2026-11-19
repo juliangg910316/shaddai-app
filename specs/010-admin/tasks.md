@@ -38,7 +38,7 @@ Cada tarea: tests primero (rojo), luego el código (verde); `dart format lib tes
     Además, los tests existentes de la agenda, los cierres y las clientas, adaptados a los métodos nuevos sin cambiar lo que comprueban.
   - Hecho cuando: nadie usa los tres métodos eliminados y toda la suite está en verde.
 
-- [ ] **T4. Día del salón, "Hoy" y calendario en la agenda** (plan D-1, D-10, § 6 y § 7). RF-1 a RF-5
+- [x] **T4. Día del salón, "Hoy" y calendario en la agenda** (plan D-1, D-10, § 6 y § 7). RF-1 a RF-5
   - Tests: `test/features/admin/admin_agenda_day_test.dart`:
     - con "ahora" fijo y el dispositivo en otra zona, abre en hoy del salón y pide el rango del salón;
     - "Hoy" solo fuera de hoy, y vuelve a hoy;

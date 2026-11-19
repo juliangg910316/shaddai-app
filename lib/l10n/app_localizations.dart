@@ -2867,6 +2867,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Cuenta eliminada'**
   String get adminAppointmentAccountDeleted;
+
+  /// Botón de la agenda que vuelve al día de hoy del salón (spec 010, RF-3)
+  ///
+  /// In es, this message translates to:
+  /// **'Hoy'**
+  String get adminAgendaToday;
+
+  /// Nombre del botón de la fecha de la agenda, que abre el calendario (spec 010, RF-4)
+  ///
+  /// In es, this message translates to:
+  /// **'Elegir fecha'**
+  String get adminAgendaPickDate;
 }
 
 class _AppLocalizationsDelegate

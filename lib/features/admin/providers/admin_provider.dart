@@ -8,20 +8,35 @@ import '../../../data/repositories/booking_repository.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../../../data/repositories/config_repository.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../booking/logic/salon_time.dart';
 import '../../booking/providers/booking_provider.dart';
+import '../logic/admin_agenda.dart';
 
+/// El día que muestra la agenda: un día del salón (`DateTime.utc` a las
+/// 0:00 con la fecha de Curitiba). Empieza en hoy del salón (spec 010, RF-2,
+/// plan D-1). Quien escriba una fecha local también vale: se lee con
+/// [agendaDay].
 final adminSelectedDateProvider = StateProvider<DateTime>(
-  (ref) => DateTime.now(),
+  (ref) => agendaToday(toSalon(ref.read(clockProvider)())),
 );
 
+/// Hoy del salón; cambia solo a medianoche. Decide "Hoy" (spec 010, RF-3).
+final adminTodayProvider = Provider<DateTime>((ref) {
+  final clock = ref.watch(clockProvider);
+  return ref.watch(
+    salonNowProvider.select(
+      (now) => agendaToday(now.value ?? toSalon(clock())),
+    ),
+  );
+});
+
+/// Los turnos del día de la agenda, de medianoche a medianoche del salón
+/// (spec 010, RF-1).
 final adminAppointmentsProvider = StreamProvider<List<AppointmentModel>>((ref) {
-  final date = ref.watch(adminSelectedDateProvider);
-  // El día del dispositivo, de medianoche a medianoche local, como hasta
-  // ahora; la spec 010 lo pasa al día del salón (T4).
-  final start = DateTime(date.year, date.month, date.day);
+  final range = agendaRange(ref.watch(adminSelectedDateProvider));
   return ref
       .watch(bookingRepositoryProvider)
-      .watchAppointmentsBetween(start, start.add(const Duration(days: 1)));
+      .watchAppointmentsBetween(range.from, range.to);
 });
 
 final adminUsersProvider = StreamProvider<List<UserModel>>((ref) {

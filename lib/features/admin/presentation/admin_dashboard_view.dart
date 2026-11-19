@@ -16,6 +16,7 @@ import '../../booking/logic/whatsapp.dart';
 import '../../booking/logic/closures.dart';
 import '../../booking/providers/booking_provider.dart';
 import '../../services/presentation/price_list_notices.dart';
+import '../logic/admin_agenda.dart';
 import '../providers/admin_closures_provider.dart';
 import '../providers/admin_provider.dart';
 import 'admin_closures_view.dart';
@@ -29,7 +30,7 @@ class AdminDashboardView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final selectedDate = ref.watch(adminSelectedDateProvider);
+    final selectedDate = agendaDay(ref.watch(adminSelectedDateProvider));
     final appointmentsAsync = ref.watch(adminAppointmentsProvider);
     // Los cierres del día, entre los turnos (spec 008, RF-9).
     final closuresAsync = ref.watch(adminDayClosuresProvider);
@@ -51,12 +52,8 @@ class AdminDashboardView extends ConsumerWidget {
             selectedDate: selectedDate,
             totalCount: appointments.length,
             waitingCount: waitingCount,
-            onPreviousDay: () =>
-                ref.read(adminSelectedDateProvider.notifier).state =
-                    selectedDate.subtract(const Duration(days: 1)),
-            onNextDay: () =>
-                ref.read(adminSelectedDateProvider.notifier).state =
-                    selectedDate.add(const Duration(days: 1)),
+            onPreviousDay: () => _moveDay(ref, selectedDate, -1),
+            onNextDay: () => _moveDay(ref, selectedDate, 1),
           ),
           Expanded(
             child: appointmentsAsync.when(
@@ -142,6 +139,32 @@ class AdminDashboardView extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Va [days] días adelante o atrás desde [day], sin límite (spec 010, RF-5).
+void _moveDay(WidgetRef ref, DateTime day, int days) =>
+    ref.read(adminSelectedDateProvider.notifier).state = DateTime.utc(
+      day.year,
+      day.month,
+      day.day + days,
+    );
+
+/// Abre el calendario entre −365 y +365 días de hoy del salón, en el día
+/// mostrado o en el límite más cercano; al elegir, muestra ese día (spec
+/// 010, RF-4, plan D-10). Cerrarlo no cambia nada.
+Future<void> _pickDay(BuildContext context, WidgetRef ref, DateTime day) async {
+  final today = ref.read(adminTodayProvider);
+  final bounds = agendaPickerBounds(today);
+  DateTime local(DateTime d) => DateTime(d.year, d.month, d.day);
+  final picked = await showDatePicker(
+    context: context,
+    initialDate: local(agendaPickerInitial(day, bounds)),
+    firstDate: local(bounds.first),
+    lastDate: local(bounds.last),
+    currentDate: local(today),
+  );
+  if (picked == null) return;
+  ref.read(adminSelectedDateProvider.notifier).state = agendaDay(picked);
 }
 
 class _AdminHeader extends ConsumerWidget {
@@ -278,14 +301,26 @@ class _AdminHeader extends ConsumerWidget {
                     onPressed: onPreviousDay,
                     icon: Icon(Icons.chevron_left, color: brand.onBrand),
                   ),
+                  // La fecha abre el calendario (spec 010, RF-4).
                   Expanded(
-                    child: Text(
-                      longDate,
-                      textAlign: TextAlign.center,
-                      style: AppText.serif(
-                        size: 17,
-                        color: brand.onBrand,
-                        spacing: 0.5,
+                    child: Tooltip(
+                      message: l10n.adminAgendaPickDate,
+                      child: TextButton(
+                        key: const ValueKey('agenda-date'),
+                        onPressed: () => _pickDay(context, ref, selectedDate),
+                        style: TextButton.styleFrom(
+                          foregroundColor: brand.onBrand,
+                          minimumSize: const Size(48, 48),
+                        ),
+                        child: Text(
+                          longDate,
+                          textAlign: TextAlign.center,
+                          style: AppText.serif(
+                            size: 17,
+                            color: brand.onBrand,
+                            spacing: 0.5,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -297,6 +332,33 @@ class _AdminHeader extends ConsumerWidget {
                 ],
               ),
             ),
+            // "Hoy", solo en otro día (spec 010, RF-3).
+            if (selectedDate != ref.watch(adminTodayProvider))
+              Align(
+                alignment: AlignmentDirectional.centerEnd,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: OutlinedButton(
+                    onPressed: () =>
+                        ref.read(adminSelectedDateProvider.notifier).state = ref
+                            .read(adminTodayProvider),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: brand.onBrand,
+                      minimumSize: const Size(48, 48),
+                      side: BorderSide(color: brand.goldHairline),
+                    ),
+                    child: Text(
+                      l10n.adminAgendaToday.toUpperCase(),
+                      style: AppText.sans(
+                        size: 12,
+                        weight: FontWeight.w500,
+                        spacing: 1.2,
+                        color: brand.onBrand,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             const SizedBox(height: 14),
             Row(
               children: [

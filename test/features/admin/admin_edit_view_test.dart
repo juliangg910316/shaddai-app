@@ -268,7 +268,7 @@ void main() {
       expect(find.byType(AdminAppointmentEditView), findsNothing);
       expect(find.text('Turno de Ana Souza guardado.'), findsOneWidget);
       final c = appContainer(tester);
-      expect(c.read(adminSelectedDateProvider), DateTime(2026, 11, 20));
+      expect(c.read(adminSelectedDateProvider), DateTime.utc(2026, 11, 20));
       expect(c.read(adminEditProvider), isNull);
       if (web) expect(webLocation(tester).path, '/admin');
     });
