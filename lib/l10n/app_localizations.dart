@@ -191,7 +191,7 @@ abstract class AppLocalizations {
   /// No description provided for @adminStatAppointmentsToday.
   ///
   /// In es, this message translates to:
-  /// **'TURNOS HOY'**
+  /// **'TURNOS DEL DÍA'**
   String get adminStatAppointmentsToday;
 
   /// No description provided for @pendingConfirmationLabel.

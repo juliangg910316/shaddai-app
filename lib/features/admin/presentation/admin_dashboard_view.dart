@@ -39,9 +39,8 @@ class AdminDashboardView extends ConsumerWidget {
         : closuresAsync.value ?? const <ClosureEntry>[];
     final appointments = appointmentsAsync.value ?? const <AppointmentModel>[];
 
-    final waitingCount = appointments
-        .where((a) => a.status == 'waiting_confirmation')
-        .length;
+    // Sin los cancelados (spec 010, RF-6, plan D-8).
+    final counts = agendaCounts(appointments);
 
     final brand = context.brand;
 
@@ -50,8 +49,8 @@ class AdminDashboardView extends ConsumerWidget {
         children: [
           _AdminHeader(
             selectedDate: selectedDate,
-            totalCount: appointments.length,
-            waitingCount: waitingCount,
+            totalCount: counts.total,
+            waitingCount: counts.waiting,
             onPreviousDay: () => _moveDay(ref, selectedDate, -1),
             onNextDay: () => _moveDay(ref, selectedDate, 1),
           ),
@@ -195,6 +194,7 @@ class _AdminHeader extends ConsumerWidget {
       // (RF-23).
       value: systemBarsStyleFor(brand.brand),
       child: Container(
+        key: const ValueKey('agenda-header'),
         width: double.infinity,
         color: brand.brand,
         padding: EdgeInsets.only(
@@ -230,12 +230,14 @@ class _AdminHeader extends ConsumerWidget {
                         style: AppText.serif(size: 24, color: brand.onBrand),
                       ),
                       const SizedBox(height: 2),
+                      // `onBrand`: `onBrandMuted` no llega a AA en 11 px
+                      // (spec 010, RNF-1, plan D-9).
                       Text(
                         l10n.adminPanelEyebrow,
                         style: AppText.eyebrow(
                           size: 11,
-                          weight: FontWeight.w300,
-                          color: brand.onBrandMuted,
+                          weight: FontWeight.w400,
+                          color: brand.onBrand,
                         ),
                       ),
                     ],
@@ -405,13 +407,14 @@ class _StatTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('$value', style: AppText.serif(size: 22, color: brand.onBrand)),
+          // Como el subtítulo: `onBrand` a 11 px (plan D-9).
           Text(
             label,
             style: AppText.eyebrow(
-              size: 10,
+              size: 11,
               spacing: 1.2,
-              weight: FontWeight.w300,
-              color: brand.onBrandMuted,
+              weight: FontWeight.w400,
+              color: brand.onBrand,
             ),
           ),
         ],

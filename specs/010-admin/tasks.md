@@ -53,7 +53,7 @@ Cada tarea: tests primero (rojo), luego el código (verde); `dart format lib tes
     - las claves `adminAgendaToday` y `adminAgendaPickDate` están en los dos `.arb`;
     - los tests pasan.
 
-- [ ] **T5. Cabecera: contadores y contraste** (plan D-8, D-9). RF-6, RNF-1
+- [x] **T5. Cabecera: contadores y contraste** (plan D-8, D-9). RF-6, RNF-1
   - Tests: en `admin_agenda_day_test.dart`:
     - los contadores no cuentan los cancelados;
     - "TURNOS DEL DÍA" / "HORÁRIOS DO DIA".

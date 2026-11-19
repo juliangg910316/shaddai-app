@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shaddai/core/platform/platform_provider.dart';
+import 'package:shaddai/data/models/appointment_model.dart';
 import 'package:shaddai/features/admin/presentation/admin_dashboard_view.dart';
 import 'package:shaddai/features/admin/providers/admin_provider.dart';
 import 'package:shaddai/features/booking/logic/salon_time.dart';
@@ -16,6 +17,21 @@ import '../../helpers/pump_app.dart';
 /// "Ahora" es el 21/11/2026 a la 1:30 UTC: en Curitiba aún es el viernes
 /// 20/11 a las 22:30, y en UTC ya es sábado. La agenda debe abrir en el 20.
 final now = DateTime.utc(2026, 11, 21, 1, 30);
+
+/// Un turno del 20/11 a [hour] del salón.
+AppointmentModel appointment(String id, String status, int hour) {
+  final start = fromSalon(DateTime.utc(2026, 11, 20, hour));
+  return AppointmentModel(
+    id: id,
+    clientId: id,
+    clientName: 'Clienta $id',
+    clientPhone: '+55 41 99999-000$hour',
+    startTime: start,
+    endTime: start.add(const Duration(minutes: 45)),
+    status: status,
+    createdAt: start,
+  );
+}
 
 void main() {
   late FakeBookingRepository bookings;
@@ -198,6 +214,42 @@ void main() {
       await tester.tap(find.byTooltip('Día siguiente'));
       await settle(tester);
       expect(selected(tester), DateTime.utc(2026, 12, 1));
+    });
+  });
+
+  group('los contadores (RF-6)', () {
+    /// El número de un contador, por su nombre.
+    String counter(WidgetTester tester, String label) {
+      final tile = find.ancestor(
+        of: find.text(label),
+        matching: find.byWidgetPredicate((w) => w is Column),
+      );
+      return tester
+          .widgetList<Text>(
+            find.descendant(of: tile.first, matching: find.byType(Text)),
+          )
+          .first
+          .data!;
+    }
+
+    testWidgets('no cuentan los cancelados', (tester) async {
+      bookings.day = [
+        appointment('a', 'waiting_confirmation', 9),
+        appointment('b', 'confirmed', 10),
+        appointment('c', 'cancelled', 11),
+        appointment('d', 'cancelled', 12),
+      ];
+      await pump(tester);
+      expect(counter(tester, 'TURNOS DEL DÍA'), '2');
+      expect(counter(tester, 'POR CONFIRMAR'), '1');
+    });
+
+    testWidgets('en otro día dicen "del día", también en portugués', (
+      tester,
+    ) async {
+      await pump(tester, language: 'pt', shown: DateTime.utc(2026, 11, 2));
+      expect(find.text('HORÁRIOS DO DIA'), findsOneWidget);
+      expect(find.text('HORÁRIOS HOJE'), findsNothing);
     });
   });
 

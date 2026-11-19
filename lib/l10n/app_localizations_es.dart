@@ -56,7 +56,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get adminPanelEyebrow => 'PANEL DE BEIDIS';
 
   @override
-  String get adminStatAppointmentsToday => 'TURNOS HOY';
+  String get adminStatAppointmentsToday => 'TURNOS DEL DÍA';
 
   @override
   String get pendingConfirmationLabel => 'POR CONFIRMAR';
