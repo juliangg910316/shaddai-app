@@ -312,7 +312,7 @@ void main() {
     await tester.tap(find.text('CANCELAR'));
     await tester.pumpAndSettle();
 
-    expect(bookings.statusChanges, [(id: 't1', status: 'cancelled')]);
+    expect(bookings.adminCancelled, ['t1']);
   });
 
   group('turnos sin cuenta y agendados por la admin (RF-22 a RF-24)', () {

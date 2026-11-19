@@ -517,7 +517,7 @@ class _AppointmentCard extends ConsumerWidget {
                     color: brand.danger,
                     onPressed: () => ref
                         .read(adminControllerProvider)
-                        .updateAppointmentStatus(appointment.id, 'cancelled'),
+                        .cancelAppointment(appointment.id),
                   ),
                 ),
                 if (waiting) ...[
@@ -528,10 +528,7 @@ class _AppointmentCard extends ConsumerWidget {
                       child: ElevatedButton(
                         onPressed: () => ref
                             .read(adminControllerProvider)
-                            .updateAppointmentStatus(
-                              appointment.id,
-                              'confirmed',
-                            ),
+                            .confirmAppointment(appointment.id),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: brand.brand,
                           foregroundColor: brand.onBrand,

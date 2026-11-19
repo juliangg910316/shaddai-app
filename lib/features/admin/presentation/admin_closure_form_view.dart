@@ -133,9 +133,7 @@ class _AdminClosureFormViewState extends ConsumerState<AdminClosureFormView> {
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
     try {
-      await ref
-          .read(adminControllerProvider)
-          .updateAppointmentStatus(appointment.id, 'cancelled');
+      await ref.read(adminControllerProvider).cancelAppointment(appointment.id);
     } catch (error) {
       debugPrint('No se pudo cancelar el turno: $error');
       messenger

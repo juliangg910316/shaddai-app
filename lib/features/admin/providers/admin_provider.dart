@@ -16,7 +16,12 @@ final adminSelectedDateProvider = StateProvider<DateTime>(
 
 final adminAppointmentsProvider = StreamProvider<List<AppointmentModel>>((ref) {
   final date = ref.watch(adminSelectedDateProvider);
-  return ref.watch(bookingRepositoryProvider).getAppointmentsForDate(date);
+  // El día del dispositivo, de medianoche a medianoche local, como hasta
+  // ahora; la spec 010 lo pasa al día del salón (T4).
+  final start = DateTime(date.year, date.month, date.day);
+  return ref
+      .watch(bookingRepositoryProvider)
+      .watchAppointmentsBetween(start, start.add(const Duration(days: 1)));
 });
 
 final adminUsersProvider = StreamProvider<List<UserModel>>((ref) {
@@ -30,13 +35,20 @@ class AdminController {
 
   AdminController(this._bookingRepo, this._userRepo, this._configRepo);
 
-  Future<void> updateAppointmentStatus(String id, String status) async {
-    await _bookingRepo.updateAppointmentStatus(id, status);
-  }
+  /// Cancela el turno [id] y libera su hora, sin comprobar nada todavía:
+  /// el diálogo con su comprobación llega con la spec 010 (T7).
+  Future<void> cancelAppointment(String id) =>
+      _bookingRepo.cancelByAdmin(id: id, expected: (_) => true);
 
-  Future<void> toggleUserBlock(String uid, bool isBlocked) async {
-    await _userRepo.toggleBlockUser(uid, isBlocked);
-  }
+  /// Confirma el turno [id], sin comprobar nada todavía (spec 010, T6).
+  Future<void> confirmAppointment(String id) =>
+      _bookingRepo.confirmByAdmin(id: id, expected: (_) => true);
+
+  /// Bloquea (sin tocar sus turnos) o desbloquea a [uid], como hasta ahora:
+  /// el diálogo y la cancelación del turno llegan con la spec 010 (T9).
+  Future<void> setClientBlocked(String uid, bool isBlocked) => isBlocked
+      ? _userRepo.blockClient(uid: uid, expected: (_) => true)
+      : _userRepo.unblockClient(uid);
 
   Future<void> updateSettings(CalendarSettingsModel settings) async {
     await _configRepo.updateSettings(settings);

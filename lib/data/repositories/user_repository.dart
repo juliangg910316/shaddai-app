@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../firestore_dates.dart';
+import '../models/appointment_model.dart';
 import '../models/user_model.dart';
 
 class UserRepository {
@@ -88,9 +90,49 @@ class UserRepository {
     });
   }
 
-  Future<void> toggleBlockUser(String uid, bool isBlocked) async {
-    await _firestore.collection('users').doc(uid).update({
-      'isBlocked': isBlocked,
-    });
+  /// Bloquea a la clienta [uid] y, si tiene turno activo ([appointmentId]),
+  /// lo cancela (sin `cancelledBy`: lo canceló el salón) y borra su turno
+  /// ocupado, todo en una transacción: o todo o nada. Relee el turno y solo
+  /// guarda si [expected] da por bueno el guardado (`null` sin turno o si ya
+  /// no existe). Devuelve si guardó. Si no termina en [saveTimeout], lanza
+  /// (spec 010, RF-27, RF-28, plan D-5).
+  Future<bool> blockClient({
+    required String uid,
+    String? appointmentId,
+    required bool Function(AppointmentModel? current) expected,
+  }) {
+    final appointmentRef = appointmentId == null
+        ? null
+        : _firestore.collection('appointments').doc(appointmentId);
+    return _firestore
+        .runTransaction<bool>((transaction) async {
+          AppointmentModel? current;
+          if (appointmentRef != null) {
+            final doc = await transaction.get(appointmentRef);
+            final data = doc.data();
+            current = doc.exists && data != null
+                ? AppointmentModel.fromMap(decodeDates(data), doc.id)
+                : null;
+          }
+          if (!expected(current)) return false;
+          transaction.update(_firestore.collection('users').doc(uid), {
+            'isBlocked': true,
+          });
+          if (appointmentRef != null) {
+            transaction
+              ..update(appointmentRef, {'status': 'cancelled'})
+              ..delete(_firestore.collection('busySlots').doc(appointmentId));
+          }
+          return true;
+        })
+        .timeout(saveTimeout);
   }
+
+  /// Desbloquea a la clienta [uid]; sus turnos cancelados siguen así (spec
+  /// 010, RF-30). Si no termina en [saveTimeout], lanza.
+  Future<void> unblockClient(String uid) => _firestore
+      .collection('users')
+      .doc(uid)
+      .update({'isBlocked': false})
+      .timeout(saveTimeout);
 }

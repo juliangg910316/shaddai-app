@@ -109,7 +109,7 @@ class AdminUsersView extends ConsumerWidget {
                       inactiveThumbColor: brand.inkMuted,
                       onChanged: (val) => ref
                           .read(adminControllerProvider)
-                          .toggleUserBlock(user.uid, val),
+                          .setClientBlocked(user.uid, val),
                     ),
                   ],
                 ),

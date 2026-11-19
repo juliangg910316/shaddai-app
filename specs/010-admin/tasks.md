@@ -22,7 +22,7 @@ Cada tarea: tests primero (rojo), luego el código (verde); `dart format lib tes
     - `checkBlockBeforeSave` en sus cinco casos.
   - Hecho cuando: sin imports de Flutter ni Firebase y los tests pasan.
 
-- [ ] **T3. Repositorios y fakes** (plan § 5 y § 10). RF-1, RF-11, RF-14, RF-17, RF-27, RF-30
+- [x] **T3. Repositorios y fakes** (plan § 5 y § 10). RF-1, RF-11, RF-14, RF-17, RF-27, RF-30
   - **`BookingRepository`:** añade `watchAppointmentsBetween`, `cancelByAdmin` y `confirmByAdmin` (transacciones con `saveTimeout`).
   - **`UserRepository`:** añade `blockClient` (transacción: ficha + turno + turno ocupado) y `unblockClient`.
   - **Se eliminan** `getAppointmentsForDate`, `updateAppointmentStatus` y `toggleBlockUser`. Mientras llegan T6, T7 y T9, sus llamadas se cambian a los métodos nuevos sin cambiar el comportamiento:

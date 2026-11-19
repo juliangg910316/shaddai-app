@@ -568,7 +568,7 @@ void main() {
       expect(find.text('La hora quedará libre.'), findsOneWidget);
       await tester.tap(find.text('VOLVER'));
       await settle(tester);
-      expect(bookings.statusChanges, isEmpty);
+      expect(bookings.adminCancelled, isEmpty);
 
       await tester.tap(
         find.descendant(of: conflict, matching: find.text('CANCELAR')),
@@ -576,7 +576,7 @@ void main() {
       await settle(tester);
       await tester.tap(find.text('CANCELAR TURNO'));
       await settle(tester);
-      expect(bookings.statusChanges, [(id: 'a1', status: 'cancelled')]);
+      expect(bookings.adminCancelled, ['a1']);
       expect(conflict, findsNothing);
 
       // En el servidor ya está cancelado.

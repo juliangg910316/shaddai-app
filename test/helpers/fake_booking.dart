@@ -42,6 +42,16 @@ import 'package:shaddai/data/repositories/booking_repository.dart';
 /// ese id y, si vale, lo deja cancelado por la clienta en [mine], [active] y
 /// a quien lo escucha, quita su turno ocupado de [busy] y lo registra en
 /// [cancelled].
+///
+/// La agenda de la admin (spec 010): [watchAppointmentsBetween] registra el
+/// rango en [dayRequests] y envía [day] en vivo ([emitDay], [failDay]).
+/// [cancelByAdmin] y [confirmByAdmin] esperan a su puerta
+/// ([adminCancelGate], [confirmGate]), lanzan su error ([adminCancelError],
+/// [confirmError]) y, como la transacción, aplican `expected` al turno de ese
+/// id; si vale, cambian su estado en [day], [mine], [active] y a quien lo
+/// escucha (al cancelar, quitan además su turno ocupado de [busy]) y lo
+/// registran en [adminCancelled] o [confirmed]. [applyAdminCancel] hace lo
+/// mismo sin comprobar nada (lo usa el bloqueo del fake de usuarias).
 class FakeBookingRepository implements BookingRepository {
   FakeBookingRepository({
     this.busy = const [],
@@ -82,8 +92,6 @@ class FakeBookingRepository implements BookingRepository {
   Object? saveError;
   final created = <AppointmentModel>[];
 
-  final statusChanges = <({String id, String status})>[];
-
   EditCheckData? editCheckData;
   Object? editCheckError;
   final editCheckRequests =
@@ -121,7 +129,7 @@ class FakeBookingRepository implements BookingRepository {
   /// El turno [id] tal como lo ve el fake ahora.
   AppointmentModel? appointmentById(String id) {
     if (_appointments.containsKey(id)) return _appointments[id];
-    for (final a in [...active, ...mine, ...created]) {
+    for (final a in [...active, ...mine, ...created, ...day]) {
       if (a.id == id) return a;
     }
     return null;
@@ -450,9 +458,109 @@ class FakeBookingRepository implements BookingRepository {
     return true;
   }
 
+  /// Los turnos del día de la agenda, en vivo (spec 010).
+  List<AppointmentModel> day = const [];
+  final _dayListeners = <StreamController<List<AppointmentModel>>>[];
+
+  /// Rangos pedidos a [watchAppointmentsBetween], en orden.
+  final dayRequests = <({DateTime from, DateTime to})>[];
+
+  void emitDay(List<AppointmentModel> value) =>
+      _send(_dayListeners, day = value);
+  void failDay(Object error) => _fail(_dayListeners, error);
+
   @override
-  Future<void> updateAppointmentStatus(String id, String status) async =>
-      statusChanges.add((id: id, status: status));
+  Stream<List<AppointmentModel>> watchAppointmentsBetween(
+    DateTime from,
+    DateTime to,
+  ) {
+    dayRequests.add((from: from, to: to));
+    return _live(_dayListeners, () => day);
+  }
+
+  Object? adminCancelError;
+  Future<void>? adminCancelGate;
+
+  /// Turnos cancelados por la admin, en orden.
+  final adminCancelled = <String>[];
+
+  Object? confirmError;
+  Future<void>? confirmGate;
+
+  /// Turnos confirmados por la admin, en orden.
+  final confirmed = <String>[];
+
+  @override
+  Future<bool> cancelByAdmin({
+    required String id,
+    required bool Function(AppointmentModel? current) expected,
+  }) async {
+    final gate = adminCancelGate;
+    if (gate != null) await gate;
+    final error = adminCancelError;
+    if (error != null) throw error;
+    if (!expected(appointmentById(id))) return false;
+    adminCancelled.add(id);
+    applyAdminCancel(id);
+    return true;
+  }
+
+  @override
+  Future<bool> confirmByAdmin({
+    required String id,
+    required bool Function(AppointmentModel? current) expected,
+  }) async {
+    final gate = confirmGate;
+    if (gate != null) await gate;
+    final error = confirmError;
+    if (error != null) throw error;
+    if (!expected(appointmentById(id))) return false;
+    confirmed.add(id);
+    _setStatus(id, 'confirmed');
+    return true;
+  }
+
+  /// Deja el turno [id] cancelado por el salón y libre su hora, sin
+  /// comprobar nada.
+  void applyAdminCancel(String id) {
+    _setStatus(id, 'cancelled');
+    if (busy.any((slot) => slot.id == id)) {
+      emitBusy([
+        for (final slot in busy)
+          if (slot.id != id) slot,
+      ]);
+    }
+  }
+
+  /// Como el `update` de Firestore que solo cambia `status`: lo demás queda.
+  void _setStatus(String id, String status) {
+    final current = appointmentById(id);
+    if (current == null) return;
+    final updated = AppointmentModel(
+      id: id,
+      clientId: current.clientId,
+      clientName: current.clientName,
+      clientPhone: current.clientPhone,
+      clientPhotoUrl: current.clientPhotoUrl,
+      startTime: current.startTime,
+      endTime: current.endTime,
+      status: status,
+      createdAt: current.createdAt,
+      booked: current.booked,
+      createdByAdmin: current.createdByAdmin,
+      cancelledByClient: current.cancelledByClient,
+      accountDeleted: current.accountDeleted,
+    );
+    AppointmentModel replace(AppointmentModel a) => a.id == id ? updated : a;
+    if (day.any((a) => a.id == id)) emitDay([for (final a in day) replace(a)]);
+    if (mine.any((a) => a.id == id)) {
+      emitMine([for (final a in mine) replace(a)]);
+    }
+    if (active.any((a) => a.id == id)) {
+      emitActive([for (final a in active) replace(a)]);
+    }
+    emitAppointment(id, updated);
+  }
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
