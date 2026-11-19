@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/legacy.dart';
 import '../../../data/models/appointment_model.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/models/calendar_settings_model.dart';
-import '../../../data/repositories/user_repository.dart';
 import '../../../data/repositories/config_repository.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../booking/logic/salon_time.dart';
@@ -53,16 +52,9 @@ final adminClientsProvider = Provider<AsyncValue<List<UserModel>>>((ref) {
 });
 
 class AdminController {
-  final UserRepository _userRepo;
   final ConfigRepository _configRepo;
 
-  AdminController(this._userRepo, this._configRepo);
-
-  /// Bloquea (sin tocar sus turnos) o desbloquea a [uid], como hasta ahora:
-  /// el diálogo y la cancelación del turno llegan con la spec 010 (T9).
-  Future<void> setClientBlocked(String uid, bool isBlocked) => isBlocked
-      ? _userRepo.blockClient(uid: uid, expected: (_) => true)
-      : _userRepo.unblockClient(uid);
+  AdminController(this._configRepo);
 
   Future<void> updateSettings(CalendarSettingsModel settings) async {
     await _configRepo.updateSettings(settings);
@@ -74,8 +66,5 @@ class AdminController {
 }
 
 final adminControllerProvider = Provider((ref) {
-  return AdminController(
-    ref.watch(userRepositoryProvider),
-    ref.watch(configRepositoryProvider),
-  );
+  return AdminController(ref.watch(configRepositoryProvider));
 });

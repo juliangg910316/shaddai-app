@@ -863,5 +863,17 @@
   "adminUnblockConfirm": "Sí, desbloquear",
   "@adminUnblockConfirm": {"description": "Confirma el desbloqueo (spec 010, RF-30)"},
   "adminDialogBack": "No, volver",
-  "@adminDialogBack": {"description": "Cierra el diálogo de bloquear o desbloquear sin cambiar nada (spec 010, RF-31)"}
+  "@adminDialogBack": {"description": "Cierra el diálogo de bloquear o desbloquear sin cambiar nada (spec 010, RF-31)"},
+  "adminBlockCancelsAppointment": "Su turno se cancelará:",
+  "@adminBlockCancelsAppointment": {"description": "En el diálogo de bloquear, antes del turno activo que se cancelará (spec 010, RF-26)"},
+  "adminBlockDone": "{name} está bloqueada.",
+  "@adminBlockDone": {"description": "Aviso tras bloquear a una clienta (spec 010, RF-33)", "placeholders": {"name": {"type": "String"}}},
+  "adminUnblockDone": "{name} está desbloqueada.",
+  "@adminUnblockDone": {"description": "Aviso tras desbloquear a una clienta (spec 010, RF-33)", "placeholders": {"name": {"type": "String"}}},
+  "adminBlockChanged": "Su turno cambió. Revísalo antes de bloquearla.",
+  "@adminBlockChanged": {"description": "El turno activo de la clienta cambió con el diálogo abierto: no se bloquea (spec 010, RF-28)"},
+  "adminBlockFailed": "No se pudo bloquear. Inténtalo de nuevo.",
+  "@adminBlockFailed": {"description": "Error al bloquear, sin detalles (spec 010, RF-34)"},
+  "adminUnblockFailed": "No se pudo desbloquear. Inténtalo de nuevo.",
+  "@adminUnblockFailed": {"description": "Error al desbloquear, sin detalles (spec 010, RF-34)"}
 }

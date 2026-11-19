@@ -2933,6 +2933,42 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'No, volver'**
   String get adminDialogBack;
+
+  /// En el diálogo de bloquear, antes del turno activo que se cancelará (spec 010, RF-26)
+  ///
+  /// In es, this message translates to:
+  /// **'Su turno se cancelará:'**
+  String get adminBlockCancelsAppointment;
+
+  /// Aviso tras bloquear a una clienta (spec 010, RF-33)
+  ///
+  /// In es, this message translates to:
+  /// **'{name} está bloqueada.'**
+  String adminBlockDone(String name);
+
+  /// Aviso tras desbloquear a una clienta (spec 010, RF-33)
+  ///
+  /// In es, this message translates to:
+  /// **'{name} está desbloqueada.'**
+  String adminUnblockDone(String name);
+
+  /// El turno activo de la clienta cambió con el diálogo abierto: no se bloquea (spec 010, RF-28)
+  ///
+  /// In es, this message translates to:
+  /// **'Su turno cambió. Revísalo antes de bloquearla.'**
+  String get adminBlockChanged;
+
+  /// Error al bloquear, sin detalles (spec 010, RF-34)
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo bloquear. Inténtalo de nuevo.'**
+  String get adminBlockFailed;
+
+  /// Error al desbloquear, sin detalles (spec 010, RF-34)
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo desbloquear. Inténtalo de nuevo.'**
+  String get adminUnblockFailed;
 }
 
 class _AppLocalizationsDelegate

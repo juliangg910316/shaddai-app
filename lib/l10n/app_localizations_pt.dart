@@ -1570,4 +1570,28 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get adminDialogBack => 'Não, voltar';
+
+  @override
+  String get adminBlockCancelsAppointment => 'O horário dela será cancelado:';
+
+  @override
+  String adminBlockDone(String name) {
+    return '$name está bloqueada.';
+  }
+
+  @override
+  String adminUnblockDone(String name) {
+    return '$name está desbloqueada.';
+  }
+
+  @override
+  String get adminBlockChanged =>
+      'O horário dela mudou. Confira antes de bloquear.';
+
+  @override
+  String get adminBlockFailed => 'Não foi possível bloquear. Tente novamente.';
+
+  @override
+  String get adminUnblockFailed =>
+      'Não foi possível desbloquear. Tente novamente.';
 }

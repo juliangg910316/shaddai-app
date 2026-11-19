@@ -503,5 +503,11 @@
   "adminUnblockTitle": "Desbloquear {name}?",
   "adminUnblockBody": "Poderá voltar a entrar e agendar.",
   "adminUnblockConfirm": "Sim, desbloquear",
-  "adminDialogBack": "Não, voltar"
+  "adminDialogBack": "Não, voltar",
+  "adminBlockCancelsAppointment": "O horário dela será cancelado:",
+  "adminBlockDone": "{name} está bloqueada.",
+  "adminUnblockDone": "{name} está desbloqueada.",
+  "adminBlockChanged": "O horário dela mudou. Confira antes de bloquear.",
+  "adminBlockFailed": "Não foi possível bloquear. Tente novamente.",
+  "adminUnblockFailed": "Não foi possível desbloquear. Tente novamente."
 }

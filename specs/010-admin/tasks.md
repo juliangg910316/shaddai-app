@@ -108,7 +108,7 @@ Cada tarea: tests primero (rojo), luego el código (verde); `dart format lib tes
     - la clave `adminBlockSwitch` está en los dos `.arb`;
     - los tests pasan.
 
-- [ ] **T9. Bloquear y desbloquear** (plan D-5, D-6, D-7). RF-25 a RF-34
+- [x] **T9. Bloquear y desbloquear** (plan D-5, D-6, D-7). RF-25 a RF-34
   - Tests: `test/features/admin/client_block_dialog_test.dart`:
     - bloquear sin turno activo: el diálogo no menciona turnos;
     - bloquear con turno: muestra fecha, horas y servicio, y el turno aparece o cambia en vivo;
