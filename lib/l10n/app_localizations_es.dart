@@ -1522,4 +1522,7 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get deleteAccountBlocked =>
       'Para eliminar tu cuenta, habla con el salón.';
+
+  @override
+  String get adminAppointmentAccountDeleted => 'Cuenta eliminada';
 }

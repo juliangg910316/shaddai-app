@@ -1526,4 +1526,7 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get deleteAccountBlocked =>
       'Para excluir sua conta, fale com o salão.';
+
+  @override
+  String get adminAppointmentAccountDeleted => 'Conta excluída';
 }

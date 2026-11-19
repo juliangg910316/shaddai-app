@@ -48,6 +48,8 @@ const _keys = [
   'deleteAccountDone',
   'deleteAccountFailed',
   'deleteAccountBlocked',
+  // T16: la marca de la agenda.
+  'adminAppointmentAccountDeleted',
 ];
 
 /// Las claves que dejan de usarse con el perfil nuevo (plan § 8).

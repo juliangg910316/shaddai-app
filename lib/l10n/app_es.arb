@@ -839,5 +839,7 @@
   "deleteAccountFailed": "No se pudo eliminar la cuenta. Inténtalo de nuevo.",
   "@deleteAccountFailed": {"description": "Error al borrar la cuenta, sin detalles (spec 009, RF-39)"},
   "deleteAccountBlocked": "Para eliminar tu cuenta, habla con el salón.",
-  "@deleteAccountBlocked": {"description": "Una clienta bloqueada no puede borrar su cuenta (spec 009, RF-40)"}
+  "@deleteAccountBlocked": {"description": "Una clienta bloqueada no puede borrar su cuenta (spec 009, RF-40)"},
+  "adminAppointmentAccountDeleted": "Cuenta eliminada",
+  "@adminAppointmentAccountDeleted": {"description": "Marca de la agenda: la clienta borró su cuenta (spec 009, RF-35)"}
 }

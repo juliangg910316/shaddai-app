@@ -491,5 +491,6 @@
   "deleteAccountTypeWord": "Digite {word} para confirmar",
   "deleteAccountDone": "Sua conta foi excluída.",
   "deleteAccountFailed": "Não foi possível excluir a conta. Tente novamente.",
-  "deleteAccountBlocked": "Para excluir sua conta, fale com o salão."
+  "deleteAccountBlocked": "Para excluir sua conta, fale com o salão.",
+  "adminAppointmentAccountDeleted": "Conta excluída"
 }

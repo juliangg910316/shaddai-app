@@ -114,7 +114,7 @@ Salen 16 tareas, en tres bloques (decisión del autor, 2026-11-18: una sola spec
   - Tests: ampliar `test/core/firestore_rules_test.dart`: rama "la clienta cancela" (solo `status` y `cancelledBy`, margen, sin turno ocupado después), rama "copia su WhatsApp" (`getAfter` de la ficha), borrado del turno ocupado por la dueña de un turno cancelado, `users` sigue sin `delete`.
   - Hecho cuando: `firestore.rules` tiene las ramas del plan § 3 y su cabecera cita la spec 009, `specs/009-perfil/rules-check.md` lista los casos para el simulador (los comprueba el autor) y los tests pasan.
 
-- [ ] **T16. Marca "Cuenta eliminada", accesibilidad y cierre.** RF-35, RNF-1 a RNF-5, RC-1
+- [x] **T16. Marca "Cuenta eliminada", accesibilidad y cierre.** RF-35, RNF-1 a RNF-5, RC-1
   - Tests:
     - ampliar el test de la agenda: marca "Cuenta eliminada";
     - perfil, historial y los tres diálogos con `textContrastGuideline`, `androidTapTargetGuideline` y `labeledTapTargetGuideline` en claro y oscuro; 320 px con el texto al 200 % sin desbordes; cambio de idioma con un diálogo abierto.

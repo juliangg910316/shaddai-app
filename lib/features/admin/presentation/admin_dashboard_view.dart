@@ -386,9 +386,10 @@ class _AppointmentCard extends ConsumerWidget {
     final endStr = hours.format(toSalon(appointment.endTime));
     final whatsApp = whatsAppLink(appointment.clientPhone);
     // Sin cuenta y creado por la admin (spec 007, RF-22, RF-23); cancelado
-    // por la clienta (spec 009, RF-18).
+    // por la clienta y de una cuenta eliminada (spec 009, RF-18, RF-35).
     final marks = [
       if (!appointment.hasAccount) l10n.adminAppointmentGuest,
+      if (appointment.accountDeleted) l10n.adminAppointmentAccountDeleted,
       if (appointment.createdByAdmin) l10n.adminAppointmentByAdmin,
       if (appointment.status == 'cancelled' && appointment.cancelledByClient)
         l10n.adminAppointmentCancelledByClient,

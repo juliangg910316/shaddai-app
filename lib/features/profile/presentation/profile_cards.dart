@@ -183,13 +183,14 @@ class ProfileHistoryCard extends StatelessWidget {
           children: [
             // Chip de la fecha
             Container(
-              width: 52,
-              height: 52,
+              constraints: const BoxConstraints(minWidth: 52, minHeight: 52),
+              padding: const EdgeInsets.all(4),
               decoration: BoxDecoration(
                 color: brand.background,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
+                mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(

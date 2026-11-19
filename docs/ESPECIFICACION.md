@@ -33,13 +33,13 @@
 ## 3. Roles
 
 - **Visitante**: sin sesión. Ve la información pública.
-- **Cliente**: con sesión de Google y WhatsApp registrado. Reserva turnos y ve los suyos. Si está bloqueada, no puede reservar.
+- **Cliente**: con sesión de Google y WhatsApp registrado. Reserva turnos, ve los suyos y cancela el activo fuera del margen de edición; cambia su WhatsApp y puede borrar su cuenta (spec 009). Si está bloqueada, no puede reservar ni borrar la cuenta (sí cancelar).
 - **Admin**: rol asignado a mano en Firestore. Configura el calendario, gestiona turnos y bloquea clientas. Recibe un aviso push con cada cita nueva.
 
 ## 4. Modelo de datos (actual)
 
 - **Usuaria**: correo, nombre, foto, WhatsApp, rol (`cliente` | `admin`), bloqueada (sí/no), token de notificaciones.
-- **Turno**: clienta (id, nombre, teléfono, foto), inicio, fin, estado (`waiting_confirmation` | `confirmed` | `cancelled`) y fecha de creación.
+- **Turno**: clienta (id, nombre, teléfono, foto), inicio, fin, estado (`waiting_confirmation` | `confirmed` | `cancelled`) y fecha de creación. Desde la spec 009, quién lo canceló (`cancelledBy: 'client'` si fue la clienta; sin el campo, el salón) y si la cuenta de la clienta se borró (`accountDeleted: true`: conserva nombre y WhatsApp para la admin, sin la foto).
 - **Calendario**: horario de cada día de la semana (apertura, cierre, cerrado), duración global del turno y fechas bloqueadas.
 - **Servicio**: nuevo en Firestore; sus campos se definen en su spec.
 
@@ -51,6 +51,7 @@
 | Hueco libre | Hora de inicio posible según el calendario y los turnos existentes |
 | Esperando confirmación | Estado inicial de un turno hasta que la admin lo confirma o lo cancela |
 | Clienta bloqueada | Clienta a la que la admin ha impedido reservar |
+| Cuenta eliminada | Marca de la agenda en los turnos de una clienta que borró su cuenta (spec 009) |
 | Landing | Página única de la web con toda la información del salón |
 
 ## 6. Alcance
@@ -85,7 +86,7 @@ Mapa aprobado el 2026-10-20, en orden. El 2026-10-24 el autor dividió las reser
 | 006-editar-turno | La clienta edita su turno activo (día, hora, servicio) fuera del margen de edición; vuelve a esperar confirmación | spec en borrador (2026-10-24; puesta al día con la 006 el 2026-11-16) |
 | 007-reserva-admin | La admin reserva para una clienta con cuenta o una persona sin cuenta (nombre y WhatsApp) | spec en borrador (2026-10-24; puesta al día con la 006 el 2026-11-16) |
 | 008-agenda-admin | Agenda de la admin: cerrar franjas de horas o días enteros (descanso, enfermedad), editar cualquier turno (día, hora, servicio y clienta) y cambiar el margen de edición | spec, plan y tareas aprobados (2026-11-17) |
-| 009-perfil | Perfil y mis turnos (incluido cancelar el turno) | tareas aprobadas |
+| 009-perfil | Perfil y mis turnos: cancelar el turno, historial, cambiar el WhatsApp y borrar la cuenta (Cloud Function `deleteAccount`) | tareas hechas (2026-11-18); falta la validación, publicar las reglas y desplegar la función |
 | 010-admin | Panel de administración | sin empezar |
 | 011-notificaciones-push | Aviso push a la admin con cada cita nueva | sin empezar |
 | 012-reglas-seguridad | Reglas de seguridad de Firestore (lo que no cubren las specs anteriores, como solapes y un turno activo en el servidor) | sin empezar |

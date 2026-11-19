@@ -2861,6 +2861,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Para eliminar tu cuenta, habla con el salón.'**
   String get deleteAccountBlocked;
+
+  /// Marca de la agenda: la clienta borró su cuenta (spec 009, RF-35)
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta eliminada'**
+  String get adminAppointmentAccountDeleted;
 }
 
 class _AppLocalizationsDelegate
