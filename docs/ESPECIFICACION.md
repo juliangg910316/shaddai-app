@@ -50,7 +50,7 @@
 | Turno / cita | Reserva de una clienta para una fecha y hora |
 | Hueco libre | Hora de inicio posible según el calendario y los turnos existentes |
 | Esperando confirmación | Estado inicial de un turno hasta que la admin lo confirma o lo cancela |
-| Clienta bloqueada | Clienta a la que la admin ha impedido reservar |
+| Clienta bloqueada | Clienta a la que la admin ha impedido iniciar sesión y reservar. Desde la spec 010, bloquearla cancela su turno activo |
 | Cuenta eliminada | Marca de la agenda en los turnos de una clienta que borró su cuenta (spec 009) |
 | Landing | Página única de la web con toda la información del salón |
 
@@ -87,7 +87,7 @@ Mapa aprobado el 2026-10-20, en orden. El 2026-10-24 el autor dividió las reser
 | 007-reserva-admin | La admin reserva para una clienta con cuenta o una persona sin cuenta (nombre y WhatsApp) | spec en borrador (2026-10-24; puesta al día con la 006 el 2026-11-16) |
 | 008-agenda-admin | Agenda de la admin: cerrar franjas de horas o días enteros (descanso, enfermedad), editar cualquier turno (día, hora, servicio y clienta) y cambiar el margen de edición | spec, plan y tareas aprobados (2026-11-17) |
 | 009-perfil | Perfil y mis turnos: cancelar el turno, historial, cambiar el WhatsApp y borrar la cuenta (Cloud Function `deleteAccount`) | implementada (2026-11-18) |
-| 010-admin | Panel de administración: confirmar al cancelar y al bloquear (bloquear cancela el turno activo), "Hoy" y calendario en la agenda, turnos pasados de solo lectura, lista de clientas sin admins y con WhatsApp | spec, plan y tareas aprobados (2026-11-19) |
+| 010-admin | Panel de administración: confirmar al cancelar y al bloquear (bloquear cancela el turno activo), "Hoy" y calendario en la agenda, turnos pasados de solo lectura, lista de clientas sin admins y con WhatsApp | implementada en la rama `spec/010-admin` (2026-11-19), pendiente de validar |
 | 011-notificaciones-push | Aviso push a la admin con cada cita nueva | sin empezar |
 | 012-reglas-seguridad | Reglas de seguridad de Firestore (lo que no cubren las specs anteriores, como solapes y un turno activo en el servidor) | sin empezar |
 | 013-publicacion | Publicación en tiendas y web en Hostinger | sin empezar |

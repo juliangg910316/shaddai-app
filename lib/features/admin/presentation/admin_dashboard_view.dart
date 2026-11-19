@@ -330,6 +330,7 @@ class _AdminHeader extends ConsumerWidget {
                     ),
                   ),
                   IconButton(
+                    key: const ValueKey('agenda-next-day'),
                     tooltip: l10n.adminAgendaNextDay,
                     onPressed: onNextDay,
                     icon: Icon(Icons.chevron_right, color: brand.onBrand),
@@ -344,6 +345,7 @@ class _AdminHeader extends ConsumerWidget {
                 child: Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: OutlinedButton(
+                    key: const ValueKey('agenda-today'),
                     onPressed: () =>
                         ref.read(adminSelectedDateProvider.notifier).state = ref
                             .read(adminTodayProvider),

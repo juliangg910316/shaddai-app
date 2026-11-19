@@ -125,7 +125,7 @@ Cada tarea: tests primero (rojo), luego el código (verde); `dart format lib tes
     - las claves de bloquear y desbloquear del plan § 8 están en los dos `.arb`;
     - los tests pasan.
 
-- [ ] **T10. Accesibilidad, reglas y cierre** (plan § 3 y § 10). RNF-1 a RNF-5, RF-35, RF-36, RF-38, RC-1
+- [x] **T10. Accesibilidad, reglas y cierre** (plan § 3 y § 10). RNF-1 a RNF-5, RF-35, RF-36, RF-38, RC-1
   - Tests:
     - **`admin_accessibility_test.dart`**, en claro y oscuro: contraste, áreas táctiles y nombres en la agenda, la lista y los tres diálogos (`expectDialogTextContrast`);
     - en el mismo archivo, la semántica de "Hoy", la fecha, el interruptor y la fila, y que nada se desborde al 200 % en 320 px, en ES y PT;
