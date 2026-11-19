@@ -110,7 +110,7 @@ Salen 16 tareas, en tres bloques (decisión del autor, 2026-11-18: una sola spec
     - `test/features/profile/delete_account_test.dart` (nuevo, pantalla): la clienta ve "Eliminar mi cuenta" y la admin no; bloqueada ve el aviso con WhatsApp; cancelar en el paso 1 o 2 no llama a nada; la palabra en ES (`ELIMINAR`) y PT (`EXCLUIR`) activa el botón; en curso, sin doble envío; éxito → sesión cerrada, aviso e `/home` (móvil) o `/` (Web, con `pumpWebApp`); fallo → texto y "Reintentar"; `blocked` → su texto.
   - Hecho cuando: `account_deletion.dart`, `AccountDeleter` y `DeleteAccountDialog` cumplen los tests.
 
-- [ ] **T15. Reglas de Firestore.** RF-19, RF-28, RF-42
+- [x] **T15. Reglas de Firestore.** RF-19, RF-28, RF-42
   - Tests: ampliar `test/core/firestore_rules_test.dart`: rama "la clienta cancela" (solo `status` y `cancelledBy`, margen, sin turno ocupado después), rama "copia su WhatsApp" (`getAfter` de la ficha), borrado del turno ocupado por la dueña de un turno cancelado, `users` sigue sin `delete`.
   - Hecho cuando: `firestore.rules` tiene las ramas del plan § 3 y su cabecera cita la spec 009, `specs/009-perfil/rules-check.md` lista los casos para el simulador (los comprueba el autor) y los tests pasan.
 
