@@ -25,22 +25,31 @@ class SectionHeading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Text(
-          title,
-          style: AppText.serif(
-            size: size,
-            weight: FontWeight.w500,
-            color: context.brand.inkStrong,
+    // El título ocupa lo que necesita y la línea, el resto. Con el texto
+    // muy grande, el título se parte en líneas y deja sitio a la línea.
+    return LayoutBuilder(
+      builder: (context, constraints) => Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: (constraints.maxWidth - 36).clamp(0, double.infinity),
+            ),
+            child: Text(
+              title,
+              style: AppText.serif(
+                size: size,
+                weight: FontWeight.w500,
+                color: context.brand.inkStrong,
+              ),
+            ),
           ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Container(height: 1, color: context.brand.goldHairline),
-        ),
-      ],
+          const SizedBox(width: 12),
+          Expanded(
+            child: Container(height: 1, color: context.brand.goldHairline),
+          ),
+        ],
+      ),
     );
   }
 }

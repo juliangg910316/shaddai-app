@@ -9,7 +9,10 @@ import '../../helpers/pump_app.dart';
 String _capitalized(String text) => text[0].toUpperCase() + text.substring(1);
 
 void main() {
-  final start = DateTime(2026, 11, 4, 15, 30);
+  // Las 15:30 del salón del miércoles 4/11/2026 (18:30 UTC): el perfil
+  // muestra la hora del salón, esté donde esté el dispositivo (spec 009).
+  final wall = DateTime.utc(2026, 11, 4, 15, 30);
+  final start = DateTime.utc(2026, 11, 4, 18, 30);
 
   for (final language in ['es', 'pt']) {
     testWidgets('las fechas de mis turnos van en el idioma activo '
@@ -25,8 +28,8 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final weekday = _capitalized(DateFormat.EEEE(language).format(start));
-      final month = DateFormat.MMM(language).format(start).toUpperCase();
+      final weekday = _capitalized(DateFormat.EEEE(language).format(wall));
+      final month = DateFormat.MMM(language).format(wall).toUpperCase();
       expect(find.text('$weekday · 15:30'), findsOneWidget);
       expect(find.text(month), findsOneWidget);
       expect(find.text('04'), findsOneWidget);
@@ -50,9 +53,12 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('CANCELADA'), findsOneWidget);
+    expect(find.text('CANCELADO POR EL SALÓN'), findsOneWidget);
     expect(
-      find.ancestor(of: find.text('CANCELADA'), matching: find.byType(Opacity)),
+      find.ancestor(
+        of: find.text('CANCELADO POR EL SALÓN'),
+        matching: find.byType(Opacity),
+      ),
       findsNothing,
     );
   });

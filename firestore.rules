@@ -6,9 +6,12 @@ rules_version = '2';
 // - users, appointments y busySlots: las de la reserva (spec 005, plan § 2),
 //   la edición del turno por la clienta (spec 006, plan § 2) y la reserva
 //   de la admin para otra persona (spec 007, plan § 2), y su edición de los
-//   turnos (spec 008, plan § 2). Los solapes con otros turnos o con cierres
-//   y un segundo turno activo los comprueba la app antes de guardar; las
-//   reglas que los impiden llegan en la spec 012.
+//   turnos (spec 008, plan § 2). La clienta cancela su turno activo y copia
+//   a él su WhatsApp nuevo (spec 009, plan § 3). Las fichas no se borran
+//   desde la app: solo la función deleteAccount, con el SDK de
+//   administración (spec 009, RF-42). Los solapes con otros turnos o con
+//   cierres y un segundo turno activo los comprueba la app antes de
+//   guardar; las reglas que los impiden llegan en la spec 012.
 // - closures: los cierres de la agenda (spec 008, RF-42).
 // - settings/calendar: lo lee cualquiera con sesión y solo lo escribe la
 //   admin (spec 006, RF-25; adelanta esa parte de la spec 012), con el
@@ -17,8 +20,9 @@ rules_version = '2';
 // Lo que no aparece aquí queda denegado. Se comprueban a mano en el
 // simulador de la consola: specs/004-servicios-firestore/rules-check.md,
 // specs/005-reservas/rules-check.md, specs/006-editar-turno/rules-check.md,
-// specs/007-reserva-admin/rules-check.md y
-// specs/008-agenda-admin/rules-check.md.
+// specs/007-reserva-admin/rules-check.md,
+// specs/008-agenda-admin/rules-check.md y
+// specs/009-perfil/rules-check.md.
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -95,6 +99,11 @@ service cloud.firestore {
     // persona, las horas y lo reservado, siempre confirmado y con su turno
     // ocupado a la vez. No quita la marca; si cambia la persona, lo marca. La
     // persona es válida como al agendar (spec 007).
+    //
+    // La clienta cancela su turno activo fuera del margen, también si está
+    // bloqueada: solo el estado y quién lo canceló, y su turno ocupado se
+    // borra en el mismo lote (spec 009, RF-19). Al cambiar su WhatsApp, lo
+    // copia a su turno activo, igual al de su ficha tras el lote (RF-28).
     match /appointments/{id} {
       allow get, list: if isAdmin()
         || (signedIn() && resource.data.clientId == request.auth.uid);
@@ -146,7 +155,23 @@ service cloud.firestore {
               && get(/databases/$(database)/documents/users/$(request.resource.data.clientId)).data.role == 'cliente'
               && get(/databases/$(database)/documents/users/$(request.resource.data.clientId)).data.get('isBlocked', false) == false))
           && getAfter(/databases/$(database)/documents/busySlots/$(id)).data.start == request.resource.data.startTime
-          && getAfter(/databases/$(database)/documents/busySlots/$(id)).data.end == request.resource.data.endTime);
+          && getAfter(/databases/$(database)/documents/busySlots/$(id)).data.end == request.resource.data.endTime)
+        // La clienta cancela su turno (spec 009, RF-19).
+        || (signedIn()
+          && resource.data.clientId == request.auth.uid
+          && resource.data.status in ['waiting_confirmation', 'confirmed']
+          && resource.data.startTime > request.time + duration.value(editMarginMinutes(), 'm')
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'cancelledBy'])
+          && request.resource.data.status == 'cancelled'
+          && request.resource.data.cancelledBy == 'client'
+          && !existsAfter(/databases/$(database)/documents/busySlots/$(id)))
+        // La clienta copia su WhatsApp (spec 009, RF-28).
+        || (signedIn()
+          && resource.data.clientId == request.auth.uid
+          && resource.data.status in ['waiting_confirmation', 'confirmed']
+          && resource.data.endTime > request.time
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['clientPhone'])
+          && request.resource.data.clientPhone == getAfter(/databases/$(database)/documents/users/$(request.auth.uid)).data.phoneNumber);
       allow delete: if false;
     }
 
@@ -158,6 +183,8 @@ service cloud.firestore {
     // admin también los crea y los cambia junto a cualquier turno, con sus
     // mismas horas: el que agenda (spec 007, RF-25) y el que edita, que con
     // `set` crea el que le faltara a un turno antiguo (spec 008, RF-43).
+    // La clienta borra el de su turno al cancelarlo, en el mismo lote
+    // (spec 009, RF-19).
     match /busySlots/{id} {
       allow get, list: if signedIn();
       allow create: if signedIn()
@@ -166,7 +193,10 @@ service cloud.firestore {
           || isAdmin())
         && getAfter(/databases/$(database)/documents/appointments/$(id)).data.startTime == request.resource.data.start
         && getAfter(/databases/$(database)/documents/appointments/$(id)).data.endTime == request.resource.data.end;
-      allow delete: if isAdmin();
+      allow delete: if isAdmin()
+        || (signedIn()
+          && get(/databases/$(database)/documents/appointments/$(id)).data.clientId == request.auth.uid
+          && getAfter(/databases/$(database)/documents/appointments/$(id)).data.status == 'cancelled');
       allow update: if signedIn()
         && request.resource.data.keys().hasOnly(['start', 'end'])
         && (get(/databases/$(database)/documents/appointments/$(id)).data.clientId == request.auth.uid

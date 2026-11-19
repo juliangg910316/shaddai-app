@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:intl/intl.dart';
 import 'package:shaddai/data/models/appointment_model.dart';
 import 'package:shaddai/data/models/booked_service_model.dart';
 import 'package:shaddai/data/models/busy_slot_model.dart';
@@ -9,6 +8,7 @@ import 'package:shaddai/data/repositories/booking_repository.dart';
 import 'package:shaddai/features/booking/logic/salon_time.dart';
 import 'package:shaddai/features/booking/presentation/active_appointment_view.dart';
 import 'package:shaddai/features/booking/presentation/booking_form.dart';
+import 'package:shaddai/features/profile/presentation/profile_cards.dart';
 
 import '../../helpers/fake_booking.dart';
 import '../../helpers/fake_price_list.dart';
@@ -52,10 +52,12 @@ AppointmentModel anaAppointment() => AppointmentModel(
   booked: spa,
 );
 
-/// La línea de Perfil del turno que empieza a la hora de pared [hour] del
-/// viernes 20: Perfil da la hora tal como llega del repositorio.
-String profileLine(int hour) =>
-    'Viernes · ${DateFormat.Hm('es').format(fromSalon(at(20, hour)))}';
+/// La franja, en hora del salón, del turno activo que Perfil muestra en su
+/// tarjeta, si empieza a la hora de pared [hour] (spec 009, RF-1, RF-2).
+Finder profileLine(int hour) => find.descendant(
+  of: find.byType(ProfileActiveCard),
+  matching: find.text('$hour:00 – $hour:45'),
+);
 
 void main() {
   late FakeBookingRepository bookings;
@@ -134,12 +136,12 @@ void main() {
     tester,
   ) async {
     await open(tester, user: testClient, location: '/profile');
-    expect(find.text(profileLine(10)), findsOneWidget);
+    expect(profileLine(10), findsOneWidget);
 
     await adminEdits(tester);
 
-    expect(find.text(profileLine(11)), findsOneWidget);
-    expect(find.text(profileLine(10)), findsNothing);
+    expect(profileLine(11), findsOneWidget);
+    expect(profileLine(10), findsNothing);
   });
 
   group('si cambia la persona', () {
@@ -162,7 +164,7 @@ void main() {
       expect(find.byType(BookingForm), findsOneWidget);
       webRouter(tester).go('/profile');
       await settleWeb(tester);
-      expect(find.text('Todavía no tienes reservas.'), findsOneWidget);
+      expect(find.text('No tienes turnos próximos.'), findsOneWidget);
     });
 
     testWidgets('la nueva lo ve como su turno activo', (tester) async {
@@ -175,7 +177,7 @@ void main() {
       expect(find.text('11:00 – 11:45'), findsOneWidget);
       webRouter(tester).go('/profile');
       await settleWeb(tester);
-      expect(find.text(profileLine(11)), findsOneWidget);
+      expect(profileLine(11), findsOneWidget);
     });
   });
 }

@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shaddai/data/models/appointment_model.dart';
 import 'package:shaddai/data/models/user_model.dart';
 import 'package:shaddai/data/repositories/auth_repository.dart';
+import 'package:shaddai/data/repositories/account_repository.dart';
 import 'package:shaddai/data/repositories/booking_repository.dart';
 import 'package:shaddai/data/repositories/user_repository.dart';
 
@@ -72,6 +73,21 @@ class FakeUserRepository implements UserRepository {
   final Object? error;
   final saved = <UserModel>[];
 
+  /// La ficha que envía [watchUser] ahora: empieza en [stored] y cambia con
+  /// [updateWhatsApp] (spec 009).
+  late UserModel? live = stored;
+  final _userListeners = <StreamController<UserModel?>>[];
+
+  /// Cambios de WhatsApp guardados con [updateWhatsApp], en orden.
+  final whatsAppUpdates =
+      <({String uid, String phone, String? activeAppointmentId})>[];
+
+  /// Si está, [updateWhatsApp] lo lanza sin cambiar nada.
+  Object? whatsAppError;
+
+  /// Si está, [updateWhatsApp] espera a que termine antes de guardar.
+  Future<void>? whatsAppGate;
+
   List<UserModel> users;
   List<UserModel>? serverUsers;
   Object? fetchError;
@@ -116,13 +132,52 @@ class FakeUserRepository implements UserRepository {
     return stored;
   }
 
-  /// La ficha en vivo: [stored], o [error].
+  /// La ficha en vivo: [live] y cada cambio, o [error].
   @override
-  Stream<UserModel?> watchUser(String uid) =>
-      error != null ? Stream.error(error!) : Stream.value(stored);
+  Stream<UserModel?> watchUser(String uid) {
+    if (error != null) return Stream.error(error!);
+    late final StreamController<UserModel?> controller;
+    controller = StreamController<UserModel?>(
+      onListen: () => controller.add(live),
+      onCancel: () => _userListeners.remove(controller),
+    );
+    _userListeners.add(controller);
+    return controller.stream;
+  }
+
+  @override
+  Future<void> updateWhatsApp({
+    required String uid,
+    required String phone,
+    String? activeAppointmentId,
+  }) async {
+    final gate = whatsAppGate;
+    if (gate != null) await gate;
+    final failure = whatsAppError;
+    if (failure != null) throw failure;
+    whatsAppUpdates.add((
+      uid: uid,
+      phone: phone,
+      activeAppointmentId: activeAppointmentId,
+    ));
+    final user = live;
+    if (user != null) {
+      live = user.copyWith(phoneNumber: phone);
+      for (final listener in List.of(_userListeners)) {
+        listener.add(live);
+      }
+    }
+  }
 
   @override
   Future<void> saveUser(UserModel user) async => saved.add(user);
+
+  /// Números guardados con [updatePhoneNumber], en orden.
+  final phoneUpdates = <({String uid, String phone})>[];
+
+  @override
+  Future<void> updatePhoneNumber(String uid, String phoneNumber) async =>
+      phoneUpdates.add((uid: uid, phone: phoneNumber));
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
@@ -151,4 +206,21 @@ class RecordingBookingRepository implements BookingRepository {
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
+/// Borrar la cuenta sin la función real (spec 009): devuelve [failure]
+/// (`null` = bien), después de esperar a [gate] si está, y cuenta las
+/// llamadas.
+class FakeAccountRepository implements AccountRepository {
+  AccountDeletionFailure? failure;
+  Future<void>? gate;
+  int calls = 0;
+
+  @override
+  Future<AccountDeletionFailure?> deleteAccount() async {
+    calls++;
+    final wait = gate;
+    if (wait != null) await wait;
+    return failure;
+  }
 }

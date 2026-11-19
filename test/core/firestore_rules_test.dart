@@ -4,9 +4,9 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Estructura de `firestore.rules` (spec 004, RNF-2; spec 005, RNF-5; spec
-/// 006, RNF-4; spec 007, RNF-5; spec 008, RNF-5). Lo que permite cada regla
-/// se comprueba a mano en el simulador de la consola (`rules-check.md` de las
-/// specs 004 a 008);
+/// 006, RNF-4; spec 007, RNF-5; spec 008, RNF-5; spec 009, RF-19, RF-28,
+/// RF-42). Lo que permite cada regla se comprueba a mano en el simulador de
+/// la consola (`rules-check.md` de las specs 004 a 009);
 /// aquí se fija qué cubre cada `match` para que un cambio no lo rompa sin
 /// querer.
 void main() {
@@ -265,6 +265,85 @@ void main() {
     });
   });
 
+  group('spec 009: la clienta cancela y copia su WhatsApp', () {
+    const path = '/appointments/{id}';
+
+    /// La rama de `allow update` que empieza en el comentario [marker],
+    /// hasta la siguiente rama comentada o el final.
+    String branch(String marker) {
+      final update = allow(path, 'update');
+      final start = update.indexOf(marker);
+      expect(start, isNot(-1), reason: marker);
+      final next = update.indexOf('\n        // ', start + marker.length);
+      return update.substring(start, next < 0 ? update.length : next);
+    }
+
+    test('cancela su turno activo fuera del margen: solo el estado y quién '
+        'lo canceló, y su turno ocupado se borra en el mismo lote (RF-19)', () {
+      final cancel = branch('// La clienta cancela su turno (spec 009');
+      for (final check in [
+        'signedIn()',
+        'resource.data.clientId == request.auth.uid',
+        "resource.data.status in ['waiting_confirmation', 'confirmed']",
+        'resource.data.startTime > request.time + '
+            "duration.value(editMarginMinutes(), 'm')",
+        'request.resource.data.diff(resource.data).affectedKeys()'
+            ".hasOnly(['status', 'cancelledBy'])",
+        "request.resource.data.status == 'cancelled'",
+        "request.resource.data.cancelledBy == 'client'",
+        '!existsAfter(/databases/\$(database)/documents/busySlots/\$(id))',
+      ]) {
+        expect(cancel, contains(check), reason: check);
+      }
+      // La bloqueada también cancela (D-5).
+      expect(cancel, isNot(contains('isBlocked()')));
+    });
+
+    test('copia a su turno activo el WhatsApp que deja en su ficha en el '
+        'mismo lote, y nada más (RF-28)', () {
+      final copy = branch('// La clienta copia su WhatsApp (spec 009');
+      for (final check in [
+        'signedIn()',
+        'resource.data.clientId == request.auth.uid',
+        "resource.data.status in ['waiting_confirmation', 'confirmed']",
+        'resource.data.endTime > request.time',
+        'request.resource.data.diff(resource.data).affectedKeys()'
+            ".hasOnly(['clientPhone'])",
+        'request.resource.data.clientPhone == getAfter(/databases/'
+            '\$(database)/documents/users/\$(request.auth.uid))'
+            '.data.phoneNumber',
+      ]) {
+        expect(copy, contains(check), reason: check);
+      }
+    });
+
+    test('la dueña borra el turno ocupado de su turno al cancelarlo; la '
+        'admin, siempre (RF-11, RF-19)', () {
+      final delete = allow('/busySlots/{id}', 'delete');
+      expect(delete, contains('isAdmin()'));
+      expect(
+        delete,
+        contains(
+          'get(/databases/\$(database)/documents/appointments/\$(id))'
+          '.data.clientId == request.auth.uid',
+        ),
+      );
+      expect(
+        delete,
+        contains(
+          'getAfter(/databases/\$(database)/documents/appointments/\$(id))'
+          ".data.status == 'cancelled'",
+        ),
+      );
+    });
+
+    test('las fichas siguen sin poder borrarse desde la app: solo la función '
+        'deleteAccount (RF-42)', () {
+      expect(allow('/users/{userId}', 'delete'), contains('if false;'));
+      expect(allow(path, 'delete'), contains('if false;'));
+    });
+  });
+
   test('el margen de edición: 0 si no hay documento o campo (spec 006, '
       'RF-21)', () {
     final text = rules();
@@ -325,7 +404,7 @@ void main() {
       expect(create, isNot(contains('createdByAdmin')));
     });
 
-    test('solo la admin lo borra, al cancelar', () {
+    test('la admin lo borra al cancelar', () {
       expect(allow(path, 'delete'), contains('isAdmin()'));
     });
 
@@ -438,8 +517,12 @@ void main() {
     });
   });
 
-  test('ya no se cita la spec 009 en las reglas ni en la redirección', () {
-    expect(rules(), isNot(contains('spec 009')));
+  test('la cabecera cita la spec 009 y su comprobación manual; la '
+      'redirección ya no la cita', () {
+    final header = rules().substring(0, rules().indexOf('service '));
+    expect(header, contains('spec 009'));
+    expect(header, contains('specs/009-perfil/rules-check.md'));
+    expect(File('specs/009-perfil/rules-check.md').existsSync(), isTrue);
     expect(
       File('lib/core/router/redirect_logic.dart').readAsStringSync(),
       isNot(contains('spec 009')),

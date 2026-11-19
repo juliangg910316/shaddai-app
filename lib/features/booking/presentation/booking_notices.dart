@@ -9,6 +9,7 @@ import '../../services/logic/price_list_view_logic.dart';
 import '../../services/presentation/price_list_notices.dart';
 import '../logic/booking_edit.dart';
 import '../logic/booking_selection.dart';
+import '../providers/booking_cancel_provider.dart';
 import '../providers/booking_edit_provider.dart';
 import '../providers/booking_provider.dart';
 import 'edit_changes_dialog.dart';
@@ -259,3 +260,24 @@ class _EditSaveText extends StatelessWidget {
   Widget build(BuildContext context) =>
       Text(editSaveMessage(AppLocalizations.of(context)!, outcome));
 }
+
+/// El aviso de "Cancelar turno" según [outcome] (spec 009, RF-12, RF-14,
+/// RF-15): un texto para cada motivo y el error, sin detalles.
+String cancelMessage(AppLocalizations l10n, CancelOutcome outcome) =>
+    switch (outcome) {
+      CancelOutcome.ok => l10n.cancelDone,
+      CancelOutcome.notCancellable => l10n.cancelNotCancellable,
+      CancelOutcome.notActive => l10n.cancelNotActive,
+      CancelOutcome.changed => l10n.cancelChanged,
+      CancelOutcome.failed => l10n.cancelFailed,
+    };
+
+/// Muestra el resultado de "Cancelar turno" en un `SnackBar`, que traduce en
+/// su `build`, y lo anuncia al lector de pantalla (RNF-4). El error va sobre
+/// el color de peligro (RF-15).
+void showCancelResult(BuildContext context, CancelOutcome outcome) =>
+    showBookingMessage(
+      context,
+      (l10n) => cancelMessage(l10n, outcome),
+      isError: outcome == CancelOutcome.failed,
+    );

@@ -24,6 +24,14 @@ class AppointmentModel {
   /// Si lo agendó la admin (spec 007, RF-19, RF-23).
   final bool createdByAdmin;
 
+  /// Si lo canceló la clienta (`cancelledBy: 'client'`, spec 009, RF-18,
+  /// RF-20). Sin el campo, un turno cancelado lo canceló el salón (plan D-1).
+  final bool cancelledByClient;
+
+  /// Si la cuenta de la clienta se eliminó (spec 009, RF-35, plan D-2). El
+  /// turno conserva su nombre y su WhatsApp para la agenda de la admin.
+  final bool accountDeleted;
+
   AppointmentModel({
     required this.id,
     required this.clientId,
@@ -36,6 +44,8 @@ class AppointmentModel {
     required this.createdAt,
     this.booked,
     this.createdByAdmin = false,
+    this.cancelledByClient = false,
+    this.accountDeleted = false,
   });
 
   /// Si el turno es de una clienta con cuenta (spec 007).
@@ -62,11 +72,17 @@ class AppointmentModel {
       createdAt: _readDate(data['createdAt']),
       booked: BookedServiceModel.fromMap(data['booked']),
       createdByAdmin: data['createdByAdmin'] == true,
+      cancelledByClient: data['cancelledBy'] == 'client',
+      accountDeleted: data['accountDeleted'] == true,
     );
   }
 
   /// Escribe `clientId` siempre, también `null`: las reglas comprueban
   /// `== null` en la persona sin cuenta (spec 007, plan D-3).
+  ///
+  /// No escribe `cancelledBy` ni `accountDeleted`: un turno nace sin ellos, y
+  /// solo los escriben la cancelación de la clienta y el borrado de la cuenta
+  /// (spec 009, plan § 3).
   Map<String, dynamic> toMap() {
     return {
       'clientId': clientId,

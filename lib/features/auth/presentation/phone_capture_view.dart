@@ -5,7 +5,9 @@ import '../../../core/theme/app_text.dart';
 import '../../../core/theme/brand_colors.dart';
 import '../../../core/widgets/app_widgets.dart';
 import '../../../core/widgets/brand_logo.dart';
+import '../../../core/widgets/whatsapp_field.dart';
 import '../../../l10n/app_localizations.dart';
+import '../../booking/logic/whatsapp.dart';
 import '../providers/auth_provider.dart';
 
 class PhoneCaptureView extends ConsumerStatefulWidget {
@@ -19,6 +21,9 @@ class _PhoneCaptureViewState extends ConsumerState<PhoneCaptureView> {
   final _phoneController = TextEditingController();
   bool _isLoading = false;
 
+  /// Si se intentó guardar un número no válido (spec 009, RF-27).
+  bool _invalid = false;
+
   @override
   void dispose() {
     _phoneController.dispose();
@@ -27,9 +32,17 @@ class _PhoneCaptureViewState extends ConsumerState<PhoneCaptureView> {
 
   Future<void> _savePhone() async {
     final phone = _phoneController.text.trim();
-    if (phone.isEmpty || phone.length < 8) return;
+    // La misma validación que al cambiarlo desde el perfil y que la de una
+    // persona sin cuenta (spec 009, D-7; spec 007).
+    if (!isValidWhatsApp(phone)) {
+      setState(() => _invalid = true);
+      return;
+    }
 
-    setState(() => _isLoading = true);
+    setState(() {
+      _invalid = false;
+      _isLoading = true;
+    });
 
     final user = ref.read(currentUserProvider).value;
     if (user != null) {
@@ -79,40 +92,9 @@ class _PhoneCaptureViewState extends ConsumerState<PhoneCaptureView> {
                 ),
               ),
               const SizedBox(height: 34),
-              Text(
-                l10n.whatsappFieldLabel,
-                style: AppText.eyebrow(color: brand.inkMuted),
-              ),
-              const SizedBox(height: 8),
-              TextField(
+              WhatsAppField(
                 controller: _phoneController,
-                keyboardType: TextInputType.phone,
-                cursorColor: brand.accentIcon,
-                style: AppText.sans(size: 16, color: brand.inkStrong),
-                decoration: InputDecoration(
-                  hintText: l10n.phoneHintExample,
-                  prefixIcon: const Padding(
-                    padding: EdgeInsets.only(left: 16, right: 10),
-                    child: WhatsAppIcon(),
-                  ),
-                  prefixIconConstraints: const BoxConstraints(
-                    minWidth: 0,
-                    minHeight: 0,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 9),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 2),
-                child: Text(
-                  l10n.whatsappDisclaimer,
-                  style: AppText.sans(
-                    size: 12,
-                    weight: FontWeight.w300,
-                    color: brand.inkMuted,
-                    height: 1.6,
-                  ),
-                ),
+                errorText: _invalid ? l10n.whatsAppInvalid : null,
               ),
               const SizedBox(height: 30),
               if (_isLoading)

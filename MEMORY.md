@@ -1,12 +1,12 @@
 # MEMORY.md — Studio Shaddai (shaddai-app)
 
-## Estado actual (2026-11-17)
+## Estado actual (2026-11-18)
 - Se unifica `shaddai-app` (Firebase, reservas, admin) con `../shaddai-web` (landing y design system). SDD en `.claude/skills/`. Mapa: 005 reservas, 006 editar turno, 007 reserva de la admin, 008 agenda admin, 009 perfil, 010 admin, 011 push, 012 reglas, 013 publicación (las specs 001-004 citan la numeración original).
-- **Implementadas** con recorrido del autor: 001 a 004 (2026-10-23), 005 (2026-11-05), 006 (2026-11-15), 007 y 008 (2026-11-17; 2015 tests; reglas comprobadas en el simulador y en la app). **Siguiente: 009 perfil.**
+- **Implementadas** con recorrido del autor: 001 a 004 (2026-10-23), 005 (2026-11-05), 006 (2026-11-15), 007 y 008 (2026-11-17), 009 perfil (2026-11-18; 2201 tests de Flutter + 18 de `functions/`; reglas comprobadas en el simulador y en la app). 009: cancelar con el margen de edición desde Reservas y Perfil, activo + historial, cambiar WhatsApp, borrar la cuenta con la función `deleteAccount` (desplegada, plan Blaze, `southamerica-east1`, imágenes 1 día; `firebase deploy --only functions`, pasos en `functions/README.md`); campos `cancelledBy` y `accountDeleted`; `cloud_functions` 7.1.0 (iOS con `pod install` hecho). Siguiente: integrar `spec/009-perfil` en `main` y empezar la 010.
 - Decisiones de la 007 revisadas por el autor: el 55 solo se quita tras `+` o con 12+ dígitos (55 también es DDD); WhatsApp en todos los turnos; tras agendar se vacía también el día.
 - 008: la edición abierta desde un cierre vuelve al cierre (en Web, `/admin` → `closures` → `new` → `appointments/:id/edit` anidadas y con `go`). Cambio deliberado: el caso 15 de las reglas de la 007 pasa a permitido (`set` del turno ocupado en la edición).
 - Decisiones vigentes: `settings/priceList` único, céntimos, transacciones (004); `busySlots` solo con inicio y fin, en lote con el turno; copia `booked` en el turno; Curitiba = −3 h fijo; lógica pura en `lib/features/booking/logic/`; 1 turno activo hasta su fin, 60 días (admin 365); margen `settings/calendar.editMarginMinutes` (la admin lo cambia en Horarios); cierres en `closures`; `clientId: null` = sin cuenta, `createdByAdmin` (007).
-- Requisitos comunes RC-1 a RC-4: propuesta, pendiente de revisión del autor. Sin implementar: token FCM y permisos, Cloud Functions.
+- Requisitos comunes RC-1 a RC-4: propuesta, pendiente de revisión del autor. Sin implementar: token FCM y permisos, la función del aviso push (011).
 
 ## Decisiones (y por qué)
 - Nombre comercial **Studio Shaddai**; marca = sello SVG de shaddai-web (`BrandLogo`, `flutter_svg` aprobado). Identificadores `com.juliangg.shaddai` sin cambiar.
@@ -16,14 +16,13 @@
 - **Tests primero** (decisión del autor). `CLAUDE.md` es la guía para los agentes. Sin cuentas de desarrollador, política de privacidad ni fecha de publicación todavía.
 
 ## Pendientes
-- 009: Perfil formatea `startTime` sin pasarlo a la hora del salón.
 - 010: en la cabecera verde del panel, "PANEL DE BEIDIS" y el contador (`onBrandMuted`, 10-11 px, w300) no pasan `textContrastGuideline`.
 - 013: `firebase.json` sin la entrada de Web (volver a ejecutar `flutterfire configure`); `web/manifest.json` es la plantilla; clave de Google Maps para web; nombre bajo el icono (Android/iOS).
 - Sin spec: claves `.arb` sin uso `adminTab` y `selectedOption`; `AuthRepository.signInWithGoogle` devuelve `null` también ante errores de Google, sin aviso.
 
 ## Errores a evitar
 - **Entorno.** Esta Mac está en −03:00 (= Curitiba): para ver en rojo un test de hora del salón, `TZ=Europe/Lisbon flutter test …`. Web en local siempre en `--web-port 5050` (el 5000 es de AirPlay; Google solo acepta orígenes registrados; al publicar, registrar `https://dshaddai.com`). Cada Mac tiene su clave de depuración de Android: si Google falla con `[16] Account reauth failed`, falta su SHA-1 en Firebase (`keytool` de Android Studio sobre `~/.android/debug.keystore`) y hay que bajar otra vez `google-services.json`. `dart format` reformatea archivos no tocados desde Flutter 3.47.8: el autor lo acepta.
-- **Archivos.** Editar `.arb` como texto (añadir al final), no con `json.dump`. En macOS, `grep` no entiende `\b`: usar `grep -w` o Python.
+- **Archivos.** Editar `.arb` como texto (añadir al final), no con `json.dump`. En macOS, `grep` no entiende `\b`: usar `grep -w` o Python. En Dart, `identical` no sirve con registros (sin identidad garantizada): quitar de una lista por posición. `functions/`: TypeScript 7 sin compilar los tests (Node 24 quita los tipos; `npm test` = `node --test`), así que en `src/` solo sintaxis borrable (sin `enum` ni propiedades en el constructor); `tsc` compila solo `src/`. Un `ListView` con `children` solo construye lo cercano a la pantalla: lo de abajo no existe para `find` ni para el lector; el perfil usa `SingleChildScrollView` + `Column`.
 - **Fechas.** `DateFormat.Hm('es')` da "9:00" y `'pt'` "09:00". `DateTime ==` exige el mismo instante y la misma zona: usar `isAtSameMomentAs`; Firestore devuelve hora local, y la del salón se saca con `toSalon`. En tests, fechas fijas y "ahora" inyectado (`clockProvider`), nunca `DateTime.now()`.
 - **Riverpod 3.**
   - Un provider que falla queda `AsyncLoading` con el error dentro: mirar `hasError` antes que `isLoading`. Al invalidar un `StreamProvider`, `.value` conserva el dato anterior.
@@ -39,7 +38,7 @@
   - `textContrastGuideline` toma como fondo lo que tapa un texto (barras, botón flotante) o el borde de un `Container` ajustado, no mide nodos con `excludeSemantics` ni bien un texto de 10 px en w400. Medir partes con `expectTextContrast` o `contrastRatio`.
   - `ensureSemantics()` se cierra dentro del test. El nombre de un `IconButton` es su `tooltip`: `find.byTooltip` / `isSemantics(tooltip:)`.
   - Un `Semantics(liveRegion:)` o una fila con frase propia necesita `container: true`; con `excludeSemantics`, `onTap` en el `Semantics`.
-  - Con el texto al 200 % en 320 px, dejar crecer o pasar a otra línea, no reducir. Un texto en un `Row` sin `Flexible` se desborda. Para algo a cada extremo que baje de línea, `Wrap` no separa y `OverflowBar` alinea igual a todos: medir y elegir `Row` o `Column` (`_DayHeader`).
+  - Con el texto al 200 % en 320 px, dejar crecer o pasar a otra línea, no reducir. Un texto en un `Row` sin `Flexible` se desborda (`SectionHeading` limita el título con `LayoutBuilder` para no quitar sitio a la línea); nada de alto o ancho fijo alrededor de un texto (el chip de fecha del historial usa tamaño mínimo). Para algo a cada extremo que baje de línea, `Wrap` no separa y `OverflowBar` alinea igual a todos: medir y elegir `Row` o `Column` (`_DayHeader`).
   - Un `SnackBar` sobre `brand.danger` lleva texto `brand.background`. Los errores de un `TextField`, `errorStyle` con `brand.danger`. Los errores nunca en crudo: textos `.arb` y el detalle a `debugPrint`.
 - **go_router.** En Web, `push` no cambia la dirección: para una página con dirección propia y la de debajo conservada, ruta hija y `go`. Para saber si una navegación viene del navegador, mirar `routeInformationProvider.value.state` dentro del aviso (en tests, `BrowserHistory`). Una página tapada por otra no tiene tamaño. Las rutas anidadas llevan `BlockSemantics`: la página va en `Semantics(container: true)`.
 - **Landing.** Lo que llega de Firestore tras el primer fotograma cambia la altura: lo que salta a una sección debe recolocarse (`_reopenWhenPricesLoad`).

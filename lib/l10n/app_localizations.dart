@@ -380,29 +380,11 @@ abstract class AppLocalizations {
   /// **'PANEL DE ADMINISTRADOR'**
   String get adminPanelButtonLabel;
 
-  /// No description provided for @myAppointmentsTitle.
-  ///
-  /// In es, this message translates to:
-  /// **'Mis reservas'**
-  String get myAppointmentsTitle;
-
   /// No description provided for @myAppointmentsLoadError.
   ///
   /// In es, this message translates to:
   /// **'No pudimos cargar tus reservas. Inténtalo de nuevo.'**
   String get myAppointmentsLoadError;
-
-  /// No description provided for @noAppointmentsYet.
-  ///
-  /// In es, this message translates to:
-  /// **'Todavía no tienes reservas.'**
-  String get noAppointmentsYet;
-
-  /// No description provided for @bookAnotherAppointmentAction.
-  ///
-  /// In es, this message translates to:
-  /// **'RESERVAR OTRO TURNO'**
-  String get bookAnotherAppointmentAction;
 
   /// No description provided for @statusConfirmedClient.
   ///
@@ -2669,6 +2651,222 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Día siguiente'**
   String get adminAgendaNextDay;
+
+  /// Botón para cancelar el turno activo (spec 009, RF-8)
+  ///
+  /// In es, this message translates to:
+  /// **'Cancelar turno'**
+  String get cancelAppointmentAction;
+
+  /// Título del diálogo de cancelar (spec 009, RF-9)
+  ///
+  /// In es, this message translates to:
+  /// **'¿Cancelar tu turno?'**
+  String get cancelDialogTitle;
+
+  /// Confirma la cancelación (spec 009, RF-9)
+  ///
+  /// In es, this message translates to:
+  /// **'Sí, cancelar'**
+  String get cancelConfirm;
+
+  /// Cierra el diálogo sin cancelar (spec 009, RF-10)
+  ///
+  /// In es, this message translates to:
+  /// **'No, mantener'**
+  String get cancelKeep;
+
+  /// Aviso tras cancelar (spec 009, RF-12)
+  ///
+  /// In es, this message translates to:
+  /// **'Tu turno se canceló.'**
+  String get cancelDone;
+
+  /// El turno ya está dentro del margen (spec 009, RF-14)
+  ///
+  /// In es, this message translates to:
+  /// **'Ya no puedes cancelarlo: falta poco para tu turno. Escríbenos por WhatsApp.'**
+  String get cancelNotCancellable;
+
+  /// El turno ya se canceló o terminó (spec 009, RF-14)
+  ///
+  /// In es, this message translates to:
+  /// **'Este turno ya no está activo.'**
+  String get cancelNotActive;
+
+  /// Alguien cambió el turno (spec 009, RF-14)
+  ///
+  /// In es, this message translates to:
+  /// **'Tu turno cambió. Revísalo antes de cancelarlo.'**
+  String get cancelChanged;
+
+  /// Error al cancelar, sin detalles (spec 009, RF-15)
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo cancelar. Inténtalo de nuevo.'**
+  String get cancelFailed;
+
+  /// Título del turno activo en el perfil (spec 009, RF-1)
+  ///
+  /// In es, this message translates to:
+  /// **'Tu próximo turno'**
+  String get profileNextAppointmentTitle;
+
+  /// El perfil sin turno activo (spec 009, RF-5)
+  ///
+  /// In es, this message translates to:
+  /// **'No tienes turnos próximos.'**
+  String get profileNoUpcoming;
+
+  /// Botón para reservar desde el perfil sin turno activo (spec 009, RF-5)
+  ///
+  /// In es, this message translates to:
+  /// **'Reservar'**
+  String get profileBookAction;
+
+  /// Título del historial del perfil (spec 009, RF-20)
+  ///
+  /// In es, this message translates to:
+  /// **'Historial'**
+  String get profileHistoryTitle;
+
+  /// Etiqueta de un turno que canceló la clienta (spec 009, RF-20)
+  ///
+  /// In es, this message translates to:
+  /// **'CANCELADO POR TI'**
+  String get historyCancelledByYou;
+
+  /// Etiqueta de un turno que canceló el salón (spec 009, RF-20)
+  ///
+  /// In es, this message translates to:
+  /// **'CANCELADO POR EL SALÓN'**
+  String get historyCancelledBySalon;
+
+  /// Etiqueta de un turno confirmado que ya terminó (spec 009, RF-20)
+  ///
+  /// In es, this message translates to:
+  /// **'REALIZADO'**
+  String get historyDone;
+
+  /// Etiqueta de un turno que terminó sin confirmarse (spec 009, RF-21)
+  ///
+  /// In es, this message translates to:
+  /// **'NO CONFIRMADO'**
+  String get historyNotConfirmed;
+
+  /// Vuelve a pedir los turnos del perfil (spec 009, RF-24)
+  ///
+  /// In es, this message translates to:
+  /// **'REINTENTAR'**
+  String get profileAppointmentsRetry;
+
+  /// Marca de la agenda: lo canceló la clienta (spec 009, RF-18)
+  ///
+  /// In es, this message translates to:
+  /// **'Cancelado por la clienta'**
+  String get adminAppointmentCancelledByClient;
+
+  /// Error del campo de WhatsApp del registro y del perfil (spec 009, RF-27)
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe un número de WhatsApp válido (de 8 a 15 dígitos).'**
+  String get whatsAppInvalid;
+
+  /// Sección de la cuenta en el perfil (spec 009, RF-25)
+  ///
+  /// In es, this message translates to:
+  /// **'Tu cuenta'**
+  String get profileAccountTitle;
+
+  /// Etiqueta del WhatsApp en el perfil (spec 009, RF-25)
+  ///
+  /// In es, this message translates to:
+  /// **'WhatsApp'**
+  String get profileWhatsAppLabel;
+
+  /// Abre el cambio del WhatsApp (spec 009, RF-25)
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar'**
+  String get changeAction;
+
+  /// Título del diálogo para cambiar el WhatsApp (spec 009, RF-26)
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar WhatsApp'**
+  String get changeWhatsAppTitle;
+
+  /// Guarda el WhatsApp nuevo (spec 009, RF-28)
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar'**
+  String get whatsAppSaveAction;
+
+  /// Aviso tras cambiar el WhatsApp (spec 009, RF-28)
+  ///
+  /// In es, this message translates to:
+  /// **'Tu WhatsApp se actualizó.'**
+  String get whatsAppSaved;
+
+  /// Error al cambiar el WhatsApp, sin detalles técnicos (spec 009, RF-30)
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo guardar. Inténtalo de nuevo.'**
+  String get whatsAppSaveFailed;
+
+  /// Botón y título para borrar la cuenta (spec 009, RF-31)
+  ///
+  /// In es, this message translates to:
+  /// **'Eliminar mi cuenta'**
+  String get deleteAccountAction;
+
+  /// Qué se borra y qué se conserva (spec 009, RF-32)
+  ///
+  /// In es, this message translates to:
+  /// **'Se cancelará tu turno activo y se borrarán tu cuenta, tu nombre, tu correo, tu foto y tu WhatsApp. El salón conservará tus turnos, con tu nombre y tu WhatsApp, para su agenda.'**
+  String get deleteAccountExplain;
+
+  /// Pasa a escribir la palabra de confirmación (spec 009, RF-32)
+  ///
+  /// In es, this message translates to:
+  /// **'Continuar'**
+  String get deleteAccountContinue;
+
+  /// Palabra que se escribe para confirmar el borrado (spec 009, D-11)
+  ///
+  /// In es, this message translates to:
+  /// **'ELIMINAR'**
+  String get deleteAccountWord;
+
+  /// Pide escribir la palabra de confirmación (spec 009, RF-32)
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe {word} para confirmar'**
+  String deleteAccountTypeWord(String word);
+
+  /// Aviso tras borrar la cuenta (spec 009, RF-36)
+  ///
+  /// In es, this message translates to:
+  /// **'Tu cuenta se eliminó.'**
+  String get deleteAccountDone;
+
+  /// Error al borrar la cuenta, sin detalles (spec 009, RF-39)
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo eliminar la cuenta. Inténtalo de nuevo.'**
+  String get deleteAccountFailed;
+
+  /// Una clienta bloqueada no puede borrar su cuenta (spec 009, RF-40)
+  ///
+  /// In es, this message translates to:
+  /// **'Para eliminar tu cuenta, habla con el salón.'**
+  String get deleteAccountBlocked;
+
+  /// Marca de la agenda: la clienta borró su cuenta (spec 009, RF-35)
+  ///
+  /// In es, this message translates to:
+  /// **'Cuenta eliminada'**
+  String get adminAppointmentAccountDeleted;
 }
 
 class _AppLocalizationsDelegate

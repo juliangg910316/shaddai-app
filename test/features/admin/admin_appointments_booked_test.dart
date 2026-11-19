@@ -401,4 +401,87 @@ void main() {
       semantics.dispose();
     });
   });
+
+  group('turnos cancelados por la clienta (spec 009, RF-18)', () {
+    /// [base] cancelado; por la clienta si [byClient].
+    AppointmentModel cancelled({bool byClient = true}) {
+      final base = appointment(status: 'cancelled');
+      return AppointmentModel(
+        id: base.id,
+        clientId: base.clientId,
+        clientName: base.clientName,
+        clientPhone: base.clientPhone,
+        startTime: base.startTime,
+        endTime: base.endTime,
+        status: base.status,
+        createdAt: base.createdAt,
+        booked: base.booked,
+        cancelledByClient: byClient,
+      );
+    }
+
+    testWidgets('el que canceló la clienta lo dice', (tester) async {
+      await pump(tester, cancelled());
+      expect(find.text('CANCELADO'), findsOneWidget);
+      expect(find.text('CANCELADO POR LA CLIENTA'), findsOneWidget);
+    });
+
+    testWidgets('en portugués', (tester) async {
+      await pump(tester, cancelled(), language: 'pt');
+      expect(find.text('CANCELADO PELA CLIENTE'), findsOneWidget);
+    });
+
+    testWidgets('uno cancelado sin cancelledBy (por el salón) no la lleva', (
+      tester,
+    ) async {
+      await pump(tester, cancelled(byClient: false));
+      expect(find.text('CANCELADO'), findsOneWidget);
+      expect(find.text('CANCELADO POR LA CLIENTA'), findsNothing);
+    });
+
+    testWidgets('uno activo tampoco', (tester) async {
+      await pump(tester, appointment());
+      expect(find.text('CANCELADO POR LA CLIENTA'), findsNothing);
+    });
+  });
+
+  group('turnos de una cuenta eliminada (spec 009, RF-35)', () {
+    AppointmentModel deleted({String status = 'waiting_confirmation'}) {
+      final base = appointment(status: status);
+      return AppointmentModel(
+        id: base.id,
+        clientId: base.clientId,
+        clientName: base.clientName,
+        clientPhone: base.clientPhone,
+        startTime: base.startTime,
+        endTime: base.endTime,
+        status: base.status,
+        createdAt: base.createdAt,
+        booked: base.booked,
+        accountDeleted: true,
+      );
+    }
+
+    testWidgets('lo dice, y conserva el nombre y el WhatsApp', (tester) async {
+      await pump(tester, deleted());
+      expect(find.text('CUENTA ELIMINADA'), findsOneWidget);
+      expect(find.text('Ana Herrera'), findsOneWidget);
+      expect(find.text('SIN CUENTA'), findsNothing);
+    });
+
+    testWidgets('también cancelado', (tester) async {
+      await pump(tester, deleted(status: 'cancelled'));
+      expect(find.text('CUENTA ELIMINADA'), findsOneWidget);
+    });
+
+    testWidgets('en portugués', (tester) async {
+      await pump(tester, deleted(), language: 'pt');
+      expect(find.text('CONTA EXCLUÍDA'), findsOneWidget);
+    });
+
+    testWidgets('uno de una cuenta que sigue no la lleva', (tester) async {
+      await pump(tester, appointment());
+      expect(find.text('CUENTA ELIMINADA'), findsNothing);
+    });
+  });
 }

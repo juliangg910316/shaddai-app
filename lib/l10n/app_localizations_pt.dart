@@ -157,17 +157,8 @@ class AppLocalizationsPt extends AppLocalizations {
   String get adminPanelButtonLabel => 'PAINEL DE ADMINISTRADOR';
 
   @override
-  String get myAppointmentsTitle => 'Meus horários';
-
-  @override
   String get myAppointmentsLoadError =>
       'Não foi possível carregar seus horários. Tente novamente.';
-
-  @override
-  String get noAppointmentsYet => 'Você ainda não tem horários marcados.';
-
-  @override
-  String get bookAnotherAppointmentAction => 'AGENDAR OUTRO HORÁRIO';
 
   @override
   String get statusConfirmedClient => 'CONFIRMADA';
@@ -1423,4 +1414,119 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get adminAgendaNextDay => 'Próximo dia';
+
+  @override
+  String get cancelAppointmentAction => 'Cancelar horário';
+
+  @override
+  String get cancelDialogTitle => 'Cancelar seu horário?';
+
+  @override
+  String get cancelConfirm => 'Sim, cancelar';
+
+  @override
+  String get cancelKeep => 'Não, manter';
+
+  @override
+  String get cancelDone => 'Seu horário foi cancelado.';
+
+  @override
+  String get cancelNotCancellable =>
+      'Não é mais possível cancelar: falta pouco para o seu horário. Fale conosco pelo WhatsApp.';
+
+  @override
+  String get cancelNotActive => 'Este horário não está mais ativo.';
+
+  @override
+  String get cancelChanged => 'Seu horário mudou. Confira antes de cancelar.';
+
+  @override
+  String get cancelFailed => 'Não foi possível cancelar. Tente novamente.';
+
+  @override
+  String get profileNextAppointmentTitle => 'Seu próximo horário';
+
+  @override
+  String get profileNoUpcoming => 'Você não tem horários marcados.';
+
+  @override
+  String get profileBookAction => 'Agendar';
+
+  @override
+  String get profileHistoryTitle => 'Histórico';
+
+  @override
+  String get historyCancelledByYou => 'CANCELADO POR VOCÊ';
+
+  @override
+  String get historyCancelledBySalon => 'CANCELADO PELO SALÃO';
+
+  @override
+  String get historyDone => 'REALIZADO';
+
+  @override
+  String get historyNotConfirmed => 'NÃO CONFIRMADO';
+
+  @override
+  String get profileAppointmentsRetry => 'TENTAR NOVAMENTE';
+
+  @override
+  String get adminAppointmentCancelledByClient => 'Cancelado pela cliente';
+
+  @override
+  String get whatsAppInvalid =>
+      'Digite um número de WhatsApp válido (de 8 a 15 dígitos).';
+
+  @override
+  String get profileAccountTitle => 'Sua conta';
+
+  @override
+  String get profileWhatsAppLabel => 'WhatsApp';
+
+  @override
+  String get changeAction => 'Alterar';
+
+  @override
+  String get changeWhatsAppTitle => 'Alterar WhatsApp';
+
+  @override
+  String get whatsAppSaveAction => 'Salvar';
+
+  @override
+  String get whatsAppSaved => 'Seu WhatsApp foi atualizado.';
+
+  @override
+  String get whatsAppSaveFailed => 'Não foi possível salvar. Tente novamente.';
+
+  @override
+  String get deleteAccountAction => 'Excluir minha conta';
+
+  @override
+  String get deleteAccountExplain =>
+      'Seu horário ativo será cancelado e sua conta, nome, e-mail, foto e WhatsApp serão apagados. O salão manterá seus horários, com seu nome e WhatsApp, na agenda.';
+
+  @override
+  String get deleteAccountContinue => 'Continuar';
+
+  @override
+  String get deleteAccountWord => 'EXCLUIR';
+
+  @override
+  String deleteAccountTypeWord(String word) {
+    return 'Digite $word para confirmar';
+  }
+
+  @override
+  String get deleteAccountDone => 'Sua conta foi excluída.';
+
+  @override
+  String get deleteAccountFailed =>
+      'Não foi possível excluir a conta. Tente novamente.';
+
+  @override
+  String get deleteAccountBlocked =>
+      'Para excluir sua conta, fale com o salão.';
+
+  @override
+  String get adminAppointmentAccountDeleted => 'Conta excluída';
 }

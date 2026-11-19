@@ -5,8 +5,13 @@ import '../models/user_model.dart';
 class UserRepository {
   final FirebaseFirestore _firestore;
 
-  UserRepository({FirebaseFirestore? firestore})
-    : _firestore = firestore ?? FirebaseFirestore.instance;
+  /// Cuánto se espera a que un guardado termine antes de darlo por fallido.
+  final Duration saveTimeout;
+
+  UserRepository({
+    FirebaseFirestore? firestore,
+    this.saveTimeout = const Duration(seconds: 15),
+  }) : _firestore = firestore ?? FirebaseFirestore.instance;
 
   Future<UserModel?> getUser(String uid) async {
     final doc = await _firestore.collection('users').doc(uid).get();
@@ -35,6 +40,26 @@ class UserRepository {
     await _firestore.collection('users').doc(uid).update({
       'phoneNumber': phoneNumber,
     });
+  }
+
+  /// Cambia el WhatsApp de [uid] y, si tiene turno activo
+  /// ([activeAppointmentId]), el de ese turno, en un solo lote: o cambian
+  /// los dos o ninguno (spec 009, RF-28, RF-30, plan D-6). Las reglas exigen
+  /// que el número del turno sea el de la ficha tras el lote.
+  Future<void> updateWhatsApp({
+    required String uid,
+    required String phone,
+    String? activeAppointmentId,
+  }) {
+    final batch = _firestore.batch()
+      ..update(_firestore.collection('users').doc(uid), {'phoneNumber': phone});
+    if (activeAppointmentId != null) {
+      batch.update(
+        _firestore.collection('appointments').doc(activeAppointmentId),
+        {'clientPhone': phone},
+      );
+    }
+    return batch.commit().timeout(saveTimeout);
   }
 
   Future<void> updateFcmToken(String uid, String token) async {

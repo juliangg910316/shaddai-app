@@ -1,20 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:intl/intl.dart';
 
 import '../../../core/platform/platform_provider.dart';
 import '../../../core/theme/app_text.dart';
 import '../../../core/theme/brand_colors.dart';
-import '../../../core/utils/capitalize.dart';
 import '../../../core/widgets/app_widgets.dart';
-import '../../../data/models/appointment_model.dart';
 import '../../../l10n/app_localizations.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../preferences/presentation/preferences_section.dart';
+import '../../booking/logic/salon_time.dart';
 import '../../booking/providers/booking_provider.dart';
 import '../../navigation/providers/tab_scroll_provider.dart';
+import '../../services/presentation/price_list_notices.dart';
+import '../providers/profile_provider.dart';
+import '../logic/account_deletion.dart';
+import 'change_whatsapp_dialog.dart';
+import 'delete_account_dialog.dart';
+import 'profile_cards.dart';
 
+/// El perfil (spec 009): cabecera con "Cerrar sesión", identidad, acceso al
+/// panel (solo la admin), el turno activo o la invitación a reservar, el
+/// historial y, en Android/iOS, las preferencias. Todo va en una sola lista
+/// con desplazamiento (D-12): un error al cargar los turnos no oculta lo
+/// demás (RF-24), y con el texto grande se llega a todo (RNF-3).
 class ProfileView extends ConsumerWidget {
   const ProfileView({super.key});
 
@@ -23,7 +32,6 @@ class ProfileView extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final userAsync = ref.watch(currentUserProvider);
     final user = userAsync.value;
-    final appointmentsAsync = ref.watch(myAppointmentsProvider);
     final isWeb = ref.watch(isWebProvider);
 
     // Sin sesión: Preferencias y acceso al inicio de sesión (RF-25).
@@ -41,14 +49,19 @@ class ProfileView extends ConsumerWidget {
 
     return Scaffold(
       body: SafeArea(
-        child: Column(
-          children: [
-            // Cabecera: título centrado y salida a la derecha
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 6, 20, 0),
-              child: Row(
+        // Una sola columna con desplazamiento, construida entera: el perfil
+        // es corto, y así la cuenta y las preferencias existen aunque estén
+        // fuera de la pantalla (para el lector de pantalla y para los tests).
+        child: SingleChildScrollView(
+          controller: ref.watch(tabScrollControllerProvider(MobileTab.profile)),
+          padding: const EdgeInsets.fromLTRB(20, 6, 20, 28),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Cabecera: título centrado y salida a la derecha
+              Row(
                 children: [
-                  const SizedBox(width: 22),
+                  const SizedBox(width: 48),
                   Expanded(
                     child: Text(
                       l10n.myProfileTitle,
@@ -56,143 +69,189 @@ class ProfileView extends ConsumerWidget {
                       style: AppText.serif(size: 24, color: brand.inkStrong),
                     ),
                   ),
-                  GestureDetector(
-                    onTap: () {
+                  IconButton(
+                    tooltip: l10n.accountSignOut,
+                    icon: Icon(Icons.logout, size: 22, color: brand.inkMuted),
+                    onPressed: () {
                       // En Web, primero a la landing: el perfil sin sesión
                       // llevaría al login (spec 002, RF-28).
                       if (isWeb) context.go('/');
                       ref.read(authControllerProvider.notifier).signOut();
                     },
-                    child: Icon(Icons.logout, size: 22, color: brand.inkMuted),
                   ),
                 ],
               ),
-            ),
 
-            // Identidad
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 26, 20, 18),
-              child: Column(
-                children: [
-                  InitialsAvatar(
-                    photoUrl: user.photoUrl,
-                    name: user.displayName,
-                    size: 96,
-                    goldBorder: true,
-                    serifInitials: true,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    user.displayName,
-                    textAlign: TextAlign.center,
-                    style: AppText.serif(size: 26, color: brand.inkStrong),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    user.phoneNumber ?? user.email,
-                    style: AppText.sans(
-                      size: 14,
-                      weight: FontWeight.w300,
-                      color: brand.inkMuted,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Acceso al panel (solo visible para admin)
-            if (user.role == 'admin')
+              // Identidad
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: () => context.push('/admin'),
-                    icon: Icon(
-                      Icons.admin_panel_settings_outlined,
-                      color: brand.onBrand,
-                      size: 18,
-                    ),
-                    label: Text(
-                      l10n.adminPanelButtonLabel,
-                      style: AppText.sans(
-                        size: 12,
-                        weight: FontWeight.w500,
-                        spacing: 2,
-                        color: brand.onBrand,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: SectionHeading(l10n.myAppointmentsTitle),
-            ),
-            const SizedBox(height: 16),
-
-            Expanded(
-              child: appointmentsAsync.when(
-                loading: () => const Center(
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-                error: (err, stack) {
-                  debugPrint('Error al cargar mis reservas: $err');
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: Text(
-                        l10n.myAppointmentsLoadError,
-                        textAlign: TextAlign.center,
-                        style: AppText.sans(size: 13, color: brand.danger),
-                      ),
-                    ),
-                  );
-                },
-                data: (appointments) => ListView(
-                  controller: ref.watch(
-                    tabScrollControllerProvider(MobileTab.profile),
-                  ),
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 28),
+                padding: const EdgeInsets.fromLTRB(0, 20, 0, 18),
+                child: Column(
                   children: [
-                    if (appointments.isEmpty)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 26),
-                        child: Center(
-                          child: Text(
-                            l10n.noAppointmentsYet,
-                            style: AppText.sans(
-                              size: 13,
-                              weight: FontWeight.w300,
-                              color: brand.inkMuted,
-                            ),
-                          ),
-                        ),
-                      )
-                    else
-                      for (final appointment in appointments) ...[
-                        _AppointmentCard(appointment: appointment),
-                        const SizedBox(height: 12),
-                      ],
-                    const SizedBox(height: 10),
-                    OutlinePillButton(
-                      label: l10n.bookAnotherAppointmentAction,
-                      onPressed: () => context.go('/booking'),
+                    InitialsAvatar(
+                      photoUrl: user.photoUrl,
+                      name: user.displayName,
+                      size: 96,
+                      goldBorder: true,
+                      serifInitials: true,
                     ),
-                    // En Web, tema e idioma están en la barra superior
-                    // (spec 002, RF-31).
-                    if (!isWeb) ...[
-                      const SizedBox(height: 32),
-                      const PreferencesSection(),
-                    ],
+                    const SizedBox(height: 16),
+                    Text(
+                      user.displayName,
+                      textAlign: TextAlign.center,
+                      style: AppText.serif(size: 26, color: brand.inkStrong),
+                    ),
+                    const SizedBox(height: 4),
+                    // El WhatsApp va en "Tu cuenta", con "Cambiar".
+                    Text(
+                      user.email,
+                      textAlign: TextAlign.center,
+                      style: AppText.sans(
+                        size: 14,
+                        weight: FontWeight.w300,
+                        color: brand.inkMuted,
+                      ),
+                    ),
                   ],
                 ),
               ),
-            ),
-          ],
+
+              // Acceso al panel (solo visible para admin)
+              if (user.role == 'admin')
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () => context.push('/admin'),
+                      icon: Icon(
+                        Icons.admin_panel_settings_outlined,
+                        color: brand.onBrand,
+                        size: 18,
+                      ),
+                      label: Text(
+                        l10n.adminPanelButtonLabel,
+                        style: AppText.sans(
+                          size: 12,
+                          weight: FontWeight.w500,
+                          spacing: 2,
+                          color: brand.onBrand,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+              SectionHeading(l10n.profileNextAppointmentTitle),
+              const SizedBox(height: 16),
+              const _ProfileAppointments(),
+
+              // Tu cuenta: el WhatsApp con "Cambiar" (spec 009, RF-25).
+              const SizedBox(height: 28),
+              SectionHeading(l10n.profileAccountTitle),
+              const SizedBox(height: 16),
+              _WhatsAppRow(phone: user.phoneNumber ?? ''),
+              // Eliminar la cuenta: la clienta; bloqueada, el aviso; la admin,
+              // nada (spec 009, RF-31, RF-40).
+              switch (accountDeletionAccess(
+                role: user.role,
+                isBlocked: user.isBlocked,
+              )) {
+                AccountDeletionAccess.hidden => const SizedBox.shrink(),
+                AccountDeletionAccess.blocked => Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: AppNotice(
+                    message: l10n.deleteAccountBlocked,
+                    actions: const [WhatsappNoticeButton()],
+                  ),
+                ),
+                AccountDeletionAccess.allowed => Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: OutlinePillButton(
+                      key: const ValueKey('profile-delete-account'),
+                      label: l10n.deleteAccountAction.toUpperCase(),
+                      color: brand.danger,
+                      onPressed: () => showDeleteAccountDialog(context),
+                    ),
+                  ),
+                ),
+              },
+
+              // En Web, tema e idioma están en la barra superior
+              // (spec 002, RF-31).
+              if (!isWeb) ...[
+                const SizedBox(height: 32),
+                const PreferencesSection(),
+              ],
+            ],
+          ),
         ),
       ),
+    );
+  }
+}
+
+/// El turno activo (o la invitación a reservar) y el historial; si no se
+/// pudieron cargar, el error con "Reintentar" en su lugar (RF-1, RF-5,
+/// RF-20 a RF-24).
+class _ProfileAppointments extends ConsumerWidget {
+  const _ProfileAppointments();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final appointments = ref.watch(profileAppointmentsProvider);
+    final isBlocked = ref.watch(
+      currentUserProvider.select((user) => user.value?.isBlocked ?? false),
+    );
+
+    if (appointments.hasError) {
+      debugPrint('Error al cargar mis reservas: ${appointments.error}');
+      return AppNotice(
+        message: l10n.myAppointmentsLoadError,
+        actions: [
+          AppNoticeButton(
+            label: l10n.profileAppointmentsRetry,
+            onPressed: () => ref.invalidate(myAppointmentsProvider),
+          ),
+        ],
+      );
+    }
+    final value = appointments.value;
+    if (value == null) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 20),
+        child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+      );
+    }
+    final now = fromSalon(
+      ref.watch(salonNowProvider).value ?? toSalon(ref.read(clockProvider)()),
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (value.active case final active?)
+          ProfileActiveCard(appointment: active, isBlocked: isBlocked)
+        else
+          const ProfileNoUpcoming(),
+        // Sin historial no hay sección (RF-22).
+        if (value.history.isNotEmpty) ...[
+          const SizedBox(height: 28),
+          SectionHeading(l10n.profileHistoryTitle),
+          const SizedBox(height: 16),
+          for (final appointment in value.history) ...[
+            ProfileHistoryCard(
+              key: ValueKey('history-${appointment.id}'),
+              appointment: appointment,
+              now: now,
+            ),
+            const SizedBox(height: 12),
+          ],
+        ],
+      ],
     );
   }
 }
@@ -234,99 +293,48 @@ class _GuestProfile extends ConsumerWidget {
   }
 }
 
-class _AppointmentCard extends StatelessWidget {
-  final AppointmentModel appointment;
+/// El WhatsApp de la clienta con "Cambiar" (spec 009, RF-25).
+class _WhatsAppRow extends StatelessWidget {
+  const _WhatsAppRow({required this.phone});
 
-  const _AppointmentCard({required this.appointment});
+  final String phone;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final status = AppointmentStatusStyle.forClient(
-      l10n,
-      appointment.status,
-      context.brand,
-    );
     final brand = context.brand;
-    final locale = l10n.localeName;
-    final cancelled = appointment.status == 'cancelled';
-    final start = appointment.startTime;
-    final timeStr = DateFormat.Hm(locale).format(start);
-    // Un turno cancelado se distingue por el tono suave y su etiqueta, sin
-    // bajar la opacidad: su texto tiene que seguir leyéndose (RNF-1).
-    final dateInk = cancelled ? brand.inkMuted : brand.inkStrong;
 
     return FlatCard(
-      color: cancelled ? brand.background : brand.surface,
-      borderColor: switch (appointment.status) {
-        'waiting_confirmation' => brand.goldHairline,
-        _ => brand.hairline,
-      },
-      child: Row(
+      key: const ValueKey('profile-whatsapp'),
+      borderColor: brand.hairline,
+      child: Wrap(
+        alignment: WrapAlignment.spaceBetween,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        spacing: 12,
+        runSpacing: 10,
         children: [
-          // Chip de fecha
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              color: brand.background,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  DateFormat.MMM(locale).format(start).toUpperCase(),
-                  style: AppText.eyebrow(
-                    size: 9,
-                    spacing: 1,
-                    weight: FontWeight.w300,
-                    color: dateInk,
-                  ),
-                ),
-                Text(
-                  start.day.toString().padLeft(2, '0'),
-                  style: AppText.serif(size: 20, height: 1, color: dateInk),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
+          MergeSemantics(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  '${capitalizeFirst(DateFormat.EEEE(locale).format(start))}'
-                  ' · $timeStr',
-                  style: AppText.serif(
-                    size: 17,
-                    color: cancelled ? brand.inkMuted : brand.ink,
-                  ),
+                  l10n.profileWhatsAppLabel.toUpperCase(),
+                  style: AppText.eyebrow(color: brand.inkMuted),
                 ),
-                const SizedBox(height: 5),
+                const SizedBox(height: 4),
                 Text(
-                  status.label,
-                  style: AppText.eyebrow(
-                    size: 10,
-                    spacing: 1.6,
-                    color: status.color,
-                  ),
+                  phone,
+                  style: AppText.sans(size: 16, color: brand.inkStrong),
                 ),
               ],
             ),
           ),
-          if (!cancelled) ...[
-            const SizedBox(width: 10),
-            Container(
-              width: 8,
-              height: 8,
-              decoration: BoxDecoration(
-                color: status.color,
-                shape: BoxShape.circle,
-              ),
-            ),
-          ],
+          OutlinePillButton(
+            key: const ValueKey('profile-whatsapp-change'),
+            label: l10n.changeAction.toUpperCase(),
+            onPressed: () => showChangeWhatsAppDialog(context, phone),
+          ),
         ],
       ),
     );
