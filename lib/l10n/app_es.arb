@@ -845,5 +845,9 @@
   "adminAgendaToday": "Hoy",
   "@adminAgendaToday": {"description": "Botón de la agenda que vuelve al día de hoy del salón (spec 010, RF-3)"},
   "adminAgendaPickDate": "Elegir fecha",
-  "@adminAgendaPickDate": {"description": "Nombre del botón de la fecha de la agenda, que abre el calendario (spec 010, RF-4)"}
+  "@adminAgendaPickDate": {"description": "Nombre del botón de la fecha de la agenda, que abre el calendario (spec 010, RF-4)"},
+  "adminAppointmentUnconfirmed": "Sin confirmar",
+  "@adminAppointmentUnconfirmed": {"description": "Marca de la agenda: el turno terminó sin confirmarse (spec 010, RF-9)"},
+  "adminConfirmFailed": "No se pudo confirmar. Inténtalo de nuevo.",
+  "@adminConfirmFailed": {"description": "Error al confirmar un turno desde la agenda, sin detalles (spec 010, RF-17)"}
 }

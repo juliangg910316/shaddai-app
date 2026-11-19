@@ -2879,6 +2879,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Elegir fecha'**
   String get adminAgendaPickDate;
+
+  /// Marca de la agenda: el turno terminó sin confirmarse (spec 010, RF-9)
+  ///
+  /// In es, this message translates to:
+  /// **'Sin confirmar'**
+  String get adminAppointmentUnconfirmed;
+
+  /// Error al confirmar un turno desde la agenda, sin detalles (spec 010, RF-17)
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo confirmar. Inténtalo de nuevo.'**
+  String get adminConfirmFailed;
 }
 
 class _AppLocalizationsDelegate

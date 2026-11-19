@@ -14,9 +14,11 @@ import '../../../l10n/app_localizations.dart';
 import '../../booking/logic/salon_time.dart';
 import '../../booking/logic/whatsapp.dart';
 import '../../booking/logic/closures.dart';
+import '../../booking/presentation/booking_notices.dart';
 import '../../booking/providers/booking_provider.dart';
 import '../../services/presentation/price_list_notices.dart';
 import '../logic/admin_agenda.dart';
+import '../providers/admin_appointment_actions_provider.dart';
 import '../providers/admin_closures_provider.dart';
 import '../providers/admin_provider.dart';
 import 'admin_closures_view.dart';
@@ -431,20 +433,26 @@ class _AppointmentCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final status = AppointmentStatusStyle.forAdmin(
-      l10n,
-      appointment.status,
-      context.brand,
-    );
     final brand = context.brand;
     final waiting = appointment.status == 'waiting_confirmation';
-    // "Editar" en los turnos activos que no han terminado, también en curso
-    // (spec 008, RF-18).
+    // Botones solo en los turnos activos que no han terminado, también en
+    // curso; "ahora" cada 30 s, así desaparecen al terminar (spec 010, RF-7
+    // a RF-10).
     final now =
         ref.watch(salonNowProvider).value ?? toSalon(ref.read(clockProvider)());
-    final editable =
-        (waiting || appointment.status == 'confirmed') &&
-        toSalon(appointment.endTime).isAfter(now);
+    final actions = agendaActions(
+      status: appointment.status,
+      end: appointment.endTime,
+      nowSalon: now,
+    );
+    // Un pasado sin confirmar lleva "Sin confirmar" en lugar de su estado
+    // (RF-9).
+    final status = actions == AgendaActions.pastUnconfirmed
+        ? AppointmentStatusStyle(
+            l10n.adminAppointmentUnconfirmed.toUpperCase(),
+            brand.inkMuted,
+          )
+        : AppointmentStatusStyle.forAdmin(l10n, appointment.status, brand);
     // En hora del salón, esté donde esté el dispositivo (spec 005).
     final hours = DateFormat.Hm(l10n.localeName);
     final startStr = hours.format(toSalon(appointment.startTime));
@@ -562,20 +570,18 @@ class _AppointmentCard extends ConsumerWidget {
               style: AppText.sans(size: 14, color: brand.ink, height: 1.4),
             ),
           ],
-          if (appointment.status != 'cancelled') ...[
+          if (actions == AgendaActions.active) ...[
             const SizedBox(height: 16),
             Row(
               children: [
-                if (editable) ...[
-                  Expanded(
-                    child: OutlinePillButton(
-                      label: l10n.adminAppointmentEdit.toUpperCase(),
-                      onPressed: () =>
-                          openAdminEdit(context, ref, appointment.id),
-                    ),
+                Expanded(
+                  child: OutlinePillButton(
+                    label: l10n.adminAppointmentEdit.toUpperCase(),
+                    onPressed: () =>
+                        openAdminEdit(context, ref, appointment.id),
                   ),
-                  const SizedBox(width: 10),
-                ],
+                ),
+                const SizedBox(width: 10),
                 Expanded(
                   child: OutlinePillButton(
                     label: l10n.cancelAction,
@@ -587,39 +593,91 @@ class _AppointmentCard extends ConsumerWidget {
                 ),
                 if (waiting) ...[
                   const SizedBox(width: 10),
-                  Expanded(
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () => ref
-                            .read(adminControllerProvider)
-                            .confirmAppointment(appointment.id),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: brand.brand,
-                          foregroundColor: brand.onBrand,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(vertical: 15),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(22),
-                          ),
-                        ),
-                        child: Text(
-                          l10n.confirmAction,
-                          style: AppText.sans(
-                            size: 12,
-                            weight: FontWeight.w500,
-                            spacing: 1.2,
-                            color: brand.onBrand,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+                  Expanded(child: _ConfirmButton(id: appointment.id)),
                 ],
               ],
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+/// "Confirmar": al momento, sin diálogo (spec 010, RF-11). Mientras guarda,
+/// un indicador y desactivado (RF-16); si ya no está activo o falla, un
+/// aviso de la app (RF-17, plan D-4). El éxito se ve en la tarjeta.
+class _ConfirmButton extends ConsumerStatefulWidget {
+  const _ConfirmButton({required this.id});
+
+  final String id;
+
+  @override
+  ConsumerState<_ConfirmButton> createState() => _ConfirmButtonState();
+}
+
+class _ConfirmButtonState extends ConsumerState<_ConfirmButton> {
+  bool _saving = false;
+
+  Future<void> _confirm() async {
+    setState(() => _saving = true);
+    // El aviso sale en la agenda: el botón desaparece si se confirmó o si
+    // llega el turno cancelado.
+    final scaffold = Scaffold.of(context).context;
+    final outcome = await ref
+        .read(adminAppointmentActionsProvider)
+        .confirm(widget.id);
+    if (mounted) setState(() => _saving = false);
+    if (!scaffold.mounted) return;
+    switch (outcome) {
+      case AdminConfirmOutcome.ok:
+        break;
+      case AdminConfirmOutcome.notActive:
+        showBookingMessage(scaffold, (l10n) => l10n.cancelNotActive);
+      case AdminConfirmOutcome.failed:
+        showBookingMessage(
+          scaffold,
+          (l10n) => l10n.adminConfirmFailed,
+          isError: true,
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final brand = context.brand;
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: _saving ? null : _confirm,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: brand.brand,
+          foregroundColor: brand.onBrand,
+          elevation: 0,
+          minimumSize: const Size(48, 48),
+          padding: const EdgeInsets.symmetric(vertical: 15),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(22),
+          ),
+        ),
+        child: _saving
+            ? SizedBox.square(
+                dimension: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: brand.inkMuted,
+                ),
+              )
+            : Text(
+                l10n.confirmAction,
+                style: AppText.sans(
+                  size: 12,
+                  weight: FontWeight.w500,
+                  spacing: 1.2,
+                  color: brand.onBrand,
+                ),
+              ),
       ),
     );
   }

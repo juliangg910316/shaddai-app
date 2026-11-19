@@ -1531,4 +1531,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get adminAgendaPickDate => 'Elegir fecha';
+
+  @override
+  String get adminAppointmentUnconfirmed => 'Sin confirmar';
+
+  @override
+  String get adminConfirmFailed => 'No se pudo confirmar. Inténtalo de nuevo.';
 }

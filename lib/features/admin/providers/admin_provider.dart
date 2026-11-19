@@ -55,10 +55,6 @@ class AdminController {
   Future<void> cancelAppointment(String id) =>
       _bookingRepo.cancelByAdmin(id: id, expected: (_) => true);
 
-  /// Confirma el turno [id], sin comprobar nada todavía (spec 010, T6).
-  Future<void> confirmAppointment(String id) =>
-      _bookingRepo.confirmByAdmin(id: id, expected: (_) => true);
-
   /// Bloquea (sin tocar sus turnos) o desbloquea a [uid], como hasta ahora:
   /// el diálogo y la cancelación del turno llegan con la spec 010 (T9).
   Future<void> setClientBlocked(String uid, bool isBlocked) => isBlocked

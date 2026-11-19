@@ -1535,4 +1535,11 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get adminAgendaPickDate => 'Escolher data';
+
+  @override
+  String get adminAppointmentUnconfirmed => 'Não confirmado';
+
+  @override
+  String get adminConfirmFailed =>
+      'Não foi possível confirmar. Tente novamente.';
 }

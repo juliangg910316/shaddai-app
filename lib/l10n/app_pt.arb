@@ -494,5 +494,7 @@
   "deleteAccountBlocked": "Para excluir sua conta, fale com o salão.",
   "adminAppointmentAccountDeleted": "Conta excluída",
   "adminAgendaToday": "Hoje",
-  "adminAgendaPickDate": "Escolher data"
+  "adminAgendaPickDate": "Escolher data",
+  "adminAppointmentUnconfirmed": "Não confirmado",
+  "adminConfirmFailed": "Não foi possível confirmar. Tente novamente."
 }

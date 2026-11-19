@@ -65,7 +65,7 @@ Cada tarea: tests primero (rojo), luego el código (verde); `dart format lib tes
     - el pendiente de contraste de `MEMORY.md` queda cerrado;
     - los tests pasan.
 
-- [ ] **T6. Acciones de la tarjeta y confirmar** (plan D-4, § 6 y § 7). RF-7 a RF-11, RF-16, RF-17, RF-37
+- [x] **T6. Acciones de la tarjeta y confirmar** (plan D-4, § 6 y § 7). RF-7 a RF-11, RF-16, RF-17, RF-37
   - Tests: `test/features/admin/admin_agenda_actions_test.dart`:
     - botones según el turno: activo, esperando, en curso, pasado o cancelado;
     - "SIN CONFIRMAR" en los pasados nunca confirmados;
