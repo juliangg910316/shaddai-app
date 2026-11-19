@@ -308,8 +308,13 @@ void main() {
 
   testWidgets('"Cancelar" llama a la cancelación, que libera la hora '
       '(RF-56)', (tester) async {
+    bookings.active = [appointment()];
     await pump(tester, appointment());
     await tester.tap(find.text('CANCELAR'));
+    await tester.pumpAndSettle();
+    // Pide confirmación (spec 010, RF-12).
+    expect(bookings.adminCancelled, isEmpty);
+    await tester.tap(find.text('Sí, cancelar'));
     await tester.pumpAndSettle();
 
     expect(bookings.adminCancelled, ['t1']);

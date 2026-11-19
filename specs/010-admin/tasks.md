@@ -78,7 +78,7 @@ Cada tarea: tests primero (rojo), luego el código (verde); `dart format lib tes
     - las claves `adminAppointmentUnconfirmed` y `adminConfirmFailed` están en los dos `.arb`;
     - los tests pasan.
 
-- [ ] **T7. Diálogo de cancelar de la admin, en la agenda y en los cierres** (plan D-2, D-3). RF-12 a RF-18
+- [x] **T7. Diálogo de cancelar de la admin, en la agenda y en los cierres** (plan D-2, D-3). RF-12 a RF-18
   - Tests: `test/features/admin/admin_cancel_dialog_test.dart`:
     - muestra la persona, la fecha, las horas del salón y el servicio;
     - "No, mantener" y cerrar el diálogo no cambian nada;

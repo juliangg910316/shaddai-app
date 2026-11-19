@@ -1331,15 +1331,6 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get adminCancelAppointmentBody => 'La hora quedará libre.';
-
-  @override
-  String get adminCancelAppointmentConfirm => 'Cancelar turno';
-
-  @override
-  String get adminCancelAppointmentKeep => 'Volver';
-
-  @override
   String get adminCancelAppointmentError =>
       'No se pudo cancelar el turno. Inténtalo de nuevo.';
 
@@ -1537,4 +1528,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get adminConfirmFailed => 'No se pudo confirmar. Inténtalo de nuevo.';
+
+  @override
+  String get adminCancelDone => 'Turno cancelado.';
+
+  @override
+  String get adminCancelChanged =>
+      'El turno cambió. Revísalo antes de cancelarlo.';
 }

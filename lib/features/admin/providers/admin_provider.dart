@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/legacy.dart';
 import '../../../data/models/appointment_model.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/models/calendar_settings_model.dart';
-import '../../../data/repositories/booking_repository.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../../../data/repositories/config_repository.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -44,16 +43,10 @@ final adminUsersProvider = StreamProvider<List<UserModel>>((ref) {
 });
 
 class AdminController {
-  final BookingRepository _bookingRepo;
   final UserRepository _userRepo;
   final ConfigRepository _configRepo;
 
-  AdminController(this._bookingRepo, this._userRepo, this._configRepo);
-
-  /// Cancela el turno [id] y libera su hora, sin comprobar nada todavía:
-  /// el diálogo con su comprobación llega con la spec 010 (T7).
-  Future<void> cancelAppointment(String id) =>
-      _bookingRepo.cancelByAdmin(id: id, expected: (_) => true);
+  AdminController(this._userRepo, this._configRepo);
 
   /// Bloquea (sin tocar sus turnos) o desbloquea a [uid], como hasta ahora:
   /// el diálogo y la cancelación del turno llegan con la spec 010 (T9).
@@ -72,7 +65,6 @@ class AdminController {
 
 final adminControllerProvider = Provider((ref) {
   return AdminController(
-    ref.watch(bookingRepositoryProvider),
     ref.watch(userRepositoryProvider),
     ref.watch(configRepositoryProvider),
   );

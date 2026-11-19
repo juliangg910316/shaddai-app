@@ -21,6 +21,7 @@ import '../logic/admin_agenda.dart';
 import '../providers/admin_appointment_actions_provider.dart';
 import '../providers/admin_closures_provider.dart';
 import '../providers/admin_provider.dart';
+import 'admin_cancel_dialog.dart';
 import 'admin_closures_view.dart';
 import 'admin_navigation.dart';
 import '../../../data/models/appointment_model.dart';
@@ -586,9 +587,9 @@ class _AppointmentCard extends ConsumerWidget {
                   child: OutlinePillButton(
                     label: l10n.cancelAction,
                     color: brand.danger,
-                    onPressed: () => ref
-                        .read(adminControllerProvider)
-                        .cancelAppointment(appointment.id),
+                    // Pide confirmación (spec 010, RF-12).
+                    onPressed: () =>
+                        showAdminCancelDialog(context, appointment),
                   ),
                 ),
                 if (waiting) ...[

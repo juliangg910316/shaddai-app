@@ -2526,24 +2526,6 @@ abstract class AppLocalizations {
   /// **'¿Cancelar el turno de {name}?'**
   String adminCancelAppointmentTitle(String name);
 
-  /// Texto de la confirmación al cancelar un turno (spec 008, RF-5)
-  ///
-  /// In es, this message translates to:
-  /// **'La hora quedará libre.'**
-  String get adminCancelAppointmentBody;
-
-  /// Botón que confirma la cancelación de un turno (spec 008, RF-5)
-  ///
-  /// In es, this message translates to:
-  /// **'Cancelar turno'**
-  String get adminCancelAppointmentConfirm;
-
-  /// Botón que cierra la confirmación sin cancelar (spec 008, RF-5)
-  ///
-  /// In es, this message translates to:
-  /// **'Volver'**
-  String get adminCancelAppointmentKeep;
-
   /// Error al cancelar un turno desde los cierres (spec 008, RF-5)
   ///
   /// In es, this message translates to:
@@ -2891,6 +2873,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'No se pudo confirmar. Inténtalo de nuevo.'**
   String get adminConfirmFailed;
+
+  /// Aviso tras cancelar un turno desde la agenda o un cierre (spec 010, RF-18)
+  ///
+  /// In es, this message translates to:
+  /// **'Turno cancelado.'**
+  String get adminCancelDone;
+
+  /// El turno cambió con el diálogo de cancelar abierto: no se cancela (spec 010, RF-15)
+  ///
+  /// In es, this message translates to:
+  /// **'El turno cambió. Revísalo antes de cancelarlo.'**
+  String get adminCancelChanged;
 }
 
 class _AppLocalizationsDelegate

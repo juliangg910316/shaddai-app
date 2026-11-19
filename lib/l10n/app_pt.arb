@@ -436,9 +436,6 @@
   "closureSaveError": "Não foi possível salvar o fechamento. Tente de novo.",
   "adminAppointmentEdit": "Editar",
   "adminCancelAppointmentTitle": "Cancelar o horário de {name}?",
-  "adminCancelAppointmentBody": "O horário ficará livre.",
-  "adminCancelAppointmentConfirm": "Cancelar horário",
-  "adminCancelAppointmentKeep": "Voltar",
   "adminCancelAppointmentError": "Não foi possível cancelar o horário. Tente de novo.",
   "adminAgendaClosed": "Fechado",
   "adminEditNoChanges": "Você não mudou nada.",
@@ -496,5 +493,7 @@
   "adminAgendaToday": "Hoje",
   "adminAgendaPickDate": "Escolher data",
   "adminAppointmentUnconfirmed": "Não confirmado",
-  "adminConfirmFailed": "Não foi possível confirmar. Tente novamente."
+  "adminConfirmFailed": "Não foi possível confirmar. Tente novamente.",
+  "adminCancelDone": "Horário cancelado.",
+  "adminCancelChanged": "O horário mudou. Confira antes de cancelar."
 }

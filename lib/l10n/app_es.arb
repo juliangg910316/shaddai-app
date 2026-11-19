@@ -725,12 +725,6 @@
   "@adminAppointmentEdit": {"description": "Botón para editar un turno desde el panel (spec 008, RF-5, RF-18)"},
   "adminCancelAppointmentTitle": "¿Cancelar el turno de {name}?",
   "@adminCancelAppointmentTitle": {"description": "Confirmación al cancelar un turno desde el panel (spec 008, RF-5)", "placeholders": {"name": {"type": "String"}}},
-  "adminCancelAppointmentBody": "La hora quedará libre.",
-  "@adminCancelAppointmentBody": {"description": "Texto de la confirmación al cancelar un turno (spec 008, RF-5)"},
-  "adminCancelAppointmentConfirm": "Cancelar turno",
-  "@adminCancelAppointmentConfirm": {"description": "Botón que confirma la cancelación de un turno (spec 008, RF-5)"},
-  "adminCancelAppointmentKeep": "Volver",
-  "@adminCancelAppointmentKeep": {"description": "Botón que cierra la confirmación sin cancelar (spec 008, RF-5)"},
   "adminCancelAppointmentError": "No se pudo cancelar el turno. Inténtalo de nuevo.",
   "@adminCancelAppointmentError": {"description": "Error al cancelar un turno desde los cierres (spec 008, RF-5)"},
   "adminAgendaClosed": "Cerrado",
@@ -849,5 +843,9 @@
   "adminAppointmentUnconfirmed": "Sin confirmar",
   "@adminAppointmentUnconfirmed": {"description": "Marca de la agenda: el turno terminó sin confirmarse (spec 010, RF-9)"},
   "adminConfirmFailed": "No se pudo confirmar. Inténtalo de nuevo.",
-  "@adminConfirmFailed": {"description": "Error al confirmar un turno desde la agenda, sin detalles (spec 010, RF-17)"}
+  "@adminConfirmFailed": {"description": "Error al confirmar un turno desde la agenda, sin detalles (spec 010, RF-17)"},
+  "adminCancelDone": "Turno cancelado.",
+  "@adminCancelDone": {"description": "Aviso tras cancelar un turno desde la agenda o un cierre (spec 010, RF-18)"},
+  "adminCancelChanged": "El turno cambió. Revísalo antes de cancelarlo.",
+  "@adminCancelChanged": {"description": "El turno cambió con el diálogo de cancelar abierto: no se cancela (spec 010, RF-15)"}
 }

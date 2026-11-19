@@ -1335,15 +1335,6 @@ class AppLocalizationsPt extends AppLocalizations {
   }
 
   @override
-  String get adminCancelAppointmentBody => 'O horário ficará livre.';
-
-  @override
-  String get adminCancelAppointmentConfirm => 'Cancelar horário';
-
-  @override
-  String get adminCancelAppointmentKeep => 'Voltar';
-
-  @override
   String get adminCancelAppointmentError =>
       'Não foi possível cancelar o horário. Tente de novo.';
 
@@ -1542,4 +1533,11 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get adminConfirmFailed =>
       'Não foi possível confirmar. Tente novamente.';
+
+  @override
+  String get adminCancelDone => 'Horário cancelado.';
+
+  @override
+  String get adminCancelChanged =>
+      'O horário mudou. Confira antes de cancelar.';
 }
