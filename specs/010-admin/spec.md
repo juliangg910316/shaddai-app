@@ -1,5 +1,5 @@
 # Spec 010 — Panel de administración
-Estado: aprobada
+Estado: implementada
 
 ## Contexto y objetivo
 El panel de la admin ya existe en buena parte, construido por las specs 004 (servicios), 007 (reservar para otra persona) y 008 (cierres, editar turnos y margen): una agenda por día con contadores, confirmar y cancelar turnos, la lista de clientas con un interruptor para bloquearlas, y los horarios. Pero tiene huecos:

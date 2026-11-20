@@ -69,8 +69,8 @@ Si algo falla, avisa: las reglas no cambian en esta spec, así que un fallo es u
 
 ## Resultado
 
-Pendiente de comprobar por el autor en el recorrido de `/sdd-validate`.
+Comprobado por el autor en el recorrido de `/sdd-validate` (2026-11-20).
 
-- [ ] Reglas publicadas iguales a `firestore.rules`.
-- [ ] Casos 1 a 14 del simulador correctos.
-- [ ] Todo funciona en la app (paso 3).
+- [x] Reglas publicadas iguales a `firestore.rules`.
+- [x] Casos 1 a 14 del simulador correctos.
+- [x] Todo funciona en la app (paso 3).
