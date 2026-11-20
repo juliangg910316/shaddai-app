@@ -12,7 +12,7 @@ Cada tarea: tests primero (rojo), luego el código (verde). En Flutter: `dart fo
     - `salonDay`, `uniqueTokens` (orden estable) y `noticeTag` (estable, 32 caracteres).
   - Hecho cuando: el archivo no importa Firebase, los tests pasan y `npm run build` compila.
 
-- [ ] **T2. Servidor: envío, limpieza y disparador** (`notify_admins.ts`, `notice_store.ts`, `index.ts`, plan D-3, D-5). RF-5, RF-6, RF-12, RF-19, RF-21, RF-22, RF-24
+- [x] **T2. Servidor: envío, limpieza y disparador** (`notify_admins.ts`, `notice_store.ts`, `index.ts`, plan D-3, D-5). RF-5, RF-6, RF-12, RF-19, RF-21, RF-22, RF-24
   - Tests: `functions/test/notify_admins.test.ts`, con un almacén en memoria:
     - sin tipo, no envía; sin dispositivos, no envía ni falla;
     - un token repetido se envía una vez; dos admins con varios dispositivos;
