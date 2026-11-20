@@ -2987,6 +2987,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Continuar'**
   String get adminPushExplainContinue;
+
+  /// Acción del aviso con la app abierta: abre la agenda del día del turno (spec 011, RF-14)
+  ///
+  /// In es, this message translates to:
+  /// **'Ver'**
+  String get adminPushView;
+
+  /// Nombre de "Ver" para el lector de pantalla (spec 011, RF-14)
+  ///
+  /// In es, this message translates to:
+  /// **'Ver la agenda de ese día'**
+  String get adminPushViewLabel;
 }
 
 class _AppLocalizationsDelegate

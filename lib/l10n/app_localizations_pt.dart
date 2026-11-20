@@ -1604,4 +1604,10 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get adminPushExplainContinue => 'Continuar';
+
+  @override
+  String get adminPushView => 'Ver';
+
+  @override
+  String get adminPushViewLabel => 'Ver a agenda desse dia';
 }

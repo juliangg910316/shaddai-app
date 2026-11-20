@@ -68,7 +68,7 @@ Cada tarea: tests primero (rojo), luego el código (verde). En Flutter: `dart fo
     - las claves `adminPushExplainTitle`, `adminPushExplainBody` y `adminPushExplainContinue` están en los dos `.arb`;
     - los tests pasan.
 
-- [ ] **T7. Avisos en primer plano y al tocarlos** (plan D-9, D-10). RF-12 a RF-14
+- [x] **T7. Avisos en primer plano y al tocarlos** (plan D-9, D-10). RF-12 a RF-14
   - Tests: en `admin_push_gate_test.dart`:
     - un aviso con la app abierta muestra un `SnackBar` con el título, el texto y "Ver", sobre cualquier pantalla, y no interrumpe ni navega;
     - "Ver" abre `/admin` en el día del aviso;

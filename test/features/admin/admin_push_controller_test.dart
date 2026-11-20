@@ -1,10 +1,14 @@
 import 'dart:async';
 
+import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:shaddai/core/router/app_router.dart';
 import 'package:shaddai/core/platform/platform_provider.dart';
 import 'package:shaddai/data/models/push_notice.dart';
 import 'package:shaddai/data/models/user_model.dart';
+import 'package:shaddai/features/admin/providers/admin_provider.dart';
 import 'package:shaddai/features/admin/providers/admin_push_provider.dart';
 import 'package:shaddai/features/auth/providers/auth_provider.dart';
 
@@ -39,18 +43,22 @@ class Harness {
     PushPermission permission = PushPermission.granted,
     bool pendingUnregister = false,
     String? registeredOwner,
+    PushNotice? initial,
   }) : push = FakePushRepository(
          currentPermission: permission,
          pendingUnregister: pendingUnregister,
          registeredOwner: registeredOwner,
+         initial: initial,
        ) {
     container = ProviderContainer(
       overrides: [
         isWebProvider.overrideWithValue(isWeb),
         pushRepositoryProvider.overrideWithValue(push),
         currentUserProvider.overrideWith((ref) => users.stream),
+        goRouterProvider.overrideWithValue(router),
       ],
     );
+    addTearDown(router.dispose);
     addTearDown(container.dispose);
     // Como en la app, alguien lo escucha (la puerta, T6): sin oyentes,
     // Riverpod pausa el provider y lo que escucha.
@@ -63,6 +71,15 @@ class Harness {
   final FakePushRepository push;
   final users = StreamController<UserModel?>.broadcast();
   late final ProviderContainer container;
+
+  /// Un router sin pantallas: solo importa a dónde va.
+  final router = GoRouter(
+    initialLocation: '/home',
+    routes: [
+      GoRoute(path: '/home', builder: (_, _) => const SizedBox()),
+      GoRoute(path: '/admin', builder: (_, _) => const SizedBox()),
+    ],
+  );
 
   AdminPushController get controller =>
       container.read(adminPushControllerProvider);
@@ -319,6 +336,48 @@ void main() {
       h.users.add(other);
       await settle();
       expect(h.push.devices.single.uid, 'otra');
+    });
+  });
+
+  group('abrir la agenda del aviso (RF-12, RF-13, plan D-10)', () {
+    final notice = PushNotice.fromParts(
+      title: 'Turno nuevo',
+      data: {'kind': 'created', 'day': '2026-11-21'},
+    );
+
+    test('el aviso que abrió la app espera a que cargue la sesión', () async {
+      final h = Harness(initial: notice);
+      h.controller.start();
+      await settle();
+      // La sesión aún no ha dicho quién es: no se cambia nada todavía.
+      expect(
+        h.container.read(adminSelectedDateProvider),
+        isNot(DateTime.utc(2026, 11, 21)),
+      );
+
+      h.users.add(admin);
+      await settle();
+      expect(
+        h.container.read(adminSelectedDateProvider),
+        DateTime.utc(2026, 11, 21),
+      );
+      expect(h.router.routeInformationProvider.value.uri.path, '/admin');
+    });
+
+    test('si la sesión carga y es de una clienta, nada', () async {
+      final h = Harness(initial: notice);
+      h.controller.start();
+      await settle();
+      h.users.add(client);
+      await settle();
+      expect(h.router.routeInformationProvider.value.uri.path, '/home');
+    });
+
+    test('en Web, open() no hace nada', () async {
+      final h = Harness(isWeb: true);
+      await h.startWith(admin);
+      await h.controller.open(notice);
+      expect(h.router.routeInformationProvider.value.uri.path, '/home');
     });
   });
 }

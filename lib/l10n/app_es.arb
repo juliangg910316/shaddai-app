@@ -881,5 +881,9 @@
   "adminPushExplainBody": "Te avisaremos en este teléfono cuando una clienta reserve, cambie o cancele un turno. A continuación, el teléfono te pedirá permiso para mostrar notificaciones.",
   "@adminPushExplainBody": {"description": "Para qué sirven los avisos, antes del diálogo del sistema (spec 011, RF-15)"},
   "adminPushExplainContinue": "Continuar",
-  "@adminPushExplainContinue": {"description": "Botón que cierra la explicación y pide el permiso del sistema (spec 011, RF-15)"}
+  "@adminPushExplainContinue": {"description": "Botón que cierra la explicación y pide el permiso del sistema (spec 011, RF-15)"},
+  "adminPushView": "Ver",
+  "@adminPushView": {"description": "Acción del aviso con la app abierta: abre la agenda del día del turno (spec 011, RF-14)"},
+  "adminPushViewLabel": "Ver la agenda de ese día",
+  "@adminPushViewLabel": {"description": "Nombre de \"Ver\" para el lector de pantalla (spec 011, RF-14)"}
 }

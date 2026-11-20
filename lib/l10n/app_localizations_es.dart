@@ -1599,4 +1599,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get adminPushExplainContinue => 'Continuar';
+
+  @override
+  String get adminPushView => 'Ver';
+
+  @override
+  String get adminPushViewLabel => 'Ver la agenda de ese día';
 }

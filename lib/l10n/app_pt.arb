@@ -512,5 +512,7 @@
   "adminUnblockFailed": "Não foi possível desbloquear. Tente novamente.",
   "adminPushExplainTitle": "Avisos de horários",
   "adminPushExplainBody": "Vamos avisar neste celular quando uma cliente agendar, alterar ou cancelar um horário. Em seguida, o celular vai pedir permissão para mostrar notificações.",
-  "adminPushExplainContinue": "Continuar"
+  "adminPushExplainContinue": "Continuar",
+  "adminPushView": "Ver",
+  "adminPushViewLabel": "Ver a agenda desse dia"
 }

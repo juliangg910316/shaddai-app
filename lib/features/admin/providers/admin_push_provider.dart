@@ -5,11 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 
 import '../../../core/platform/platform_provider.dart';
+import '../../../core/router/app_router.dart';
 import '../../../data/models/push_notice.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/repositories/push_repository.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../logic/push_notices.dart';
+import 'admin_provider.dart';
 
 /// El repositorio de los avisos push (spec 011, plan D-11). `main` lo
 /// sustituye por uno con el almacenamiento del dispositivo; los tests, por
@@ -32,7 +34,9 @@ final adminPushControllerProvider = Provider<AdminPushController>((ref) {
 
 /// Registra el dispositivo de la admin para recibir avisos, lo vuelve a
 /// registrar cuando hace falta y lo da de baja al cerrar sesión (spec 011,
-/// RF-16, RF-18 a RF-21, RF-25; plan D-7, D-15, § 6).
+/// RF-16, RF-18 a RF-21, RF-25; plan D-7, D-15, § 6). También abre la agenda
+/// del día de un aviso tocado y pasa a la puerta los que llegan con la app
+/// abierta (RF-12 a RF-14; plan D-9, D-10).
 ///
 /// En Web no hace nada (Plataformas). Con una clienta o sin sesión no toca
 /// el repositorio, salvo para repetir una baja pendiente de la admin (D-7).
@@ -43,7 +47,20 @@ class AdminPushController {
 
   final Ref _ref;
   bool _started = false;
-  StreamSubscription<String>? _registeredSubscription;
+
+  /// El aviso que abrió la app solo se mira con la primera sesión conocida:
+  /// si no es de la admin, se descarta (RF-13).
+  bool _initialHandled = false;
+
+  final List<StreamSubscription<Object>> _subscriptions = [];
+
+  /// Los avisos que llegan con la app abierta, solo con la sesión de la
+  /// admin (RF-13, RF-14).
+  final _foreground = StreamController<PushNotice>.broadcast();
+
+  /// Cuánto se espera a saber quién tiene la sesión antes de abrir un aviso
+  /// (plan D-10).
+  static const sessionTimeout = Duration(seconds: 10);
 
   /// El FID que este dispositivo registró en esta ejecución.
   String? _fid;
@@ -68,10 +85,48 @@ class AdminPushController {
       // Sin dato aún, nada: se espera a saber quién es (como el router).
       if (next.isLoading && !next.hasValue) return;
       _enqueue(() => _onUser(next.value));
+      if (!_initialHandled) {
+        _initialHandled = true;
+        if (_isAdmin(next.value)) unawaited(_openInitial());
+      }
     }, fireImmediately: true);
-    _registeredSubscription = _repository.onRegistered.listen(
-      (fid) => _enqueue(() => _registerFid(fid)),
-    );
+    final repository = _repository;
+    _subscriptions.addAll([
+      repository.onRegistered.listen(
+        (fid) => _enqueue(() => _registerFid(fid)),
+      ),
+      repository.onNoticeOpened.listen(open),
+      repository.onForegroundNotice.listen((notice) {
+        if (_isAdmin(_user)) _foreground.add(notice);
+      }),
+    ]);
+  }
+
+  /// Los avisos que llegan con la app abierta y la sesión de la admin: la
+  /// puerta los muestra (RF-14).
+  Stream<PushNotice> get foregroundNotices => _foreground.stream;
+
+  /// Abre la agenda en el día del turno de [notice] (RF-12). Espera a saber
+  /// quién tiene la sesión; si no es la admin o el día no vale, no hace nada
+  /// (RF-13). Si la agenda no está arriba, la abre encima, para que "atrás"
+  /// vuelva a donde estaba (plan D-10). Nunca lanza.
+  Future<void> open(PushNotice notice) async {
+    if (_isWeb) return;
+    try {
+      final user = await _sessionUser();
+      final day = noticeDay(notice.data);
+      if (!_isAdmin(user) || day == null) return;
+      _ref.read(adminSelectedDateProvider.notifier).state = day;
+      final router = _ref.read(goRouterProvider);
+      // `push` deja la dirección como estaba y pone la página encima: lo que
+      // cuenta es la página de arriba.
+      final pages = router.routerDelegate.currentConfiguration;
+      if (pages.isEmpty || pages.last.matchedLocation != '/admin') {
+        unawaited(router.push('/admin'));
+      }
+    } catch (e) {
+      debugPrint('No se pudo abrir el aviso: $e');
+    }
   }
 
   /// Vuelve a leer el permiso y registra el dispositivo si toca: al volver a
@@ -113,7 +168,26 @@ class AdminPushController {
   }
 
   void dispose() {
-    _registeredSubscription?.cancel();
+    for (final subscription in _subscriptions) {
+      subscription.cancel();
+    }
+    _foreground.close();
+  }
+
+  Future<void> _openInitial() async {
+    try {
+      final notice = await _repository.initialNotice();
+      if (notice != null) await open(notice);
+    } catch (e) {
+      debugPrint('No se pudo leer el aviso que abrió la app: $e');
+    }
+  }
+
+  /// La sesión, cuando se sabe (como mucho [sessionTimeout]).
+  Future<UserModel?> _sessionUser() async {
+    final current = _ref.read(currentUserProvider);
+    if (!current.isLoading || current.hasValue) return current.value;
+    return _ref.read(currentUserProvider.future).timeout(sessionTimeout);
   }
 
   Future<void> _enqueue(Future<void> Function() task) {
