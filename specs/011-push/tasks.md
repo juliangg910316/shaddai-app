@@ -43,7 +43,7 @@ Cada tarea: tests primero (rojo), luego el código (verde). En Flutter: `dart fo
     - en `test/data/models/user_model_test.dart` (nuevo), que `toMap` no escribe `fcmToken` y `fromMap` lo sigue leyendo.
   - Hecho cuando: nadie usa `updateFcmToken` y toda la suite sigue en verde con el fake por defecto.
 
-- [ ] **T5. Controlador y cierre de sesión** (`providers/admin_push_provider.dart`, `auth_provider.dart`, plan D-7, § 6). RF-16, RF-18 a RF-21, RF-25
+- [x] **T5. Controlador y cierre de sesión** (`providers/admin_push_provider.dart`, `auth_provider.dart`, plan D-7, § 6). RF-16, RF-18 a RF-21, RF-25
   - Tests:
     - **`test/features/admin/admin_push_controller_test.dart`**, con un `ProviderContainer`:
       - con admin y `granted`, registra el FID y guarda la dueña;

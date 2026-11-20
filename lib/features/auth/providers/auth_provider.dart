@@ -9,6 +9,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import '../../../data/repositories/user_repository.dart';
 import '../../../data/repositories/auth_repository.dart';
 import '../../../data/models/user_model.dart';
+import '../../admin/providers/admin_push_provider.dart';
 import 'auth_failure.dart';
 
 final authRepositoryProvider = Provider((ref) => AuthRepository());
@@ -37,10 +38,22 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
   /// Vuelve a leer la ficha de la usuaria con sesión.
   final void Function() _reloadCurrentUser;
 
+  /// Lo que se hace antes de cerrar sesión: dar de baja el dispositivo de la
+  /// admin para los avisos push (spec 011, RF-20, plan D-7).
+  final Future<void> Function()? _beforeSignOut;
+
+  /// Cuánto se espera a [_beforeSignOut] antes de cerrar sesión igual
+  /// (RF-25).
+  final Duration _beforeSignOutTimeout;
+
+  static const defaultBeforeSignOutTimeout = Duration(seconds: 5);
+
   AuthController(
     this._authRepo,
     this._userRepo, {
     void Function()? reloadCurrentUser,
+    this._beforeSignOut,
+    this._beforeSignOutTimeout = defaultBeforeSignOutTimeout,
   }) : _reloadCurrentUser = reloadCurrentUser ?? _noop,
        super(const AsyncData(null)) {
     // Web has no imperative sign-in call: the user completes sign-in by
@@ -119,7 +132,18 @@ class AuthController extends StateNotifier<AsyncValue<void>> {
     state = const AsyncData(null);
   }
 
+  /// Cierra la sesión. Antes da de baja el dispositivo para los avisos; si
+  /// eso falla o tarda más de [_beforeSignOutTimeout], la sesión se cierra
+  /// igual (spec 011, RF-20, RF-25).
   Future<void> signOut() async {
+    final before = _beforeSignOut;
+    if (before != null) {
+      try {
+        await before().timeout(_beforeSignOutTimeout);
+      } catch (e) {
+        debugPrint('Cierre de sesión sin dar de baja el dispositivo: $e');
+      }
+    }
     await _authRepo.signOut();
   }
 
@@ -136,5 +160,6 @@ final authControllerProvider =
         ref.read(authRepositoryProvider),
         ref.read(userRepositoryProvider),
         reloadCurrentUser: () => ref.invalidate(currentUserProvider),
+        beforeSignOut: () => ref.read(adminPushControllerProvider).unregister(),
       );
     });
