@@ -25,7 +25,7 @@ Cada tarea: tests primero (rojo), luego el código (verde). En Flutter: `dart fo
     - `README.md` y `package.json` describen la función, la región que hay que mirar en la consola y la clave APNs pendiente;
     - `npm test` y `npm run build` pasan.
 
-- [ ] **T3. App: lógica pura y modelo del aviso** (`admin/logic/push_notices.dart`, `data/models/push_notice.dart`, plan § 4). RF-12, RF-15 a RF-18
+- [x] **T3. App: lógica pura y modelo del aviso** (`admin/logic/push_notices.dart`, `data/models/push_notice.dart`, plan § 4). RF-12, RF-15 a RF-18
   - Tests: `test/features/admin/push_notices_logic_test.dart`:
     - `shouldExplainPush`, `shouldRegisterDevice` y `showPushDisabled` con Web, visitante, clienta y admin, con cada `PushPermission`;
     - `shouldRevokeToken` con y sin marca, y con admin, clienta o sin sesión;

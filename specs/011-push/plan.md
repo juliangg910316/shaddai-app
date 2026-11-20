@@ -199,7 +199,7 @@ por cada token con error "no registrado" o "inválido": removeDevice de cada uid
 
 ### App (`lib/features/admin/logic/push_notices.dart`, sin Flutter ni Firebase)
 ```dart
-enum PushPermission { notAsked, granted, denied }
+// PushPermission { notAsked, granted, denied } vive en data/models/push_notice.dart (lo devuelve el repositorio, T3)
 bool shouldExplainPush({required bool isWeb, required UserModel? user, required PushPermission permission});
   // !isWeb && user?.role == 'admin' && permission == notAsked              (RF-15, RF-16)
 bool shouldRegisterDevice({required bool isWeb, required UserModel? user, required PushPermission permission});
