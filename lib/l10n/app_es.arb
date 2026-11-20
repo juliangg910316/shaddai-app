@@ -875,5 +875,11 @@
   "adminBlockFailed": "No se pudo bloquear. Inténtalo de nuevo.",
   "@adminBlockFailed": {"description": "Error al bloquear, sin detalles (spec 010, RF-34)"},
   "adminUnblockFailed": "No se pudo desbloquear. Inténtalo de nuevo.",
-  "@adminUnblockFailed": {"description": "Error al desbloquear, sin detalles (spec 010, RF-34)"}
+  "@adminUnblockFailed": {"description": "Error al desbloquear, sin detalles (spec 010, RF-34)"},
+  "adminPushExplainTitle": "Avisos de turnos",
+  "@adminPushExplainTitle": {"description": "Título de la explicación antes de pedir el permiso de notificaciones a la admin (spec 011, RF-15)"},
+  "adminPushExplainBody": "Te avisaremos en este teléfono cuando una clienta reserve, cambie o cancele un turno. A continuación, el teléfono te pedirá permiso para mostrar notificaciones.",
+  "@adminPushExplainBody": {"description": "Para qué sirven los avisos, antes del diálogo del sistema (spec 011, RF-15)"},
+  "adminPushExplainContinue": "Continuar",
+  "@adminPushExplainContinue": {"description": "Botón que cierra la explicación y pide el permiso del sistema (spec 011, RF-15)"}
 }

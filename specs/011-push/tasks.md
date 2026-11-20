@@ -56,7 +56,7 @@ Cada tarea: tests primero (rojo), luego el código (verde). En Flutter: `dart fo
       - con `unregister` fallando o tardando más de 5 s, la sesión se cierra igual.
   - Hecho cuando: existen `pushRepositoryProvider`, `pushPermissionProvider` y `adminPushControllerProvider`, `AuthController.signOut` anula antes de cerrar, y los tests pasan.
 
-- [ ] **T6. Puerta y explicación del permiso** (`admin_push_gate.dart`, `admin_push_dialog.dart`, `main.dart`, plan D-8, § 6). RF-15, RF-16
+- [x] **T6. Puerta y explicación del permiso** (`admin_push_gate.dart`, `admin_push_dialog.dart`, `main.dart`, plan D-8, § 6). RF-15, RF-16
   - Tests: `test/features/admin/admin_push_gate_test.dart`, con `pumpMobileApp` y `pumpWebApp`:
     - una admin con `notAsked` ve la explicación, que no se cierra tocando fuera;
     - "Continuar" pide el permiso, y la explicación no vuelve a salir;

@@ -2969,6 +2969,24 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'No se pudo desbloquear. Inténtalo de nuevo.'**
   String get adminUnblockFailed;
+
+  /// Título de la explicación antes de pedir el permiso de notificaciones a la admin (spec 011, RF-15)
+  ///
+  /// In es, this message translates to:
+  /// **'Avisos de turnos'**
+  String get adminPushExplainTitle;
+
+  /// Para qué sirven los avisos, antes del diálogo del sistema (spec 011, RF-15)
+  ///
+  /// In es, this message translates to:
+  /// **'Te avisaremos en este teléfono cuando una clienta reserve, cambie o cancele un turno. A continuación, el teléfono te pedirá permiso para mostrar notificaciones.'**
+  String get adminPushExplainBody;
+
+  /// Botón que cierra la explicación y pide el permiso del sistema (spec 011, RF-15)
+  ///
+  /// In es, this message translates to:
+  /// **'Continuar'**
+  String get adminPushExplainContinue;
 }
 
 class _AppLocalizationsDelegate

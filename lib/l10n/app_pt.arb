@@ -509,5 +509,8 @@
   "adminUnblockDone": "{name} está desbloqueada.",
   "adminBlockChanged": "O horário dela mudou. Confira antes de bloquear.",
   "adminBlockFailed": "Não foi possível bloquear. Tente novamente.",
-  "adminUnblockFailed": "Não foi possível desbloquear. Tente novamente."
+  "adminUnblockFailed": "Não foi possível desbloquear. Tente novamente.",
+  "adminPushExplainTitle": "Avisos de horários",
+  "adminPushExplainBody": "Vamos avisar neste celular quando uma cliente agendar, alterar ou cancelar um horário. Em seguida, o celular vai pedir permissão para mostrar notificações.",
+  "adminPushExplainContinue": "Continuar"
 }

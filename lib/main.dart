@@ -14,6 +14,7 @@ import 'core/theme/system_bars.dart';
 import 'data/firestore_cache.dart';
 import 'data/repositories/preferences_repository.dart';
 import 'data/repositories/push_repository.dart';
+import 'features/admin/presentation/admin_push_gate.dart';
 import 'features/admin/providers/admin_push_provider.dart';
 import 'features/preferences/providers/preferences_provider.dart';
 import 'firebase_options.dart';
@@ -105,10 +106,11 @@ class MyApp extends ConsumerWidget {
       ],
 
       // Barras del sistema legibles sobre el fondo del tema (RF-23). Las
-      // pantallas con cabecera propia (admin) las sobrescriben.
+      // pantallas con cabecera propia (admin) las sobrescriben. Debajo, los
+      // avisos push de la admin en Android/iOS (spec 011, plan § 6).
       builder: (context, child) => AnnotatedRegion<SystemUiOverlayStyle>(
         value: systemBarsStyleFor(context.brand.background),
-        child: child ?? const SizedBox.shrink(),
+        child: AdminPushGate(child: child ?? const SizedBox.shrink()),
       ),
 
       // Routing. El router no depende del tema ni del idioma: al cambiarlos se
