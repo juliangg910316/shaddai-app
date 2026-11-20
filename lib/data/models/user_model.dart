@@ -6,6 +6,10 @@ class UserModel {
   final String? phoneNumber;
   final String role; // 'cliente' or 'admin'
   final bool isBlocked;
+
+  /// Obsoleto (spec 011, plan D-13): los dispositivos de la admin van en
+  /// `users/{uid}/pushDevices`. Se sigue leyendo de las fichas antiguas, pero
+  /// ya no se escribe.
   final String? fcmToken;
 
   UserModel({
@@ -40,7 +44,6 @@ class UserModel {
       'phoneNumber': phoneNumber,
       'role': role,
       'isBlocked': isBlocked,
-      'fcmToken': fcmToken,
     };
   }
 

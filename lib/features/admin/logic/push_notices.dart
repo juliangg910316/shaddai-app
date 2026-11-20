@@ -36,13 +36,14 @@ bool showPushDisabled({
   required PushPermission? permission,
 }) => _isAdminOnMobile(isWeb, user) && permission == PushPermission.denied;
 
-/// Si hay que anular el token que no se pudo anular al cerrar sesión: queda
-/// la marca y la sesión ya no es de admin (RF-20, plan D-7). Con la admin
-/// otra vez dentro no se anula: se vuelve a registrar.
-bool shouldRevokeToken({
-  required bool pendingRevoke,
+/// Si hay que repetir la baja del dispositivo en FCM que falló al cerrar
+/// sesión: queda la marca y la sesión ya no es de admin (RF-20, plan D-7,
+/// D-15). Con la admin otra vez dentro no se da de baja: se vuelve a
+/// registrar.
+bool shouldRetryUnregister({
+  required bool pendingUnregister,
   required UserModel? user,
-}) => pendingRevoke && user?.role != 'admin';
+}) => pendingUnregister && user?.role != 'admin';
 
 final _dayPattern = RegExp(r'^(\d{4})-(\d{2})-(\d{2})$');
 

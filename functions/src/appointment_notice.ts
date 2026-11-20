@@ -158,13 +158,14 @@ export function noticeText(
 }
 
 /**
- * Los tokens de [devices] sin repetir, en el orden en que aparecen: la misma
- * admin o dos admins en un mismo teléfono reciben un solo aviso (RF-5).
+ * Los FID (Firebase Installation ID) de [devices] sin repetir, en el orden
+ * en que aparecen: la misma admin o dos admins en un mismo teléfono reciben
+ * un solo aviso (RF-5, plan D-15).
  */
-export function uniqueTokens(
-  devices: readonly { uid: string; token: string }[],
+export function uniqueFids(
+  devices: readonly { uid: string; fid: string }[],
 ): string[] {
-  return [...new Set(devices.map((device) => device.token))];
+  return [...new Set(devices.map((device) => device.fid))];
 }
 
 /**

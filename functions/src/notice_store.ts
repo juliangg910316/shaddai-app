@@ -18,19 +18,20 @@ export function noticeStore(db: Firestore, messaging: Messaging): NoticeStore {
       for (const admin of admins.docs) {
         const own = await admin.ref.collection('pushDevices').get();
         for (const device of own.docs) {
-          const token = device.data().token;
+          const fid = device.data().fid;
           devices.push({
             uid: admin.id,
-            token: typeof token === 'string' && token !== '' ? token : device.id,
+            fid: typeof fid === 'string' && fid !== '' ? fid : device.id,
           });
         }
       }
       return devices;
     },
 
-    async send(tokens, message) {
-      const messages: Message[] = tokens.map((token) => ({
-        token,
+    // Por FID, no por token (plan D-15).
+    async send(fids, message) {
+      const messages: Message[] = fids.map((fid) => ({
+        fid,
         notification: { title: message.title, body: message.body },
         data: { ...message.data },
         // Que llegue enseguida aunque el teléfono esté en reposo (RF-6), y
@@ -49,12 +50,12 @@ export function noticeStore(db: Firestore, messaging: Messaging): NoticeStore {
       );
     },
 
-    async removeDevice(uid, token) {
+    async removeDevice(uid, fid) {
       await db
         .collection('users')
         .doc(uid)
         .collection('pushDevices')
-        .doc(token)
+        .doc(fid)
         .delete();
     },
   };

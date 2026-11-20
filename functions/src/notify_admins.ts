@@ -10,14 +10,17 @@ import {
   noticeTag,
   noticeText,
   salonDay,
-  uniqueTokens,
+  uniqueFids,
 } from './appointment_notice.ts';
 import type { NoticeAppointment, NoticeKind } from './appointment_notice.ts';
 
-/** Un dispositivo registrado: `users/{uid}/pushDevices/{token}`. */
+/**
+ * Un dispositivo registrado: `users/{uid}/pushDevices/{fid}`, con su FID
+ * (Firebase Installation ID, plan D-15).
+ */
 export interface NoticeDevice {
   uid: string;
-  token: string;
+  fid: string;
 }
 
 /** El aviso que se envía, igual para todos los dispositivos. */
@@ -30,17 +33,17 @@ export interface NoticeMessage {
   tag: string;
 }
 
-/** El resultado del envío a un token. */
+/** El resultado del envío a un FID. */
 export type SendResult = { ok: true } | { ok: false; code: string };
 
 /** Lo que el envío necesita de Firebase. */
 export interface NoticeStore {
   /** Los dispositivos de las fichas con `role == 'admin'` (RF-19, RF-22). */
   adminDevices(): Promise<NoticeDevice[]>;
-  /** Envía [message] a cada token; un resultado por token, en orden. */
-  send(tokens: string[], message: NoticeMessage): Promise<SendResult[]>;
-  /** Borra `users/{uid}/pushDevices/{token}`. */
-  removeDevice(uid: string, token: string): Promise<void>;
+  /** Envía [message] a cada FID; un resultado por FID, en orden. */
+  send(fids: string[], message: NoticeMessage): Promise<SendResult[]>;
+  /** Borra `users/{uid}/pushDevices/{fid}`. */
+  removeDevice(uid: string, fid: string): Promise<void>;
 }
 
 /** Un cambio en un turno: el evento y el documento antes y después. */
@@ -52,14 +55,17 @@ export interface AppointmentWrite {
   after: NoticeAppointment | null;
 }
 
-/** Errores de FCM que dicen que el token ya no sirve (plan D-5). */
-const STALE_TOKEN_CODES = new Set([
+/**
+ * Errores de FCM que dicen que el FID ya no sirve (plan D-5). FCM responde
+ * `UNREGISTERED`, que `firebase-admin` traduce con el nombre de los tokens.
+ */
+const STALE_DEVICE_CODES = new Set([
   'messaging/registration-token-not-registered',
   'messaging/invalid-registration-token',
 ]);
 
 /**
- * Envía el aviso de [write], si lo hay, y borra los dispositivos cuyo token
+ * Envía el aviso de [write], si lo hay, y borra los dispositivos cuyo FID
  * ya no vale de cada admin que lo tenga (RF-21). Sin dispositivos no envía
  * nada (RF-24). Si el envío falla del todo, lanza: lo recoge
  * [notifyAdminsSafely].
@@ -72,8 +78,8 @@ export async function notifyAdmins(
   if (kind === null || write.after === null) return { sent: 0, removed: 0 };
 
   const devices = await store.adminDevices();
-  const tokens = uniqueTokens(devices);
-  if (tokens.length === 0) return { sent: 0, removed: 0 };
+  const fids = uniqueFids(devices);
+  if (fids.length === 0) return { sent: 0, removed: 0 };
 
   const message: NoticeMessage = {
     ...noticeText(kind, write.after),
@@ -84,19 +90,19 @@ export async function notifyAdmins(
     },
     tag: noticeTag(write.eventId),
   };
-  const results = await store.send(tokens, message);
+  const results = await store.send(fids, message);
 
   let sent = 0;
   const stale = new Set<string>();
   results.forEach((result, i) => {
     if (result.ok) sent++;
-    else if (STALE_TOKEN_CODES.has(result.code)) stale.add(tokens[i]);
+    else if (STALE_DEVICE_CODES.has(result.code)) stale.add(fids[i]);
   });
 
   let removed = 0;
   for (const device of devices) {
-    if (!stale.has(device.token)) continue;
-    await store.removeDevice(device.uid, device.token);
+    if (!stale.has(device.fid)) continue;
+    await store.removeDevice(device.uid, device.fid);
     removed++;
   }
   return { sent, removed };

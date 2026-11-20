@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import 'package:shaddai/core/router/app_router.dart';
 import 'package:shaddai/data/repositories/preferences_repository.dart';
 import 'package:shaddai/data/repositories/price_list_repository.dart';
+import 'package:shaddai/data/repositories/push_repository.dart';
+import 'package:shaddai/features/admin/providers/admin_push_provider.dart';
 import 'package:shaddai/features/preferences/providers/preferences_provider.dart';
 import 'package:shaddai/features/services/providers/price_list_provider.dart';
 import 'package:shaddai/l10n/app_localizations.dart';
@@ -13,12 +15,15 @@ import 'package:shaddai/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fake_price_list.dart';
+import 'fake_push.dart';
 
 /// Monta la app real ([MyApp]) sin Firebase: el router se sustituye por
 /// [router] o, si no se pasa, por una sola ruta con [home]. Las preferencias
 /// usan un almacenamiento en memoria con los valores [stored], y [overrides]
 /// sustituye los providers que tocarían Firebase. La lista de precios es
-/// [priceListRepository] o, si no se pasa, la de la carga inicial.
+/// [priceListRepository] o, si no se pasa, la de la carga inicial. Los
+/// avisos push van por [pushRepository] o, si no se pasa, por un
+/// [FakePushRepository] con el permiso concedido (spec 011, plan D-11).
 Future<void> pumpApp(
   WidgetTester tester, {
   Map<String, Object> stored = const {},
@@ -26,6 +31,7 @@ Future<void> pumpApp(
   GoRouter? router,
   List<Override> overrides = const [],
   PriceListRepository? priceListRepository,
+  PushRepository? pushRepository,
 }) async {
   SharedPreferences.setMockInitialValues(stored);
   final store = await SharedPreferences.getInstance();
@@ -46,6 +52,9 @@ Future<void> pumpApp(
         priceListRepositoryProvider.overrideWithValue(
           priceListRepository ??
               FakePriceListRepository(stored: initialTestPriceList()),
+        ),
+        pushRepositoryProvider.overrideWithValue(
+          pushRepository ?? FakePushRepository(),
         ),
         ...overrides,
       ],

@@ -36,12 +36,12 @@ const input = (
   after: NoticeAppointment | null,
 ) => ({ eventId: 'evento-1', appointmentId: 'turno-1', before, after });
 
-/** Un almacén en memoria: devuelve un resultado por token, en orden. */
+/** Un almacén en memoria: devuelve un resultado por FID, en orden. */
 class MemoryStore implements NoticeStore {
   devices: NoticeDevice[] = [];
-  /** El código de error de cada token; sin entrada, se entrega. */
+  /** El código de error de cada FID; sin entrada, se entrega. */
   failures = new Map<string, string>();
-  sent: { tokens: string[]; message: NoticeMessage }[] = [];
+  sent: { fids: string[]; message: NoticeMessage }[] = [];
   removed: NoticeDevice[] = [];
   /** Si está, `send` lanza este error. */
   sendError?: Error;
@@ -50,19 +50,19 @@ class MemoryStore implements NoticeStore {
     return [...this.devices];
   }
 
-  async send(tokens: string[], message: NoticeMessage): Promise<SendResult[]> {
+  async send(fids: string[], message: NoticeMessage): Promise<SendResult[]> {
     if (this.sendError) throw this.sendError;
-    this.sent.push({ tokens, message });
-    return tokens.map((token) => {
-      const code = this.failures.get(token);
+    this.sent.push({ fids, message });
+    return fids.map((fid) => {
+      const code = this.failures.get(fid);
       return code === undefined ? { ok: true } : { ok: false, code };
     });
   }
 
-  async removeDevice(uid: string, token: string) {
-    this.removed.push({ uid, token });
+  async removeDevice(uid: string, fid: string) {
+    this.removed.push({ uid, fid });
     this.devices = this.devices.filter(
-      (d) => !(d.uid === uid && d.token === token),
+      (d) => !(d.uid === uid && d.fid === fid),
     );
   }
 }
@@ -70,7 +70,7 @@ class MemoryStore implements NoticeStore {
 describe('a quién y qué se envía', () => {
   test('sin aviso (lo hizo la admin), no lee ni envía nada (RF-4)', async () => {
     const store = new MemoryStore();
-    store.devices = [{ uid: 'beidis', token: 't1' }];
+    store.devices = [{ uid: 'beidis', fid: 't1' }];
     const result = await notifyAdmins(
       store,
       input(reserved, { ...reserved, status: 'confirmed' }),
@@ -86,23 +86,23 @@ describe('a quién y qué se envía', () => {
     assert.equal(store.sent.length, 0);
   });
 
-  test('a todos los dispositivos de todas las admins, cada token una vez (RF-5, RF-19)', async () => {
+  test('a todos los dispositivos de todas las admins, cada FID una vez (RF-5, RF-19)', async () => {
     const store = new MemoryStore();
     store.devices = [
-      { uid: 'beidis', token: 'movil' },
-      { uid: 'beidis', token: 'tablet' },
-      { uid: 'otra', token: 'movil' },
-      { uid: 'otra', token: 'suyo' },
+      { uid: 'beidis', fid: 'movil' },
+      { uid: 'beidis', fid: 'tablet' },
+      { uid: 'otra', fid: 'movil' },
+      { uid: 'otra', fid: 'suyo' },
     ];
     const result = await notifyAdmins(store, input(null, reserved));
     assert.equal(store.sent.length, 1);
-    assert.deepEqual(store.sent[0].tokens, ['movil', 'tablet', 'suyo']);
+    assert.deepEqual(store.sent[0].fids, ['movil', 'tablet', 'suyo']);
     assert.deepEqual(result, { sent: 3, removed: 0 });
   });
 
   test('el mensaje: título, texto, kind, appointmentId, day y etiqueta (RF-12, plan D-4)', async () => {
     const store = new MemoryStore();
-    store.devices = [{ uid: 'beidis', token: 't1' }];
+    store.devices = [{ uid: 'beidis', fid: 't1' }];
     await notifyAdmins(store, input(null, reserved));
     const { message } = store.sent[0];
     assert.equal(message.title, 'Turno nuevo');
@@ -117,7 +117,7 @@ describe('a quién y qué se envía', () => {
 
   test('la misma etiqueta si el mismo evento llega dos veces (RF-5)', async () => {
     const store = new MemoryStore();
-    store.devices = [{ uid: 'beidis', token: 't1' }];
+    store.devices = [{ uid: 'beidis', fid: 't1' }];
     await notifyAdmins(store, input(null, reserved));
     await notifyAdmins(store, input(null, reserved));
     assert.equal(store.sent[0].message.tag, store.sent[1].message.tag);
@@ -125,7 +125,7 @@ describe('a quién y qué se envía', () => {
 
   test('el día es el del turno como quedó, también al cancelar', async () => {
     const store = new MemoryStore();
-    store.devices = [{ uid: 'beidis', token: 't1' }];
+    store.devices = [{ uid: 'beidis', fid: 't1' }];
     await notifyAdmins(
       store,
       input(reserved, {
@@ -143,26 +143,26 @@ describe('los dispositivos que ya no valen (RF-21, plan D-5)', () => {
   test('los no registrados o inválidos se borran de cada dueña', async () => {
     const store = new MemoryStore();
     store.devices = [
-      { uid: 'beidis', token: 'viejo' },
-      { uid: 'otra', token: 'viejo' },
-      { uid: 'beidis', token: 'roto' },
-      { uid: 'beidis', token: 'bueno' },
+      { uid: 'beidis', fid: 'viejo' },
+      { uid: 'otra', fid: 'viejo' },
+      { uid: 'beidis', fid: 'roto' },
+      { uid: 'beidis', fid: 'bueno' },
     ];
     store.failures.set('viejo', 'messaging/registration-token-not-registered');
     store.failures.set('roto', 'messaging/invalid-registration-token');
     const result = await notifyAdmins(store, input(null, reserved));
     assert.deepEqual(store.removed, [
-      { uid: 'beidis', token: 'viejo' },
-      { uid: 'otra', token: 'viejo' },
-      { uid: 'beidis', token: 'roto' },
+      { uid: 'beidis', fid: 'viejo' },
+      { uid: 'otra', fid: 'viejo' },
+      { uid: 'beidis', fid: 'roto' },
     ]);
     assert.deepEqual(result, { sent: 1, removed: 3 });
-    assert.deepEqual(store.devices, [{ uid: 'beidis', token: 'bueno' }]);
+    assert.deepEqual(store.devices, [{ uid: 'beidis', fid: 'bueno' }]);
   });
 
   test('otros errores (por ejemplo, de la red) no borran nada', async () => {
     const store = new MemoryStore();
-    store.devices = [{ uid: 'beidis', token: 't1' }];
+    store.devices = [{ uid: 'beidis', fid: 't1' }];
     store.failures.set('t1', 'messaging/internal-error');
     const result = await notifyAdmins(store, input(null, reserved));
     assert.deepEqual(store.removed, []);
@@ -173,14 +173,14 @@ describe('los dispositivos que ya no valen (RF-21, plan D-5)', () => {
 describe('si algo falla, no se propaga (RF-24, plan D-3)', () => {
   test('notifyAdmins lanza el error del envío', async () => {
     const store = new MemoryStore();
-    store.devices = [{ uid: 'beidis', token: 't1' }];
+    store.devices = [{ uid: 'beidis', fid: 't1' }];
     store.sendError = new Error('sin red');
     await assert.rejects(notifyAdmins(store, input(null, reserved)), /sin red/);
   });
 
   test('el adaptador lo registra y no relanza', async () => {
     const store = new MemoryStore();
-    store.devices = [{ uid: 'beidis', token: 't1' }];
+    store.devices = [{ uid: 'beidis', fid: 't1' }];
     store.sendError = new Error('sin red');
     const logged: unknown[][] = [];
     const result = await notifyAdminsSafely(
@@ -196,7 +196,7 @@ describe('si algo falla, no se propaga (RF-24, plan D-3)', () => {
 
   test('si va bien, devuelve el resultado y no registra errores', async () => {
     const store = new MemoryStore();
-    store.devices = [{ uid: 'beidis', token: 't1' }];
+    store.devices = [{ uid: 'beidis', fid: 't1' }];
     const logged: unknown[][] = [];
     const result = await notifyAdminsSafely(
       store,

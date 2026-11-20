@@ -9,14 +9,14 @@ Cada tarea: tests primero (rojo), luego el código (verde). En Flutter: `dart fo
   - Tests: `functions/test/appointment_notice.test.ts`:
     - `noticeKind` en cada fila de la tabla de D-2: crea la clienta, la admin o una persona sin cuenta; la clienta edita la hora, el servicio o solo los adicionales; la admin edita, confirma o cancela; bloqueo; la clienta cancela (también un turno agendado por la admin); borrado de cuenta con turno activo; turno pasado marcado `accountDeleted`; WhatsApp copiado; turno borrado;
     - `noticeText` de los tres tipos: sin servicio, con la cuenta borrada, sin nombre ("Una clienta"), a las 22:30 de Curitiba (otro día en UTC), nombres de días y meses en español, y nunca el WhatsApp ni la foto;
-    - `salonDay`, `uniqueTokens` (orden estable) y `noticeTag` (estable, 32 caracteres).
+    - `salonDay`, `uniqueFids` (orden estable) y `noticeTag` (estable, 32 caracteres).
   - Hecho cuando: el archivo no importa Firebase, los tests pasan y `npm run build` compila.
 
 - [x] **T2. Servidor: envío, limpieza y disparador** (`notify_admins.ts`, `notice_store.ts`, `index.ts`, plan D-3, D-5). RF-5, RF-6, RF-12, RF-19, RF-21, RF-22, RF-24
   - Tests: `functions/test/notify_admins.test.ts`, con un almacén en memoria:
     - sin tipo, no envía; sin dispositivos, no envía ni falla;
-    - un token repetido se envía una vez; dos admins con varios dispositivos;
-    - los tokens no registrados o inválidos se borran de cada dueña, y los demás errores no;
+    - un FID repetido se envía una vez; dos admins con varios dispositivos;
+    - los FID no registrados o inválidos se borran de cada dueña, y los demás errores no;
     - el mensaje lleva `kind`, `appointmentId`, `day` y la etiqueta;
     - si `send` lanza, el adaptador lo registra y no relanza.
   - Hecho cuando:
@@ -28,12 +28,13 @@ Cada tarea: tests primero (rojo), luego el código (verde). En Flutter: `dart fo
 - [x] **T3. App: lógica pura y modelo del aviso** (`admin/logic/push_notices.dart`, `data/models/push_notice.dart`, plan § 4). RF-12, RF-15 a RF-18
   - Tests: `test/features/admin/push_notices_logic_test.dart`:
     - `shouldExplainPush`, `shouldRegisterDevice` y `showPushDisabled` con Web, visitante, clienta y admin, con cada `PushPermission`;
-    - `shouldRevokeToken` con y sin marca, y con admin, clienta o sin sesión;
+    - `shouldRetryUnregister` con y sin marca, y con admin, clienta o sin sesión;
     - `noticeDay`: válido (como día del salón), con formato roto, con fecha imposible o sin `day`.
   - Hecho cuando: los dos archivos no importan Flutter ni Firebase y los tests pasan.
 
-- [ ] **T4. Repositorio de push y fake** (plan D-1, D-8, D-11, D-13). RF-16, RF-19, RF-25
-  - **`PushRepository`:** recibe `FirebaseMessaging?`, `FirebaseFirestore?` y `SharedPreferences?`. Hace lo del plan § 5: permiso con la marca "ya preguntado", token, `registerDevice`/`unregisterDevice` en `users/{uid}/pushDevices/{token}`, `deleteToken`, marca "pendiente de anular" y avisos como `PushNotice`.
+- [x] **T4. Repositorio de push y fake** (plan D-1, D-8, D-11, D-13). RF-16, RF-19, RF-25
+  - **`PushRepository`:** recibe `FirebaseMessaging?`, `FirebaseFirestore?` y `SharedPreferences?`. Hace lo del plan § 5: permiso con la marca "ya preguntado", `register`/`onRegistered`/`unregister` con el FID (plan D-15), `registerDevice`/`unregisterDevice` en `users/{uid}/pushDevices/{fid}`, marca "baja pendiente" y avisos como `PushNotice`.
+  - **Cambio del plan D-15 en T1, T2 y T3:** `uniqueTokens` → `uniqueFids`, `token` → `fid` en el almacén y en el envío, y `shouldRevokeToken` → `shouldRetryUnregister`, con sus tests.
   - **`FakePushRepository`** (`test/helpers/fake_push.dart`): registra las llamadas, puede fallar o tardar, emite avisos a mano y empieza en `granted`.
   - **Helpers:** `pumpApp`, `pumpWebApp` y `pumpMobileApp` lo ponen por defecto.
   - **`fcmToken`:** se borra `UserRepository.updateFcmToken` y `UserModel.toMap` deja de escribir `fcmToken`; se sigue leyendo.
@@ -45,9 +46,9 @@ Cada tarea: tests primero (rojo), luego el código (verde). En Flutter: `dart fo
 - [ ] **T5. Controlador y cierre de sesión** (`providers/admin_push_provider.dart`, `auth_provider.dart`, plan D-7, § 6). RF-16, RF-18 a RF-21, RF-25
   - Tests:
     - **`test/features/admin/admin_push_controller_test.dart`**, con un `ProviderContainer`:
-      - con admin y `granted`, registra el token y guarda la dueña;
+      - con admin y `granted`, registra el FID y guarda la dueña;
       - con clienta, visitante o Web, no toca el repositorio;
-      - vuelve a registrar al refrescarse el token y con `sync()` al volver a primer plano;
+      - vuelve a registrar cuando `onRegistered` trae otro FID y con `sync()` al volver a primer plano;
       - un fallo al registrar no sale y se reintenta;
       - `unregister` borra y anula; si falla, deja la marca, y el siguiente `start()` sin admin anula y la quita.
     - **`test/features/auth/sign_out_push_test.dart`:**

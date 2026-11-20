@@ -64,10 +64,6 @@ class UserRepository {
     return batch.commit().timeout(saveTimeout);
   }
 
-  Future<void> updateFcmToken(String uid, String token) async {
-    await _firestore.collection('users').doc(uid).update({'fcmToken': token});
-  }
-
   // ADMIN METHODS
 
   /// Lee **del servidor** la ficha de [uid], o `null` si no existe. La usa

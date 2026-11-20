@@ -113,19 +113,31 @@ void main() {
     });
   });
 
-  group('anular el token que quedó pendiente (RF-20, plan D-7)', () {
-    test('con la marca y sin sesión de admin, se anula', () {
-      expect(shouldRevokeToken(pendingRevoke: true, user: null), isTrue);
-      expect(shouldRevokeToken(pendingRevoke: true, user: client), isTrue);
+  group('repetir la baja que quedó pendiente (RF-20, plan D-7, D-15)', () {
+    test('con la marca y sin sesión de admin, se repite', () {
+      expect(
+        shouldRetryUnregister(pendingUnregister: true, user: null),
+        isTrue,
+      );
+      expect(
+        shouldRetryUnregister(pendingUnregister: true, user: client),
+        isTrue,
+      );
     });
 
-    test('con la marca y la admin con sesión, no: lo vuelve a registrar', () {
-      expect(shouldRevokeToken(pendingRevoke: true, user: admin), isFalse);
+    test('con la marca y la admin con sesión, no: se vuelve a registrar', () {
+      expect(
+        shouldRetryUnregister(pendingUnregister: true, user: admin),
+        isFalse,
+      );
     });
 
     test('sin la marca, nunca', () {
       for (final someone in [null, client, admin]) {
-        expect(shouldRevokeToken(pendingRevoke: false, user: someone), isFalse);
+        expect(
+          shouldRetryUnregister(pendingUnregister: false, user: someone),
+          isFalse,
+        );
       }
     });
   });

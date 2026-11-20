@@ -20,8 +20,9 @@ Disparador de Firestore (`onDocumentWritten` en `appointments/{id}`) que
 avisa por push a las admins cuando una clienta reserva, edita o cancela un
 turno. Lo que hace la admin no avisa. El aviso va en español, con la hora del
 salón, a todos los dispositivos registrados en `users/{uid}/pushDevices` de
-las fichas con `role == 'admin'`; los tokens que FCM da por no registrados o
-inválidos se borran. Sin reintentos: si el envío falla, queda en el registro
+las fichas con `role == 'admin'`. Cada dispositivo es su FID (Firebase
+Installation ID), no un token de FCM: se envía con `fid`. Los FID que FCM da
+por no registrados o inválidos se borran. Sin reintentos: si el envío falla, queda en el registro
 y el turno sigue guardado.
 
 - `src/appointment_notice.ts`: qué aviso genera cada cambio y qué dice, sin

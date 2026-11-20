@@ -15,8 +15,9 @@ Spec: `specs/011-push/spec.md` (aprobada el 2026-11-20).
 
 ## 2. Decisiones
 
-**D-1. Los dispositivos van en `users/{uid}/pushDevices/{token}`, que nadie lee desde la app.** (RF-19, RF-20, RF-23)
-- Cada dispositivo es un documento: el id es el token, y los campos son `token`, `platform` (`'android'` | `'ios'`) y `updatedAt`.
+**D-1. Los dispositivos van en `users/{uid}/pushDevices/{fid}`, que nadie lee desde la app.** (RF-19, RF-20, RF-23)
+- Cada dispositivo se identifica por su **FID** (Firebase Installation ID) y no por un token de FCM (D-15).
+- Cada dispositivo es un documento: el id es el FID, y los campos son `fid`, `platform` (`'android'` | `'ios'`) y `updatedAt`.
 - Las reglas dejan crear o cambiar solo a una admin dentro de su propia ficha, y borrar solo a su dueña. La lectura queda denegada a todos; el servidor lee con el SDK de administración.
 - *Descartado:* un array `fcmTokens` en la ficha. Lo leerían la admin (que lista todas las fichas) y la propia usuaria, y dos dispositivos que escriben a la vez se pisan sin transacción.
 - *Descartado también:* reutilizar `fcmToken`, que solo admite un dispositivo.
@@ -39,11 +40,11 @@ Las reglas ya garantizan que cada cambio solo lo puede hacer una persona:
 - **Región:** la de Firestore. Hay que mirar en la consola la ubicación de la base de datos de `shaddai-68df1`. Si es `southamerica-east1`, la función va allí, como `deleteAccount`. Si es multirregión (`nam5`), va en `us-central1`. Es una tarea de despliegue, no del código.
 
 **D-4. Un aviso por evento y dispositivo.** (RF-5)
-- El servidor junta los tokens de todas las admins y quita los repetidos (la misma admin dos veces, o dos admins en un mismo teléfono).
+- El servidor junta los FID de todas las admins y quita los repetidos (la misma admin dos veces, o dos admins en un mismo teléfono).
 - Cada mensaje lleva una etiqueta sacada del id del evento: `android.notification.tag` y `apns-collapse-id`, como hash de 32 caracteres. Si la plataforma entregara el evento dos veces, el segundo aviso sustituye al primero en vez de apilarse.
 
-**D-5. Los tokens inválidos se borran al enviar.** (RF-21, RF-22)
-- Si FCM responde `messaging/registration-token-not-registered` o `messaging/invalid-registration-token`, el servidor borra ese `pushDevices`. Otros errores no borran nada.
+**D-5. Los FID que ya no valen se borran al enviar.** (RF-21, RF-22)
+- Si FCM responde `messaging/registration-token-not-registered` o `messaging/invalid-registration-token`, el servidor borra ese `pushDevices`. Otros errores no borran nada. `firebase-admin` da esos mismos códigos con los FID (el `UNREGISTERED` de FCM).
 - Una usuaria que deja de ser admin no recibe avisos, porque el servidor solo lee los dispositivos de las fichas con `role == 'admin'`.
 
 **D-6. El texto del aviso lo escribe el servidor, en español, con la hora del salón (UTC−3 fijo, como en la app).** (RF-7 a RF-11)
@@ -51,12 +52,13 @@ Las reglas ya garantizan que cada cambio solo lo puede hacer una persona:
 - El servicio es `booked.name.es`, o `pt` si falta. Sin `booked`, el aviso va sin servicio.
 - El aviso nunca lleva el WhatsApp, la foto ni el correo (RNF-4).
 
-**D-7. Cerrar sesión borra el registro y anula el token, y si no puede, lo reintenta.** (RF-20, RF-25, casos límite)
+**D-7. Cerrar sesión borra el registro y da de baja el dispositivo en FCM, y si no puede, lo reintenta.** (RF-20, RF-25, casos límite)
 - En `AuthController.signOut`, antes de cerrar la sesión de Firebase, el registrador:
-  1. borra `users/{uid}/pushDevices/{token}`;
-  2. llama a `deleteToken()`, que invalida el token en FCM aunque el documento quedara.
-- Si algo falla (por ejemplo, sin conexión), la sesión se cierra igual y queda en el dispositivo una marca **"token pendiente de anular"**.
-- Al abrir la app, si hay marca y la sesión no es de admin, se vuelve a llamar a `deleteToken()`. El servidor borra el documento que quedara la próxima vez que falle al enviar (D-5).
+  1. borra `users/{uid}/pushDevices/{fid}`;
+  2. llama a `unregister()`, que da de baja el dispositivo en FCM aunque el documento quedara.
+- Si algo falla (por ejemplo, sin conexión), la sesión se cierra igual y queda en el dispositivo una marca **"baja pendiente"**.
+- Al abrir la app, si hay marca y la sesión no es de admin, se vuelve a llamar a `unregister()`. El servidor borra el documento que quedara la próxima vez que falle al enviar (D-5).
+- Si la admin vuelve a entrar, `register()` lo da de alta otra vez.
 - *Descartado:* confiar solo en borrar el documento. Sin conexión, la escritura queda en la cola de Firestore de la usuaria anterior y no se envía al cambiar de cuenta.
 
 **D-8. El permiso se pide tras una explicación, una sola vez por dispositivo.** (RF-15 a RF-18)
@@ -95,20 +97,27 @@ Las reglas ya garantizan que cada cambio solo lo puede hacer una persona:
 - Se añaden `Runner.entitlements` con `aps-environment` y `UIBackgroundModes: remote-notification`.
 - La clave APNs en Firebase y la prueba real necesitan la cuenta de Apple (spec 013). Queda anotado en `MEMORY.md` y en `functions/README.md`.
 
+**D-15. FID en lugar de tokens de FCM** (cambio decidido por el autor el 2026-11-20, durante T4).
+- `firebase_messaging` 17 marca como obsoletos `getToken`, `onTokenRefresh` y `deleteToken`, y `firebase-admin` 14.5 marca como obsoleto enviar por `token`. Los dos proponen el FID.
+- **En la app:** `register()` da de alta el dispositivo en FCM y su FID llega por `onRegistered`; `unregister()` lo da de baja. Si `onRegistered` trae otro FID, se registra el nuevo (RF-21).
+- **En el servidor:** se envía con `fid`. Los códigos de error para un FID que ya no vale son los mismos (D-5).
+- **Afecta a:** D-1 (`pushDevices/{fid}`), D-4, D-5, D-7, § 3, § 4, § 5, § 6 y al código de T1 y T2 (`uniqueTokens` → `uniqueFids`; `token` → `fid` en el almacén y en el envío). T3 cambia `shouldRevokeToken` por `shouldRetryUnregister`.
+- *Descartado:* seguir con tokens y silenciar los avisos de obsolescencia. Funciona hoy, pero el código nacería obsoleto.
+
 ## 3. Datos y reglas
 
 **Firestore.**
-- **Nuevo:** `users/{uid}/pushDevices/{token}`, con `{ token: string, platform: 'android' | 'ios', updatedAt: timestamp }`.
+- **Nuevo:** `users/{uid}/pushDevices/{fid}`, con `{ fid: string, platform: 'android' | 'ios', updatedAt: timestamp }`.
 - **Sin cambios:** `appointments`, `busySlots`, `closures` y `settings`.
 - **Índices:** ninguno. `users where role == 'admin'` usa el índice automático, y cada subcolección se lee entera.
 
 **`firestore.rules`** (RF-23, RNF-5). Un `match` nuevo dentro de `/users/{userId}`:
 ```
-match /pushDevices/{token} {
+match /pushDevices/{fid} {
   allow read: if false;
   allow create, update: if signedIn() && request.auth.uid == userId && isAdmin()
-    && request.resource.data.keys().hasOnly(['token', 'platform', 'updatedAt'])
-    && request.resource.data.token == token
+    && request.resource.data.keys().hasOnly(['fid', 'platform', 'updatedAt'])
+    && request.resource.data.fid == fid
     && request.resource.data.platform in ['android', 'ios']
     && request.resource.data.updatedAt == request.time;
   allow delete: if signedIn() && request.auth.uid == userId;
@@ -120,7 +129,7 @@ match /pushDevices/{token} {
   - la admin crea su dispositivo: permitido;
   - una clienta crea uno: denegado;
   - la admin crea uno en la ficha de otra: denegado;
-  - un `token` distinto del id: denegado;
+  - un `fid` distinto del id: denegado;
   - un campo de más: denegado;
   - `platform: 'web'`: denegado;
   - la admin lee uno suyo: denegado;
@@ -143,7 +152,7 @@ interface NoticeAppointment {                        // lo que importa del turno
 noticeKind(before: NoticeAppointment | null, after: NoticeAppointment | null): NoticeKind | null   // D-2
 salonDay(start: Date): string                        // 'YYYY-MM-DD' en UTC−3
 noticeText(kind, appointment): { title: string; body: string }  // D-6
-uniqueTokens(devices: { uid; token }[]): string[]    // D-4, orden estable
+uniqueFids(devices: { uid; fid }[]): string[]        // D-4, orden estable
 noticeTag(eventId: string): string                   // D-4, 32 caracteres
 ```
 
@@ -174,9 +183,9 @@ Si el nombre está vacío, el texto dice "Una clienta".
 ### Envío (`functions/src/notify_admins.ts`, sin Firebase)
 ```ts
 interface NoticeStore {
-  adminDevices(): Promise<{ uid: string; token: string }[]>;  // dispositivos de role == 'admin'
-  send(tokens: string[], message: NoticeMessage): Promise<SendResult[]>; // uno por token, en orden
-  removeDevice(uid: string, token: string): Promise<void>;
+  adminDevices(): Promise<{ uid: string; fid: string }[]>;  // dispositivos de role == 'admin'
+  send(fids: string[], message: NoticeMessage): Promise<SendResult[]>; // uno por FID, en orden
+  removeDevice(uid: string, fid: string): Promise<void>;
 }
 notifyAdmins(store, eventId, appointmentId, before, after): Promise<{ sent: number; removed: number }>
 ```
@@ -184,12 +193,12 @@ notifyAdmins(store, eventId, appointmentId, before, after): Promise<{ sent: numb
 Pseudocódigo:
 ```
 kind = noticeKind(before, after); si null → {0, 0}
-devices = store.adminDevices(); tokens = uniqueTokens(devices); si vacío → {0, 0}   // RF-24
+devices = store.adminDevices(); fids = uniqueFids(devices); si vacío → {0, 0}   // RF-24
 message = { notification: noticeText(kind, after),
             data: { kind, appointmentId, day: salonDay(after.start) },
             tag: noticeTag(eventId) }
-results = store.send(tokens, message)
-por cada token con error "no registrado" o "inválido": removeDevice de cada uid que lo tenía   // D-5
+results = store.send(fids, message)
+por cada FID con error "no registrado" o "inválido": removeDevice de cada uid que lo tenía   // D-5
 ```
 
 `index.ts` exporta `notifyAdminsOnAppointmentWrite`:
@@ -206,8 +215,8 @@ bool shouldRegisterDevice({required bool isWeb, required UserModel? user, requir
   // !isWeb && user?.role == 'admin' && permission == granted               (RF-18, RF-16)
 bool showPushDisabled({required bool isWeb, required UserModel? user, required PushPermission permission});
   // !isWeb && user?.role == 'admin' && permission == denied                (RF-17)
-bool shouldRevokeToken({required bool pendingRevoke, required UserModel? user});
-  // pendingRevoke && user?.role != 'admin'                                 (D-7)
+bool shouldRetryUnregister({required bool pendingUnregister, required UserModel? user});
+  // pendingUnregister && user?.role != 'admin'                             (D-7)
 DateTime? noticeDay(Map<String, String> data);
   // 'YYYY-MM-DD' válido → agendaDay(DateTime.utc(y, m, d)); si no, null   (RF-12)
 ```
@@ -218,7 +227,7 @@ DateTime? noticeDay(Map<String, String> data);
 
 | Archivo | Responsabilidad | RF |
 |---|---|---|
-| `src/appointment_notice.ts` (nuevo) | Tipo, día, texto, tokens únicos y etiqueta | RF-1 a RF-11 |
+| `src/appointment_notice.ts` (nuevo) | Tipo, día, texto, FID únicos y etiqueta | RF-1 a RF-11 |
 | `src/notify_admins.ts` (nuevo) | Orquesta el envío y la limpieza | RF-5, RF-19, RF-21, RF-22, RF-24 |
 | `src/notice_store.ts` (nuevo) | Almacén sobre `firebase-admin` (Firestore y Messaging); convierte el documento en `NoticeAppointment` (lectura tolerante, como la app) | RF-6, RF-19, RF-21 |
 | `src/index.ts` | Exporta el disparador (D-3) | RF-6, RF-24 |
@@ -236,10 +245,10 @@ DateTime? noticeDay(Map<String, String> data);
 
 `PushRepository` recibe `FirebaseMessaging?`, `FirebaseFirestore?` y `SharedPreferences?` por constructor. Sus métodos:
 - `permission()`, `requestPermission()`;
-- `token()`, `onTokenRefresh`, `deleteToken()`;
-- `registerDevice(uid, token, platform)` (`set` con `updatedAt: serverTimestamp`), `unregisterDevice(uid, token)`;
+- `register()` (llama a `register()` de FCM y devuelve el primer FID de `onRegistered`, con un máximo de 20 s), `onRegistered`, `unregister()`;
+- `registerDevice(uid, fid, platform)` (`set` con `updatedAt: serverTimestamp`), `unregisterDevice(uid, fid)`;
 - `initialNotice()`, `onNoticeOpened`, `onForegroundNotice`;
-- `pendingRevoke` / `setPendingRevoke(bool)`;
+- `pendingUnregister` / `setPendingUnregister(bool)`;
 - la marca "ya preguntado" (D-8).
 
 **`lib/features/admin/`**
@@ -285,12 +294,12 @@ DateTime? noticeDay(Map<String, String> data);
 **`AdminPushController`.** Recibe el repositorio, `isWeb`, una forma de leer el usuario actual y la de abrir la agenda. No hace nada en Web.
 - **`start()`** se llama una vez desde `AdminPushGate`:
   1. lee el permiso;
-  2. aplica D-7 (`shouldRevokeToken` → `deleteToken`, y quita la marca si sale bien);
-  3. se suscribe a `currentUserProvider`, `onTokenRefresh`, `onNoticeOpened` y `onForegroundNotice`;
+  2. aplica D-7 (`shouldRetryUnregister` → `unregister`, y quita la marca si sale bien);
+  3. se suscribe a `currentUserProvider`, `onRegistered`, `onNoticeOpened` y `onForegroundNotice`;
   4. procesa `initialNotice()`.
-- **`sync()`** se ejecuta al cambiar el usuario o el permiso, al volver a primer plano y al refrescarse el token. Si `shouldRegisterDevice`, hace `token()` y `registerDevice`, y guarda en el dispositivo el uid registrado. Los errores van a `debugPrint` y se reintenta la próxima vez (RF-25).
+- **`sync()`** se ejecuta al cambiar el usuario o el permiso, al volver a primer plano y cuando `onRegistered` trae un FID nuevo. Si `shouldRegisterDevice`, hace `register()` y `registerDevice`, y guarda en el dispositivo el uid registrado. Los errores van a `debugPrint` y se reintenta la próxima vez (RF-25).
 - **`requestPermission()`**, tras la explicación: marca que se preguntó, pide el permiso y llama a `sync()`.
-- **`unregister()`**, al cerrar sesión (D-7): borra el documento, llama a `deleteToken()` y, si algo falla, pone la marca "pendiente de anular". Nunca lanza.
+- **`unregister()`**, al cerrar sesión (D-7): borra el documento, llama a `unregister()` del repositorio y, si algo falla, pone la marca "baja pendiente". Nunca lanza.
 - **`open(PushNotice)`** (D-10): espera al usuario. Si es admin y `noticeDay` no es nulo, cambia el día y abre `/admin` si no está arriba.
 
 **`AdminPushGate`.** Es un `ConsumerStatefulWidget` en el `builder` de la app, solo para Android/iOS: en Web devuelve el hijo sin más.
@@ -310,7 +319,7 @@ DateTime? noticeDay(Map<String, String> data);
 
 ## 7. Flujo completo
 1. Una clienta reserva, edita o cancela (desde Web, Android o iOS). Se guarda el turno.
-2. Firestore dispara `notifyAdminsOnAppointmentWrite`, que aplica `noticeKind`. Si hay aviso, lee los dispositivos de las admins, envía un mensaje por token y borra los inválidos.
+2. Firestore dispara `notifyAdminsOnAppointmentWrite`, que aplica `noticeKind`. Si hay aviso, lee los dispositivos de las admins, envía un mensaje por FID y borra los que ya no valen.
 3. En el teléfono de la admin:
    - con la app cerrada o en segundo plano, el sistema muestra la notificación, y al tocarla `getInitialMessage`/`onMessageOpenedApp` llevan a `open`;
    - en primer plano, `onMessage` lleva al `SnackBar` y "Ver" a `open`.
@@ -336,11 +345,11 @@ Los avisos push en sí van en español y viven en `functions/` (RF-7, D-6). El n
 - **`appointment_notice.test.ts`:**
   - `noticeKind` en cada fila de la tabla de D-2: crea la clienta; crea la admin; persona sin cuenta; la clienta edita la hora, el servicio o solo los adicionales; la admin edita; la admin confirma; la admin cancela; bloqueo; la clienta cancela; borrado de cuenta con turno activo; turno pasado marcado `accountDeleted`; WhatsApp copiado; turno borrado; la clienta cancela uno agendado por la admin → aviso. (RF-1 a RF-4)
   - `noticeText` en los tres tipos, sin servicio, con la cuenta borrada y sin nombre, con un turno a las 22:30 de Curitiba (otro día en UTC), en español, y sin WhatsApp ni foto. (RF-7 a RF-11, RNF-4)
-  - `salonDay`, `uniqueTokens` y `noticeTag` (estable y de 32 caracteres). (RF-5)
+  - `salonDay`, `uniqueFids` y `noticeTag` (estable y de 32 caracteres). (RF-5)
 - **`notify_admins.test.ts`**, con un almacén en memoria:
   - sin tipo no envía;
   - sin dispositivos no envía ni falla (RF-24);
-  - un token repetido se envía una vez (RF-5);
+  - un FID repetido se envía una vez (RF-5);
   - dos admins, varios dispositivos (RF-19);
   - los no registrados o inválidos se borran de cada dueña y los demás errores no (RF-21);
   - el mensaje lleva `day`, `kind`, `appointmentId` y la etiqueta (RF-12);
@@ -352,7 +361,7 @@ Los avisos push en sí van en español y viven en `functions/` (RF-7, D-6). El n
 - **`test/features/admin/admin_push_controller_test.dart`**, con un `ProviderContainer`:
   - registra con admin y `granted`;
   - no registra a una clienta ni en Web, ni toca el repositorio (RF-16);
-  - vuelve a registrar al refrescarse el token y al volver a primer plano (RF-18, RF-21);
+  - vuelve a registrar cuando `onRegistered` trae un FID nuevo y al volver a primer plano (RF-18, RF-21);
   - los errores de registro no salen (RF-25);
   - `unregister` borra y anula; si falla, deja la marca y la siguiente apertura sin admin anula (RF-20, D-7).
 - **`test/features/auth/sign_out_push_test.dart`:**

@@ -13,6 +13,8 @@ import 'core/theme/brand_colors.dart';
 import 'core/theme/system_bars.dart';
 import 'data/firestore_cache.dart';
 import 'data/repositories/preferences_repository.dart';
+import 'data/repositories/push_repository.dart';
+import 'features/admin/providers/admin_push_provider.dart';
 import 'features/preferences/providers/preferences_provider.dart';
 import 'firebase_options.dart';
 import 'l10n/app_localizations.dart';
@@ -48,6 +50,9 @@ void main() async {
         preferencesRepositoryProvider.overrideWithValue(
           PreferencesRepository(store),
         ),
+        // Las marcas de los avisos push van en el mismo almacenamiento del
+        // dispositivo (spec 011, plan D-7, D-8).
+        pushRepositoryProvider.overrideWithValue(PushRepository(store: store)),
       ],
       child: const MyApp(),
     ),

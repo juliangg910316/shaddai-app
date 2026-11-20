@@ -9,7 +9,7 @@ import {
   noticeTag,
   noticeText,
   salonDay,
-  uniqueTokens,
+  uniqueFids,
 } from '../src/appointment_notice.ts';
 import type { NoticeAppointment } from '../src/appointment_notice.ts';
 
@@ -309,20 +309,20 @@ describe('qué dice el aviso (RF-7 a RF-11, RNF-4, plan D-6)', () => {
 });
 
 describe('un aviso por dispositivo (RF-5, plan D-4)', () => {
-  test('quita los tokens repetidos y conserva el orden', () => {
+  test('quita los FID repetidos y conserva el orden', () => {
     assert.deepEqual(
-      uniqueTokens([
-        { uid: 'beidis', token: 'b' },
-        { uid: 'beidis', token: 'a' },
-        { uid: 'otra', token: 'b' },
-        { uid: 'otra', token: 'c' },
+      uniqueFids([
+        { uid: 'beidis', fid: 'b' },
+        { uid: 'beidis', fid: 'a' },
+        { uid: 'otra', fid: 'b' },
+        { uid: 'otra', fid: 'c' },
       ]),
       ['b', 'a', 'c'],
     );
   });
 
   test('sin dispositivos, ninguno', () => {
-    assert.deepEqual(uniqueTokens([]), []);
+    assert.deepEqual(uniqueFids([]), []);
   });
 
   test('la etiqueta: 32 caracteres, la misma para el mismo evento', () => {
