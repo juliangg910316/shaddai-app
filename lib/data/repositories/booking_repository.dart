@@ -339,16 +339,17 @@ class BookingRepository {
     );
   }
 
-  Stream<List<AppointmentModel>> getAppointmentsForDate(DateTime date) {
-    final start = DateTime(date.year, date.month, date.day);
-    final end = start.add(const Duration(days: 1));
-
-    return _appointments
-        .where('startTime', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
-        .where('startTime', isLessThan: Timestamp.fromDate(end))
-        .snapshots()
-        .map((snapshot) => snapshot.docs.map(_appointment).toList());
-  }
+  /// Los turnos que empiezan entre los instantes [from] (incluido) y [to]
+  /// (excluido), en vivo. La agenda de la admin pide los de un día del
+  /// salón (spec 010, RF-1). Un solo campo filtrado: sin índice compuesto.
+  Stream<List<AppointmentModel>> watchAppointmentsBetween(
+    DateTime from,
+    DateTime to,
+  ) => _appointments
+      .where('startTime', isGreaterThanOrEqualTo: Timestamp.fromDate(from))
+      .where('startTime', isLessThan: Timestamp.fromDate(to))
+      .snapshots()
+      .map((snapshot) => snapshot.docs.map(_appointment).toList());
 
   Stream<List<AppointmentModel>> getClientAppointments(String clientId) {
     return _appointments
@@ -360,16 +361,44 @@ class BookingRepository {
 
   // ADMIN METHODS
 
-  /// Cambia el estado del turno [id]. Al cancelarlo, borra en el mismo lote
-  /// su turno ocupado: la hora vuelve a quedar libre (spec 005, plan § 2).
-  Future<void> updateAppointmentStatus(String id, String status) async {
-    if (status != 'cancelled') {
-      await _appointments.doc(id).update({'status': status});
-      return;
-    }
-    final batch = _firestore.batch()
-      ..update(_appointments.doc(id), {'status': status})
-      ..delete(_busySlots.doc(id));
-    await batch.commit();
+  /// La admin cancela el turno [id] en una transacción que lo relee y solo
+  /// lo cancela si [expected] da por bueno el turno guardado (`null` si ya
+  /// no existe): escribe solo `status` (sin `cancelledBy`: lo canceló el
+  /// salón) y borra su turno ocupado, a la vez. Devuelve si lo canceló. Si
+  /// no termina en [saveTimeout], lanza (spec 010, RF-14, RF-15, plan D-2).
+  Future<bool> cancelByAdmin({
+    required String id,
+    required bool Function(AppointmentModel? current) expected,
+  }) {
+    final appointmentRef = _appointments.doc(id);
+    return _firestore
+        .runTransaction<bool>((transaction) async {
+          final doc = await transaction.get(appointmentRef);
+          if (!expected(doc.exists ? _appointment(doc) : null)) return false;
+          transaction
+            ..update(appointmentRef, {'status': 'cancelled'})
+            ..delete(_busySlots.doc(id));
+          return true;
+        })
+        .timeout(saveTimeout);
+  }
+
+  /// La admin confirma el turno [id] en una transacción que lo relee y solo
+  /// lo confirma si [expected] lo da por bueno: así no reactiva un turno que
+  /// se canceló mientras tanto. Devuelve si lo confirmó (spec 010, RF-11,
+  /// plan D-4).
+  Future<bool> confirmByAdmin({
+    required String id,
+    required bool Function(AppointmentModel? current) expected,
+  }) {
+    final appointmentRef = _appointments.doc(id);
+    return _firestore
+        .runTransaction<bool>((transaction) async {
+          final doc = await transaction.get(appointmentRef);
+          if (!expected(doc.exists ? _appointment(doc) : null)) return false;
+          transaction.update(appointmentRef, {'status': 'confirmed'});
+          return true;
+        })
+        .timeout(saveTimeout);
   }
 }

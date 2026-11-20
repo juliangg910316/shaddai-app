@@ -56,7 +56,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get adminPanelEyebrow => 'PANEL DE BEIDIS';
 
   @override
-  String get adminStatAppointmentsToday => 'TURNOS HOY';
+  String get adminStatAppointmentsToday => 'TURNOS DEL DÍA';
 
   @override
   String get pendingConfirmationLabel => 'POR CONFIRMAR';
@@ -1331,15 +1331,6 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get adminCancelAppointmentBody => 'La hora quedará libre.';
-
-  @override
-  String get adminCancelAppointmentConfirm => 'Cancelar turno';
-
-  @override
-  String get adminCancelAppointmentKeep => 'Volver';
-
-  @override
   String get adminCancelAppointmentError =>
       'No se pudo cancelar el turno. Inténtalo de nuevo.';
 
@@ -1525,4 +1516,77 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get adminAppointmentAccountDeleted => 'Cuenta eliminada';
+
+  @override
+  String get adminAgendaToday => 'Hoy';
+
+  @override
+  String get adminAgendaPickDate => 'Elegir fecha';
+
+  @override
+  String get adminAppointmentUnconfirmed => 'Sin confirmar';
+
+  @override
+  String get adminConfirmFailed => 'No se pudo confirmar. Inténtalo de nuevo.';
+
+  @override
+  String get adminCancelDone => 'Turno cancelado.';
+
+  @override
+  String get adminCancelChanged =>
+      'El turno cambió. Revísalo antes de cancelarlo.';
+
+  @override
+  String adminBlockSwitch(String name) {
+    return 'Bloquear a $name';
+  }
+
+  @override
+  String adminBlockTitle(String name) {
+    return '¿Bloquear a $name?';
+  }
+
+  @override
+  String get adminBlockBody => 'No podrá iniciar sesión ni reservar.';
+
+  @override
+  String get adminBlockConfirm => 'Sí, bloquear';
+
+  @override
+  String adminUnblockTitle(String name) {
+    return '¿Desbloquear a $name?';
+  }
+
+  @override
+  String get adminUnblockBody => 'Podrá volver a iniciar sesión y reservar.';
+
+  @override
+  String get adminUnblockConfirm => 'Sí, desbloquear';
+
+  @override
+  String get adminDialogBack => 'No, volver';
+
+  @override
+  String get adminBlockCancelsAppointment => 'Su turno se cancelará:';
+
+  @override
+  String adminBlockDone(String name) {
+    return '$name está bloqueada.';
+  }
+
+  @override
+  String adminUnblockDone(String name) {
+    return '$name está desbloqueada.';
+  }
+
+  @override
+  String get adminBlockChanged =>
+      'Su turno cambió. Revísalo antes de bloquearla.';
+
+  @override
+  String get adminBlockFailed => 'No se pudo bloquear. Inténtalo de nuevo.';
+
+  @override
+  String get adminUnblockFailed =>
+      'No se pudo desbloquear. Inténtalo de nuevo.';
 }

@@ -6,6 +6,14 @@ import 'package:shaddai/l10n/app_localizations_es.dart';
 import 'package:shaddai/l10n/app_localizations_pt.dart';
 
 /// Las claves nuevas de la reserva (spec 005, plan § 6).
+/// Claves de la spec 008 que quitó la 010: los choques de un cierre usan el
+/// diálogo de cancelar de la agenda (spec 010, plan D-3).
+const _removedBySpec010 = {
+  'adminCancelAppointmentBody',
+  'adminCancelAppointmentKeep',
+  'adminCancelAppointmentConfirm',
+};
+
 const _keys = [
   'bookingStepDate',
   'bookingStepTime',
@@ -143,13 +151,11 @@ void main() {
       ).allMatches(section))
         match.group(1)!,
       // Añadidas en las tareas (T7 y T17).
-      'adminCancelAppointmentConfirm',
-      'adminCancelAppointmentKeep',
       'adminCancelAppointmentError',
       'closureDeleteFor',
       'adminAgendaPreviousDay',
       'adminAgendaNextDay',
-    };
+    }..removeAll(_removedBySpec010);
     expect(keys, hasLength(greaterThanOrEqualTo(40)));
     final es = _arb('app_es.arb');
     final pt = _arb('app_pt.arb');

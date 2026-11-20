@@ -564,20 +564,22 @@ void main() {
         find.descendant(of: conflict, matching: find.text('CANCELAR')),
       );
       await settle(tester);
+      // El mismo diálogo que la agenda (spec 010, plan D-3).
       expect(find.text('¿Cancelar el turno de Ana Souza?'), findsOneWidget);
-      expect(find.text('La hora quedará libre.'), findsOneWidget);
-      await tester.tap(find.text('VOLVER'));
+      expect(find.text('Manicura'), findsWidgets);
+      await tester.tap(find.text('No, mantener'));
       await settle(tester);
-      expect(bookings.statusChanges, isEmpty);
+      expect(bookings.adminCancelled, isEmpty);
 
       await tester.tap(
         find.descendant(of: conflict, matching: find.text('CANCELAR')),
       );
       await settle(tester);
-      await tester.tap(find.text('CANCELAR TURNO'));
+      await tester.tap(find.text('Sí, cancelar'));
       await settle(tester);
-      expect(bookings.statusChanges, [(id: 'a1', status: 'cancelled')]);
+      expect(bookings.adminCancelled, ['a1']);
       expect(conflict, findsNothing);
+      expect(find.text('Turno cancelado.'), findsOneWidget);
 
       // En el servidor ya está cancelado.
       bookings.active = const [];
@@ -585,6 +587,40 @@ void main() {
       expect(bookings.activeFetches, hasLength(2));
       expect(config.created, hasLength(1));
       expect(find.text('Cierre guardado.'), findsOneWidget);
+    });
+
+    testWidgets('si el turno ya no está activo al cancelar, no lo cancela, '
+        'avisa y sale de la lista (spec 010, RF-15)', (tester) async {
+      bookings.active = [ana];
+      await open(tester);
+      await save(tester);
+      final conflict = find.byKey(const ValueKey('closure-conflict-a1'));
+      await tester.ensureVisible(conflict);
+      await tester.tap(
+        find.descendant(of: conflict, matching: find.text('CANCELAR')),
+      );
+      await settle(tester);
+      // La clienta lo canceló con el diálogo abierto.
+      bookings.emitAppointment(
+        'a1',
+        AppointmentModel(
+          id: ana.id,
+          clientId: ana.clientId,
+          clientName: ana.clientName,
+          clientPhone: ana.clientPhone,
+          startTime: ana.startTime,
+          endTime: ana.endTime,
+          status: 'cancelled',
+          createdAt: ana.createdAt,
+          booked: ana.booked,
+          cancelledByClient: true,
+        ),
+      );
+      await tester.tap(find.text('Sí, cancelar'));
+      await settle(tester);
+      expect(bookings.adminCancelled, isEmpty);
+      expect(find.text('Este turno ya no está activo.'), findsOneWidget);
+      expect(conflict, findsNothing);
     });
 
     for (final web in [false, true]) {

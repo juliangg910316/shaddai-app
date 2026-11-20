@@ -191,7 +191,7 @@ abstract class AppLocalizations {
   /// No description provided for @adminStatAppointmentsToday.
   ///
   /// In es, this message translates to:
-  /// **'TURNOS HOY'**
+  /// **'TURNOS DEL DÍA'**
   String get adminStatAppointmentsToday;
 
   /// No description provided for @pendingConfirmationLabel.
@@ -2526,24 +2526,6 @@ abstract class AppLocalizations {
   /// **'¿Cancelar el turno de {name}?'**
   String adminCancelAppointmentTitle(String name);
 
-  /// Texto de la confirmación al cancelar un turno (spec 008, RF-5)
-  ///
-  /// In es, this message translates to:
-  /// **'La hora quedará libre.'**
-  String get adminCancelAppointmentBody;
-
-  /// Botón que confirma la cancelación de un turno (spec 008, RF-5)
-  ///
-  /// In es, this message translates to:
-  /// **'Cancelar turno'**
-  String get adminCancelAppointmentConfirm;
-
-  /// Botón que cierra la confirmación sin cancelar (spec 008, RF-5)
-  ///
-  /// In es, this message translates to:
-  /// **'Volver'**
-  String get adminCancelAppointmentKeep;
-
   /// Error al cancelar un turno desde los cierres (spec 008, RF-5)
   ///
   /// In es, this message translates to:
@@ -2867,6 +2849,126 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Cuenta eliminada'**
   String get adminAppointmentAccountDeleted;
+
+  /// Botón de la agenda que vuelve al día de hoy del salón (spec 010, RF-3)
+  ///
+  /// In es, this message translates to:
+  /// **'Hoy'**
+  String get adminAgendaToday;
+
+  /// Nombre del botón de la fecha de la agenda, que abre el calendario (spec 010, RF-4)
+  ///
+  /// In es, this message translates to:
+  /// **'Elegir fecha'**
+  String get adminAgendaPickDate;
+
+  /// Marca de la agenda: el turno terminó sin confirmarse (spec 010, RF-9)
+  ///
+  /// In es, this message translates to:
+  /// **'Sin confirmar'**
+  String get adminAppointmentUnconfirmed;
+
+  /// Error al confirmar un turno desde la agenda, sin detalles (spec 010, RF-17)
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo confirmar. Inténtalo de nuevo.'**
+  String get adminConfirmFailed;
+
+  /// Aviso tras cancelar un turno desde la agenda o un cierre (spec 010, RF-18)
+  ///
+  /// In es, this message translates to:
+  /// **'Turno cancelado.'**
+  String get adminCancelDone;
+
+  /// El turno cambió con el diálogo de cancelar abierto: no se cancela (spec 010, RF-15)
+  ///
+  /// In es, this message translates to:
+  /// **'El turno cambió. Revísalo antes de cancelarlo.'**
+  String get adminCancelChanged;
+
+  /// Nombre del interruptor de bloqueo de una clienta para el lector de pantalla (spec 010, RNF-2)
+  ///
+  /// In es, this message translates to:
+  /// **'Bloquear a {name}'**
+  String adminBlockSwitch(String name);
+
+  /// Título del diálogo de bloquear a una clienta (spec 010, RF-25)
+  ///
+  /// In es, this message translates to:
+  /// **'¿Bloquear a {name}?'**
+  String adminBlockTitle(String name);
+
+  /// Qué supone bloquear a una clienta (spec 010, RF-25)
+  ///
+  /// In es, this message translates to:
+  /// **'No podrá iniciar sesión ni reservar.'**
+  String get adminBlockBody;
+
+  /// Confirma el bloqueo (spec 010, RF-27)
+  ///
+  /// In es, this message translates to:
+  /// **'Sí, bloquear'**
+  String get adminBlockConfirm;
+
+  /// Título del diálogo de desbloquear a una clienta (spec 010, RF-29)
+  ///
+  /// In es, this message translates to:
+  /// **'¿Desbloquear a {name}?'**
+  String adminUnblockTitle(String name);
+
+  /// Qué supone desbloquear a una clienta (spec 010, RF-29)
+  ///
+  /// In es, this message translates to:
+  /// **'Podrá volver a iniciar sesión y reservar.'**
+  String get adminUnblockBody;
+
+  /// Confirma el desbloqueo (spec 010, RF-30)
+  ///
+  /// In es, this message translates to:
+  /// **'Sí, desbloquear'**
+  String get adminUnblockConfirm;
+
+  /// Cierra el diálogo de bloquear o desbloquear sin cambiar nada (spec 010, RF-31)
+  ///
+  /// In es, this message translates to:
+  /// **'No, volver'**
+  String get adminDialogBack;
+
+  /// En el diálogo de bloquear, antes del turno activo que se cancelará (spec 010, RF-26)
+  ///
+  /// In es, this message translates to:
+  /// **'Su turno se cancelará:'**
+  String get adminBlockCancelsAppointment;
+
+  /// Aviso tras bloquear a una clienta (spec 010, RF-33)
+  ///
+  /// In es, this message translates to:
+  /// **'{name} está bloqueada.'**
+  String adminBlockDone(String name);
+
+  /// Aviso tras desbloquear a una clienta (spec 010, RF-33)
+  ///
+  /// In es, this message translates to:
+  /// **'{name} está desbloqueada.'**
+  String adminUnblockDone(String name);
+
+  /// El turno activo de la clienta cambió con el diálogo abierto: no se bloquea (spec 010, RF-28)
+  ///
+  /// In es, this message translates to:
+  /// **'Su turno cambió. Revísalo antes de bloquearla.'**
+  String get adminBlockChanged;
+
+  /// Error al bloquear, sin detalles (spec 010, RF-34)
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo bloquear. Inténtalo de nuevo.'**
+  String get adminBlockFailed;
+
+  /// Error al desbloquear, sin detalles (spec 010, RF-34)
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo desbloquear. Inténtalo de nuevo.'**
+  String get adminUnblockFailed;
 }
 
 class _AppLocalizationsDelegate

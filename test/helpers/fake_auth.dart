@@ -8,6 +8,8 @@ import 'package:shaddai/data/repositories/account_repository.dart';
 import 'package:shaddai/data/repositories/booking_repository.dart';
 import 'package:shaddai/data/repositories/user_repository.dart';
 
+import 'fake_booking.dart';
+
 /// Usuario de Firebase Auth falso: solo los campos que lee la app.
 class FakeFirebaseUser implements User {
   FakeFirebaseUser(this.uid);
@@ -163,6 +165,72 @@ class FakeUserRepository implements UserRepository {
     final user = live;
     if (user != null) {
       live = user.copyWith(phoneNumber: phone);
+      for (final listener in List.of(_userListeners)) {
+        listener.add(live);
+      }
+    }
+  }
+
+  /// Las reservas en las que [blockClient] cancela el turno activo (spec
+  /// 010). Sin ellas, `expected` recibe `null`.
+  FakeBookingRepository? bookings;
+
+  Object? blockError;
+  Future<void>? blockGate;
+
+  /// Bloqueos guardados con [blockClient], en orden.
+  final blocks = <({String uid, String? appointmentId})>[];
+
+  Object? unblockError;
+  Future<void>? unblockGate;
+
+  /// Desbloqueos guardados con [unblockClient], en orden.
+  final unblocks = <String>[];
+
+  /// Como la transacción (spec 010, plan D-5): espera a [blockGate], lanza
+  /// [blockError] y aplica `expected` al turno de [bookings]; si vale,
+  /// bloquea la ficha en [users] y en [live] y cancela el turno.
+  @override
+  Future<bool> blockClient({
+    required String uid,
+    String? appointmentId,
+    required bool Function(AppointmentModel? current) expected,
+  }) async {
+    final gate = blockGate;
+    if (gate != null) await gate;
+    final failure = blockError;
+    if (failure != null) throw failure;
+    final current = appointmentId == null
+        ? null
+        : bookings?.appointmentById(appointmentId);
+    if (!expected(current)) return false;
+    blocks.add((uid: uid, appointmentId: appointmentId));
+    _setBlocked(uid, true);
+    if (appointmentId != null) bookings?.applyAdminCancel(appointmentId);
+    return true;
+  }
+
+  /// Espera a [unblockGate], lanza [unblockError] o desbloquea la ficha.
+  @override
+  Future<void> unblockClient(String uid) async {
+    final gate = unblockGate;
+    if (gate != null) await gate;
+    final failure = unblockError;
+    if (failure != null) throw failure;
+    unblocks.add(uid);
+    _setBlocked(uid, false);
+  }
+
+  void _setBlocked(String uid, bool isBlocked) {
+    if (users.any((u) => u.uid == uid)) {
+      emitUsers([
+        for (final u in users)
+          u.uid == uid ? u.copyWith(isBlocked: isBlocked) : u,
+      ]);
+    }
+    final user = live;
+    if (user != null && user.uid == uid) {
+      live = user.copyWith(isBlocked: isBlocked);
       for (final listener in List.of(_userListeners)) {
         listener.add(live);
       }

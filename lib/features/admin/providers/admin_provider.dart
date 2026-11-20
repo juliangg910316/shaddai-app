@@ -4,39 +4,57 @@ import 'package:flutter_riverpod/legacy.dart';
 import '../../../data/models/appointment_model.dart';
 import '../../../data/models/user_model.dart';
 import '../../../data/models/calendar_settings_model.dart';
-import '../../../data/repositories/booking_repository.dart';
-import '../../../data/repositories/user_repository.dart';
 import '../../../data/repositories/config_repository.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../booking/logic/salon_time.dart';
 import '../../booking/providers/booking_provider.dart';
+import '../logic/admin_agenda.dart';
+import '../logic/admin_clients.dart';
 
+/// El día que muestra la agenda: un día del salón (`DateTime.utc` a las
+/// 0:00 con la fecha de Curitiba). Empieza en hoy del salón (spec 010, RF-2,
+/// plan D-1). Quien escriba una fecha local también vale: se lee con
+/// [agendaDay].
 final adminSelectedDateProvider = StateProvider<DateTime>(
-  (ref) => DateTime.now(),
+  (ref) => agendaToday(toSalon(ref.read(clockProvider)())),
 );
 
+/// Hoy del salón; cambia solo a medianoche. Decide "Hoy" (spec 010, RF-3).
+final adminTodayProvider = Provider<DateTime>((ref) {
+  final clock = ref.watch(clockProvider);
+  return ref.watch(
+    salonNowProvider.select(
+      (now) => agendaToday(now.value ?? toSalon(clock())),
+    ),
+  );
+});
+
+/// Los turnos del día de la agenda, de medianoche a medianoche del salón
+/// (spec 010, RF-1).
 final adminAppointmentsProvider = StreamProvider<List<AppointmentModel>>((ref) {
-  final date = ref.watch(adminSelectedDateProvider);
-  return ref.watch(bookingRepositoryProvider).getAppointmentsForDate(date);
+  final range = agendaRange(ref.watch(adminSelectedDateProvider));
+  return ref
+      .watch(bookingRepositoryProvider)
+      .watchAppointmentsBetween(range.from, range.to);
 });
 
 final adminUsersProvider = StreamProvider<List<UserModel>>((ref) {
   return ref.watch(userRepositoryProvider).getAllUsers();
 });
 
+/// Las clientas para la lista del panel: sin admins y por nombre (spec 010,
+/// RF-19, RF-20). Con error si no se pudieron cargar: el error manda
+/// (MEMORY).
+final adminClientsProvider = Provider<AsyncValue<List<UserModel>>>((ref) {
+  final users = ref.watch(adminUsersProvider);
+  if (users.hasError) return AsyncError(users.error!, users.stackTrace!);
+  return users.whenData(clientsForAdmin);
+});
+
 class AdminController {
-  final BookingRepository _bookingRepo;
-  final UserRepository _userRepo;
   final ConfigRepository _configRepo;
 
-  AdminController(this._bookingRepo, this._userRepo, this._configRepo);
-
-  Future<void> updateAppointmentStatus(String id, String status) async {
-    await _bookingRepo.updateAppointmentStatus(id, status);
-  }
-
-  Future<void> toggleUserBlock(String uid, bool isBlocked) async {
-    await _userRepo.toggleBlockUser(uid, isBlocked);
-  }
+  AdminController(this._configRepo);
 
   Future<void> updateSettings(CalendarSettingsModel settings) async {
     await _configRepo.updateSettings(settings);
@@ -48,9 +66,5 @@ class AdminController {
 }
 
 final adminControllerProvider = Provider((ref) {
-  return AdminController(
-    ref.watch(bookingRepositoryProvider),
-    ref.watch(userRepositoryProvider),
-    ref.watch(configRepositoryProvider),
-  );
+  return AdminController(ref.watch(configRepositoryProvider));
 });

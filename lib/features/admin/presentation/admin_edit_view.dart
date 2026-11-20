@@ -19,6 +19,7 @@ import '../../booking/providers/admin_edit_provider.dart';
 import '../../booking/providers/booking_provider.dart';
 import '../../services/presentation/price_list_notices.dart';
 import '../../services/providers/price_list_provider.dart';
+import '../logic/admin_agenda.dart';
 import '../providers/admin_provider.dart';
 import 'admin_navigation.dart';
 
@@ -113,11 +114,7 @@ class _AdminAppointmentEditViewState
       case AdminEditOutcome.ok:
         // La agenda se abre en el día del turno (RF-28).
         final day = result.day!;
-        ref.read(adminSelectedDateProvider.notifier).state = DateTime(
-          day.year,
-          day.month,
-          day.day,
-        );
+        ref.read(adminSelectedDateProvider.notifier).state = agendaDay(day);
         final name = result.name ?? '';
         showBookingMessage(context, (l10n) => l10n.adminEditSaved(name));
         _leave();

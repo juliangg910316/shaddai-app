@@ -9,6 +9,7 @@ import '../../booking/logic/closures.dart';
 import '../../booking/logic/free_slots.dart';
 import '../../booking/logic/salon_time.dart';
 import '../../booking/providers/booking_provider.dart';
+import '../logic/admin_agenda.dart';
 import 'admin_provider.dart';
 
 /// Los cierres de la agenda que ve la admin y los cambios que hace (spec
@@ -43,15 +44,10 @@ final adminClosureEntriesProvider = Provider<AsyncValue<List<ClosureEntry>>>((
   );
 });
 
-/// El día de la agenda como día del salón: el panel guarda la fecha del
-/// dispositivo, y se toman su año, su mes y su día.
-DateTime _agendaDay(DateTime date) =>
-    DateTime.utc(date.year, date.month, date.day);
-
 /// Los cierres que terminan desde el día de la agenda, en vivo: también un
 /// día pasado muestra los suyos (RF-9). "Reintentar" lo invalida (RF-10).
 final adminAgendaClosuresProvider = StreamProvider<List<ClosureModel>>((ref) {
-  final day = ref.watch(adminSelectedDateProvider.select(_agendaDay));
+  final day = ref.watch(adminSelectedDateProvider.select(agendaDay));
   return ref.watch(configRepositoryProvider).watchClosures(fromSalon(day));
 });
 
@@ -60,7 +56,7 @@ final adminAgendaClosuresProvider = StreamProvider<List<ClosureModel>>((ref) {
 final adminDayClosuresProvider = Provider<AsyncValue<List<ClosureEntry>>>((
   ref,
 ) {
-  final day = _agendaDay(ref.watch(adminSelectedDateProvider));
+  final day = agendaDay(ref.watch(adminSelectedDateProvider));
   final closures = ref.watch(adminAgendaClosuresProvider);
   final settings = ref.watch(calendarSettingsProvider);
   if (closures.hasError) {

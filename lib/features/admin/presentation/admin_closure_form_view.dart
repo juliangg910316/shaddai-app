@@ -15,8 +15,9 @@ import '../../booking/logic/salon_time.dart';
 import '../../booking/providers/admin_edit_provider.dart';
 import '../../booking/providers/booking_provider.dart';
 import '../providers/admin_closures_provider.dart';
-import '../providers/admin_provider.dart';
 import 'admin_dashboard_view.dart';
+import '../providers/admin_appointment_actions_provider.dart';
+import 'admin_cancel_dialog.dart';
 import 'admin_navigation.dart';
 
 /// "Nuevo cierre": una franja o días enteros, con sus errores bajo cada
@@ -105,47 +106,16 @@ class _AdminClosureFormViewState extends ConsumerState<AdminClosureFormView> {
     }
   }
 
-  /// Cancela [appointment] tras confirmarlo: el turno de la persona se
-  /// pierde (constitución, principio 5).
+  /// Cancela [appointment] con el diálogo de la agenda, que pide
+  /// confirmación, relee el turno y avisa (spec 010, plan D-3). Si se
+  /// canceló o ya no estaba activo, sale de la lista de choques.
   Future<void> _cancel(AppointmentModel appointment) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) {
-        // Textos leídos aquí dentro: el diálogo cambia de idioma con la app.
-        final l10n = AppLocalizations.of(context)!;
-        return AlertDialog(
-          title: Text(l10n.adminCancelAppointmentTitle(appointment.clientName)),
-          content: Text(l10n.adminCancelAppointmentBody),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(false),
-              child: Text(l10n.adminCancelAppointmentKeep.toUpperCase()),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(true),
-              child: Text(l10n.adminCancelAppointmentConfirm.toUpperCase()),
-            ),
-          ],
-        );
-      },
-    );
-    if (confirmed != true || !mounted) return;
-    final l10n = AppLocalizations.of(context)!;
-    final messenger = ScaffoldMessenger.of(context);
-    try {
-      await ref
-          .read(adminControllerProvider)
-          .updateAppointmentStatus(appointment.id, 'cancelled');
-    } catch (error) {
-      debugPrint('No se pudo cancelar el turno: $error');
-      messenger
-        ..hideCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(content: Text(l10n.adminCancelAppointmentError)),
-        );
+    final outcome = await showAdminCancelDialog(context, appointment);
+    if (!mounted) return;
+    if (outcome != AdminCancelOutcome.ok &&
+        outcome != AdminCancelOutcome.notActive) {
       return;
     }
-    if (!mounted) return;
     setState(
       () => _conflicts = [
         for (final a in _conflicts ?? const <AppointmentModel>[])

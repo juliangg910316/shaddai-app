@@ -14,10 +14,14 @@ import '../../../l10n/app_localizations.dart';
 import '../../booking/logic/salon_time.dart';
 import '../../booking/logic/whatsapp.dart';
 import '../../booking/logic/closures.dart';
+import '../../booking/presentation/booking_notices.dart';
 import '../../booking/providers/booking_provider.dart';
 import '../../services/presentation/price_list_notices.dart';
+import '../logic/admin_agenda.dart';
+import '../providers/admin_appointment_actions_provider.dart';
 import '../providers/admin_closures_provider.dart';
 import '../providers/admin_provider.dart';
+import 'admin_cancel_dialog.dart';
 import 'admin_closures_view.dart';
 import 'admin_navigation.dart';
 import '../../../data/models/appointment_model.dart';
@@ -29,7 +33,7 @@ class AdminDashboardView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final selectedDate = ref.watch(adminSelectedDateProvider);
+    final selectedDate = agendaDay(ref.watch(adminSelectedDateProvider));
     final appointmentsAsync = ref.watch(adminAppointmentsProvider);
     // Los cierres del día, entre los turnos (spec 008, RF-9).
     final closuresAsync = ref.watch(adminDayClosuresProvider);
@@ -38,9 +42,8 @@ class AdminDashboardView extends ConsumerWidget {
         : closuresAsync.value ?? const <ClosureEntry>[];
     final appointments = appointmentsAsync.value ?? const <AppointmentModel>[];
 
-    final waitingCount = appointments
-        .where((a) => a.status == 'waiting_confirmation')
-        .length;
+    // Sin los cancelados (spec 010, RF-6, plan D-8).
+    final counts = agendaCounts(appointments);
 
     final brand = context.brand;
 
@@ -49,14 +52,10 @@ class AdminDashboardView extends ConsumerWidget {
         children: [
           _AdminHeader(
             selectedDate: selectedDate,
-            totalCount: appointments.length,
-            waitingCount: waitingCount,
-            onPreviousDay: () =>
-                ref.read(adminSelectedDateProvider.notifier).state =
-                    selectedDate.subtract(const Duration(days: 1)),
-            onNextDay: () =>
-                ref.read(adminSelectedDateProvider.notifier).state =
-                    selectedDate.add(const Duration(days: 1)),
+            totalCount: counts.total,
+            waitingCount: counts.waiting,
+            onPreviousDay: () => _moveDay(ref, selectedDate, -1),
+            onNextDay: () => _moveDay(ref, selectedDate, 1),
           ),
           Expanded(
             child: appointmentsAsync.when(
@@ -144,6 +143,32 @@ class AdminDashboardView extends ConsumerWidget {
   }
 }
 
+/// Va [days] días adelante o atrás desde [day], sin límite (spec 010, RF-5).
+void _moveDay(WidgetRef ref, DateTime day, int days) =>
+    ref.read(adminSelectedDateProvider.notifier).state = DateTime.utc(
+      day.year,
+      day.month,
+      day.day + days,
+    );
+
+/// Abre el calendario entre −365 y +365 días de hoy del salón, en el día
+/// mostrado o en el límite más cercano; al elegir, muestra ese día (spec
+/// 010, RF-4, plan D-10). Cerrarlo no cambia nada.
+Future<void> _pickDay(BuildContext context, WidgetRef ref, DateTime day) async {
+  final today = ref.read(adminTodayProvider);
+  final bounds = agendaPickerBounds(today);
+  DateTime local(DateTime d) => DateTime(d.year, d.month, d.day);
+  final picked = await showDatePicker(
+    context: context,
+    initialDate: local(agendaPickerInitial(day, bounds)),
+    firstDate: local(bounds.first),
+    lastDate: local(bounds.last),
+    currentDate: local(today),
+  );
+  if (picked == null) return;
+  ref.read(adminSelectedDateProvider.notifier).state = agendaDay(picked);
+}
+
 class _AdminHeader extends ConsumerWidget {
   final DateTime selectedDate;
   final int totalCount;
@@ -172,6 +197,7 @@ class _AdminHeader extends ConsumerWidget {
       // (RF-23).
       value: systemBarsStyleFor(brand.brand),
       child: Container(
+        key: const ValueKey('agenda-header'),
         width: double.infinity,
         color: brand.brand,
         padding: EdgeInsets.only(
@@ -207,12 +233,14 @@ class _AdminHeader extends ConsumerWidget {
                         style: AppText.serif(size: 24, color: brand.onBrand),
                       ),
                       const SizedBox(height: 2),
+                      // `onBrand`: `onBrandMuted` no llega a AA en 11 px
+                      // (spec 010, RNF-1, plan D-9).
                       Text(
                         l10n.adminPanelEyebrow,
                         style: AppText.eyebrow(
                           size: 11,
-                          weight: FontWeight.w300,
-                          color: brand.onBrandMuted,
+                          weight: FontWeight.w400,
+                          color: brand.onBrand,
                         ),
                       ),
                     ],
@@ -278,18 +306,31 @@ class _AdminHeader extends ConsumerWidget {
                     onPressed: onPreviousDay,
                     icon: Icon(Icons.chevron_left, color: brand.onBrand),
                   ),
+                  // La fecha abre el calendario (spec 010, RF-4).
                   Expanded(
-                    child: Text(
-                      longDate,
-                      textAlign: TextAlign.center,
-                      style: AppText.serif(
-                        size: 17,
-                        color: brand.onBrand,
-                        spacing: 0.5,
+                    child: Tooltip(
+                      message: l10n.adminAgendaPickDate,
+                      child: TextButton(
+                        key: const ValueKey('agenda-date'),
+                        onPressed: () => _pickDay(context, ref, selectedDate),
+                        style: TextButton.styleFrom(
+                          foregroundColor: brand.onBrand,
+                          minimumSize: const Size(48, 48),
+                        ),
+                        child: Text(
+                          longDate,
+                          textAlign: TextAlign.center,
+                          style: AppText.serif(
+                            size: 17,
+                            color: brand.onBrand,
+                            spacing: 0.5,
+                          ),
+                        ),
                       ),
                     ),
                   ),
                   IconButton(
+                    key: const ValueKey('agenda-next-day'),
                     tooltip: l10n.adminAgendaNextDay,
                     onPressed: onNextDay,
                     icon: Icon(Icons.chevron_right, color: brand.onBrand),
@@ -297,6 +338,34 @@ class _AdminHeader extends ConsumerWidget {
                 ],
               ),
             ),
+            // "Hoy", solo en otro día (spec 010, RF-3).
+            if (selectedDate != ref.watch(adminTodayProvider))
+              Align(
+                alignment: AlignmentDirectional.centerEnd,
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: OutlinedButton(
+                    key: const ValueKey('agenda-today'),
+                    onPressed: () =>
+                        ref.read(adminSelectedDateProvider.notifier).state = ref
+                            .read(adminTodayProvider),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: brand.onBrand,
+                      minimumSize: const Size(48, 48),
+                      side: BorderSide(color: brand.goldHairline),
+                    ),
+                    child: Text(
+                      l10n.adminAgendaToday.toUpperCase(),
+                      style: AppText.sans(
+                        size: 12,
+                        weight: FontWeight.w500,
+                        spacing: 1.2,
+                        color: brand.onBrand,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
             const SizedBox(height: 14),
             Row(
               children: [
@@ -343,13 +412,14 @@ class _StatTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('$value', style: AppText.serif(size: 22, color: brand.onBrand)),
+          // Como el subtítulo: `onBrand` a 11 px (plan D-9).
           Text(
             label,
             style: AppText.eyebrow(
-              size: 10,
+              size: 11,
               spacing: 1.2,
-              weight: FontWeight.w300,
-              color: brand.onBrandMuted,
+              weight: FontWeight.w400,
+              color: brand.onBrand,
             ),
           ),
         ],
@@ -366,20 +436,26 @@ class _AppointmentCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context)!;
-    final status = AppointmentStatusStyle.forAdmin(
-      l10n,
-      appointment.status,
-      context.brand,
-    );
     final brand = context.brand;
     final waiting = appointment.status == 'waiting_confirmation';
-    // "Editar" en los turnos activos que no han terminado, también en curso
-    // (spec 008, RF-18).
+    // Botones solo en los turnos activos que no han terminado, también en
+    // curso; "ahora" cada 30 s, así desaparecen al terminar (spec 010, RF-7
+    // a RF-10).
     final now =
         ref.watch(salonNowProvider).value ?? toSalon(ref.read(clockProvider)());
-    final editable =
-        (waiting || appointment.status == 'confirmed') &&
-        toSalon(appointment.endTime).isAfter(now);
+    final actions = agendaActions(
+      status: appointment.status,
+      end: appointment.endTime,
+      nowSalon: now,
+    );
+    // Un pasado sin confirmar lleva "Sin confirmar" en lugar de su estado
+    // (RF-9).
+    final status = actions == AgendaActions.pastUnconfirmed
+        ? AppointmentStatusStyle(
+            l10n.adminAppointmentUnconfirmed.toUpperCase(),
+            brand.inkMuted,
+          )
+        : AppointmentStatusStyle.forAdmin(l10n, appointment.status, brand);
     // En hora del salón, esté donde esté el dispositivo (spec 005).
     final hours = DateFormat.Hm(l10n.localeName);
     final startStr = hours.format(toSalon(appointment.startTime));
@@ -497,67 +573,114 @@ class _AppointmentCard extends ConsumerWidget {
               style: AppText.sans(size: 14, color: brand.ink, height: 1.4),
             ),
           ],
-          if (appointment.status != 'cancelled') ...[
+          if (actions == AgendaActions.active) ...[
             const SizedBox(height: 16),
             Row(
               children: [
-                if (editable) ...[
-                  Expanded(
-                    child: OutlinePillButton(
-                      label: l10n.adminAppointmentEdit.toUpperCase(),
-                      onPressed: () =>
-                          openAdminEdit(context, ref, appointment.id),
-                    ),
+                Expanded(
+                  child: OutlinePillButton(
+                    label: l10n.adminAppointmentEdit.toUpperCase(),
+                    onPressed: () =>
+                        openAdminEdit(context, ref, appointment.id),
                   ),
-                  const SizedBox(width: 10),
-                ],
+                ),
+                const SizedBox(width: 10),
                 Expanded(
                   child: OutlinePillButton(
                     label: l10n.cancelAction,
                     color: brand.danger,
-                    onPressed: () => ref
-                        .read(adminControllerProvider)
-                        .updateAppointmentStatus(appointment.id, 'cancelled'),
+                    // Pide confirmación (spec 010, RF-12).
+                    onPressed: () =>
+                        showAdminCancelDialog(context, appointment),
                   ),
                 ),
                 if (waiting) ...[
                   const SizedBox(width: 10),
-                  Expanded(
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: () => ref
-                            .read(adminControllerProvider)
-                            .updateAppointmentStatus(
-                              appointment.id,
-                              'confirmed',
-                            ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: brand.brand,
-                          foregroundColor: brand.onBrand,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(vertical: 15),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(22),
-                          ),
-                        ),
-                        child: Text(
-                          l10n.confirmAction,
-                          style: AppText.sans(
-                            size: 12,
-                            weight: FontWeight.w500,
-                            spacing: 1.2,
-                            color: brand.onBrand,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+                  Expanded(child: _ConfirmButton(id: appointment.id)),
                 ],
               ],
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+/// "Confirmar": al momento, sin diálogo (spec 010, RF-11). Mientras guarda,
+/// un indicador y desactivado (RF-16); si ya no está activo o falla, un
+/// aviso de la app (RF-17, plan D-4). El éxito se ve en la tarjeta.
+class _ConfirmButton extends ConsumerStatefulWidget {
+  const _ConfirmButton({required this.id});
+
+  final String id;
+
+  @override
+  ConsumerState<_ConfirmButton> createState() => _ConfirmButtonState();
+}
+
+class _ConfirmButtonState extends ConsumerState<_ConfirmButton> {
+  bool _saving = false;
+
+  Future<void> _confirm() async {
+    setState(() => _saving = true);
+    // El aviso sale en la agenda: el botón desaparece si se confirmó o si
+    // llega el turno cancelado.
+    final scaffold = Scaffold.of(context).context;
+    final outcome = await ref
+        .read(adminAppointmentActionsProvider)
+        .confirm(widget.id);
+    if (mounted) setState(() => _saving = false);
+    if (!scaffold.mounted) return;
+    switch (outcome) {
+      case AdminConfirmOutcome.ok:
+        break;
+      case AdminConfirmOutcome.notActive:
+        showBookingMessage(scaffold, (l10n) => l10n.cancelNotActive);
+      case AdminConfirmOutcome.failed:
+        showBookingMessage(
+          scaffold,
+          (l10n) => l10n.adminConfirmFailed,
+          isError: true,
+        );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final brand = context.brand;
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: _saving ? null : _confirm,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: brand.brand,
+          foregroundColor: brand.onBrand,
+          elevation: 0,
+          minimumSize: const Size(48, 48),
+          padding: const EdgeInsets.symmetric(vertical: 15),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(22),
+          ),
+        ),
+        child: _saving
+            ? SizedBox.square(
+                dimension: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: brand.inkMuted,
+                ),
+              )
+            : Text(
+                l10n.confirmAction,
+                style: AppText.sans(
+                  size: 12,
+                  weight: FontWeight.w500,
+                  spacing: 1.2,
+                  color: brand.onBrand,
+                ),
+              ),
       ),
     );
   }
