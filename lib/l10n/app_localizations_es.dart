@@ -1605,4 +1605,11 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get adminPushViewLabel => 'Ver la agenda de ese día';
+
+  @override
+  String get adminPushDisabledTitle => 'Avisos desactivados';
+
+  @override
+  String get adminPushDisabledBody =>
+      'Este teléfono no muestra los avisos de turnos. Para recibirlos, activa las notificaciones de la app en los ajustes del teléfono.';
 }

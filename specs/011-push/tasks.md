@@ -83,7 +83,7 @@ Cada tarea: tests primero (rojo), luego el código (verde). En Flutter: `dart fo
     - las claves `adminPushView` y `adminPushViewLabel` están en los dos `.arb`;
     - los tests pasan.
 
-- [ ] **T8. Permiso denegado en el panel** (`admin_dashboard_view.dart`, plan D-8, § 6). RF-17, RF-18
+- [x] **T8. Permiso denegado en el panel** (`admin_dashboard_view.dart`, plan D-8, § 6). RF-17, RF-18
   - Tests: `test/features/admin/admin_push_disabled_test.dart`:
     - con `denied`, el aviso sale arriba de la agenda, se lee como una frase y no vuelve a pedir el permiso;
     - no sale con `granted`, `notAsked` ni en Web;

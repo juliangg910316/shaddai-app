@@ -17,8 +17,9 @@ import 'admin_push_dialog.dart';
 
 /// Los avisos push de la admin en la app (spec 011, plan § 6). Envuelve toda
 /// la app, sin interfaz propia: arranca [AdminPushController], explica los
-/// avisos y pide el permiso cuando toca (RF-15), y muestra los avisos que
-/// llegan con la app abierta (RF-14).
+/// avisos y pide el permiso cuando toca (RF-15), muestra los avisos que
+/// llegan con la app abierta (RF-14) y vuelve a leer el permiso al volver a
+/// primer plano (RF-18).
 ///
 /// Solo en Android/iOS: en Web devuelve [child] sin más y no toca nada
 /// (Plataformas).
@@ -48,6 +49,10 @@ class _MobilePushGateState extends ConsumerState<_MobilePushGate> {
   bool _explained = false;
   StreamSubscription<PushNotice>? _foreground;
 
+  /// Al volver a primer plano se vuelve a leer el permiso, por si se activó
+  /// o desactivó en los ajustes del teléfono (RF-17, RF-18).
+  AppLifecycleListener? _lifecycle;
+
   @override
   void initState() {
     super.initState();
@@ -56,11 +61,13 @@ class _MobilePushGateState extends ConsumerState<_MobilePushGate> {
       if (!mounted) return;
       final controller = ref.read(adminPushControllerProvider)..start();
       _foreground = controller.foregroundNotices.listen(_showNotice);
+      _lifecycle = AppLifecycleListener(onResume: controller.sync);
     });
   }
 
   @override
   void dispose() {
+    _lifecycle?.dispose();
     _foreground?.cancel();
     super.dispose();
   }

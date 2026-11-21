@@ -24,6 +24,7 @@ import '../providers/admin_provider.dart';
 import 'admin_cancel_dialog.dart';
 import 'admin_closures_view.dart';
 import 'admin_navigation.dart';
+import 'admin_push_disabled_card.dart';
 import '../../../data/models/appointment_model.dart';
 import '../../../data/models/booked_service_model.dart';
 
@@ -57,7 +58,10 @@ class AdminDashboardView extends ConsumerWidget {
             onPreviousDay: () => _moveDay(ref, selectedDate, -1),
             onNextDay: () => _moveDay(ref, selectedDate, 1),
           ),
+          // Avisos desactivados en este teléfono (spec 011, RF-17).
+          const AdminPushDisabledCard(),
           Expanded(
+            key: const ValueKey('agenda-body'),
             child: appointmentsAsync.when(
               loading: () => const Center(
                 child: CircularProgressIndicator(strokeWidth: 2),

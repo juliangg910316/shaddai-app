@@ -2999,6 +2999,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Ver la agenda de ese día'**
   String get adminPushViewLabel;
+
+  /// Título del aviso del panel cuando el teléfono no tiene permiso de notificaciones (spec 011, RF-17)
+  ///
+  /// In es, this message translates to:
+  /// **'Avisos desactivados'**
+  String get adminPushDisabledTitle;
+
+  /// Cómo activar los avisos en los ajustes del teléfono (spec 011, RF-17)
+  ///
+  /// In es, this message translates to:
+  /// **'Este teléfono no muestra los avisos de turnos. Para recibirlos, activa las notificaciones de la app en los ajustes del teléfono.'**
+  String get adminPushDisabledBody;
 }
 
 class _AppLocalizationsDelegate
