@@ -58,87 +58,113 @@ class AdminDashboardView extends ConsumerWidget {
             onPreviousDay: () => _moveDay(ref, selectedDate, -1),
             onNextDay: () => _moveDay(ref, selectedDate, 1),
           ),
-          // Avisos desactivados en este teléfono (spec 011, RF-17).
-          const AdminPushDisabledCard(),
           Expanded(
             key: const ValueKey('agenda-body'),
-            child: appointmentsAsync.when(
-              loading: () => const Center(
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-              error: (err, stack) {
-                debugPrint('Error al cargar la agenda: $err');
-                return Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Text(
-                      l10n.adminAgendaLoadError,
-                      textAlign: TextAlign.center,
-                      style: AppText.sans(size: 13, color: brand.danger),
-                    ),
-                  ),
-                );
-              },
-              data: (items) {
-                // Turnos y cierres, por su inicio (hora de pared del salón).
-                final cards = <(DateTime, Widget)>[
-                  for (final appointment in items)
-                    (
-                      toSalon(appointment.startTime),
-                      _AppointmentCard(appointment: appointment),
-                    ),
-                  for (final closure in closures)
-                    (closure.start, _ClosureCard(entry: closure)),
-                ]..sort((a, b) => a.$1.compareTo(b.$1));
-                final notice = closuresAsync.hasError
-                    ? Padding(
-                        padding: const EdgeInsets.fromLTRB(20, 4, 20, 0),
-                        child: AppNotice(
-                          message: l10n.adminClosuresLoadError,
-                          actions: [
-                            AppNoticeButton(
-                              label: l10n.bookingRetry,
-                              onPressed: () {
-                                ref.invalidate(adminAgendaClosuresProvider);
-                                ref.invalidate(calendarSettingsProvider);
-                              },
-                            ),
-                          ],
-                        ),
-                      )
-                    : null;
-                if (cards.isEmpty) {
-                  final empty = Center(
-                    child: Text(
-                      l10n.adminNoAppointmentsToday,
-                      style: AppText.sans(
-                        size: 13,
-                        weight: FontWeight.w300,
-                        color: brand.inkMuted,
+            // Todo se desplaza, también los avisos de arriba: con el texto
+            // grande nada se desborda (spec 011, RNF-3).
+            child: CustomScrollView(
+              slivers: [
+                // Avisos desactivados en este teléfono (spec 011, RF-17).
+                const SliverToBoxAdapter(child: AdminPushDisabledCard()),
+                ...appointmentsAsync.when(
+                  loading: () => [
+                    const SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Center(
+                        child: CircularProgressIndicator(strokeWidth: 2),
                       ),
                     ),
-                  );
-                  if (notice == null) return empty;
-                  return Column(
-                    children: [
-                      notice,
-                      Expanded(child: empty),
-                    ],
-                  );
-                }
-                return ListView.separated(
-                  padding: const EdgeInsets.all(20),
-                  itemCount: cards.length + (notice == null ? 0 : 1),
-                  separatorBuilder: (_, index) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    if (notice != null) {
-                      if (index == 0) return notice;
-                      index--;
-                    }
-                    return cards[index].$2;
+                  ],
+                  error: (err, stack) {
+                    debugPrint('Error al cargar la agenda: $err');
+                    return [
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 20),
+                            child: Text(
+                              l10n.adminAgendaLoadError,
+                              textAlign: TextAlign.center,
+                              style: AppText.sans(
+                                size: 13,
+                                color: brand.danger,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ];
                   },
-                );
-              },
+                  data: (items) {
+                    // Turnos y cierres, por su inicio (hora de pared del
+                    // salón).
+                    final cards = <(DateTime, Widget)>[
+                      for (final appointment in items)
+                        (
+                          toSalon(appointment.startTime),
+                          _AppointmentCard(appointment: appointment),
+                        ),
+                      for (final closure in closures)
+                        (closure.start, _ClosureCard(entry: closure)),
+                    ]..sort((a, b) => a.$1.compareTo(b.$1));
+                    return [
+                      if (closuresAsync.hasError)
+                        SliverToBoxAdapter(
+                          child: Padding(
+                            padding: EdgeInsets.fromLTRB(
+                              20,
+                              cards.isEmpty ? 4 : 20,
+                              20,
+                              0,
+                            ),
+                            child: AppNotice(
+                              message: l10n.adminClosuresLoadError,
+                              actions: [
+                                AppNoticeButton(
+                                  label: l10n.bookingRetry,
+                                  onPressed: () {
+                                    ref.invalidate(adminAgendaClosuresProvider);
+                                    ref.invalidate(calendarSettingsProvider);
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      if (cards.isEmpty)
+                        SliverFillRemaining(
+                          hasScrollBody: false,
+                          child: Center(
+                            child: Text(
+                              l10n.adminNoAppointmentsToday,
+                              style: AppText.sans(
+                                size: 13,
+                                weight: FontWeight.w300,
+                                color: brand.inkMuted,
+                              ),
+                            ),
+                          ),
+                        )
+                      else
+                        SliverPadding(
+                          padding: EdgeInsets.fromLTRB(
+                            20,
+                            closuresAsync.hasError ? 12 : 20,
+                            20,
+                            20,
+                          ),
+                          sliver: SliverList.separated(
+                            itemCount: cards.length,
+                            separatorBuilder: (_, _) =>
+                                const SizedBox(height: 12),
+                            itemBuilder: (context, index) => cards[index].$2,
+                          ),
+                        ),
+                    ];
+                  },
+                ),
+              ],
             ),
           ),
         ],

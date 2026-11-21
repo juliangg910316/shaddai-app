@@ -79,16 +79,16 @@ void main() {
     expect(card, findsOneWidget);
     expect(find.descendant(of: card, matching: find.text(esTitle)), findsOne);
     expect(find.descendant(of: card, matching: find.text(esBody)), findsOne);
-    // Arriba de la agenda: entre la cabecera verde y la lista.
+    // Arriba de la agenda: entre la cabecera verde y el día (aquí, vacío).
     final header = find.byKey(const ValueKey('agenda-header'));
-    final agenda = find.byKey(const ValueKey('agenda-body'));
+    final empty = find.text('No hay reservas para este día.');
     expect(
       tester.getTopLeft(card).dy,
       greaterThanOrEqualTo(tester.getBottomLeft(header).dy),
     );
     expect(
       tester.getBottomLeft(card).dy,
-      lessThanOrEqualTo(tester.getTopLeft(agenda).dy),
+      lessThanOrEqualTo(tester.getTopLeft(empty).dy),
     );
     // No vuelve a pedir el permiso.
     expect(push.calls, isNot(contains('requestPermission')));

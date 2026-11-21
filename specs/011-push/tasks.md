@@ -91,7 +91,7 @@ Cada tarea: tests primero (rojo), luego el código (verde). En Flutter: `dart fo
     - ES y PT.
   - Hecho cuando: las claves `adminPushDisabledTitle` y `adminPushDisabledBody` están en los dos `.arb` y los tests pasan.
 
-- [ ] **T9. Accesibilidad y textos** (plan § 8 y § 9). RNF-1 a RNF-3, RC-1
+- [x] **T9. Accesibilidad y textos** (plan § 8 y § 9). RNF-1 a RNF-3, RC-1
   - Tests:
     - **`test/features/admin/admin_push_accessibility_test.dart`**, en claro y oscuro:
       - contraste de la explicación (`expectDialogTextContrast`), del aviso de permiso denegado y del `SnackBar`;
