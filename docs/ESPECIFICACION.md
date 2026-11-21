@@ -34,11 +34,12 @@
 
 - **Visitante**: sin sesión. Ve la información pública.
 - **Cliente**: con sesión de Google y WhatsApp registrado. Reserva turnos, ve los suyos y cancela el activo fuera del margen de edición; cambia su WhatsApp y puede borrar su cuenta (spec 009). Si está bloqueada, no puede reservar ni borrar la cuenta (sí cancelar).
-- **Admin**: rol asignado a mano en Firestore. Configura el calendario, gestiona turnos y bloquea clientas. Recibe un aviso push con cada cita nueva.
+- **Admin**: rol asignado a mano en Firestore. Configura el calendario, gestiona turnos y bloquea clientas. En Android/iOS recibe un aviso push cuando una clienta reserva, edita o cancela un turno (spec 011).
 
 ## 4. Modelo de datos (actual)
 
-- **Usuaria**: correo, nombre, foto, WhatsApp, rol (`cliente` | `admin`), bloqueada (sí/no), token de notificaciones.
+- **Usuaria**: correo, nombre, foto, WhatsApp, rol (`cliente` | `admin`), bloqueada (sí/no). El antiguo token de notificaciones queda obsoleto (spec 011): se lee en las fichas antiguas, pero ya no se escribe.
+- **Dispositivos de la admin** (spec 011): dentro de su ficha, uno por cada teléfono donde recibe los avisos push, con su identificador de instalación, la plataforma (Android o iOS) y cuándo se registró. Solo los lee el servidor que envía los avisos.
 - **Turno**: clienta (id, nombre, teléfono, foto), inicio, fin, estado (`waiting_confirmation` | `confirmed` | `cancelled`) y fecha de creación. Desde la spec 009, quién lo canceló (`cancelledBy: 'client'` si fue la clienta; sin el campo, el salón) y si la cuenta de la clienta se borró (`accountDeleted: true`: conserva nombre y WhatsApp para la admin, sin la foto).
 - **Calendario**: horario de cada día de la semana (apertura, cierre, cerrado), duración global del turno y fechas bloqueadas.
 - **Servicio**: nuevo en Firestore; sus campos se definen en su spec.

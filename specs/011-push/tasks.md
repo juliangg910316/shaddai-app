@@ -101,7 +101,7 @@ Cada tarea: tests primero (rojo), luego el código (verde). En Flutter: `dart fo
     - **`test/features/admin/admin_push_texts_test.dart`:** las 7 claves del plan § 8 están en los dos `.arb`.
   - Hecho cuando: los tests pasan, con los ajustes de estilo que hagan falta, y toda la suite está en verde.
 
-- [ ] **T10. Reglas, Android, iOS y documentos** (plan D-12, D-14, § 3). RF-6, RF-22, RF-23, RNF-5
+- [x] **T10. Reglas, Android, iOS y documentos** (plan D-12, D-14, § 3). RF-6, RF-22, RF-23, RNF-5
   - **`firestore.rules`:** el `match` de `pushDevices` del plan § 3, con su comentario.
   - **`specs/011-push/rules-check.md`:** los 11 casos del simulador y el recorrido real del plan § 9: tiempo de llegada (RF-6), exadmin (RF-22), dos dispositivos, cerrar sesión con y sin conexión, permiso denegado y activado, lo que hace la admin no avisa, icono y canal.
   - **Android:**

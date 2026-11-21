@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Verde de la marca (BrandColors.brand): color de los avisos push
+         (spec 011, plan D-12). -->
+    <color name="notification_color">#2E3D28</color>
+</resources>

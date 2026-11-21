@@ -16,13 +16,15 @@ rules_version = '2';
 // - settings/calendar: lo lee cualquiera con sesión y solo lo escribe la
 //   admin (spec 006, RF-25; adelanta esa parte de la spec 012), con el
 //   margen de edición como entero >= 0 (spec 008, RF-44).
+// - users/{uid}/pushDevices: los dispositivos de la admin para los avisos
+//   push (spec 011, RF-23).
 //
 // Lo que no aparece aquí queda denegado. Se comprueban a mano en el
 // simulador de la consola: specs/004-servicios-firestore/rules-check.md,
 // specs/005-reservas/rules-check.md, specs/006-editar-turno/rules-check.md,
 // specs/007-reserva-admin/rules-check.md,
-// specs/008-agenda-admin/rules-check.md y
-// specs/009-perfil/rules-check.md.
+// specs/008-agenda-admin/rules-check.md,
+// specs/009-perfil/rules-check.md y specs/011-push/rules-check.md.
 service cloud.firestore {
   match /databases/{database}/documents {
 
@@ -77,6 +79,22 @@ service cloud.firestore {
       allow update: if isAdmin() || (signedIn() && request.auth.uid == userId
         && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'isBlocked']));
       allow delete: if false;
+
+      // Dispositivos de la admin para los avisos push, por su FID (spec
+      // 011, RF-23, plan § 3). Nadie los lee desde la app: solo la función
+      // que envía los avisos, con el SDK de administración. Solo la admin
+      // registra los suyos, con el FID como id, su plataforma y la hora del
+      // servidor. La dueña los borra aunque ya no sea admin, para poder
+      // limpiar el suyo al cerrar sesión.
+      match /pushDevices/{fid} {
+        allow read: if false;
+        allow create, update: if signedIn() && request.auth.uid == userId && isAdmin()
+          && request.resource.data.keys().hasOnly(['fid', 'platform', 'updatedAt'])
+          && request.resource.data.fid == fid
+          && request.resource.data.platform in ['android', 'ios']
+          && request.resource.data.updatedAt == request.time;
+        allow delete: if signedIn() && request.auth.uid == userId;
+      }
     }
 
     // Turnos: la clienta solo ve los suyos (RF-53) y los crea a su nombre,

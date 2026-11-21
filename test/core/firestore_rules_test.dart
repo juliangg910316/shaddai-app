@@ -5,8 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 /// Estructura de `firestore.rules` (spec 004, RNF-2; spec 005, RNF-5; spec
 /// 006, RNF-4; spec 007, RNF-5; spec 008, RNF-5; spec 009, RF-19, RF-28,
-/// RF-42). Lo que permite cada regla se comprueba a mano en el simulador de
-/// la consola (`rules-check.md` de las specs 004 a 009);
+/// RF-42; spec 011, RF-23). Lo que permite cada regla se comprueba a mano en
+/// el simulador de la consola (`rules-check.md` de las specs 004 a 011);
 /// aquí se fija qué cubre cada `match` para que un cambio no lo rompa sin
 /// querer.
 void main() {
@@ -517,12 +517,51 @@ void main() {
     });
   });
 
-  test('la cabecera cita la spec 009 y su comprobación manual; la '
-      'redirección ya no la cita', () {
+  group('pushDevices (spec 011, RF-23)', () {
+    const path = '/pushDevices/{fid}';
+
+    test('va dentro de la ficha de cada usuaria', () {
+      final users = block(rules(), '/users/{userId}');
+      expect(users, contains('match $path {'));
+    });
+
+    test('nadie lo lee desde la app: solo la función, con el SDK de '
+        'administración', () {
+      expect(allow(path, 'read'), 'allow read: if false;');
+    });
+
+    test('solo la admin lo crea o cambia, en su ficha, con el FID como id, '
+        'su plataforma y la hora del servidor', () {
+      final write = allow(path, 'create, update');
+      for (final condition in [
+        'signedIn()',
+        'request.auth.uid == userId',
+        'isAdmin()',
+        "request.resource.data.keys().hasOnly(['fid', 'platform', "
+            "'updatedAt'])",
+        'request.resource.data.fid == fid',
+        "request.resource.data.platform in ['android', 'ios']",
+        'request.resource.data.updatedAt == request.time',
+      ]) {
+        expect(write, contains(condition), reason: condition);
+      }
+    });
+
+    test('la dueña lo borra, aunque ya no sea admin', () {
+      final delete = allow(path, 'delete');
+      expect(delete, contains('request.auth.uid == userId'));
+      expect(delete, isNot(contains('isAdmin()')));
+    });
+  });
+
+  test('la cabecera cita la spec 011 y su comprobación manual; la '
+      'redirección no cita la 009', () {
     final header = rules().substring(0, rules().indexOf('service '));
-    expect(header, contains('spec 009'));
+    expect(header, contains('spec 011'));
     expect(header, contains('specs/009-perfil/rules-check.md'));
+    expect(header, contains('specs/011-push/rules-check.md'));
     expect(File('specs/009-perfil/rules-check.md').existsSync(), isTrue);
+    expect(File('specs/011-push/rules-check.md').existsSync(), isTrue);
     expect(
       File('lib/core/router/redirect_logic.dart').readAsStringSync(),
       isNot(contains('spec 009')),
