@@ -5,7 +5,7 @@ Spec: `specs/012-reglas/spec.md` · Plan: `specs/012-reglas/plan.md` (aprobados 
 
 Cada tarea: tests primero (rojo), luego el código (verde). En Flutter: `dart format lib test` sin cambios, `flutter analyze` sin avisos y `flutter test` en verde; tras cambiar un `.arb`, `flutter gen-l10n`. En `functions/`: `npm test` en verde y `npm run build` sin errores. Nunca Firebase real en los tests.
 
-- [ ] **T1. Casos compartidos y reglas de horas en TypeScript** (`test/fixtures/agenda_rules_cases.json`, `functions/src/agenda_rules.ts`, plan § 3 compartido, § 4, D-4). RF-1, RF-2, RF-4, RF-9, RF-10, RF-15, RNF-2
+- [x] **T1. Casos compartidos y reglas de horas en TypeScript** (`test/fixtures/agenda_rules_cases.json`, `functions/src/agenda_rules.ts`, plan § 3 compartido, § 4, D-4). RF-1, RF-2, RF-4, RF-9, RF-10, RF-15, RNF-2
   - Tests:
     - `test/features/booking/agenda_rules_cases_test.dart` pasa los casos por las funciones de Dart que ya existen (`checkSlot`, `editFreeSlots` y `fits`, con `bookingWindow`), así que se pone en verde en cuanto los casos están bien escritos;
     - `functions/test/agenda_rules_cases.test.ts` pasa los mismos casos por `agenda_rules.ts` (rojo hasta que exista);
@@ -59,7 +59,7 @@ Cada tarea: tests primero (rojo), luego el código (verde). En Flutter: `dart fo
       - otra persona activa → `person_active`; destinataria bloqueada → `recipient_blocked`.
     - **Turnos existentes:**
       - sin cambiar lo reservado, se conserva la copia aunque cambie la lista (RF-13);
-      - la misma hora fuera del horario nuevo, o dentro de un cierre nuevo → `ok` (RF-15);
+      - la misma hora fuera del horario nuevo → `ok`; la misma hora bajo un cierre nuevo → `slot_taken` (RF-15, como la app);
       - fin ampliado sobre otro turno → `does_not_fit`;
       - otra hora ocupada → `slot_taken`.
     - **Cierre:**

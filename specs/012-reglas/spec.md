@@ -51,7 +51,7 @@ El objetivo es que el servidor haga cumplir siempre las reglas de la agenda, sea
 
 ### Turnos existentes
 - RF-14: EL SISTEMA deja confirmar y cancelar los turnos existentes aunque ya no cumplan las reglas de la agenda.
-- RF-15: CUANDO se edita un turno existente sin cambiar su día ni su hora, EL SISTEMA no le exige las reglas de horario, ventana, cierres ni solapes que ya no cumpla; lo que sí cambie (otra hora, otro servicio) debe cumplir todas las reglas.
+- RF-15: CUANDO se edita un turno existente sin cambiar su día ni su hora, EL SISTEMA no le exige las reglas de horario, ventana ni días cerrados que ya no cumpla, como hoy la app (spec 006); sí le exige que ningún cierre ni otro turno cubra esa hora, y que el servicio quepa hasta el siguiente turno o cierre y hasta el cierre del día o su fin original, lo que sea más tarde. Lo que sí cambie (otra hora, otro servicio) debe cumplir todas las reglas.
 
 ### Lo que ve la persona
 - RF-16: SI el servidor rechaza un turno nuevo o una edición, ENTONCES EL SISTEMA muestra el mismo aviso que daría la app si hubiera detectado ese problema al comprobar (la hora acaba de ocuparse, ya no tiene tiempo suficiente, ya hay un turno activo, el servicio ya no está disponible…) y conserva lo elegido para elegir otra cosa.
@@ -108,6 +108,8 @@ Ninguna. Resueltas por el autor el 2026-11-23:
 - Los turnos existentes se respetan: se confirman y cancelan siempre, y al editarlos su día y hora originales siguen permitidos.
 - Lo reservado se comprueba entero contra la lista de precios vigente.
 - Ante un rechazo, el mismo aviso que hoy y lo elegido intacto.
+
+Precisado por el autor el 2026-11-23 (T1): RF-15 sigue la regla de la app de la 006 y la 008; un cierre u otro turno sobre la hora original sí la bloquea, para que la app y el servidor den lo mismo (RNF-2).
 
 Decisiones tomadas en la redacción (cámbialas si no te convencen):
 - RF-13 y RF-15 extienden "se respetan" a lo reservado: un turno que no cambia lo reservado conserva su copia aunque la lista cambie.

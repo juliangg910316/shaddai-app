@@ -181,9 +181,9 @@ editAppointment(store, callerUid, req{id, start, item, addonIds, booked, expecte
     update appointment (solo los campos que cambian) + set busySlots/id + lock
 ```
 
-`editTimesRules`, la traducción de la regla de la 006, «el día y la hora originales siguen valiendo»:
-- **Mismo inicio y fin dentro del rango original:** vale sin más comprobaciones (RF-15).
-- **Mismo inicio y fin más tarde:** solo se comprueba la ampliación `[fin original, fin nuevo)`. No debe pisar otro turno ni un cierre, ni pasar del cierre del día.
+`editTimesRules`, la traducción exacta de `isEditDaySelectable` + `editFreeSlots` (RF-15, precisado el 2026-11-23):
+- **El día original** se puede elegir siempre, aunque esté cerrado, bloqueado o fuera de la ventana.
+- **La hora original** vale aunque esté fuera de la rejilla o del horario, si no ha empezado (la admin: si no ha terminado) y **ningún cierre ni otro turno la cubre**. Su cobertura llega hasta el siguiente turno o cierre, sin pasar del cierre del día o del fin original, lo que sea más tarde.
 - **Otro inicio:** se comprueban todas las reglas, como un turno nuevo, sin contar el propio turno (RF-2).
 
 Es exactamente lo que hace hoy `editFreeSlots`; los casos compartidos lo fijan (§ 3, compartido).
@@ -295,7 +295,7 @@ Ningún test toca Firebase. El servidor usa un almacén en memoria con transacci
 | RF-6, RF-7 | Por `clientId` y por WhatsApp normalizado; la admin que cambia la persona. |
 | RF-9, RF-10 | Fuera de rejilla, después del cierre, antes de «ahora», día 61 para la clienta y día 366 para la admin, con «ahora» en otro día UTC. |
 | RF-11, RF-12 | `booked_catalog.test.ts`: servicio y combo; adicional de otra categoría; combo con adicionales; precio, nombre o duración distintos → `item_changed`; no disponible → `item_unavailable`. |
-| RF-13, RF-14, RF-15 | `agenda_write.test.ts`: <br>• editar sin cambiar lo reservado conserva la copia aunque la lista cambie; <br>• misma hora fuera del horario nuevo → `ok`; <br>• ampliar el fin sobre otro turno → `does_not_fit`. <br>Confirmar y cancelar no cambian (los tests de la 010 siguen verdes). |
+| RF-13, RF-14, RF-15 | `agenda_write.test.ts`: <br>• editar sin cambiar lo reservado conserva la copia aunque la lista cambie; <br>• misma hora fuera del horario nuevo → `ok`; misma hora bajo un cierre nuevo → `slot_taken`; <br>• ampliar el fin sobre otro turno → `does_not_fit`. <br>Confirmar y cancelar no cambian (los tests de la 010 siguen verdes). |
 | RNF-2 | `agenda_rules_cases.test.ts` y `agenda_rules_cases_test.dart` con `test/fixtures/agenda_rules_cases.json`. |
 | RF-16, RF-17 | `agenda_functions_test.dart`: cada motivo de `details.reason` → su `AgendaRejection`; sin conexión, tiempo agotado o código desconocido → `failed`. Tests de cada submitter con la `AgendaFunctions` falsa: motivo → resultado → aviso de la vista, en ES y PT. |
 | RF-18 | `ClosureController`: `conflicts` → relee y devuelve `ClosureSaveConflicts`; el formulario los muestra con «Editar» y «Cancelar». |
