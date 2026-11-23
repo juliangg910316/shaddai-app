@@ -19,7 +19,7 @@ Cada tarea: tests primero (rojo), luego el código (verde). En Flutter: `dart fo
     - en una edición: mismo inicio fuera del horario nuevo, fin ampliado sobre otro turno y otro inicio sin contar el propio turno.
   - Hecho cuando: los casos dan el mismo veredicto en Dart y en TypeScript, `agenda_rules.ts` no importa Firebase y `npm run build` compila.
 
-- [ ] **T2. Persona activa y lo reservado en TypeScript** (`agenda_rules.ts`, `functions/src/booked_catalog.ts`, plan D-5). RF-6, RF-7, RF-11 a RF-13
+- [x] **T2. Persona activa y lo reservado en TypeScript** (`agenda_rules.ts`, `functions/src/booked_catalog.ts`, plan D-5). RF-6, RF-7, RF-11 a RF-13
   - Tests:
     - en `agenda_rules.test.ts`, `normalizeWhatsApp` y `activeAppointmentOfPerson`:
       - la misma persona por `clientId` o por WhatsApp normalizado;

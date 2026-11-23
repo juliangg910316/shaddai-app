@@ -448,3 +448,69 @@ export function coarseVerdict(reason: SlotReason | string): 'ok' | 'does_not_fit
   if (reason === 'ok' || reason === 'does_not_fit') return reason;
   return 'slot_taken';
 }
+
+// La persona de un turno (spec 007; spec 012, RF-6, RF-7) ----------------
+
+/** Código de Brasil. */
+const BRAZIL = '55';
+
+/**
+ * Dígitos mínimos de un número con el código de Brasil delante: 55 + DDD
+ * (2) + fijo de 8. Con menos, un `55` inicial es el DDD de Rio Grande do Sul.
+ */
+const MIN_DIGITS_WITH_COUNTRY = 12;
+
+const digitsOf = (raw: string) => raw.replace(/\D/g, '');
+
+const hasBrazilPrefix = (raw: string, digits: string) =>
+  digits.startsWith(BRAZIL) &&
+  (raw.trim().startsWith('+') || digits.length >= MIN_DIGITS_WITH_COUNTRY);
+
+/** Solo los dígitos de [raw], sin el código de Brasil (`normalizeWhatsApp`). */
+export function normalizeWhatsApp(raw: string): string {
+  const digits = digitsOf(raw);
+  return hasBrazilPrefix(raw, digits) ? digits.slice(BRAZIL.length) : digits;
+}
+
+/** Si [a] y [b] son el mismo WhatsApp, no vacío (`sameWhatsApp`). */
+export function sameWhatsApp(a: string, b: string): boolean {
+  const normalized = normalizeWhatsApp(a);
+  return normalized.length > 0 && normalized === normalizeWhatsApp(b);
+}
+
+/** Un turno con su persona: su cuenta (`null` sin cuenta) y su WhatsApp. */
+export interface PersonAppointment extends AgendaAppointment {
+  clientId: string | null;
+  clientPhone: string;
+}
+
+/** Una persona: su cuenta, si tiene, y su WhatsApp. */
+export interface Person {
+  uid: string | null;
+  phone: string;
+}
+
+/**
+ * El turno activo de [person] en [now] (`activeAppointmentOfPerson` y
+ * `activeAppointment`): entre los de su cuenta y los que llevan su WhatsApp,
+ * esperando confirmación o confirmados y que terminan después de [now], el
+ * que empieza antes. Sin [excludeId] (el turno que se edita). `null` si no
+ * hay ninguno.
+ */
+export function activeAppointmentOfPerson<T extends PersonAppointment>(
+  appointments: T[],
+  person: Person,
+  now: Date,
+  excludeId?: string,
+): T | null {
+  let active: T | null = null;
+  for (const a of appointments) {
+    if (a.id === excludeId) continue;
+    const mine =
+      (person.uid !== null && a.clientId === person.uid) ||
+      sameWhatsApp(a.clientPhone, person.phone);
+    if (!mine || !ACTIVE_STATUSES.has(a.status) || !(a.end > now)) continue;
+    if (active === null || a.start < active.start) active = a;
+  }
+  return active;
+}

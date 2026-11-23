@@ -7,10 +7,13 @@ import { readFileSync } from 'node:fs';
 import { describe, test } from 'node:test';
 
 import {
+  activeAppointmentOfPerson,
   checkSlotRules,
   coarseVerdict,
   editTimesRules,
+  normalizeWhatsApp,
   readCalendarSettings,
+  sameWhatsApp,
 } from '../src/agenda_rules.ts';
 import type { AgendaAppointment, Range } from '../src/agenda_rules.ts';
 
@@ -34,12 +37,26 @@ interface Case {
   reason: string;
 }
 
-const { cases } = JSON.parse(
+interface PersonCase {
+  name: string;
+  now: string;
+  uid: string | null;
+  phone: string;
+  excludeId?: string;
+  appointments: (RawRange & { id: string; clientId: string | null; clientPhone: string })[];
+  expected: string | null;
+}
+
+const { cases, whatsapp, persons } = JSON.parse(
   readFileSync(
     new URL('../../test/fixtures/agenda_rules_cases.json', import.meta.url),
     'utf8',
   ),
-) as { cases: Case[] };
+) as {
+  cases: Case[];
+  whatsapp: { normalize: [string, string, string][]; same: [string, string, boolean, string][] };
+  persons: PersonCase[];
+};
 
 const range = (raw: RawRange): Range => ({
   start: new Date(raw.start),
@@ -77,6 +94,41 @@ describe('los casos compartidos con la app (RNF-2)', () => {
       const reason = reasonOf(c);
       assert.equal(reason, c.reason);
       assert.equal(coarseVerdict(reason), c.verdict);
+    });
+  }
+});
+
+describe('WhatsApp normalizado, como la app (spec 007)', () => {
+  for (const [input, expected, why] of whatsapp.normalize) {
+    test(`${why}: "${input}" → "${expected}"`, () => {
+      assert.equal(normalizeWhatsApp(input), expected);
+    });
+  }
+  for (const [a, b, expected, why] of whatsapp.same) {
+    test(`${why}: "${a}" y "${b}" → ${expected}`, () => {
+      assert.equal(sameWhatsApp(a, b), expected);
+      assert.equal(sameWhatsApp(b, a), expected);
+    });
+  }
+});
+
+describe('el turno activo de una persona (RF-6, RF-7)', () => {
+  for (const c of persons) {
+    test(`${c.name}: ${c.expected}`, () => {
+      const active = activeAppointmentOfPerson(
+        c.appointments.map((a) => ({
+          id: a.id,
+          clientId: a.clientId,
+          clientPhone: a.clientPhone,
+          start: new Date(a.start),
+          end: new Date(a.end),
+          status: a.status ?? 'confirmed',
+        })),
+        { uid: c.uid, phone: c.phone },
+        new Date(c.now),
+        c.excludeId,
+      );
+      assert.equal(active?.id ?? null, c.expected);
     });
   }
 });
