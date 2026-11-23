@@ -5,6 +5,8 @@
 import type {
   AgendaStore,
   AgendaTransaction,
+  AppointmentRecord,
+  AppointmentUpdate,
   AppointmentWrite,
   StoredAppointment,
   UserProfile,
@@ -13,7 +15,10 @@ import type { Range } from '../src/agenda_rules.ts';
 import { sameWhatsApp } from '../src/agenda_rules.ts';
 
 /** Lo que hay guardado de un turno: lo escrito, con su id. */
-export type MemoryAppointment = AppointmentWrite & { id: string };
+export type MemoryAppointment = Omit<AppointmentWrite, 'booked'> & {
+  id: string;
+  booked: unknown;
+};
 
 export class MemoryAgendaStore implements AgendaStore {
   users = new Map<string, UserProfile>();
@@ -102,6 +107,12 @@ class MemoryTransaction implements AgendaTransaction {
     return this.store.closures.filter((c) => c.end >= now);
   }
 
+  async appointment(id: string): Promise<AppointmentRecord | null> {
+    await this.tick();
+    const found = this.store.appointments.get(id);
+    return found === undefined ? null : { ...found };
+  }
+
   async appointmentExists(id: string) {
     await this.tick();
     return this.store.appointments.has(id);
@@ -112,6 +123,23 @@ class MemoryTransaction implements AgendaTransaction {
       this.store.appointments.set(id, { id, ...data });
       this.store.busySlots.set(id, { start: data.startTime, end: data.endTime });
     });
+  }
+
+  updateAppointment(id: string, fields: AppointmentUpdate) {
+    this.writes.push(() => {
+      const current = this.store.appointments.get(id)!;
+      const updated = { ...current, ...fields };
+      this.store.appointments.set(id, updated);
+      this.store.busySlots.set(id, { start: updated.startTime, end: updated.endTime });
+    });
+  }
+
+  createClosure(range: Range): string {
+    const id = `cierre-${this.store.closures.length + 1}`;
+    this.writes.push(() => {
+      this.store.closures.push({ start: range.start, end: range.end });
+    });
+    return id;
   }
 
   touchLock(now: Date) {

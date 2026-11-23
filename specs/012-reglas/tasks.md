@@ -47,7 +47,7 @@ Cada tarea: tests primero (rojo), luego el código (verde). En Flutter: `dart fo
     - **Dos reservas a la vez:** de la misma hora, o de la misma clienta en días distintos → se guarda una y la otra recibe `slot_taken` o `already_active` (RF-3, RF-8).
   - Hecho cuando: los tests pasan y lo escrito tiene la forma de `AppointmentModel.toMap` (lo comprueba un test con un turno de ejemplo).
 
-- [ ] **T4. Editar y cerrar en el servidor** (`agenda_write.ts`: `editAppointment` y `saveClosure`, plan § 4). RF-2, RF-5, RF-7, RF-13 a RF-15
+- [x] **T4. Editar y cerrar en el servidor** (`agenda_write.ts`: `editAppointment` y `saveClosure`, plan § 4). RF-2, RF-5, RF-7, RF-13 a RF-15
   - Tests: en `agenda_write.test.ts`.
     - **Edición de la clienta:**
       - vuelve a esperar confirmación;
