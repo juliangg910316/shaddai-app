@@ -3,6 +3,8 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shaddai/data/models/appointment_model.dart';
+import 'package:shaddai/data/models/booked_service_model.dart';
+import 'package:shaddai/data/models/price_list_model.dart';
 import 'package:shaddai/data/models/calendar_settings_model.dart';
 import 'package:shaddai/features/booking/logic/admin_booking.dart';
 import 'package:shaddai/features/booking/logic/booking_edit.dart';
@@ -174,5 +176,30 @@ void main() {
         expect(active?.id, c['expected']);
       });
     }
+  });
+
+  test('los campos de un turno son los que escribe el servidor (spec 012)', () {
+    final appointment = AppointmentModel(
+      id: 't1',
+      clientId: null,
+      clientName: 'Ana',
+      clientPhone: '41999990000',
+      startTime: DateTime.utc(2026, 11, 24, 13),
+      endTime: DateTime.utc(2026, 11, 24, 14),
+      status: 'confirmed',
+      createdAt: DateTime.utc(2026, 11, 23, 13),
+      createdByAdmin: true,
+      booked: const BookedServiceModel(
+        kind: BookedKind.service,
+        id: 'mani',
+        name: BilingualText(es: 'Manicura', pt: 'Manicure'),
+        priceCents: 3000,
+        durationMinutes: 60,
+      ),
+    );
+    expect(
+      appointment.toMap().keys.toList()..sort(),
+      _readCases()['appointmentFields'],
+    );
   });
 }

@@ -514,3 +514,9 @@ export function activeAppointmentOfPerson<T extends PersonAppointment>(
   }
   return active;
 }
+
+/** De 8 a 15 dígitos, una vez normalizado (`isValidWhatsApp`). */
+export function isValidWhatsApp(raw: string): boolean {
+  const length = normalizeWhatsApp(raw).length;
+  return length >= 8 && length <= 15;
+}

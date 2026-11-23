@@ -33,7 +33,7 @@ Cada tarea: tests primero (rojo), luego el código (verde). En Flutter: `dart fo
     - `bookedKey` estable aunque cambie el orden de las claves.
   - Hecho cuando: los tests pasan sin Firebase y la lista de precios se lee con la forma de `settings/priceList`.
 
-- [ ] **T3. Reservar en el servidor** (`functions/src/agenda_write.ts`: `bookAppointment`, `AgendaError`, interfaz `AgendaStore`, plan § 4). RF-1, RF-3, RF-4, RF-6, RF-8 a RF-12
+- [x] **T3. Reservar en el servidor** (`functions/src/agenda_write.ts`: `bookAppointment`, `AgendaError`, interfaz `AgendaStore`, plan § 4). RF-1, RF-3, RF-4, RF-6, RF-8 a RF-12
   - Tests: `functions/test/agenda_write.test.ts`, con un almacén en memoria que aplica las transacciones de una en una y reintenta si el candado cambió.
     - **Como clienta:**
       - guarda a su nombre, esperando confirmación, con nombre, WhatsApp y foto de su ficha, el fin calculado y su turno ocupado;

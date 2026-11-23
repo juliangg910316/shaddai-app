@@ -1,5 +1,5 @@
 {
-  "description": "Casos de las reglas de horas de la agenda (spec 012, RNF-2, plan D-4). Los pasan un test de Dart (test/features/booking/agenda_rules_cases_test.dart) y uno de TypeScript (functions/test/agenda_rules_cases.test.ts): la app y el servidor tienen que dar el mismo veredicto. Instantes en UTC; el salón está en UTC-3. 'verdict' es lo que da la app (ok, slot_taken, does_not_fit); 'reason' es el motivo fino del servidor. Sin 'settings', el horario por defecto (lunes a sábado de 9:00 a 18:00, domingo cerrado). 'busy' son los otros turnos (estado 'confirmed' si falta); 'original', el turno que se edita. 'whatsapp' son los números de whatsapp_test.dart (normalizar y comparar); 'persons', el turno activo de una persona por su cuenta o su WhatsApp ('expected' es el id del turno activo o null; 'excludeId', el turno que se edita).",
+  "description": "Casos de las reglas de horas de la agenda (spec 012, RNF-2, plan D-4). Los pasan un test de Dart (test/features/booking/agenda_rules_cases_test.dart) y uno de TypeScript (functions/test/agenda_rules_cases.test.ts): la app y el servidor tienen que dar el mismo veredicto. Instantes en UTC; el salón está en UTC-3. 'verdict' es lo que da la app (ok, slot_taken, does_not_fit); 'reason' es el motivo fino del servidor. Sin 'settings', el horario por defecto (lunes a sábado de 9:00 a 18:00, domingo cerrado). 'busy' son los otros turnos (estado 'confirmed' si falta); 'original', el turno que se edita. 'whatsapp' son los números de whatsapp_test.dart (normalizar y comparar); 'persons', el turno activo de una persona por su cuenta o su WhatsApp ('expected' es el id del turno activo o null; 'excludeId', el turno que se edita). 'appointmentFields' son los campos que escribe AppointmentModel.toMap con lo reservado: el servidor escribe los mismos.",
   "cases": [
     {
       "name": "hora libre",
@@ -817,5 +817,17 @@
       ],
       "expected": null
     }
+  ],
+  "appointmentFields": [
+    "booked",
+    "clientId",
+    "clientName",
+    "clientPhone",
+    "clientPhotoUrl",
+    "createdAt",
+    "createdByAdmin",
+    "endTime",
+    "startTime",
+    "status"
   ]
 }
