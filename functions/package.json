@@ -1,7 +1,7 @@
 {
   "name": "shaddai-functions",
   "private": true,
-  "description": "Cloud Functions de Studio Shaddai (spec 009: borrar la cuenta).",
+  "description": "Cloud Functions de Studio Shaddai (spec 009: borrar la cuenta; spec 011: avisos push a la admin).",
   "type": "module",
   "main": "lib/index.js",
   "engines": {

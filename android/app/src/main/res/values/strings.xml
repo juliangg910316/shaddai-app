@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Nombre del canal de los avisos push en los ajustes del teléfono.
+         Android lo lee antes de que exista Flutter: por eso va aquí y no en
+         los .arb (spec 011, plan D-12). -->
+    <string name="fcm_fallback_notification_channel_label">Avisos de turnos</string>
+</resources>

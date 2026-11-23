@@ -2969,6 +2969,48 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'No se pudo desbloquear. Inténtalo de nuevo.'**
   String get adminUnblockFailed;
+
+  /// Título de la explicación antes de pedir el permiso de notificaciones a la admin (spec 011, RF-15)
+  ///
+  /// In es, this message translates to:
+  /// **'Avisos de turnos'**
+  String get adminPushExplainTitle;
+
+  /// Para qué sirven los avisos, antes del diálogo del sistema (spec 011, RF-15)
+  ///
+  /// In es, this message translates to:
+  /// **'Te avisaremos en este teléfono cuando una clienta reserve, cambie o cancele un turno. A continuación, el teléfono te pedirá permiso para mostrar notificaciones.'**
+  String get adminPushExplainBody;
+
+  /// Botón que cierra la explicación y pide el permiso del sistema (spec 011, RF-15)
+  ///
+  /// In es, this message translates to:
+  /// **'Continuar'**
+  String get adminPushExplainContinue;
+
+  /// Acción del aviso con la app abierta: abre la agenda del día del turno (spec 011, RF-14)
+  ///
+  /// In es, this message translates to:
+  /// **'Ver'**
+  String get adminPushView;
+
+  /// Nombre de "Ver" para el lector de pantalla (spec 011, RF-14)
+  ///
+  /// In es, this message translates to:
+  /// **'Ver la agenda de ese día'**
+  String get adminPushViewLabel;
+
+  /// Título del aviso del panel cuando el teléfono no tiene permiso de notificaciones (spec 011, RF-17)
+  ///
+  /// In es, this message translates to:
+  /// **'Avisos desactivados'**
+  String get adminPushDisabledTitle;
+
+  /// Cómo activar los avisos en los ajustes del teléfono (spec 011, RF-17)
+  ///
+  /// In es, this message translates to:
+  /// **'Este teléfono no muestra los avisos de turnos. Para recibirlos, activa las notificaciones de la app en los ajustes del teléfono.'**
+  String get adminPushDisabledBody;
 }
 
 class _AppLocalizationsDelegate

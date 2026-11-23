@@ -28,6 +28,19 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyArQbQd97hLs3AjB4J0Y_sCTAhKI6II-zI" />
+        <!-- Icono y color de los avisos push: sin ellos Android pinta el
+             icono de la app como un cuadrado blanco (spec 011, plan D-12). -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_notification" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/notification_color" />
+        <!-- Registro en FCM por Firebase Installation ID (spec 011, plan
+             D-15): sin esto, register() falla con "API disabled". -->
+        <meta-data
+            android:name="firebase_messaging_installation_id_enabled"
+            android:value="true" />
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

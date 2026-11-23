@@ -1594,4 +1594,27 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get adminUnblockFailed =>
       'Não foi possível desbloquear. Tente novamente.';
+
+  @override
+  String get adminPushExplainTitle => 'Avisos de horários';
+
+  @override
+  String get adminPushExplainBody =>
+      'Vamos avisar neste celular quando uma cliente agendar, alterar ou cancelar um horário. Em seguida, o celular vai pedir permissão para mostrar notificações.';
+
+  @override
+  String get adminPushExplainContinue => 'Continuar';
+
+  @override
+  String get adminPushView => 'Ver';
+
+  @override
+  String get adminPushViewLabel => 'Ver a agenda desse dia';
+
+  @override
+  String get adminPushDisabledTitle => 'Avisos desativados';
+
+  @override
+  String get adminPushDisabledBody =>
+      'Este celular não mostra os avisos de horários. Para recebê-los, ative as notificações do app nos ajustes do celular.';
 }

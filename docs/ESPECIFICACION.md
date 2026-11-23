@@ -34,11 +34,12 @@
 
 - **Visitante**: sin sesión. Ve la información pública.
 - **Cliente**: con sesión de Google y WhatsApp registrado. Reserva turnos, ve los suyos y cancela el activo fuera del margen de edición; cambia su WhatsApp y puede borrar su cuenta (spec 009). Si está bloqueada, no puede reservar ni borrar la cuenta (sí cancelar).
-- **Admin**: rol asignado a mano en Firestore. Configura el calendario, gestiona turnos y bloquea clientas. Recibe un aviso push con cada cita nueva.
+- **Admin**: rol asignado a mano en Firestore. Configura el calendario, gestiona turnos y bloquea clientas. En Android/iOS recibe un aviso push cuando una clienta reserva, edita o cancela un turno (spec 011).
 
 ## 4. Modelo de datos (actual)
 
-- **Usuaria**: correo, nombre, foto, WhatsApp, rol (`cliente` | `admin`), bloqueada (sí/no), token de notificaciones.
+- **Usuaria**: correo, nombre, foto, WhatsApp, rol (`cliente` | `admin`), bloqueada (sí/no). El antiguo token de notificaciones queda obsoleto (spec 011): se lee en las fichas antiguas, pero ya no se escribe.
+- **Dispositivos de la admin** (spec 011): dentro de su ficha, uno por cada teléfono donde recibe los avisos push, con su identificador de instalación, la plataforma (Android o iOS) y cuándo se registró. Solo los lee el servidor que envía los avisos.
 - **Turno**: clienta (id, nombre, teléfono, foto), inicio, fin, estado (`waiting_confirmation` | `confirmed` | `cancelled`) y fecha de creación. Desde la spec 009, quién lo canceló (`cancelledBy: 'client'` si fue la clienta; sin el campo, el salón) y si la cuenta de la clienta se borró (`accountDeleted: true`: conserva nombre y WhatsApp para la admin, sin la foto).
 - **Calendario**: horario de cada día de la semana (apertura, cierre, cerrado), duración global del turno y fechas bloqueadas.
 - **Servicio**: nuevo en Firestore; sus campos se definen en su spec.
@@ -87,7 +88,7 @@ Mapa aprobado el 2026-10-20, en orden. El 2026-10-24 el autor dividió las reser
 | 007-reserva-admin | La admin reserva para una clienta con cuenta o una persona sin cuenta (nombre y WhatsApp) | spec en borrador (2026-10-24; puesta al día con la 006 el 2026-11-16) |
 | 008-agenda-admin | Agenda de la admin: cerrar franjas de horas o días enteros (descanso, enfermedad), editar cualquier turno (día, hora, servicio y clienta) y cambiar el margen de edición | spec, plan y tareas aprobados (2026-11-17) |
 | 009-perfil | Perfil y mis turnos: cancelar el turno, historial, cambiar el WhatsApp y borrar la cuenta (Cloud Function `deleteAccount`) | implementada (2026-11-18) |
-| 010-admin | Panel de administración: confirmar al cancelar y al bloquear (bloquear cancela el turno activo), "Hoy" y calendario en la agenda, turnos pasados de solo lectura, lista de clientas sin admins y con WhatsApp | implementada en la rama `spec/010-admin` (2026-11-19), pendiente de validar |
-| 011-notificaciones-push | Aviso push a la admin con cada cita nueva | sin empezar |
+| 010-admin | Panel de administración: confirmar al cancelar y al bloquear (bloquear cancela el turno activo), "Hoy" y calendario en la agenda, turnos pasados de solo lectura, lista de clientas sin admins y con WhatsApp | implementada (2026-11-20) |
+| 011-push | Avisos push a la admin (solo Android/iOS, en español) cuando una clienta reserva, edita o cancela un turno; tocarlo abre la agenda de ese día | spec, plan y tareas aprobados (2026-11-20) |
 | 012-reglas-seguridad | Reglas de seguridad de Firestore (lo que no cubren las specs anteriores, como solapes y un turno activo en el servidor) | sin empezar |
 | 013-publicacion | Publicación en tiendas y web en Hostinger | sin empezar |

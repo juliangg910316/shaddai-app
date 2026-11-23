@@ -875,5 +875,19 @@
   "adminBlockFailed": "No se pudo bloquear. Inténtalo de nuevo.",
   "@adminBlockFailed": {"description": "Error al bloquear, sin detalles (spec 010, RF-34)"},
   "adminUnblockFailed": "No se pudo desbloquear. Inténtalo de nuevo.",
-  "@adminUnblockFailed": {"description": "Error al desbloquear, sin detalles (spec 010, RF-34)"}
+  "@adminUnblockFailed": {"description": "Error al desbloquear, sin detalles (spec 010, RF-34)"},
+  "adminPushExplainTitle": "Avisos de turnos",
+  "@adminPushExplainTitle": {"description": "Título de la explicación antes de pedir el permiso de notificaciones a la admin (spec 011, RF-15)"},
+  "adminPushExplainBody": "Te avisaremos en este teléfono cuando una clienta reserve, cambie o cancele un turno. A continuación, el teléfono te pedirá permiso para mostrar notificaciones.",
+  "@adminPushExplainBody": {"description": "Para qué sirven los avisos, antes del diálogo del sistema (spec 011, RF-15)"},
+  "adminPushExplainContinue": "Continuar",
+  "@adminPushExplainContinue": {"description": "Botón que cierra la explicación y pide el permiso del sistema (spec 011, RF-15)"},
+  "adminPushView": "Ver",
+  "@adminPushView": {"description": "Acción del aviso con la app abierta: abre la agenda del día del turno (spec 011, RF-14)"},
+  "adminPushViewLabel": "Ver la agenda de ese día",
+  "@adminPushViewLabel": {"description": "Nombre de \"Ver\" para el lector de pantalla (spec 011, RF-14)"},
+  "adminPushDisabledTitle": "Avisos desactivados",
+  "@adminPushDisabledTitle": {"description": "Título del aviso del panel cuando el teléfono no tiene permiso de notificaciones (spec 011, RF-17)"},
+  "adminPushDisabledBody": "Este teléfono no muestra los avisos de turnos. Para recibirlos, activa las notificaciones de la app en los ajustes del teléfono.",
+  "@adminPushDisabledBody": {"description": "Cómo activar los avisos en los ajustes del teléfono (spec 011, RF-17)"}
 }

@@ -1589,4 +1589,27 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get adminUnblockFailed =>
       'No se pudo desbloquear. Inténtalo de nuevo.';
+
+  @override
+  String get adminPushExplainTitle => 'Avisos de turnos';
+
+  @override
+  String get adminPushExplainBody =>
+      'Te avisaremos en este teléfono cuando una clienta reserve, cambie o cancele un turno. A continuación, el teléfono te pedirá permiso para mostrar notificaciones.';
+
+  @override
+  String get adminPushExplainContinue => 'Continuar';
+
+  @override
+  String get adminPushView => 'Ver';
+
+  @override
+  String get adminPushViewLabel => 'Ver la agenda de ese día';
+
+  @override
+  String get adminPushDisabledTitle => 'Avisos desactivados';
+
+  @override
+  String get adminPushDisabledBody =>
+      'Este teléfono no muestra los avisos de turnos. Para recibirlos, activa las notificaciones de la app en los ajustes del teléfono.';
 }

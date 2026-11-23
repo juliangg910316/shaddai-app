@@ -14,7 +14,9 @@ import 'package:shaddai/data/models/user_model.dart';
 import 'package:shaddai/data/repositories/auth_repository.dart';
 import 'package:shaddai/data/repositories/preferences_repository.dart';
 import 'package:shaddai/data/repositories/price_list_repository.dart';
+import 'package:shaddai/data/repositories/push_repository.dart';
 import 'package:shaddai/data/repositories/user_repository.dart';
+import 'package:shaddai/features/admin/providers/admin_push_provider.dart';
 import 'package:shaddai/features/auth/providers/auth_provider.dart';
 import 'package:shaddai/features/home/presentation/google_map_container.dart';
 import 'package:shaddai/features/preferences/providers/preferences_provider.dart';
@@ -25,6 +27,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fake_auth.dart';
 import 'fake_price_list.dart';
+import 'fake_push.dart';
 import 'fake_session.dart';
 import 'pump_app.dart';
 
@@ -135,6 +138,7 @@ Future<FakeWebSession> pumpWebApp(
   List<Override> overrides = const [],
   PriceListRepository? priceListRepository,
   List<AppointmentModel>? appointments = const [],
+  PushRepository? pushRepository,
 }) => _pumpRealApp(
   tester,
   isWeb: true,
@@ -150,6 +154,7 @@ Future<FakeWebSession> pumpWebApp(
   overrides: overrides,
   priceListRepository: priceListRepository,
   appointments: appointments,
+  pushRepository: pushRepository,
 );
 
 /// Como [pumpWebApp], pero en Android/iOS: la barra inferior y sus pestañas
@@ -169,6 +174,7 @@ Future<FakeWebSession> pumpMobileApp(
   List<Override> overrides = const [],
   PriceListRepository? priceListRepository,
   List<AppointmentModel>? appointments = const [],
+  PushRepository? pushRepository,
 }) => _pumpRealApp(
   tester,
   isWeb: false,
@@ -183,6 +189,7 @@ Future<FakeWebSession> pumpMobileApp(
   reduceMotion: reduceMotion,
   priceListRepository: priceListRepository,
   appointments: appointments,
+  pushRepository: pushRepository,
   overrides: [
     salonMapProvider.overrideWithValue(
       const SizedBox(key: Key('salon-map'), height: 220),
@@ -206,6 +213,7 @@ Future<FakeWebSession> _pumpRealApp(
   required List<Override> overrides,
   required PriceListRepository? priceListRepository,
   required List<AppointmentModel>? appointments,
+  required PushRepository? pushRepository,
 }) async {
   await loadAppFonts();
   if (reduceMotion) {
@@ -254,6 +262,9 @@ Future<FakeWebSession> _pumpRealApp(
         priceListRepositoryProvider.overrideWithValue(
           priceListRepository ??
               FakePriceListRepository(stored: initialTestPriceList()),
+        ),
+        pushRepositoryProvider.overrideWithValue(
+          pushRepository ?? FakePushRepository(),
         ),
         ...overrides,
       ],
