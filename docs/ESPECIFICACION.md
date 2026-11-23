@@ -89,6 +89,6 @@ Mapa aprobado el 2026-10-20, en orden. El 2026-10-24 el autor dividió las reser
 | 008-agenda-admin | Agenda de la admin: cerrar franjas de horas o días enteros (descanso, enfermedad), editar cualquier turno (día, hora, servicio y clienta) y cambiar el margen de edición | spec, plan y tareas aprobados (2026-11-17) |
 | 009-perfil | Perfil y mis turnos: cancelar el turno, historial, cambiar el WhatsApp y borrar la cuenta (Cloud Function `deleteAccount`) | implementada (2026-11-18) |
 | 010-admin | Panel de administración: confirmar al cancelar y al bloquear (bloquear cancela el turno activo), "Hoy" y calendario en la agenda, turnos pasados de solo lectura, lista de clientas sin admins y con WhatsApp | implementada (2026-11-20) |
-| 011-push | Avisos push a la admin (solo Android/iOS, en español) cuando una clienta reserva, edita o cancela un turno; tocarlo abre la agenda de ese día | spec, plan y tareas aprobados (2026-11-20) |
-| 012-reglas-seguridad | Reglas de seguridad de Firestore (lo que no cubren las specs anteriores, como solapes y un turno activo en el servidor) | sin empezar |
+| 011-push | Avisos push a la admin (solo Android/iOS, en español) cuando una clienta reserva, edita o cancela un turno; tocarlo abre la agenda de ese día | implementada (2026-11-23) |
+| 012-reglas | Reglas de la agenda en el servidor: sin solapes entre turnos ni con cierres, un turno activo por persona, horario, ventana, duración y lo reservado según la lista de precios | spec, plan y tareas aprobados (2026-11-23) |
 | 013-publicacion | Publicación en tiendas y web en Hostinger | sin empezar |
