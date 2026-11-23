@@ -11,6 +11,7 @@ import 'package:shaddai/data/models/user_model.dart';
 import 'package:shaddai/features/admin/providers/admin_provider.dart';
 import 'package:shaddai/features/admin/providers/admin_push_provider.dart';
 import 'package:shaddai/features/auth/providers/auth_provider.dart';
+import 'package:shaddai/features/booking/providers/booking_provider.dart';
 
 import '../../helpers/fake_push.dart';
 
@@ -56,6 +57,9 @@ class Harness {
         pushRepositoryProvider.overrideWithValue(push),
         currentUserProvider.overrideWith((ref) => users.stream),
         goRouterProvider.overrideWithValue(router),
+        // Un "hoy" fijo y distinto del día de los avisos: así se ve que
+        // abrir un aviso cambia la agenda, sea cual sea la fecha real.
+        clockProvider.overrideWithValue(() => DateTime.utc(2026, 11, 10, 13)),
       ],
     );
     addTearDown(router.dispose);
@@ -352,7 +356,7 @@ void main() {
       // La sesión aún no ha dicho quién es: no se cambia nada todavía.
       expect(
         h.container.read(adminSelectedDateProvider),
-        isNot(DateTime.utc(2026, 11, 21)),
+        DateTime.utc(2026, 11, 10),
       );
 
       h.users.add(admin);

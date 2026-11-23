@@ -12,6 +12,7 @@ import {
 } from '../src/notify_admins.ts';
 import type {
   NoticeDevice,
+  NoticeLogger,
   NoticeMessage,
   NoticeStore,
   SendResult,
@@ -67,6 +68,18 @@ class MemoryStore implements NoticeStore {
   }
 }
 
+/** Un registro en memoria: guarda lo que se escribe. */
+class MemoryLog implements NoticeLogger {
+  infos: [string, object][] = [];
+  errors: [string, object][] = [];
+  info(message: string, details: object) {
+    this.infos.push([message, details]);
+  }
+  error(message: string, details: object) {
+    this.errors.push([message, details]);
+  }
+}
+
 describe('a quién y qué se envía', () => {
   test('sin aviso (lo hizo la admin), no lee ni envía nada (RF-4)', async () => {
     const store = new MemoryStore();
@@ -75,14 +88,26 @@ describe('a quién y qué se envía', () => {
       store,
       input(reserved, { ...reserved, status: 'confirmed' }),
     );
-    assert.deepEqual(result, { sent: 0, removed: 0 });
+    assert.deepEqual(result, {
+      kind: null,
+      devices: 0,
+      sent: 0,
+      removed: 0,
+      errors: [],
+    });
     assert.equal(store.sent.length, 0);
   });
 
   test('sin dispositivos, no envía ni falla (RF-24)', async () => {
     const store = new MemoryStore();
     const result = await notifyAdmins(store, input(null, reserved));
-    assert.deepEqual(result, { sent: 0, removed: 0 });
+    assert.deepEqual(result, {
+      kind: 'created',
+      devices: 0,
+      sent: 0,
+      removed: 0,
+      errors: [],
+    });
     assert.equal(store.sent.length, 0);
   });
 
@@ -97,7 +122,13 @@ describe('a quién y qué se envía', () => {
     const result = await notifyAdmins(store, input(null, reserved));
     assert.equal(store.sent.length, 1);
     assert.deepEqual(store.sent[0].fids, ['movil', 'tablet', 'suyo']);
-    assert.deepEqual(result, { sent: 3, removed: 0 });
+    assert.deepEqual(result, {
+      kind: 'created',
+      devices: 3,
+      sent: 3,
+      removed: 0,
+      errors: [],
+    });
   });
 
   test('el mensaje: título, texto, kind, appointmentId, day y etiqueta (RF-12, plan D-4)', async () => {
@@ -156,7 +187,16 @@ describe('los dispositivos que ya no valen (RF-21, plan D-5)', () => {
       { uid: 'otra', fid: 'viejo' },
       { uid: 'beidis', fid: 'roto' },
     ]);
-    assert.deepEqual(result, { sent: 1, removed: 3 });
+    assert.deepEqual(result, {
+      kind: 'created',
+      devices: 3,
+      sent: 1,
+      removed: 3,
+      errors: [
+        'messaging/invalid-registration-token',
+        'messaging/registration-token-not-registered',
+      ],
+    });
     assert.deepEqual(store.devices, [{ uid: 'beidis', fid: 'bueno' }]);
   });
 
@@ -166,7 +206,13 @@ describe('los dispositivos que ya no valen (RF-21, plan D-5)', () => {
     store.failures.set('t1', 'messaging/internal-error');
     const result = await notifyAdmins(store, input(null, reserved));
     assert.deepEqual(store.removed, []);
-    assert.deepEqual(result, { sent: 0, removed: 0 });
+    assert.deepEqual(result, {
+      kind: 'created',
+      devices: 1,
+      sent: 0,
+      removed: 0,
+      errors: ['messaging/internal-error'],
+    });
   });
 });
 
@@ -182,29 +228,83 @@ describe('si algo falla, no se propaga (RF-24, plan D-3)', () => {
     const store = new MemoryStore();
     store.devices = [{ uid: 'beidis', fid: 't1' }];
     store.sendError = new Error('sin red');
-    const logged: unknown[][] = [];
-    const result = await notifyAdminsSafely(
-      store,
-      input(null, reserved),
-      (...args) => logged.push(args),
-    );
+    const log = new MemoryLog();
+    const result = await notifyAdminsSafely(store, input(null, reserved), log);
     assert.equal(result, null);
-    assert.equal(logged.length, 1);
-    assert.match(String(logged[0][1] && JSON.stringify(logged[0][1])), /turno-1/);
-    assert.match(JSON.stringify(logged[0][1]), /sin red/);
+    assert.equal(log.errors.length, 1);
+    assert.equal(log.infos.length, 0);
+    assert.match(JSON.stringify(log.errors[0]), /turno-1/);
+    assert.match(JSON.stringify(log.errors[0]), /sin red/);
   });
 
   test('si va bien, devuelve el resultado y no registra errores', async () => {
     const store = new MemoryStore();
     store.devices = [{ uid: 'beidis', fid: 't1' }];
-    const logged: unknown[][] = [];
-    const result = await notifyAdminsSafely(
+    const log = new MemoryLog();
+    const result = await notifyAdminsSafely(store, input(null, reserved), log);
+    assert.deepEqual(result, {
+      kind: 'created',
+      devices: 1,
+      sent: 1,
+      removed: 0,
+      errors: [],
+    });
+    assert.equal(log.errors.length, 0);
+  });
+});
+
+describe('una línea en el registro por cada cambio (diagnóstico)', () => {
+  test('con aviso: el turno, el evento, el tipo y los envíos', async () => {
+    const store = new MemoryStore();
+    store.devices = [
+      { uid: 'beidis', fid: 't1' },
+      { uid: 'beidis', fid: 't2' },
+    ];
+    store.failures.set('t2', 'messaging/internal-error');
+    const log = new MemoryLog();
+    await notifyAdminsSafely(store, input(null, reserved), log);
+    assert.deepEqual(log.infos, [
+      [
+        'Aviso a la admin',
+        {
+          appointmentId: 'turno-1',
+          eventId: 'evento-1',
+          kind: 'created',
+          devices: 2,
+          sent: 1,
+          removed: 0,
+          errors: ['messaging/internal-error'],
+        },
+      ],
+    ]);
+  });
+
+  test('sin aviso (lo hizo la admin): también, con kind null', async () => {
+    const store = new MemoryStore();
+    const log = new MemoryLog();
+    await notifyAdminsSafely(
       store,
-      input(null, reserved),
-      (...args) => logged.push(args),
+      input(reserved, { ...reserved, status: 'confirmed' }),
+      log,
     );
-    assert.deepEqual(result, { sent: 1, removed: 0 });
-    assert.equal(logged.length, 0);
+    assert.equal(log.infos.length, 1);
+    assert.equal((log.infos[0][1] as { kind: unknown }).kind, null);
+  });
+
+  test('sin dispositivos: lo dice (devices 0)', async () => {
+    const store = new MemoryStore();
+    const log = new MemoryLog();
+    await notifyAdminsSafely(store, input(null, reserved), log);
+    assert.equal((log.infos[0][1] as { devices: unknown }).devices, 0);
+  });
+
+  test('nunca datos de la clienta (RNF-4)', async () => {
+    const store = new MemoryStore();
+    store.devices = [{ uid: 'beidis', fid: 't1' }];
+    const log = new MemoryLog();
+    await notifyAdminsSafely(store, input(null, reserved), log);
+    const text = JSON.stringify(log.infos);
+    assert.doesNotMatch(text, /Ana|Herrera|Manicura|ana/);
   });
 });
 

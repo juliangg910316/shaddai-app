@@ -82,8 +82,8 @@ Si algo falla, vuelve a publicar la copia del paso 1.2 y avisa.
 
 ## Resultado
 
-- [ ] Copia de las reglas anteriores guardada.
-- [ ] Reglas publicadas, sin errores de sintaxis.
-- [ ] Casos 1 a 11 del simulador correctos.
-- [ ] Casos de la spec 009 correctos.
-- [ ] Recorrido en Android correcto (paso 4).
+- [x] Copia de las reglas anteriores guardada.
+- [x] Reglas publicadas, sin errores de sintaxis.
+- [x] Casos 1 a 11 del simulador correctos.
+- [x] Casos de la spec 009 correctos.
+- [x] Recorrido en Android correcto (paso 4).

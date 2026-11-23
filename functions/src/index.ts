@@ -54,7 +54,10 @@ export const notifyAdminsOnAppointmentWrite = onDocumentWritten(
         before: readNoticeAppointment(event.data?.before.data()),
         after: readNoticeAppointment(event.data?.after.data()),
       },
-      (message, details) => logger.error(message, details),
+      {
+        info: (message, details) => logger.info(message, details),
+        error: (message, details) => logger.error(message, details),
+      },
     );
   },
 );

@@ -65,6 +65,19 @@ const STALE_DEVICE_CODES = new Set([
 ]);
 
 /**
+ * Qué pasó con un cambio: el aviso (`null` si no tocaba), cuántos
+ * dispositivos había, cuántos envíos salieron, cuántos se borraron y los
+ * códigos de error de FCM, sin repetir. Sin datos de la clienta (RNF-4).
+ */
+export interface NoticeResult {
+  kind: NoticeKind | null;
+  devices: number;
+  sent: number;
+  removed: number;
+  errors: string[];
+}
+
+/**
  * Envía el aviso de [write], si lo hay, y borra los dispositivos cuyo FID
  * ya no vale de cada admin que lo tenga (RF-21). Sin dispositivos no envía
  * nada (RF-24). Si el envío falla del todo, lanza: lo recoge
@@ -73,13 +86,14 @@ const STALE_DEVICE_CODES = new Set([
 export async function notifyAdmins(
   store: NoticeStore,
   write: AppointmentWrite,
-): Promise<{ sent: number; removed: number }> {
+): Promise<NoticeResult> {
   const kind = noticeKind(write.before, write.after);
-  if (kind === null || write.after === null) return { sent: 0, removed: 0 };
+  const nothing = { devices: 0, sent: 0, removed: 0, errors: [] };
+  if (kind === null || write.after === null) return { kind: null, ...nothing };
 
   const devices = await store.adminDevices();
   const fids = uniqueFids(devices);
-  if (fids.length === 0) return { sent: 0, removed: 0 };
+  if (fids.length === 0) return { kind, ...nothing };
 
   const message: NoticeMessage = {
     ...noticeText(kind, write.after),
@@ -94,9 +108,14 @@ export async function notifyAdmins(
 
   let sent = 0;
   const stale = new Set<string>();
+  const errors = new Set<string>();
   results.forEach((result, i) => {
-    if (result.ok) sent++;
-    else if (STALE_DEVICE_CODES.has(result.code)) stale.add(fids[i]);
+    if (result.ok) {
+      sent++;
+      return;
+    }
+    errors.add(result.code);
+    if (STALE_DEVICE_CODES.has(result.code)) stale.add(fids[i]);
   });
 
   let removed = 0;
@@ -105,30 +124,40 @@ export async function notifyAdmins(
     await store.removeDevice(device.uid, device.fid);
     removed++;
   }
-  return { sent, removed };
+  return {
+    kind,
+    devices: fids.length,
+    sent,
+    removed,
+    errors: [...errors].sort(),
+  };
 }
 
-/** Cómo se registra un error: `logger.error` en la función. */
-export type ErrorLogger = (message: string, details: object) => void;
+/** Dónde se escribe el registro: el `logger` de la función. */
+export interface NoticeLogger {
+  info(message: string, details: object): void;
+  error(message: string, details: object): void;
+}
 
 /**
  * [notifyAdmins] sin lanzar nunca: el turno ya está guardado y la clienta
  * no ve ningún error (RF-24). El fallo queda en el registro; no se reintenta,
- * para no duplicar avisos (plan D-3). Devuelve `null` si falló.
+ * para no duplicar avisos (plan D-3). Si va bien, deja una línea con el
+ * resultado, también cuando no había aviso o dispositivos, para poder
+ * diagnosticar un aviso que no llegó. Devuelve `null` si falló.
  */
 export async function notifyAdminsSafely(
   store: NoticeStore,
   write: AppointmentWrite,
-  logError: ErrorLogger,
-): Promise<{ sent: number; removed: number } | null> {
+  log: NoticeLogger,
+): Promise<NoticeResult | null> {
+  const ids = { appointmentId: write.appointmentId, eventId: write.eventId };
   try {
-    return await notifyAdmins(store, write);
+    const result = await notifyAdmins(store, write);
+    log.info('Aviso a la admin', { ...ids, ...result });
+    return result;
   } catch (error) {
-    logError('No se pudo avisar a la admin', {
-      appointmentId: write.appointmentId,
-      eventId: write.eventId,
-      error: String(error),
-    });
+    log.error('No se pudo avisar a la admin', { ...ids, error: String(error) });
     return null;
   }
 }

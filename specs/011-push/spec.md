@@ -1,5 +1,5 @@
 # Spec 011 — Avisos push a la admin
-Estado: aprobada
+Estado: implementada
 
 ## Contexto y objetivo
 Hoy la admin solo se entera de lo que hacen sus clientas si abre la agenda: una reserva nueva puede pasar horas esperando confirmación, y una hora que se libera no se aprovecha. La visión del producto pide un "aviso inmediato a la administradora de cada cita nueva", y las specs 006, 007 y 009 dejaron para esta los avisos de los turnos editados y cancelados.

@@ -25,6 +25,21 @@ void main() {
       expect(manifest, contains('@color/notification_color'));
     });
 
+    // Sin esta marca, `register()` falla con "API disabled" y el
+    // dispositivo nunca se registra (plan D-15).
+    test('el manifiesto activa el registro por FID', () {
+      final manifest = read('android/app/src/main/AndroidManifest.xml');
+      expect(
+        manifest,
+        matches(
+          RegExp(
+            r'android:name="firebase_messaging_installation_id_enabled"\s*'
+            r'android:value="true"',
+          ),
+        ),
+      );
+    });
+
     test('el icono es un vector monocromo', () {
       final icon = read('$res/drawable/ic_notification.xml');
       expect(icon, contains('<vector'));
@@ -70,6 +85,18 @@ void main() {
       final plist = read('ios/Runner/Info.plist');
       expect(plist, contains('<key>UIBackgroundModes</key>'));
       expect(plist, contains('<string>remote-notification</string>'));
+    });
+
+    test('Info.plist activa el registro por FID (plan D-15)', () {
+      final plist = read('ios/Runner/Info.plist');
+      expect(
+        plist,
+        matches(
+          RegExp(
+            r'<key>FirebaseMessagingInstallationIdEnabled</key>\s*<true/>',
+          ),
+        ),
+      );
     });
 
     test('el proyecto usa Runner.entitlements en sus tres '
