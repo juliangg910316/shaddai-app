@@ -5,8 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 /// Estructura de `firestore.rules` (spec 004, RNF-2; spec 005, RNF-5; spec
 /// 006, RNF-4; spec 007, RNF-5; spec 008, RNF-5; spec 009, RF-19, RF-28,
-/// RF-42; spec 011, RF-23). Lo que permite cada regla se comprueba a mano en
-/// el simulador de la consola (`rules-check.md` de las specs 004 a 011);
+/// RF-42; spec 011, RF-23; spec 012, D-7). Lo que permite cada regla se comprueba a mano en
+/// el simulador de la consola (`rules-check.md` de las specs 004 a 012);
 /// aquí se fija qué cubre cada `match` para que un cambio no lo rompa sin
 /// querer.
 void main() {
@@ -73,7 +73,8 @@ void main() {
       ),
     );
     expect(text, contains("myProfile().role == 'admin'"));
-    expect(text, contains("myProfile().get('isBlocked', false) == true"));
+    // El bloqueo lo comprueban las funciones al reservar (spec 012).
+    expect(text, isNot(contains('function isBlocked()')));
   });
 
   group('users (RF-57, RF-58)', () {
@@ -114,154 +115,47 @@ void main() {
       expect(read, contains('resource.data.clientId == request.auth.uid'));
     });
 
-    test('se crea a su nombre, esperando confirmación, sin estar bloqueada '
-        'y con su turno ocupado en el mismo lote', () {
-      final create = allow(path, 'create');
-      expect(create, contains('!isBlocked()'));
-      expect(
-        create,
-        contains(
-          'request.resource.data.clientId == '
-          'request.auth.uid',
-        ),
-      );
-      expect(create, contains("status == 'waiting_confirmation'"));
-      expect(create, contains('endTime > request.resource.data.startTime'));
-      expect(
-        create,
-        contains(
-          'getAfter(/databases/\$(database)/documents/busySlots/'
-          '\$(id)).data.start == request.resource.data.startTime',
-        ),
-      );
-      expect(
-        create,
-        contains(
-          'getAfter(/databases/\$(database)/documents/busySlots/'
-          '\$(id)).data.end == request.resource.data.endTime',
-        ),
-      );
+    test('nadie lo crea desde la app: solo las funciones de la agenda '
+        '(spec 012, RF-1, RF-4, D-7)', () {
+      expect(allow(path, 'create'), 'allow create: if false;');
     });
 
-    test('la clienta no puede marcarlo como creado por la admin (spec 007, '
-        'RF-25)', () {
-      expect(
-        allow(path, 'create'),
-        contains("request.resource.data.get('createdByAdmin', false) == false"),
-      );
-    });
-
-    test('la admin lo crea confirmado y marcado, para una persona sin cuenta '
-        'o para una clienta sin bloquear que no es ella, con su turno '
-        'ocupado en el mismo lote (spec 007, RF-2, RF-25)', () {
-      final create = allow(path, 'create');
-      final admin = create.substring(create.indexOf('|| (isAdmin()'));
-      for (final check in [
-        "request.resource.data.status == 'confirmed'",
-        'request.resource.data.createdByAdmin == true',
-        'request.resource.data.endTime > request.resource.data.startTime',
-        'getAfter(/databases/\$(database)/documents/busySlots/\$(id))'
-            '.data.start == request.resource.data.startTime',
-        'getAfter(/databases/\$(database)/documents/busySlots/\$(id))'
-            '.data.end == request.resource.data.endTime',
-        'request.resource.data.clientId == null',
-        'request.resource.data.clientId != request.auth.uid',
-        'get(/databases/\$(database)/documents/users/'
-            '\$(request.resource.data.clientId)).data.role == \'cliente\'',
-        'get(/databases/\$(database)/documents/users/'
-            '\$(request.resource.data.clientId)).data'
-            ".get('isBlocked', false) == false",
-      ]) {
-        expect(admin, contains(check), reason: check);
+    test('sin las ramas de edición de la clienta (spec 006) ni de la admin '
+        '(spec 008): ahora editan las funciones (spec 012, RF-2, D-7)', () {
+      final update = allow(path, 'update');
+      expect(update, isNot(contains('// La clienta edita')));
+      expect(update, isNot(contains('// La admin edita')));
+      for (final field in ["'startTime'", "'endTime'", "'booked'"]) {
+        expect(update, isNot(contains(field)), reason: field);
       }
+      expect(update, isNot(contains('busySlots/\$(id)).data.start')));
     });
 
-    test('la clienta, al editar, no toca la marca de la admin (spec 007, '
-        'RF-30)', () {
-      final update = allow(path, 'update');
-      // Solo la parte de la clienta: la edición de la admin sí la toca.
-      final client = update.substring(
-        update.indexOf('// La clienta edita'),
-        update.indexOf('// La admin edita'),
-      );
-      expect(
-        client,
-        contains(".hasOnly(['startTime', 'endTime', 'booked', 'status'])"),
-      );
-      expect(client, isNot(contains('createdByAdmin')));
-    });
+    test(
+      'la admin solo cambia el estado, de un turno activo a confirmado o '
+      'cancelado: no reactiva uno cancelado (spec 012, RF-1, RF-14, D-7)',
+      () {
+        final update = allow(path, 'update');
+        final start = update.indexOf('// La admin confirma o cancela');
+        expect(start, isNot(-1));
+        final admin = update.substring(
+          start,
+          update.indexOf('\n        // ', start + 1),
+        );
+        for (final check in [
+          'isAdmin()',
+          "resource.data.status in ['waiting_confirmation', 'confirmed']",
+          'request.resource.data.diff(resource.data).affectedKeys()'
+              ".hasOnly(['status'])",
+          "request.resource.data.status in ['confirmed', 'cancelled']",
+        ]) {
+          expect(admin, contains(check), reason: check);
+        }
+      },
+    );
 
-    test('la admin edita un turno activo: la persona, las horas y lo '
-        'reservado, siempre confirmado, sin quitar la marca, marcándolo si '
-        'cambia la persona, para una persona válida y con su turno ocupado '
-        'a la vez (spec 008, RF-43)', () {
-      final update = allow(path, 'update');
-      final start = update.indexOf('// La admin edita');
-      expect(start, isNot(-1));
-      final edit = update.substring(start);
-      for (final check in [
-        'isAdmin()',
-        "resource.data.status in ['waiting_confirmation', 'confirmed']",
-        'resource.data.endTime > request.time',
-        'request.resource.data.diff(resource.data).affectedKeys()'
-            ".hasOnly(['clientId', 'clientName', 'clientPhone', "
-            "'clientPhotoUrl', 'startTime', 'endTime', 'booked', 'status', "
-            "'createdByAdmin'])",
-        "request.resource.data.status == 'confirmed'",
-        'request.resource.data.endTime > request.resource.data.startTime',
-        "request.resource.data.get('createdByAdmin', false) == true",
-        ".affectedKeys().hasAny(['clientId', 'clientName', 'clientPhone', "
-            "'clientPhotoUrl'])",
-        'request.resource.data.clientId == null',
-        'request.resource.data.clientId != request.auth.uid',
-        'get(/databases/\$(database)/documents/users/'
-            '\$(request.resource.data.clientId)).data.role == \'cliente\'',
-        'get(/databases/\$(database)/documents/users/'
-            '\$(request.resource.data.clientId)).data'
-            ".get('isBlocked', false) == false",
-        'getAfter(/databases/\$(database)/documents/busySlots/\$(id))'
-            '.data.start == request.resource.data.startTime',
-        'getAfter(/databases/\$(database)/documents/busySlots/\$(id))'
-            '.data.end == request.resource.data.endTime',
-      ]) {
-        expect(edit, contains(check), reason: check);
-      }
-    });
-
-    test('la admin solo cambia el estado, y nadie lo borra', () {
-      final update = allow(path, 'update');
-      expect(
-        update,
-        contains(
-          "(isAdmin() && request.resource.data.diff(resource.data)"
-          ".affectedKeys().hasOnly(['status']))",
-        ),
-      );
+    test('nadie lo borra', () {
       expect(allow(path, 'delete'), contains('if false'));
-    });
-
-    test('la clienta edita su turno activo y editable: solo el inicio, el '
-        'fin y lo reservado, vuelve a esperar confirmación y su turno '
-        'ocupado cambia a la vez (spec 006, RF-24, RF-26)', () {
-      final update = allow(path, 'update');
-      for (final check in [
-        'signedIn() && !isBlocked()',
-        'resource.data.clientId == request.auth.uid',
-        "resource.data.status in ['waiting_confirmation', 'confirmed']",
-        'resource.data.startTime > request.time + '
-            "duration.value(editMarginMinutes(), 'm')",
-        'request.resource.data.diff(resource.data).affectedKeys()'
-            ".hasOnly(['startTime', 'endTime', 'booked', 'status'])",
-        "request.resource.data.status == 'waiting_confirmation'",
-        'request.resource.data.startTime > request.time',
-        'request.resource.data.endTime > request.resource.data.startTime',
-        'getAfter(/databases/\$(database)/documents/busySlots/\$(id))'
-            '.data.start == request.resource.data.startTime',
-        'getAfter(/databases/\$(database)/documents/busySlots/\$(id))'
-            '.data.end == request.resource.data.endTime',
-      ]) {
-        expect(update, contains(check), reason: check);
-      }
     });
   });
 
@@ -370,85 +264,17 @@ void main() {
       expect(allow(path, 'get, list'), contains('signedIn()'));
     });
 
-    test('se crea solo con inicio y fin, junto a un turno propio con las '
-        'mismas horas', () {
-      final create = allow(path, 'create');
-      expect(create, contains("keys().hasOnly(['start', 'end'])"));
-      for (final check in [
-        'data.clientId == request.auth.uid',
-        'data.startTime == request.resource.data.start',
-        'data.endTime == request.resource.data.end',
-      ]) {
-        expect(
-          create,
-          contains(
-            'getAfter(/databases/\$(database)/documents/appointments/'
-            '\$(id)).$check',
-          ),
-          reason: check,
-        );
-      }
-    });
-
-    test('la admin lo crea junto a cualquier turno, con las mismas horas: '
-        'el que agenda (spec 007, RF-25) y el que edita, si un turno antiguo '
-        'no lo tenía (spec 008, RF-43)', () {
-      final create = allow(path, 'create');
-      expect(
-        create,
-        contains(
-          '(getAfter(/databases/\$(database)/documents/appointments/\$(id))'
-          '.data.clientId == request.auth.uid\n          || isAdmin())',
-        ),
-      );
-      expect(create, isNot(contains('createdByAdmin')));
+    test('nadie lo crea desde la app: solo las funciones de la agenda '
+        '(spec 012, D-7)', () {
+      expect(allow(path, 'create'), 'allow create: if false;');
     });
 
     test('la admin lo borra al cancelar', () {
       expect(allow(path, 'delete'), contains('isAdmin()'));
     });
 
-    test('se cambia solo junto a la edición de su turno, que es de la '
-        'clienta, con las mismas horas (spec 006, RF-24, RF-26)', () {
-      final update = allow(path, 'update');
-      expect(update, contains('signedIn()'));
-      expect(
-        update,
-        contains("request.resource.data.keys().hasOnly(['start', 'end'])"),
-      );
-      expect(
-        update,
-        contains(
-          'get(/databases/\$(database)/documents/appointments/\$(id))'
-          '.data.clientId == request.auth.uid',
-        ),
-      );
-      for (final check in [
-        'data.startTime == request.resource.data.start',
-        'data.endTime == request.resource.data.end',
-      ]) {
-        expect(
-          update,
-          contains(
-            'getAfter(/databases/\$(database)/documents/appointments/'
-            '\$(id)).$check',
-          ),
-          reason: check,
-        );
-      }
-      expect(update, isNot(contains('if false')));
-    });
-
-    test('la admin lo cambia junto a la edición de cualquier turno, con las '
-        'mismas horas (spec 008, RF-43)', () {
-      final update = allow(path, 'update');
-      expect(
-        update,
-        contains(
-          '(get(/databases/\$(database)/documents/appointments/\$(id))'
-          '.data.clientId == request.auth.uid\n          || isAdmin())',
-        ),
-      );
+    test('nadie lo cambia desde la app (spec 012, D-7)', () {
+      expect(allow(path, 'update'), 'allow update: if false;');
     });
   });
 
@@ -459,18 +285,9 @@ void main() {
       expect(allow(path, 'get, list'), contains('if signedIn();'));
     });
 
-    test('solo la admin los crea, con solo inicio y fin, y el fin después '
-        'del inicio', () {
-      final create = allow(path, 'create');
-      for (final check in [
-        'isAdmin()',
-        "request.resource.data.keys().hasOnly(['start', 'end'])",
-        'request.resource.data.start is timestamp',
-        'request.resource.data.end is timestamp',
-        'request.resource.data.end > request.resource.data.start',
-      ]) {
-        expect(create, contains(check), reason: check);
-      }
+    test('nadie los crea desde la app: solo la función saveClosure (spec '
+        '012, RF-5, D-7)', () {
+      expect(allow(path, 'create'), 'allow create: if false;');
     });
 
     test('solo la admin los quita, y nadie los cambia', () {
@@ -554,18 +371,26 @@ void main() {
     });
   });
 
-  test('la cabecera cita la spec 011 y su comprobación manual; la '
+  test('la cabecera cita la spec 012 y su comprobación manual; la '
       'redirección no cita la 009', () {
     final header = rules().substring(0, rules().indexOf('service '));
     expect(header, contains('spec 011'));
+    expect(header, contains('spec 012'));
     expect(header, contains('specs/009-perfil/rules-check.md'));
     expect(header, contains('specs/011-push/rules-check.md'));
+    expect(header, contains('specs/012-reglas/rules-check.md'));
     expect(File('specs/009-perfil/rules-check.md').existsSync(), isTrue);
     expect(File('specs/011-push/rules-check.md').existsSync(), isTrue);
+    expect(File('specs/012-reglas/rules-check.md').existsSync(), isTrue);
     expect(
       File('lib/core/router/redirect_logic.dart').readAsStringSync(),
       isNot(contains('spec 009')),
     );
+  });
+
+  test('el candado de la agenda no tiene reglas: solo lo usan las funciones '
+      '(spec 012, D-3)', () {
+    expect(rules(), isNot(contains('match /locks')));
   });
 
   test('no hay un comodín que abra la lista de precios a cualquier persona '

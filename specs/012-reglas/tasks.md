@@ -107,7 +107,7 @@ Cada tarea: tests primero (rojo), luego el código (verde). En Flutter: `dart fo
     - `ClosureController.save`: `conflicts` → vuelve a leer y devuelve `ClosureSaveConflicts`; el formulario los muestra con «Editar» y «Cancelar» (RF-18).
   - Hecho cuando: `createAppointment` (de T7), `updateAppointmentByAdmin` y `createClosure` ya no existen, las suites de las specs 007, 008 y 010 siguen en verde, y todo está en verde.
 
-- [ ] **T9. Reglas de Firestore y comprobación manual** (`firestore.rules`, `test/core/firestore_rules_test.dart`, `specs/012-reglas/rules-check.md`, plan § 5, D-7). RF-1, RF-2, RF-4, RF-5, RF-14, RNF-3, RNF-5
+- [x] **T9. Reglas de Firestore y comprobación manual** (`firestore.rules`, `test/core/firestore_rules_test.dart`, `specs/012-reglas/rules-check.md`, plan § 5, D-7). RF-1, RF-2, RF-4, RF-5, RF-14, RNF-3, RNF-5
   - Tests: en `firestore_rules_test.dart`.
     - `appointments`:
       - `allow create: if false`;
