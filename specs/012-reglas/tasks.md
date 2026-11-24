@@ -82,9 +82,9 @@ Cada tarea: tests primero (rojo), luego el código (verde). En Flutter: `dart fo
     - `README.md` describe las funciones y el orden de despliegue (funciones → app → reglas);
     - `npm test` y `npm run build` pasan.
 
-- [ ] **T6. App: llamar a las funciones** (`lib/data/repositories/agenda_functions.dart`, `agendaFunctionsProvider`, el fake en `test/helpers/`, plan § 3 data). RF-16, RF-17
+- [x] **T6. App: llamar a las funciones** (`lib/data/repositories/agenda_functions.dart`, `agendaFunctionsProvider`, el fake en `test/helpers/`, plan § 3 data). RF-16, RF-17
   - Tests: `test/data/agenda_functions_test.dart`, con un `FirebaseFunctions` falso como en `account_repository_test.dart`:
-    - llama a la función correcta, en `southamerica-east1`, con los datos esperados (inicio en milisegundos, servicio, adicionales, lo reservado, lo esperado y la persona);
+    - llama a la función correcta, en `southamerica-east1`, con los datos esperados (fechas en texto ISO 8601 en UTC, como las acepta el servidor; decidido por el autor el 2026-11-23; servicio, adicionales, lo reservado, lo esperado y la persona);
     - cada `details.reason` se traduce a su `AgendaRejection` (con `conflictIds` en un cierre);
     - un código desconocido, sin conexión o con otra forma → `failed`; si tarda demasiado → `TimeoutException`.
   - Hecho cuando: `FakeAgendaFunctions` (`test/helpers/fake_agenda.dart`) guarda en la `FakeBookingRepository` lo que la función escribiría y puede responder con un rechazo; `pumpApp`, `pumpWebApp` y `pumpMobileApp` la inyectan por defecto; todos los tests existentes siguen en verde.

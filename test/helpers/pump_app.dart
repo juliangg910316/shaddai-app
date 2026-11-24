@@ -4,16 +4,19 @@ import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shaddai/core/router/app_router.dart';
+import 'package:shaddai/data/repositories/agenda_functions.dart';
 import 'package:shaddai/data/repositories/preferences_repository.dart';
 import 'package:shaddai/data/repositories/price_list_repository.dart';
 import 'package:shaddai/data/repositories/push_repository.dart';
 import 'package:shaddai/features/admin/providers/admin_push_provider.dart';
+import 'package:shaddai/features/booking/providers/agenda_functions_provider.dart';
 import 'package:shaddai/features/preferences/providers/preferences_provider.dart';
 import 'package:shaddai/features/services/providers/price_list_provider.dart';
 import 'package:shaddai/l10n/app_localizations.dart';
 import 'package:shaddai/main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'fake_agenda.dart';
 import 'fake_price_list.dart';
 import 'fake_push.dart';
 
@@ -23,7 +26,9 @@ import 'fake_push.dart';
 /// sustituye los providers que tocarían Firebase. La lista de precios es
 /// [priceListRepository] o, si no se pasa, la de la carga inicial. Los
 /// avisos push van por [pushRepository] o, si no se pasa, por un
-/// [FakePushRepository] con el permiso concedido (spec 011, plan D-11).
+/// [FakePushRepository] con el permiso concedido (spec 011, plan D-11). Las
+/// escrituras en la agenda van por [agendaFunctions] o, si no se pasa, por
+/// una [FakeAgendaFunctions] que no guarda nada (spec 012).
 Future<void> pumpApp(
   WidgetTester tester, {
   Map<String, Object> stored = const {},
@@ -32,6 +37,7 @@ Future<void> pumpApp(
   List<Override> overrides = const [],
   PriceListRepository? priceListRepository,
   PushRepository? pushRepository,
+  AgendaFunctions? agendaFunctions,
 }) async {
   SharedPreferences.setMockInitialValues(stored);
   final store = await SharedPreferences.getInstance();
@@ -55,6 +61,9 @@ Future<void> pumpApp(
         ),
         pushRepositoryProvider.overrideWithValue(
           pushRepository ?? FakePushRepository(),
+        ),
+        agendaFunctionsProvider.overrideWithValue(
+          agendaFunctions ?? FakeAgendaFunctions(),
         ),
         ...overrides,
       ],

@@ -237,6 +237,50 @@ describe('los rechazos de la agenda', () => {
   });
 });
 
+describe('turnos de antes de la spec 005', () => {
+  test('editar uno sin copia de lo reservado: expected.booked puede ser null', async () => {
+    const store = salon();
+    store.appointments.set('viejo', {
+      id: 'viejo',
+      clientId: 'ana',
+      clientName: 'Ana',
+      clientPhone: '41999990000',
+      clientPhotoUrl: null,
+      startTime: new Date('2026-11-24T13:00:00Z'),
+      endTime: new Date('2026-11-24T14:00:00Z'),
+      status: 'confirmed',
+      createdAt: NOW,
+      createdByAdmin: false,
+      booked: undefined,
+    });
+    const result = await handleEditAppointment(
+      {
+        auth: { uid: 'ana' },
+        data: bookData({
+          id: 'viejo',
+          start: '2026-11-24T17:00:00.000Z',
+          expected: {
+            startTime: '2026-11-24T13:00:00.000Z',
+            endTime: '2026-11-24T14:00:00.000Z',
+            status: 'confirmed',
+            booked: null,
+            clientId: 'ana',
+            clientName: 'Ana',
+            clientPhone: '41999990000',
+            clientPhotoUrl: null,
+            createdByAdmin: false,
+          },
+        }),
+      },
+      store,
+      NOW,
+      new MemoryLog(),
+    );
+    assert.deepEqual(result, { id: 'viejo' });
+    assert.deepEqual(store.appointments.get('viejo')?.booked, MANI);
+  });
+});
+
 describe('cualquier otro fallo', () => {
   test('internal, sin detalles, y queda en el registro', async () => {
     const broken: AgendaStore = {

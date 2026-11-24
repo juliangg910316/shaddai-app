@@ -138,7 +138,8 @@ function expected(value: unknown): ExpectedAppointment {
     startTime: instant(data.startTime),
     endTime: instant(data.endTime),
     status: text(data.status),
-    booked: booked(data.booked),
+    // Los turnos de antes de la spec 005 no tienen copia de lo reservado.
+    booked: data.booked === null ? null : booked(data.booked),
     clientId: nullableText(data.clientId),
     clientName: text(data.clientName),
     clientPhone: text(data.clientPhone),
