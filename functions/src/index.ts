@@ -8,6 +8,13 @@ import { onDocumentWritten } from 'firebase-functions/v2/firestore';
 import { onCall } from 'firebase-functions/v2/https';
 
 import { adminStore } from './admin_store.ts';
+import {
+  handleBookAppointment,
+  handleEditAppointment,
+  handleSaveClosure,
+} from './agenda_handler.ts';
+import type { AgendaLog } from './agenda_handler.ts';
+import { agendaStore } from './agenda_store.ts';
 import { handleDeleteAccount } from './handler.ts';
 import { noticeStore } from './notice_store.ts';
 import {
@@ -60,4 +67,27 @@ export const notifyAdminsOnAppointmentWrite = onDocumentWritten(
       },
     );
   },
+);
+
+const agendaLog: AgendaLog = {
+  error: (message, details) => logger.error(message, details),
+};
+
+/**
+ * Reserva un turno: la clienta para sí misma, la admin para otra persona
+ * (spec 012, RF-1, RF-3, RF-4, RF-6, RF-8 a RF-12). Solo el servidor crea
+ * turnos; las reglas ya no lo permiten desde la app.
+ */
+export const bookAppointment = onCall({ region: 'southamerica-east1' }, (request) =>
+  handleBookAppointment(request, agendaStore(getFirestore()), new Date(), agendaLog),
+);
+
+/** Edita un turno activo (spec 012, RF-2, RF-7, RF-13, RF-15). */
+export const editAppointment = onCall({ region: 'southamerica-east1' }, (request) =>
+  handleEditAppointment(request, agendaStore(getFirestore()), new Date(), agendaLog),
+);
+
+/** Guarda un cierre de la admin (spec 012, RF-5). */
+export const saveClosure = onCall({ region: 'southamerica-east1' }, (request) =>
+  handleSaveClosure(request, agendaStore(getFirestore()), new Date(), agendaLog),
 );

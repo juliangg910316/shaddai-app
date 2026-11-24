@@ -69,7 +69,7 @@ Cada tarea: tests primero (rojo), luego el código (verde). En Flutter: `dart fo
       - un cierre y una reserva a la vez en la misma hora → se guarda solo uno (RF-5).
   - Hecho cuando: los tests pasan; la edición solo escribe los campos que cambian, igual que las transacciones de hoy.
 
-- [ ] **T5. Adaptador, almacén y callables** (`agenda_handler.ts`, `agenda_store.ts`, `index.ts`, `README.md`, plan § 2, § 6, D-3). RF-16, RF-17, RNF-4
+- [x] **T5. Adaptador, almacén y callables** (`agenda_handler.ts`, `agenda_store.ts`, `index.ts`, `README.md`, plan § 2, § 6, D-3). RF-16, RF-17, RNF-4
   - Tests: `functions/test/agenda_handler.test.ts`.
     - El uid sale de la sesión, nunca de los datos. Sin sesión → `unauthenticated`.
     - Datos con otra forma (sin `start`, con un tipo equivocado o con campos de más) → `invalid-argument`.
