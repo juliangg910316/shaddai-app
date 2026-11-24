@@ -4,7 +4,6 @@ import 'package:shaddai/data/models/booked_service_model.dart';
 import 'package:shaddai/data/models/busy_slot_model.dart';
 import 'package:shaddai/data/models/price_list_model.dart';
 import 'package:shaddai/data/models/user_model.dart';
-import 'package:shaddai/data/repositories/booking_repository.dart';
 import 'package:shaddai/features/booking/logic/salon_time.dart';
 import 'package:shaddai/features/booking/presentation/active_appointment_view.dart';
 import 'package:shaddai/features/booking/presentation/booking_form.dart';

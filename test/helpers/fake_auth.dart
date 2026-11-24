@@ -5,7 +5,6 @@ import 'package:shaddai/data/models/appointment_model.dart';
 import 'package:shaddai/data/models/user_model.dart';
 import 'package:shaddai/data/repositories/auth_repository.dart';
 import 'package:shaddai/data/repositories/account_repository.dart';
-import 'package:shaddai/data/repositories/booking_repository.dart';
 import 'package:shaddai/data/repositories/user_repository.dart';
 
 import 'fake_booking.dart';
@@ -246,31 +245,6 @@ class FakeUserRepository implements UserRepository {
   @override
   Future<void> updatePhoneNumber(String uid, String phoneNumber) async =>
       phoneUpdates.add((uid: uid, phone: phoneNumber));
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
-
-/// Reservas que siempre fallan al crearse, con un error técnico.
-class FailingBookingRepository implements BookingRepository {
-  @override
-  Future<void> createAppointment(AppointmentModel appointment) async =>
-      throw FirebaseException(
-        plugin: 'cloud_firestore',
-        code: 'permission-denied',
-      );
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
-
-/// Reservas en memoria: guarda las que se crean.
-class RecordingBookingRepository implements BookingRepository {
-  final created = <AppointmentModel>[];
-
-  @override
-  Future<void> createAppointment(AppointmentModel appointment) async =>
-      created.add(appointment);
 
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

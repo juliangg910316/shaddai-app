@@ -1,12 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../data/models/appointment_model.dart';
+import '../../../data/repositories/agenda_functions.dart';
 import '../../services/providers/price_list_provider.dart';
 import '../logic/bookable_catalog.dart';
 import '../logic/booking_edit.dart';
 import '../logic/booking_rules.dart';
 import '../logic/salon_time.dart';
+import 'agenda_functions_provider.dart';
 import 'booking_provider.dart';
 
 export 'booking_provider.dart' show EditTargetController, editTargetProvider;
@@ -46,8 +47,34 @@ enum EditSaveOutcome {
   notEditable,
   notActive,
   changed,
+
+  /// Lo reservado ya no está en la lista de precios (spec 012, RF-12).
+  itemUnavailable,
+
+  /// Lo reservado cambió en la lista de precios (spec 012, RF-12).
+  itemChanged,
   failed,
 }
+
+/// Lo que da "Guardar cambios" cuando el servidor responde [rejection]
+/// (`null`: guardado; spec 012, plan § 6). Las reglas de horas se avisan
+/// como hora ocupada, igual que la comprobación de la app.
+EditSaveOutcome editOutcomeOf(AgendaRejection? rejection) =>
+    switch (rejection) {
+      null => EditSaveOutcome.ok,
+      AgendaRejection.slotTaken ||
+      AgendaRejection.closed ||
+      AgendaRejection.outsideHours ||
+      AgendaRejection.outsideWindow ||
+      AgendaRejection.past => EditSaveOutcome.slotTaken,
+      AgendaRejection.doesNotFit => EditSaveOutcome.doesNotFit,
+      AgendaRejection.notEditable => EditSaveOutcome.notEditable,
+      AgendaRejection.notActive => EditSaveOutcome.notActive,
+      AgendaRejection.changed => EditSaveOutcome.changed,
+      AgendaRejection.itemUnavailable => EditSaveOutcome.itemUnavailable,
+      AgendaRejection.itemChanged => EditSaveOutcome.itemChanged,
+      _ => EditSaveOutcome.failed,
+    };
 
 /// El resultado de guardar la edición. Con [EditSaveOutcome.ok], [changes]
 /// son los valores que cambiaron (vacío si no cambió nada, RF-17).
@@ -129,18 +156,18 @@ class BookingEditor {
           for (final addon in availableAddons(catalog!, item!))
             if (selection.addonIds.contains(addon.id)) addon,
         ];
-        final startTime = fromSalon(start);
-        final saved = await repository
-            .updateEditedAppointment(
+        // Guarda el servidor, con lo que tenía el turno al comprobarlo, que
+        // es lo que se abrió (spec 012, D-1).
+        final agenda = _ref.read(agendaFunctionsProvider);
+        final saved = await agenda
+            .edit(
               id: original.id,
-              expected: (current) =>
-                  current != null && _same(current, original),
-              start: startTime,
-              end: startTime.add(Duration(minutes: bookable.durationMinutes)),
+              start: fromSalon(start),
               booked: snapshotOf(bookable, addons),
+              expected: data.appointment!,
             )
-            .timeout(repository.saveTimeout);
-        outcome = saved ? EditSaveOutcome.ok : EditSaveOutcome.changed;
+            .timeout(agenda.timeout);
+        outcome = editOutcomeOf(saved.rejection);
       }
     } catch (error) {
       debugPrint('No se pudo guardar la edición del turno: $error');
@@ -161,19 +188,12 @@ class BookingEditor {
           EditSaveOutcome.notActive ||
           EditSaveOutcome.changed:
         target.end();
-      case EditSaveOutcome.failed:
+      case EditSaveOutcome.itemUnavailable ||
+          EditSaveOutcome.itemChanged ||
+          EditSaveOutcome.failed:
         break;
     }
     return EditSaveResult(outcome);
-  }
-
-  /// Si [current] sigue como al abrir la edición (RF-12).
-  static bool _same(AppointmentModel current, EditOriginal original) {
-    final now = EditOriginal.of(current);
-    return now.start == original.start &&
-        now.end == original.end &&
-        now.status == original.status &&
-        now.booked == original.booked;
   }
 }
 

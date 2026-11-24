@@ -1,0 +1,833 @@
+{
+  "description": "Casos de las reglas de horas de la agenda (spec 012, RNF-2, plan D-4). Los pasan un test de Dart (test/features/booking/agenda_rules_cases_test.dart) y uno de TypeScript (functions/test/agenda_rules_cases.test.ts): la app y el servidor tienen que dar el mismo veredicto. Instantes en UTC; el salón está en UTC-3. 'verdict' es lo que da la app (ok, slot_taken, does_not_fit); 'reason' es el motivo fino del servidor. Sin 'settings', el horario por defecto (lunes a sábado de 9:00 a 18:00, domingo cerrado). 'busy' son los otros turnos (estado 'confirmed' si falta); 'original', el turno que se edita. 'whatsapp' son los números de whatsapp_test.dart (normalizar y comparar); 'persons', el turno activo de una persona por su cuenta o su WhatsApp ('expected' es el id del turno activo o null; 'excludeId', el turno que se edita). 'appointmentFields' son los campos que escribe AppointmentModel.toMap con lo reservado: el servidor escribe los mismos.",
+  "cases": [
+    {
+      "name": "hora libre",
+      "now": "2026-11-23T13:00:00Z",
+      "start": "2026-11-24T13:00:00Z",
+      "durationMinutes": 60,
+      "verdict": "ok",
+      "reason": "ok"
+    },
+    {
+      "name": "hora ocupada por otro turno",
+      "now": "2026-11-23T13:00:00Z",
+      "busy": [
+        {
+          "start": "2026-11-24T13:00:00Z",
+          "end": "2026-11-24T14:00:00Z"
+        }
+      ],
+      "start": "2026-11-24T13:00:00Z",
+      "durationMinutes": 60,
+      "verdict": "slot_taken",
+      "reason": "slot_taken"
+    },
+    {
+      "name": "hora dentro de otro turno que empezó antes",
+      "now": "2026-11-23T13:00:00Z",
+      "busy": [
+        {
+          "start": "2026-11-24T12:30:00Z",
+          "end": "2026-11-24T13:30:00Z"
+        }
+      ],
+      "start": "2026-11-24T13:00:00Z",
+      "durationMinutes": 60,
+      "verdict": "slot_taken",
+      "reason": "slot_taken"
+    },
+    {
+      "name": "empieza justo cuando termina otro: no se solapan",
+      "now": "2026-11-23T13:00:00Z",
+      "busy": [
+        {
+          "start": "2026-11-24T12:00:00Z",
+          "end": "2026-11-24T13:00:00Z"
+        }
+      ],
+      "start": "2026-11-24T13:00:00Z",
+      "durationMinutes": 60,
+      "verdict": "ok",
+      "reason": "ok"
+    },
+    {
+      "name": "un turno cancelado no cuenta",
+      "now": "2026-11-23T13:00:00Z",
+      "busy": [
+        {
+          "start": "2026-11-24T13:00:00Z",
+          "end": "2026-11-24T14:00:00Z",
+          "status": "cancelled"
+        }
+      ],
+      "start": "2026-11-24T13:00:00Z",
+      "durationMinutes": 60,
+      "verdict": "ok",
+      "reason": "ok"
+    },
+    {
+      "name": "un turno esperando confirmación sí cuenta",
+      "now": "2026-11-23T13:00:00Z",
+      "busy": [
+        {
+          "start": "2026-11-24T13:00:00Z",
+          "end": "2026-11-24T14:00:00Z",
+          "status": "waiting_confirmation"
+        }
+      ],
+      "start": "2026-11-24T13:00:00Z",
+      "durationMinutes": 60,
+      "verdict": "slot_taken",
+      "reason": "slot_taken"
+    },
+    {
+      "name": "no cabe hasta el siguiente turno",
+      "now": "2026-11-23T13:00:00Z",
+      "busy": [
+        {
+          "start": "2026-11-24T14:00:00Z",
+          "end": "2026-11-24T15:00:00Z"
+        }
+      ],
+      "start": "2026-11-24T13:00:00Z",
+      "durationMinutes": 90,
+      "verdict": "does_not_fit",
+      "reason": "does_not_fit"
+    },
+    {
+      "name": "cabe justo hasta el siguiente turno",
+      "now": "2026-11-23T13:00:00Z",
+      "busy": [
+        {
+          "start": "2026-11-24T14:00:00Z",
+          "end": "2026-11-24T15:00:00Z"
+        }
+      ],
+      "start": "2026-11-24T13:00:00Z",
+      "durationMinutes": 60,
+      "verdict": "ok",
+      "reason": "ok"
+    },
+    {
+      "name": "ya pasó",
+      "now": "2026-11-23T13:00:00Z",
+      "start": "2026-11-23T12:30:00Z",
+      "durationMinutes": 60,
+      "verdict": "slot_taken",
+      "reason": "past"
+    },
+    {
+      "name": "es justo ahora",
+      "now": "2026-11-23T13:00:00Z",
+      "start": "2026-11-23T13:00:00Z",
+      "durationMinutes": 60,
+      "verdict": "slot_taken",
+      "reason": "past"
+    },
+    {
+      "name": "fuera de la rejilla",
+      "now": "2026-11-23T13:00:00Z",
+      "start": "2026-11-24T13:15:00Z",
+      "durationMinutes": 60,
+      "verdict": "slot_taken",
+      "reason": "outside_hours"
+    },
+    {
+      "name": "antes de abrir",
+      "now": "2026-11-23T13:00:00Z",
+      "start": "2026-11-24T11:30:00Z",
+      "durationMinutes": 60,
+      "verdict": "slot_taken",
+      "reason": "outside_hours"
+    },
+    {
+      "name": "a la hora del cierre",
+      "now": "2026-11-23T13:00:00Z",
+      "start": "2026-11-24T21:00:00Z",
+      "durationMinutes": 30,
+      "verdict": "slot_taken",
+      "reason": "outside_hours"
+    },
+    {
+      "name": "pasaría del cierre",
+      "now": "2026-11-23T13:00:00Z",
+      "start": "2026-11-24T20:30:00Z",
+      "durationMinutes": 60,
+      "verdict": "does_not_fit",
+      "reason": "does_not_fit"
+    },
+    {
+      "name": "día de la semana cerrado (domingo)",
+      "now": "2026-11-23T13:00:00Z",
+      "start": "2026-11-29T13:00:00Z",
+      "durationMinutes": 60,
+      "verdict": "slot_taken",
+      "reason": "closed"
+    },
+    {
+      "name": "un día que falta en el horario está cerrado",
+      "now": "2026-11-23T13:00:00Z",
+      "settings": {
+        "openingHours": {
+          "monday": {
+            "open": "09:00",
+            "close": "18:00",
+            "isClosed": false
+          }
+        }
+      },
+      "start": "2026-11-24T13:00:00Z",
+      "durationMinutes": 60,
+      "verdict": "slot_taken",
+      "reason": "closed"
+    },
+    {
+      "name": "fecha bloqueada",
+      "now": "2026-11-23T13:00:00Z",
+      "settings": {
+        "blockedDates": [
+          "2026-11-25"
+        ]
+      },
+      "start": "2026-11-25T13:00:00Z",
+      "durationMinutes": 60,
+      "verdict": "slot_taken",
+      "reason": "closed"
+    },
+    {
+      "name": "dentro de un cierre",
+      "now": "2026-11-23T13:00:00Z",
+      "closures": [
+        {
+          "start": "2026-11-24T12:30:00Z",
+          "end": "2026-11-24T14:00:00Z"
+        }
+      ],
+      "start": "2026-11-24T13:00:00Z",
+      "durationMinutes": 60,
+      "verdict": "slot_taken",
+      "reason": "closed"
+    },
+    {
+      "name": "un cierre después: no cabe",
+      "now": "2026-11-23T13:00:00Z",
+      "closures": [
+        {
+          "start": "2026-11-24T14:00:00Z",
+          "end": "2026-11-24T15:00:00Z"
+        }
+      ],
+      "start": "2026-11-24T13:00:00Z",
+      "durationMinutes": 90,
+      "verdict": "does_not_fit",
+      "reason": "does_not_fit"
+    },
+    {
+      "name": "el día entero cerrado por cierres",
+      "now": "2026-11-23T13:00:00Z",
+      "closures": [
+        {
+          "start": "2026-11-24T03:00:00Z",
+          "end": "2026-11-24T16:00:00Z"
+        },
+        {
+          "start": "2026-11-24T16:00:00Z",
+          "end": "2026-11-25T03:00:00Z"
+        }
+      ],
+      "start": "2026-11-24T19:00:00Z",
+      "durationMinutes": 60,
+      "verdict": "slot_taken",
+      "reason": "closed"
+    },
+    {
+      "name": "clienta: el día 60 de la ventana",
+      "now": "2026-11-23T13:00:00Z",
+      "start": "2027-01-22T13:00:00Z",
+      "durationMinutes": 60,
+      "verdict": "ok",
+      "reason": "ok"
+    },
+    {
+      "name": "clienta: el día 61 está fuera de la ventana",
+      "now": "2026-11-23T13:00:00Z",
+      "start": "2027-01-23T13:00:00Z",
+      "durationMinutes": 60,
+      "verdict": "slot_taken",
+      "reason": "outside_window"
+    },
+    {
+      "name": "admin: el día 61 sí",
+      "now": "2026-11-23T13:00:00Z",
+      "mode": "admin",
+      "start": "2027-01-23T13:00:00Z",
+      "durationMinutes": 60,
+      "verdict": "ok",
+      "reason": "ok"
+    },
+    {
+      "name": "admin: el día 365 de la ventana",
+      "now": "2026-11-23T13:00:00Z",
+      "mode": "admin",
+      "start": "2027-11-23T13:00:00Z",
+      "durationMinutes": 60,
+      "verdict": "ok",
+      "reason": "ok"
+    },
+    {
+      "name": "admin: el día 366 está fuera de la ventana",
+      "now": "2026-11-23T13:00:00Z",
+      "mode": "admin",
+      "start": "2027-11-24T13:00:00Z",
+      "durationMinutes": 60,
+      "verdict": "slot_taken",
+      "reason": "outside_window"
+    },
+    {
+      "name": "la ventana cuenta desde el día del salón, no el de UTC",
+      "now": "2026-11-23T02:30:00Z",
+      "start": "2027-01-22T13:00:00Z",
+      "durationMinutes": 60,
+      "verdict": "slot_taken",
+      "reason": "outside_window"
+    },
+    {
+      "name": "edición: la misma hora aunque el horario nuevo ya no la tenga",
+      "now": "2026-11-23T13:00:00Z",
+      "settings": {
+        "openingHours": {
+          "monday": {
+            "open": "09:00",
+            "close": "18:00",
+            "isClosed": false
+          },
+          "tuesday": {
+            "open": "12:00",
+            "close": "18:00",
+            "isClosed": false
+          }
+        }
+      },
+      "original": {
+        "start": "2026-11-24T13:00:00Z",
+        "end": "2026-11-24T14:00:00Z"
+      },
+      "start": "2026-11-24T13:00:00Z",
+      "durationMinutes": 60,
+      "verdict": "ok",
+      "reason": "ok"
+    },
+    {
+      "name": "edición: la misma hora fuera de la rejilla",
+      "now": "2026-11-23T13:00:00Z",
+      "original": {
+        "start": "2026-11-24T13:15:00Z",
+        "end": "2026-11-24T14:15:00Z"
+      },
+      "start": "2026-11-24T13:15:00Z",
+      "durationMinutes": 60,
+      "verdict": "ok",
+      "reason": "ok"
+    },
+    {
+      "name": "edición: la misma hora en un día que ahora cierra",
+      "now": "2026-11-23T13:00:00Z",
+      "settings": {
+        "openingHours": {
+          "monday": {
+            "open": "09:00",
+            "close": "18:00",
+            "isClosed": false
+          },
+          "tuesday": {
+            "open": "09:00",
+            "close": "18:00",
+            "isClosed": true
+          }
+        }
+      },
+      "original": {
+        "start": "2026-11-24T13:00:00Z",
+        "end": "2026-11-24T14:00:00Z"
+      },
+      "start": "2026-11-24T13:00:00Z",
+      "durationMinutes": 60,
+      "verdict": "ok",
+      "reason": "ok"
+    },
+    {
+      "name": "edición: la misma hora en una fecha bloqueada después",
+      "now": "2026-11-23T13:00:00Z",
+      "settings": {
+        "blockedDates": [
+          "2026-11-24"
+        ]
+      },
+      "original": {
+        "start": "2026-11-24T13:00:00Z",
+        "end": "2026-11-24T14:00:00Z"
+      },
+      "start": "2026-11-24T13:00:00Z",
+      "durationMinutes": 60,
+      "verdict": "ok",
+      "reason": "ok"
+    },
+    {
+      "name": "edición: la misma hora bajo un cierre nuevo no vale",
+      "now": "2026-11-23T13:00:00Z",
+      "closures": [
+        {
+          "start": "2026-11-24T12:00:00Z",
+          "end": "2026-11-24T15:00:00Z"
+        }
+      ],
+      "original": {
+        "start": "2026-11-24T13:00:00Z",
+        "end": "2026-11-24T14:00:00Z"
+      },
+      "start": "2026-11-24T13:00:00Z",
+      "durationMinutes": 60,
+      "verdict": "slot_taken",
+      "reason": "closed"
+    },
+    {
+      "name": "edición: otra hora del día que ahora cierra no vale",
+      "now": "2026-11-23T13:00:00Z",
+      "settings": {
+        "openingHours": {
+          "monday": {
+            "open": "09:00",
+            "close": "18:00",
+            "isClosed": false
+          },
+          "tuesday": {
+            "open": "09:00",
+            "close": "18:00",
+            "isClosed": true
+          }
+        }
+      },
+      "original": {
+        "start": "2026-11-24T13:00:00Z",
+        "end": "2026-11-24T14:00:00Z"
+      },
+      "start": "2026-11-24T15:00:00Z",
+      "durationMinutes": 60,
+      "verdict": "slot_taken",
+      "reason": "closed"
+    },
+    {
+      "name": "edición: ampliar el fin sobre otro turno",
+      "now": "2026-11-23T13:00:00Z",
+      "busy": [
+        {
+          "start": "2026-11-24T14:00:00Z",
+          "end": "2026-11-24T15:00:00Z"
+        }
+      ],
+      "original": {
+        "start": "2026-11-24T13:00:00Z",
+        "end": "2026-11-24T14:00:00Z"
+      },
+      "start": "2026-11-24T13:00:00Z",
+      "durationMinutes": 90,
+      "verdict": "does_not_fit",
+      "reason": "does_not_fit"
+    },
+    {
+      "name": "edición: fuera de la rejilla, ampliar hasta el cierre",
+      "now": "2026-11-23T13:00:00Z",
+      "original": {
+        "start": "2026-11-24T19:45:00Z",
+        "end": "2026-11-24T20:45:00Z"
+      },
+      "start": "2026-11-24T19:45:00Z",
+      "durationMinutes": 75,
+      "verdict": "ok",
+      "reason": "ok"
+    },
+    {
+      "name": "edición: fuera de la rejilla, sin pasar del cierre ni del fin original",
+      "now": "2026-11-23T13:00:00Z",
+      "original": {
+        "start": "2026-11-24T19:45:00Z",
+        "end": "2026-11-24T20:45:00Z"
+      },
+      "start": "2026-11-24T19:45:00Z",
+      "durationMinutes": 90,
+      "verdict": "does_not_fit",
+      "reason": "does_not_fit"
+    },
+    {
+      "name": "edición: fuera de la rejilla, el fin original pasa del cierre",
+      "now": "2026-11-23T13:00:00Z",
+      "original": {
+        "start": "2026-11-24T20:15:00Z",
+        "end": "2026-11-24T21:45:00Z"
+      },
+      "start": "2026-11-24T20:15:00Z",
+      "durationMinutes": 90,
+      "verdict": "ok",
+      "reason": "ok"
+    },
+    {
+      "name": "edición: a otra hora libre, sin contar el propio turno",
+      "now": "2026-11-23T13:00:00Z",
+      "original": {
+        "start": "2026-11-24T13:00:00Z",
+        "end": "2026-11-24T14:00:00Z"
+      },
+      "start": "2026-11-24T13:30:00Z",
+      "durationMinutes": 60,
+      "verdict": "ok",
+      "reason": "ok"
+    },
+    {
+      "name": "edición: a otra hora ocupada",
+      "now": "2026-11-23T13:00:00Z",
+      "busy": [
+        {
+          "start": "2026-11-24T15:00:00Z",
+          "end": "2026-11-24T16:00:00Z"
+        }
+      ],
+      "original": {
+        "start": "2026-11-24T13:00:00Z",
+        "end": "2026-11-24T14:00:00Z"
+      },
+      "start": "2026-11-24T15:00:00Z",
+      "durationMinutes": 60,
+      "verdict": "slot_taken",
+      "reason": "slot_taken"
+    },
+    {
+      "name": "edición de la clienta: su turno ya empezó",
+      "now": "2026-11-24T13:30:00Z",
+      "original": {
+        "start": "2026-11-24T13:15:00Z",
+        "end": "2026-11-24T14:15:00Z"
+      },
+      "start": "2026-11-24T13:15:00Z",
+      "durationMinutes": 60,
+      "verdict": "slot_taken",
+      "reason": "past"
+    },
+    {
+      "name": "edición de la admin: el turno en curso aún vale",
+      "now": "2026-11-24T13:30:00Z",
+      "mode": "admin",
+      "original": {
+        "start": "2026-11-24T13:15:00Z",
+        "end": "2026-11-24T14:15:00Z"
+      },
+      "start": "2026-11-24T13:15:00Z",
+      "durationMinutes": 60,
+      "verdict": "ok",
+      "reason": "ok"
+    }
+  ],
+  "whatsapp": {
+    "normalize": [
+      [
+        "41 99999-0000",
+        "41999990000",
+        "espacios y guion"
+      ],
+      [
+        "(41) 99999-0000",
+        "41999990000",
+        "paréntesis"
+      ],
+      [
+        "+55 41 99999-0000",
+        "41999990000",
+        "+55"
+      ],
+      [
+        "+55 (41) 3333-4444",
+        "4133334444",
+        "+55 con fijo de 8 dígitos"
+      ],
+      [
+        "5541999990000",
+        "41999990000",
+        "55 delante, 13 dígitos"
+      ],
+      [
+        "554133334444",
+        "4133334444",
+        "55 delante, 12 dígitos"
+      ],
+      [
+        "55 99123-4567",
+        "55991234567",
+        "55 como DDD, 11 dígitos"
+      ],
+      [
+        "55 3333-4444",
+        "5533334444",
+        "55 como DDD, 10 dígitos"
+      ],
+      [
+        "+53 5 1234567",
+        "5351234567",
+        "otro país: no se toca"
+      ],
+      [
+        "  41.99999.0000  ",
+        "41999990000",
+        "puntos y espacios alrededor"
+      ],
+      [
+        "sin número",
+        "",
+        "sin dígitos"
+      ],
+      [
+        "",
+        "",
+        "vacío"
+      ]
+    ],
+    "same": [
+      [
+        "+55 41 99999-0000",
+        "(41) 99999-0000",
+        true,
+        "con y sin +55"
+      ],
+      [
+        "5541999990000",
+        "41 99999 0000",
+        true,
+        "55 delante y sin él"
+      ],
+      [
+        "41 99999-0000",
+        "41 99999-0001",
+        false,
+        "otro número"
+      ],
+      [
+        "55 99123-4567",
+        "99123-4567",
+        false,
+        "55 como DDD no se quita"
+      ],
+      [
+        "",
+        "",
+        false,
+        "dos vacíos"
+      ],
+      [
+        "abc",
+        "xyz",
+        false,
+        "sin dígitos"
+      ]
+    ]
+  },
+  "persons": [
+    {
+      "name": "por su cuenta",
+      "now": "2026-11-23T13:00:00Z",
+      "uid": "ana",
+      "phone": "41 99999-0000",
+      "appointments": [
+        {
+          "id": "t1",
+          "clientId": "ana",
+          "clientPhone": "",
+          "start": "2026-11-24T13:00:00Z",
+          "end": "2026-11-24T14:00:00Z",
+          "status": "confirmed"
+        }
+      ],
+      "expected": "t1"
+    },
+    {
+      "name": "por su WhatsApp, sin cuenta",
+      "now": "2026-11-23T13:00:00Z",
+      "uid": null,
+      "phone": "+55 41 99999-0000",
+      "appointments": [
+        {
+          "id": "t1",
+          "clientId": null,
+          "clientPhone": "(41) 99999-0000",
+          "start": "2026-11-24T13:00:00Z",
+          "end": "2026-11-24T14:00:00Z",
+          "status": "confirmed"
+        }
+      ],
+      "expected": "t1"
+    },
+    {
+      "name": "con cuenta, también por su WhatsApp",
+      "now": "2026-11-23T13:00:00Z",
+      "uid": "ana",
+      "phone": "41999990000",
+      "appointments": [
+        {
+          "id": "t1",
+          "clientId": null,
+          "clientPhone": "5541999990000",
+          "start": "2026-11-24T13:00:00Z",
+          "end": "2026-11-24T14:00:00Z",
+          "status": "confirmed"
+        }
+      ],
+      "expected": "t1"
+    },
+    {
+      "name": "otra persona no cuenta",
+      "now": "2026-11-23T13:00:00Z",
+      "uid": "ana",
+      "phone": "41999990000",
+      "appointments": [
+        {
+          "id": "t1",
+          "clientId": "bea",
+          "clientPhone": "41999990001",
+          "start": "2026-11-24T13:00:00Z",
+          "end": "2026-11-24T14:00:00Z",
+          "status": "confirmed"
+        }
+      ],
+      "expected": null
+    },
+    {
+      "name": "un WhatsApp vacío no coincide con otro vacío",
+      "now": "2026-11-23T13:00:00Z",
+      "uid": null,
+      "phone": "",
+      "appointments": [
+        {
+          "id": "t1",
+          "clientId": null,
+          "clientPhone": "",
+          "start": "2026-11-24T13:00:00Z",
+          "end": "2026-11-24T14:00:00Z",
+          "status": "confirmed"
+        }
+      ],
+      "expected": null
+    },
+    {
+      "name": "cancelado o terminado no cuentan",
+      "now": "2026-11-23T13:00:00Z",
+      "uid": "ana",
+      "phone": "41999990000",
+      "appointments": [
+        {
+          "id": "t1",
+          "clientId": "ana",
+          "clientPhone": "",
+          "start": "2026-11-24T13:00:00Z",
+          "end": "2026-11-24T14:00:00Z",
+          "status": "cancelled"
+        },
+        {
+          "id": "t2",
+          "clientId": "ana",
+          "clientPhone": "",
+          "start": "2026-11-22T13:00:00Z",
+          "end": "2026-11-22T14:00:00Z",
+          "status": "confirmed"
+        }
+      ],
+      "expected": null
+    },
+    {
+      "name": "en curso sí cuenta",
+      "now": "2026-11-24T13:30:00Z",
+      "uid": "ana",
+      "phone": "41999990000",
+      "appointments": [
+        {
+          "id": "t1",
+          "clientId": "ana",
+          "clientPhone": "",
+          "start": "2026-11-24T13:00:00Z",
+          "end": "2026-11-24T14:00:00Z",
+          "status": "waiting_confirmation"
+        }
+      ],
+      "expected": "t1"
+    },
+    {
+      "name": "termina justo ahora: ya no",
+      "now": "2026-11-24T14:00:00Z",
+      "uid": "ana",
+      "phone": "41999990000",
+      "appointments": [
+        {
+          "id": "t1",
+          "clientId": "ana",
+          "clientPhone": "",
+          "start": "2026-11-24T13:00:00Z",
+          "end": "2026-11-24T14:00:00Z",
+          "status": "confirmed"
+        }
+      ],
+      "expected": null
+    },
+    {
+      "name": "de varios, el que empieza antes",
+      "now": "2026-11-23T13:00:00Z",
+      "uid": "ana",
+      "phone": "41999990000",
+      "appointments": [
+        {
+          "id": "t2",
+          "clientId": "ana",
+          "clientPhone": "",
+          "start": "2026-11-26T13:00:00Z",
+          "end": "2026-11-26T14:00:00Z",
+          "status": "confirmed"
+        },
+        {
+          "id": "t1",
+          "clientId": null,
+          "clientPhone": "41999990000",
+          "start": "2026-11-25T13:00:00Z",
+          "end": "2026-11-25T14:00:00Z",
+          "status": "confirmed"
+        }
+      ],
+      "expected": "t1"
+    },
+    {
+      "name": "el turno que se edita no cuenta",
+      "now": "2026-11-23T13:00:00Z",
+      "uid": "ana",
+      "phone": "41999990000",
+      "excludeId": "t1",
+      "appointments": [
+        {
+          "id": "t1",
+          "clientId": "ana",
+          "clientPhone": "",
+          "start": "2026-11-24T13:00:00Z",
+          "end": "2026-11-24T14:00:00Z",
+          "status": "confirmed"
+        }
+      ],
+      "expected": null
+    }
+  ],
+  "appointmentFields": [
+    "booked",
+    "clientId",
+    "clientName",
+    "clientPhone",
+    "clientPhotoUrl",
+    "createdAt",
+    "createdByAdmin",
+    "endTime",
+    "startTime",
+    "status"
+  ]
+}

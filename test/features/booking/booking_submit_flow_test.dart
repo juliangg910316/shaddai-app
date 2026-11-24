@@ -3,13 +3,16 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shaddai/core/platform/platform_provider.dart';
 import 'package:shaddai/data/models/appointment_model.dart';
 import 'package:shaddai/data/models/busy_slot_model.dart';
+import 'package:shaddai/data/repositories/agenda_functions.dart';
 import 'package:shaddai/features/booking/logic/booking_selection.dart';
 import 'package:shaddai/features/booking/logic/salon_time.dart';
 import 'package:shaddai/features/booking/presentation/active_appointment_view.dart';
 import 'package:shaddai/features/booking/presentation/booking_view.dart';
+import 'package:shaddai/features/booking/providers/agenda_functions_provider.dart';
 import 'package:shaddai/features/booking/providers/booking_provider.dart';
 
 import '../../helpers/booking_steps.dart';
+import '../../helpers/fake_agenda.dart';
 import '../../helpers/fake_booking.dart';
 import '../../helpers/fake_session.dart';
 import '../../helpers/pump_app.dart';
@@ -46,13 +49,17 @@ void main() {
 
   setUp(() => bookings = FakeBookingRepository());
 
-  Future<void> pump(WidgetTester tester, {bool web = false}) async {
+  Future<void> pump(
+    WidgetTester tester, {
+    bool web = false,
+    String language = 'es',
+  }) async {
     tester.view.devicePixelRatio = 1;
     tester.view.physicalSize = const Size(800, 2400);
     addTearDown(tester.view.reset);
     await pumpApp(
       tester,
-      stored: {'language': 'es'},
+      stored: {'language': language},
       home: const BookingView(),
       overrides: [
         ...bookingDataOverrides(bookings: bookings),
@@ -177,5 +184,71 @@ void main() {
     );
     expect(find.textContaining('permission-denied'), findsNothing);
     expect(selection(tester), before);
+  });
+
+  // Lo que responde el servidor tras la comprobación de la app (spec 012,
+  // RF-12, RF-16): el aviso en los dos idiomas, sin guardar y con lo elegido.
+  for (final (rejection, language, message) in [
+    (
+      AgendaRejection.itemChanged,
+      'es',
+      'El servicio cambió de nombre, precio o duración. Revisa el resumen y '
+          'vuelve a confirmar.',
+    ),
+    (
+      AgendaRejection.itemChanged,
+      'pt',
+      'O serviço mudou de nome, preço ou duração. Revise o resumo e confirme '
+          'novamente.',
+    ),
+    (
+      AgendaRejection.itemUnavailable,
+      'es',
+      'El servicio elegido ya no está disponible.',
+    ),
+    (
+      AgendaRejection.itemUnavailable,
+      'pt',
+      'O serviço escolhido não está mais disponível.',
+    ),
+  ]) {
+    testWidgets('el servidor responde ${rejection.name} ($language): avisa y '
+        'conserva lo elegido', (tester) async {
+      await pump(tester, language: language);
+      (appContainer(tester).read(
+        agendaFunctionsProvider,
+      ) as FakeAgendaFunctions).rejection = rejection;
+      await openBookingConfirmation(tester, settle: () => settle(tester));
+      final before = selection(tester);
+      await tester.tap(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.byType(ElevatedButton),
+        ),
+      );
+      await settle(tester);
+
+      expect(bookings.created, isEmpty);
+      expect(find.text(message), findsOneWidget);
+      expect(selection(tester), before);
+    });
+  }
+
+  testWidgets('el servidor responde slot_taken: quita la hora y avisa', (
+    tester,
+  ) async {
+    await pump(tester);
+    (appContainer(tester).read(
+      agendaFunctionsProvider,
+    ) as FakeAgendaFunctions).rejection = AgendaRejection.slotTaken;
+    await book(tester);
+
+    expect(bookings.created, isEmpty);
+    expect(selection(tester).start, isNull);
+    expect(selection(tester).item, isNotNull);
+    expect(
+      find.text('Esa hora acaba de ocuparse. Elige otra.'),
+      findsOneWidget,
+    );
   });
 }

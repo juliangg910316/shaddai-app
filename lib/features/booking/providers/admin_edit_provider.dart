@@ -2,10 +2,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../data/models/appointment_model.dart';
-import '../../../data/repositories/booking_repository.dart';
+import '../../../data/repositories/agenda_functions.dart';
 import '../../admin/providers/admin_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../services/providers/price_list_provider.dart';
+import '../logic/admin_booking.dart';
 import '../logic/admin_edit.dart';
 import '../logic/bookable_catalog.dart';
 import '../logic/booking_edit.dart';
@@ -13,6 +14,8 @@ import '../logic/booking_selection.dart';
 import '../logic/recipient.dart';
 import '../logic/salon_time.dart';
 import 'admin_booking_provider.dart';
+import 'agenda_functions_provider.dart';
+import 'booking_edit_provider.dart';
 import 'booking_provider.dart';
 
 /// La edición de un turno por la admin (spec 008, RF-19 a RF-35; plan § 5).
@@ -161,38 +164,64 @@ class AdminEditController extends Notifier<String?> {
           break;
       }
 
-      final AppointmentPerson personNow = switch (person) {
-        AccountRecipient(:final uid) => (
-          clientId: uid,
-          clientName: recipientUser!.displayName,
-          clientPhone: recipientUser.phoneNumber ?? person.phone,
-          clientPhotoUrl: recipientUser.photoUrl,
-        ),
-        GuestRecipient(name: final guestName, phone: final guestPhone) => (
-          clientId: null,
-          clientName: guestName.trim(),
-          clientPhone: guestPhone.trim(),
-          clientPhotoUrl: null,
-        ),
-      };
       final addons = [
         for (final addon in availableAddons(catalog, selection.item!))
           if (selection.addonIds.contains(addon.id)) addon,
       ];
-      final startTime = fromSalon(start);
       saving.set(true);
-      final saved = await repository.updateAppointmentByAdmin(
-        id: original.id,
-        expected: (current) =>
-            adminEditAlert(original, current, nowSalon) == null,
-        start: startTime,
-        end: startTime.add(Duration(minutes: bookable.durationMinutes)),
-        booked: snapshotOf(bookable, addons),
-        // La persona solo se escribe si cambió (RF-31).
-        person: personChanged(original, person) ? personNow : null,
-      );
-      if (!saved) return const AdminEditResult(AdminEditOutcome.changed);
-      name = personNow.clientName;
+      // Guarda el servidor, con lo que tenía el turno al comprobarlo, que es
+      // lo que se abrió (spec 012, D-1). La persona solo se escribe si
+      // cambió (RF-31).
+      final agenda = ref.read(agendaFunctionsProvider);
+      final saved = await agenda
+          .edit(
+            id: original.id,
+            start: fromSalon(start),
+            booked: snapshotOf(bookable, addons),
+            expected: data.appointment!,
+            recipient: agendaRecipientOf(person),
+          )
+          .timeout(agenda.timeout);
+      switch (saved.rejection) {
+        case null:
+          break;
+        case AgendaRejection.personActive:
+          // El texto de siempre necesita su otro turno: se vuelve a leer.
+          final active = activeAppointmentOfPerson(
+            [
+              for (final a in await repository.fetchActiveAppointments(now))
+                if (a.id != original.id) a,
+            ],
+            uid: person is AccountRecipient ? person.uid : null,
+            phone: recipientUser?.phoneNumber ?? person.phone,
+            now: now,
+          );
+          return active == null
+              ? _failed
+              : AdminEditResult(AdminEditOutcome.personActive, active: active);
+        case AgendaRejection.recipientBlocked:
+          if (person is AccountRecipient) recipients.dropBlocked();
+          return const AdminEditResult(AdminEditOutcome.recipientBlocked);
+        case final rejection:
+          final outcome = switch (editOutcomeOf(rejection)) {
+            EditSaveOutcome.slotTaken => AdminEditOutcome.slotTaken,
+            EditSaveOutcome.doesNotFit => AdminEditOutcome.doesNotFit,
+            EditSaveOutcome.notActive => AdminEditOutcome.notActive,
+            EditSaveOutcome.changed => AdminEditOutcome.changed,
+            EditSaveOutcome.itemUnavailable => AdminEditOutcome.itemUnavailable,
+            EditSaveOutcome.itemChanged => AdminEditOutcome.itemChanged,
+            _ => AdminEditOutcome.failed,
+          };
+          if (outcome == AdminEditOutcome.slotTaken ||
+              outcome == AdminEditOutcome.doesNotFit) {
+            selector.dropSlot();
+          }
+          return AdminEditResult(outcome);
+      }
+      name = switch (person) {
+        AccountRecipient() => recipientUser!.displayName,
+        GuestRecipient(name: final guestName) => guestName.trim(),
+      };
       end();
     } catch (error) {
       debugPrint('No se pudo guardar la edición de la admin: $error');
@@ -223,6 +252,12 @@ enum AdminEditOutcome {
   personActive,
   notActive,
   changed,
+
+  /// Lo reservado ya no está en la lista de precios (spec 012, RF-12).
+  itemUnavailable,
+
+  /// Lo reservado cambió en la lista de precios (spec 012, RF-12).
+  itemChanged,
 
   /// Sin conexión o error al leer o guardar.
   failed,

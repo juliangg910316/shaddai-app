@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../../data/models/appointment_model.dart';
 import '../../../data/models/user_model.dart';
+import '../../../data/repositories/agenda_functions.dart';
 import '../../admin/providers/admin_provider.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../services/providers/price_list_provider.dart';
@@ -12,6 +13,7 @@ import '../logic/bookable_catalog.dart';
 import '../logic/recipient.dart';
 import '../logic/salon_time.dart';
 import '../logic/whatsapp.dart';
+import 'agenda_functions_provider.dart';
 import 'booking_provider.dart';
 
 /// Avisos de "Para quién" que la vista aún no ha mostrado.
@@ -186,6 +188,12 @@ enum AdminBookingOutcome {
   doesNotFit,
   personActive,
   recipientBlocked,
+
+  /// Lo reservado ya no está en la lista de precios (spec 012, RF-12).
+  itemUnavailable,
+
+  /// Lo reservado cambió en la lista de precios (spec 012, RF-12).
+  itemChanged,
   failed,
 }
 
@@ -200,6 +208,17 @@ class AdminBookingResult {
   /// Con [AdminBookingOutcome.ok], para quién se agendó.
   final String? name;
 }
+
+/// La persona de [recipient] como la recibe la función (spec 012): una
+/// clienta por su cuenta (el servidor lee su ficha) o una persona sin
+/// cuenta, sin espacios alrededor.
+AgendaRecipient agendaRecipientOf(Recipient recipient) => switch (recipient) {
+  AccountRecipient(:final uid) => AgendaAccountRecipient(uid),
+  GuestRecipient(:final name, :final phone) => AgendaGuestRecipient(
+    name: name.trim(),
+    phone: phone.trim(),
+  ),
+};
 
 /// Guarda el turno de la admin tras comprobarlo en el servidor (RF-18,
 /// RF-19, plan § 5). Con `ok`, vacía la selección y para quién (RF-20).
@@ -289,39 +308,55 @@ class AdminBookingSubmitter {
         for (final addon in availableAddons(catalog!, item!))
           if (selection.addonIds.contains(addon.id)) addon,
       ];
-      final startTime = fromSalon(start);
-      final appointment = switch (recipient) {
-        AccountRecipient(:final uid) => AppointmentModel(
-          id: const Uuid().v4(),
-          clientId: uid,
-          clientName: recipientUser!.displayName,
-          clientPhone: recipientUser.phoneNumber ?? recipient.phone,
-          clientPhotoUrl: recipientUser.photoUrl,
-          startTime: startTime,
-          endTime: startTime.add(Duration(minutes: bookable.durationMinutes)),
-          status: 'confirmed',
-          createdAt: now,
-          createdByAdmin: true,
-          booked: snapshotOf(bookable, addons),
-        ),
-        GuestRecipient(name: final guestName, phone: final guestPhone) =>
-          AppointmentModel(
+      // Guarda el servidor, que vuelve a comprobarlo todo (spec 012, D-1).
+      final agenda = _ref.read(agendaFunctionsProvider);
+      final saved = await agenda
+          .book(
             id: const Uuid().v4(),
-            clientId: null,
-            clientName: guestName.trim(),
-            clientPhone: guestPhone.trim(),
-            startTime: startTime,
-            endTime: startTime.add(Duration(minutes: bookable.durationMinutes)),
-            status: 'confirmed',
-            createdAt: now,
-            createdByAdmin: true,
+            start: fromSalon(start),
             booked: snapshotOf(bookable, addons),
-          ),
+            recipient: agendaRecipientOf(recipient),
+          )
+          .timeout(agenda.timeout);
+      switch (saved.rejection) {
+        case null:
+          break;
+        case AgendaRejection.personActive:
+          // El texto de siempre necesita su turno: se vuelve a leer.
+          final active = activeAppointmentOfPerson(
+            await repository.fetchActiveAppointments(now),
+            uid: recipient is AccountRecipient ? recipient.uid : null,
+            phone: recipientUser?.phoneNumber ?? recipient.phone,
+            now: now,
+          );
+          return active == null
+              ? _failed
+              : AdminBookingResult(
+                  AdminBookingOutcome.personActive,
+                  active: active,
+                );
+        case AgendaRejection.recipientBlocked:
+          if (recipient is AccountRecipient) recipients.dropBlocked();
+          return const AdminBookingResult(AdminBookingOutcome.recipientBlocked);
+        case final rejection:
+          final outcome = switch (bookingResultOf(rejection)) {
+            BookingSubmitResult.slotTaken => AdminBookingOutcome.slotTaken,
+            BookingSubmitResult.doesNotFit => AdminBookingOutcome.doesNotFit,
+            BookingSubmitResult.itemUnavailable =>
+              AdminBookingOutcome.itemUnavailable,
+            BookingSubmitResult.itemChanged => AdminBookingOutcome.itemChanged,
+            _ => AdminBookingOutcome.failed,
+          };
+          if (outcome == AdminBookingOutcome.slotTaken ||
+              outcome == AdminBookingOutcome.doesNotFit) {
+            selector.dropSlot();
+          }
+          return AdminBookingResult(outcome);
+      }
+      name = switch (recipient) {
+        AccountRecipient() => recipientUser!.displayName,
+        GuestRecipient(name: final guestName) => guestName.trim(),
       };
-      name = appointment.clientName;
-      await repository
-          .createAppointment(appointment)
-          .timeout(repository.saveTimeout);
     } catch (error) {
       debugPrint('No se pudo agendar el turno de la admin: $error');
       return _failed;

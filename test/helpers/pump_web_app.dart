@@ -1,5 +1,8 @@
 import 'dart:async';
 
+import 'package:shaddai/data/repositories/agenda_functions.dart';
+import 'package:shaddai/features/booking/providers/agenda_functions_provider.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
@@ -27,6 +30,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'fake_auth.dart';
 import 'fake_price_list.dart';
+import 'fake_agenda.dart';
 import 'fake_push.dart';
 import 'fake_session.dart';
 import 'pump_app.dart';
@@ -139,6 +143,7 @@ Future<FakeWebSession> pumpWebApp(
   PriceListRepository? priceListRepository,
   List<AppointmentModel>? appointments = const [],
   PushRepository? pushRepository,
+  AgendaFunctions? agendaFunctions,
 }) => _pumpRealApp(
   tester,
   isWeb: true,
@@ -155,6 +160,7 @@ Future<FakeWebSession> pumpWebApp(
   priceListRepository: priceListRepository,
   appointments: appointments,
   pushRepository: pushRepository,
+  agendaFunctions: agendaFunctions,
 );
 
 /// Como [pumpWebApp], pero en Android/iOS: la barra inferior y sus pestañas
@@ -175,6 +181,7 @@ Future<FakeWebSession> pumpMobileApp(
   PriceListRepository? priceListRepository,
   List<AppointmentModel>? appointments = const [],
   PushRepository? pushRepository,
+  AgendaFunctions? agendaFunctions,
 }) => _pumpRealApp(
   tester,
   isWeb: false,
@@ -190,6 +197,7 @@ Future<FakeWebSession> pumpMobileApp(
   priceListRepository: priceListRepository,
   appointments: appointments,
   pushRepository: pushRepository,
+  agendaFunctions: agendaFunctions,
   overrides: [
     salonMapProvider.overrideWithValue(
       const SizedBox(key: Key('salon-map'), height: 220),
@@ -214,6 +222,7 @@ Future<FakeWebSession> _pumpRealApp(
   required PriceListRepository? priceListRepository,
   required List<AppointmentModel>? appointments,
   required PushRepository? pushRepository,
+  required AgendaFunctions? agendaFunctions,
 }) async {
   await loadAppFonts();
   if (reduceMotion) {
@@ -266,6 +275,9 @@ Future<FakeWebSession> _pumpRealApp(
         pushRepositoryProvider.overrideWithValue(
           pushRepository ?? FakePushRepository(),
         ),
+        agendaFunctions == null
+            ? agendaFunctionsProvider.overrideWith(FakeAgendaFunctions.linked)
+            : agendaFunctionsProvider.overrideWithValue(agendaFunctions),
         ...overrides,
       ],
       child: const MyApp(),

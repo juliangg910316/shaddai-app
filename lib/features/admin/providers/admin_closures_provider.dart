@@ -1,13 +1,14 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
 
 import '../../../data/models/appointment_model.dart';
 import '../../../data/models/closure_model.dart';
+import '../../../data/repositories/agenda_functions.dart';
 import '../../booking/logic/booking_rules.dart';
 import '../../booking/logic/closures.dart';
 import '../../booking/logic/free_slots.dart';
 import '../../booking/logic/salon_time.dart';
+import '../../booking/providers/agenda_functions_provider.dart';
 import '../../booking/providers/booking_provider.dart';
 import '../logic/admin_agenda.dart';
 import 'admin_provider.dart';
@@ -132,20 +133,23 @@ class ClosureController {
     try {
       final conflicts = await _fetchConflicts(range, now);
       if (conflicts.isNotEmpty) return ClosureSaveConflicts(conflicts);
-      await _ref
-          .read(configRepositoryProvider)
-          .createClosure(
-            ClosureModel(
-              id: const Uuid().v4(),
-              start: fromSalon(range.start),
-              end: fromSalon(range.end),
-            ),
-          );
+      // El servidor guarda el cierre solo si sigue sin choques (spec 012,
+      // RF-16 a RF-19).
+      final agenda = _ref.read(agendaFunctionsProvider);
+      final result = await agenda
+          .saveClosure(start: fromSalon(range.start), end: fromSalon(range.end))
+          .timeout(agenda.timeout);
+      if (result.isOk) return const ClosureSaveOk();
+      if (result.rejection == AgendaRejection.conflicts) {
+        // Alguien reservó entretanto: se vuelven a leer para mostrarlos.
+        final fresh = await _fetchConflicts(range, now);
+        if (fresh.isNotEmpty) return ClosureSaveConflicts(fresh);
+      }
+      return const ClosureSaveFailed();
     } catch (error) {
       debugPrint('No se pudo guardar el cierre: $error');
       return const ClosureSaveFailed();
     }
-    return const ClosureSaveOk();
   }
 
   /// Los turnos activos que chocan ahora con [draft], leídos del servidor,

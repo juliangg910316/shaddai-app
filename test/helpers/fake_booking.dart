@@ -5,6 +5,15 @@ import 'package:shaddai/data/models/booked_service_model.dart';
 import 'package:shaddai/data/models/busy_slot_model.dart';
 import 'package:shaddai/data/repositories/booking_repository.dart';
 
+/// La persona a cuyo nombre queda un turno. `clientId` es `null` para una
+/// persona sin cuenta (spec 007).
+typedef AppointmentPerson = ({
+  String? clientId,
+  String clientName,
+  String clientPhone,
+  String? clientPhotoUrl,
+});
+
 /// Turnos y turnos ocupados en memoria, sin Firebase (spec 005, plan § 9).
 ///
 /// [busy] y [mine] llegan en vivo: [emitBusy] y [emitMine] los cambian y los
@@ -182,7 +191,6 @@ class FakeBookingRepository implements BookingRepository {
         );
   }
 
-  @override
   Future<bool> updateAppointmentByAdmin({
     required String id,
     required bool Function(AppointmentModel? current) expected,
@@ -334,7 +342,6 @@ class FakeBookingRepository implements BookingRepository {
     return checkData ?? (busy: busy, mine: mine);
   }
 
-  @override
   Future<void> createAppointment(AppointmentModel appointment) async {
     final error = saveError;
     if (error != null) throw error;
@@ -360,7 +367,8 @@ class FakeBookingRepository implements BookingRepository {
         );
   }
 
-  @override
+  /// Lo que escribe `editAppointment` para la clienta (spec 012): lo usa
+  /// `FakeAgendaFunctions`.
   Future<bool> updateEditedAppointment({
     required String id,
     required bool Function(AppointmentModel? current) expected,

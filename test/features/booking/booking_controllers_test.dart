@@ -8,15 +8,18 @@ import 'package:shaddai/data/models/booked_service_model.dart';
 import 'package:shaddai/data/models/busy_slot_model.dart';
 import 'package:shaddai/data/models/calendar_settings_model.dart';
 import 'package:shaddai/data/models/price_list_model.dart';
+import 'package:shaddai/data/repositories/agenda_functions.dart';
 import 'package:shaddai/features/auth/providers/auth_provider.dart';
 import 'package:shaddai/features/booking/logic/bookable_catalog.dart';
 import 'package:shaddai/features/booking/logic/booking_selection.dart';
 import 'package:shaddai/features/booking/logic/free_slots.dart';
 import 'package:shaddai/features/booking/logic/salon_time.dart';
+import 'package:shaddai/features/booking/providers/agenda_functions_provider.dart';
 import 'package:shaddai/features/booking/providers/booking_provider.dart';
 import 'package:shaddai/features/services/logic/price_list_view_logic.dart';
 import 'package:shaddai/features/services/providers/price_list_provider.dart';
 
+import '../../helpers/fake_agenda.dart';
 import '../../helpers/fake_booking.dart';
 import '../../helpers/fake_config.dart';
 import '../../helpers/fake_session.dart';
@@ -106,6 +109,7 @@ void main() {
         clockProvider.overrideWithValue(() => bookingTestNow),
         salonNowProvider.overrideWith((ref) => now.stream),
         currentPriceListProvider.overrideWith((ref) => ref.watch(_priceState)),
+        agendaFunctionsProvider.overrideWith(FakeAgendaFunctions.linked),
       ],
     );
     c.listen(bookingSelectionProvider, (_, _) {});
@@ -123,6 +127,8 @@ void main() {
   });
 
   BookingSelection selection() => c.read(bookingSelectionProvider).selection;
+  FakeAgendaFunctions agenda() =>
+      c.read(agendaFunctionsProvider) as FakeAgendaFunctions;
   List<BookingNotice> notices() => c.read(bookingSelectionProvider).notices;
   BookingSelectionController controller() =>
       c.read(bookingSelectionProvider.notifier);
@@ -409,6 +415,82 @@ void main() {
         expect(selection(), before);
       });
     });
+
+    test(
+      'tras la comprobación, guarda llamando a la función (spec 012)',
+      () async {
+        choose();
+        await c.read(bookingSubmitProvider).confirm();
+        final call = agenda().books.single;
+        expect(call.id, bookings.created.single.id);
+        expect(call.start.isAtSameMomentAs(fromSalon(at(10, 9))), isTrue);
+        expect(call.booked, bookings.created.single.booked);
+        expect(call.recipient, isNull);
+      },
+    );
+
+    test('si la comprobación previa rechaza, no llama a la función', () async {
+      choose();
+      bookings.checkData = (
+        busy: [busy('x', at(10, 9), at(10, 10))],
+        mine: const <AppointmentModel>[],
+      );
+      await c.read(bookingSubmitProvider).confirm();
+      expect(agenda().books, isEmpty);
+    });
+
+    // Lo que responde el servidor, y si quita la hora (spec 012, plan § 6).
+    const rejections = <AgendaRejection, (BookingSubmitResult, bool)>{
+      AgendaRejection.slotTaken: (BookingSubmitResult.slotTaken, true),
+      AgendaRejection.closed: (BookingSubmitResult.slotTaken, true),
+      AgendaRejection.outsideHours: (BookingSubmitResult.slotTaken, true),
+      AgendaRejection.outsideWindow: (BookingSubmitResult.slotTaken, true),
+      AgendaRejection.past: (BookingSubmitResult.slotTaken, true),
+      AgendaRejection.doesNotFit: (BookingSubmitResult.doesNotFit, true),
+      AgendaRejection.alreadyActive: (BookingSubmitResult.alreadyActive, false),
+      AgendaRejection.itemUnavailable: (
+        BookingSubmitResult.itemUnavailable,
+        false,
+      ),
+      AgendaRejection.itemChanged: (BookingSubmitResult.itemChanged, false),
+      AgendaRejection.blocked: (BookingSubmitResult.failed, false),
+      AgendaRejection.invalid: (BookingSubmitResult.failed, false),
+      AgendaRejection.notAllowed: (BookingSubmitResult.failed, false),
+      AgendaRejection.failed: (BookingSubmitResult.failed, false),
+    };
+    rejections.forEach((rejection, expected) {
+      final (outcome, dropsSlot) = expected;
+      test('el servidor responde ${rejection.name} → ${outcome.name}'
+          '${dropsSlot ? ', sin la hora' : ', con lo elegido'}', () async {
+        choose();
+        agenda().rejection = rejection;
+        final before = selection();
+        final result = await c.read(bookingSubmitProvider).confirm();
+        expect(result, outcome);
+        expect(bookings.created, isEmpty);
+        if (dropsSlot) {
+          expect(selection().start, isNull);
+          expect(selection().item, s1);
+          expect(selection().addonIds, {'a1'});
+        } else {
+          expect(selection(), before);
+        }
+      });
+    });
+
+    test(
+      'la función no responde a tiempo: failed y conserva lo elegido',
+      () async {
+        choose();
+        agenda().error = TimeoutException('15 s');
+        final before = selection();
+        expect(
+          await c.read(bookingSubmitProvider).confirm(),
+          BookingSubmitResult.failed,
+        );
+        expect(selection(), before);
+      },
+    );
 
     test('sin hora o sin servicio no guarda: failed (RF-24)', () async {
       controller().selectItem(s1);

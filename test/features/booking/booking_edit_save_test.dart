@@ -8,17 +8,20 @@ import 'package:shaddai/data/models/booked_service_model.dart';
 import 'package:shaddai/data/models/busy_slot_model.dart';
 import 'package:shaddai/data/models/calendar_settings_model.dart';
 import 'package:shaddai/data/models/price_list_model.dart';
+import 'package:shaddai/data/repositories/agenda_functions.dart';
 import 'package:shaddai/features/booking/logic/bookable_catalog.dart';
 import 'package:shaddai/features/booking/logic/booking_edit.dart';
 import 'package:shaddai/features/booking/logic/salon_time.dart';
 import 'package:shaddai/features/booking/presentation/active_appointment_view.dart';
 import 'package:shaddai/features/booking/presentation/booking_form.dart';
 import 'package:shaddai/features/booking/presentation/booking_view.dart';
+import 'package:shaddai/features/booking/providers/agenda_functions_provider.dart';
 import 'package:shaddai/features/booking/providers/booking_edit_provider.dart';
 import 'package:shaddai/features/booking/providers/booking_provider.dart';
 import 'package:shaddai/features/services/logic/price_list_view_logic.dart';
 import 'package:shaddai/features/services/providers/price_list_provider.dart';
 
+import '../../helpers/fake_agenda.dart';
 import '../../helpers/fake_booking.dart';
 import '../../helpers/fake_price_list.dart';
 import '../../helpers/fake_session.dart';
@@ -117,6 +120,7 @@ void main() {
         currentPriceListProvider.overrideWith(
           (ref) => PriceListReady(priceList),
         ),
+        agendaFunctionsProvider.overrideWith(FakeAgendaFunctions.linked),
       ],
     );
     addTearDown(c.dispose);
@@ -141,6 +145,8 @@ void main() {
   }
 
   Future<EditSaveResult> save() => c.read(bookingEditSaveProvider).save();
+  FakeAgendaFunctions agenda() =>
+      c.read(agendaFunctionsProvider) as FakeAgendaFunctions;
 
   setUp(() {
     bookings = FakeBookingRepository(mine: [appointment()]);
@@ -312,6 +318,69 @@ void main() {
       });
     }
 
+    test('tras la comprobación, guarda llamando a la función con lo que tenía '
+        'el turno (spec 012)', () async {
+      await start();
+      bookings.editCheckData = (appointment: appointment(), busy: [own]);
+      choose(at(10));
+      await save();
+      final call = agenda().edits.single;
+      expect(call.id, 't1');
+      expect(call.start, fromSalon(at(10)));
+      expect(call.booked, booked);
+      expect(call.expected!.startTime, appointment().startTime);
+      expect(call.expected!.booked, booked);
+      expect(call.recipient, isNull);
+    });
+
+    // Lo que responde el servidor (spec 012, plan § 6): si quita la hora y
+    // si termina la edición.
+    const rejections = <AgendaRejection, (EditSaveOutcome, bool, bool)>{
+      AgendaRejection.slotTaken: (EditSaveOutcome.slotTaken, true, false),
+      AgendaRejection.closed: (EditSaveOutcome.slotTaken, true, false),
+      AgendaRejection.outsideHours: (EditSaveOutcome.slotTaken, true, false),
+      AgendaRejection.outsideWindow: (EditSaveOutcome.slotTaken, true, false),
+      AgendaRejection.past: (EditSaveOutcome.slotTaken, true, false),
+      AgendaRejection.doesNotFit: (EditSaveOutcome.doesNotFit, true, false),
+      AgendaRejection.itemUnavailable: (
+        EditSaveOutcome.itemUnavailable,
+        false,
+        false,
+      ),
+      AgendaRejection.itemChanged: (EditSaveOutcome.itemChanged, false, false),
+      AgendaRejection.notActive: (EditSaveOutcome.notActive, false, true),
+      AgendaRejection.changed: (EditSaveOutcome.changed, false, true),
+      AgendaRejection.notEditable: (EditSaveOutcome.notEditable, false, true),
+      AgendaRejection.blocked: (EditSaveOutcome.failed, false, false),
+      AgendaRejection.invalid: (EditSaveOutcome.failed, false, false),
+      AgendaRejection.failed: (EditSaveOutcome.failed, false, false),
+    };
+    rejections.forEach((rejection, expected) {
+      final (outcome, dropsSlot, ends) = expected;
+      test(
+        'el servidor responde ${rejection.name} → ${outcome.name}',
+        () async {
+          await start();
+          bookings.editCheckData = (appointment: appointment(), busy: [own]);
+          choose(at(10));
+          agenda().rejection = rejection;
+
+          final result = await save();
+
+          expect(result.outcome, outcome);
+          expect(bookings.edited, isEmpty);
+          final selector = c.read(bookingSelectionProvider.notifier);
+          if (ends) {
+            expect(c.read(editTargetProvider), isNull);
+          } else {
+            expect(c.read(editTargetProvider)?.id, 't1');
+            expect(selector.selection.start, dropsSlot ? isNull : at(10));
+            expect(selector.selection.item, s1);
+          }
+        },
+      );
+    });
+
     test('sin turno en edición → failed', () async {
       await start();
       c.read(editTargetProvider.notifier).end();
@@ -427,6 +496,51 @@ void main() {
       );
       expect(inDialog(find.textContaining('→')), findsNothing);
     });
+
+    for (final (rejection, language, message) in [
+      (
+        AgendaRejection.itemChanged,
+        'es',
+        'El servicio cambió de nombre, precio o duración. Revisa el resumen '
+            'y vuelve a confirmar.',
+      ),
+      (
+        AgendaRejection.itemChanged,
+        'pt',
+        'O serviço mudou de nome, preço ou duração. Revise o resumo e '
+            'confirme novamente.',
+      ),
+      (
+        AgendaRejection.itemUnavailable,
+        'es',
+        'El servicio elegido ya no está disponible.',
+      ),
+      (
+        AgendaRejection.itemUnavailable,
+        'pt',
+        'O serviço escolhido não está mais disponível.',
+      ),
+    ]) {
+      testWidgets('el servidor responde ${rejection.name} ($language): avisa '
+          'y la edición sigue con lo elegido (spec 012)', (tester) async {
+        await editAndSave(
+          tester,
+          language: language,
+          beforeSave: () => (appContainer(tester).read(
+            agendaFunctionsProvider,
+          ) as FakeAgendaFunctions).rejection = rejection,
+        );
+
+        expect(bookings.edited, isEmpty);
+        expect(inSnackBar(message), findsOneWidget);
+        final container = appContainer(tester);
+        expect(container.read(editTargetProvider)?.id, 't1');
+        expect(
+          container.read(bookingSelectionProvider).selection.start,
+          at(10),
+        );
+      });
+    }
 
     testWidgets('en portugués', (tester) async {
       await editAndSave(tester, language: 'pt');

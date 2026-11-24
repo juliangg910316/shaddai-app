@@ -72,12 +72,6 @@ class ConfigRepository {
     await _endingFrom(from).get(const GetOptions(source: Source.server)),
   );
 
-  /// Guarda el cierre [closure] con su id (spec 008, RF-6).
-  Future<void> createClosure(ClosureModel closure) => _closures
-      .doc(closure.id)
-      .set(encodeDates(closure.toMap()))
-      .timeout(saveTimeout);
-
   /// Borra el cierre [id] (spec 008, RF-7).
   Future<void> deleteClosure(String id) =>
       _closures.doc(id).delete().timeout(saveTimeout);
