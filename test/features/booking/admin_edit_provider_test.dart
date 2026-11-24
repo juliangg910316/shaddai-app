@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shaddai/data/repositories/agenda_functions.dart';
+import 'package:shaddai/features/booking/providers/agenda_functions_provider.dart';
 import 'package:shaddai/data/models/appointment_model.dart';
 import 'package:shaddai/data/models/booked_service_model.dart';
 import 'package:shaddai/data/models/busy_slot_model.dart';
@@ -24,6 +26,7 @@ import 'package:shaddai/features/services/logic/price_list_view_logic.dart';
 import 'package:shaddai/features/services/providers/price_list_provider.dart';
 
 import '../../helpers/fake_auth.dart';
+import '../../helpers/fake_agenda.dart';
 import '../../helpers/fake_booking.dart';
 import '../../helpers/fake_config.dart';
 import '../../helpers/fake_session.dart';
@@ -139,6 +142,7 @@ void main() {
           (ref) => Stream.value(toSalon(bookingTestNow)),
         ),
         currentPriceListProvider.overrideWithValue(PriceListReady(priceList())),
+        agendaFunctionsProvider.overrideWith(FakeAgendaFunctions.linked),
       ],
     );
     c.listen(currentUserProvider, (_, _) {});
@@ -687,6 +691,102 @@ void main() {
       expect((await save()).outcome, AdminEditOutcome.failed);
       expect(selection().start, at(20, 11));
       expect(c.read(adminEditProvider), 't1');
+    });
+
+    FakeAgendaFunctions agenda() =>
+        c.read(agendaFunctionsProvider) as FakeAgendaFunctions;
+
+    test('tras la comprobación, guarda llamando a la función con la persona '
+        'y lo que tenía el turno (spec 012)', () async {
+      await edit();
+      selector().selectSlot(slot(at(20, 11)));
+      await save();
+      final call = agenda().edits.single;
+      expect(call.id, 't1');
+      expect(call.start, fromSalon(at(20, 11)));
+      expect(call.expected!.startTime, anaAppointment().startTime);
+      expect((call.recipient! as AgendaAccountRecipient).clientId, 'ana');
+    });
+
+    // Lo que responde el servidor (spec 012, plan § 6): si quita la hora y
+    // si la edición sigue abierta.
+    const rejections = <AgendaRejection, (AdminEditOutcome, bool)>{
+      AgendaRejection.slotTaken: (AdminEditOutcome.slotTaken, true),
+      AgendaRejection.closed: (AdminEditOutcome.slotTaken, true),
+      AgendaRejection.outsideHours: (AdminEditOutcome.slotTaken, true),
+      AgendaRejection.outsideWindow: (AdminEditOutcome.slotTaken, true),
+      AgendaRejection.past: (AdminEditOutcome.slotTaken, true),
+      AgendaRejection.doesNotFit: (AdminEditOutcome.doesNotFit, true),
+      AgendaRejection.itemUnavailable: (
+        AdminEditOutcome.itemUnavailable,
+        false,
+      ),
+      AgendaRejection.itemChanged: (AdminEditOutcome.itemChanged, false),
+      AgendaRejection.notActive: (AdminEditOutcome.notActive, false),
+      AgendaRejection.changed: (AdminEditOutcome.changed, false),
+      AgendaRejection.notEditable: (AdminEditOutcome.failed, false),
+      AgendaRejection.invalid: (AdminEditOutcome.failed, false),
+      AgendaRejection.failed: (AdminEditOutcome.failed, false),
+    };
+    rejections.forEach((rejection, expected) {
+      final (outcome, dropsSlot) = expected;
+      test(
+        'el servidor responde ${rejection.name} → ${outcome.name}',
+        () async {
+          await edit();
+          selector().selectSlot(slot(at(20, 11)));
+          agenda().rejection = rejection;
+
+          final result = await save();
+
+          expect(result.outcome, outcome);
+          expect(bookings.adminEdits, isEmpty);
+          expect(c.read(adminEditProvider), 't1');
+          expect(selection().start, dropsSlot ? isNull : at(20, 11));
+        },
+      );
+    });
+
+    test(
+      'el servidor responde recipient_blocked: la clienta se quita',
+      () async {
+        await edit();
+        selector().selectSlot(slot(at(20, 11)));
+        agenda().rejection = AgendaRejection.recipientBlocked;
+        expect((await save()).outcome, AdminEditOutcome.recipientBlocked);
+        expect(recipientState().recipient, isNull);
+      },
+    );
+
+    test('el servidor responde person_active: vuelve a leer y muestra el '
+        'otro turno de la persona', () async {
+      final beaActive = AppointmentModel(
+        id: 'b1',
+        clientId: 'bea',
+        clientName: 'Beatriz',
+        clientPhone: '+55 41 99222-0000',
+        startTime: fromSalon(at(25, 9)),
+        endTime: fromSalon(at(25, 10)),
+        status: 'confirmed',
+        createdAt: DateTime.utc(2026, 11, 1),
+      );
+      await edit();
+      c
+          .read(bookingRecipientProvider.notifier)
+          .restore(AccountRecipient.of(bea));
+      // La comprobación de la app no lo vio; al volver a leer, ya está.
+      bookings.adminEditCheckData = (
+        appointment: anaAppointment(),
+        busy: const [],
+        active: [anaAppointment()],
+      );
+      bookings.active = [anaAppointment(), beaActive];
+      agenda().rejection = AgendaRejection.personActive;
+
+      final result = await save();
+
+      expect(result.outcome, AdminEditOutcome.personActive);
+      expect(result.active?.id, 'b1');
     });
 
     test('si falla al guardar: failed', () async {

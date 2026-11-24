@@ -3,7 +3,6 @@ import 'package:shaddai/data/models/appointment_model.dart';
 import 'package:shaddai/data/models/booked_service_model.dart';
 import 'package:shaddai/data/models/busy_slot_model.dart';
 import 'package:shaddai/data/models/price_list_model.dart';
-import 'package:shaddai/data/repositories/booking_repository.dart';
 
 import '../helpers/fake_booking.dart';
 

@@ -129,6 +129,10 @@ class _AdminAppointmentEditViewState
         showBookingSubmitResult(context, BookingSubmitResult.doesNotFit);
       case AdminEditOutcome.failed:
         showBookingSubmitResult(context, BookingSubmitResult.failed);
+      case AdminEditOutcome.itemUnavailable:
+        showBookingSubmitResult(context, BookingSubmitResult.itemUnavailable);
+      case AdminEditOutcome.itemChanged:
+        showBookingSubmitResult(context, BookingSubmitResult.itemChanged);
       case AdminEditOutcome.personActive:
         final active = result.active!;
         showBookingMessage(

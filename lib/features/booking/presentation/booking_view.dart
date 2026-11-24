@@ -149,6 +149,10 @@ class _BookingViewState extends ConsumerState<BookingView> {
         showBookingSubmitResult(context, BookingSubmitResult.slotTaken);
       case AdminBookingOutcome.doesNotFit:
         showBookingSubmitResult(context, BookingSubmitResult.doesNotFit);
+      case AdminBookingOutcome.itemUnavailable:
+        showBookingSubmitResult(context, BookingSubmitResult.itemUnavailable);
+      case AdminBookingOutcome.itemChanged:
+        showBookingSubmitResult(context, BookingSubmitResult.itemChanged);
       case AdminBookingOutcome.failed:
         showBookingSubmitResult(context, BookingSubmitResult.failed);
       case AdminBookingOutcome.personActive:

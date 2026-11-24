@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../firestore_dates.dart';
 import '../models/appointment_model.dart';
-import '../models/booked_service_model.dart';
 import '../models/busy_slot_model.dart';
 
 /// Lo que se lee del servidor justo antes de guardar un turno (spec 005,
@@ -26,15 +25,6 @@ typedef AdminEditCheckData = ({
   AppointmentModel? appointment,
   List<BusySlot> busy,
   List<AppointmentModel> active,
-});
-
-/// La persona a cuyo nombre queda un turno. `clientId` es `null` para una
-/// persona sin cuenta (spec 007).
-typedef AppointmentPerson = ({
-  String? clientId,
-  String clientName,
-  String clientPhone,
-  String? clientPhotoUrl,
 });
 
 /// Turnos (`appointments`) y turnos ocupados (`busySlots`, spec 005, plan
@@ -65,27 +55,6 @@ class BookingRepository {
         for (final doc in snapshot.docs)
           ?BusySlot.fromMap(decodeDates(doc.data()), doc.id),
       ];
-
-  /// Guarda [appointment] y su turno ocupado en un solo lote. Solo la usa
-  /// la reserva de la admin hasta que pase a la función (spec 012, T8).
-  /// (RF-27; las
-  /// reglas exigen los dos juntos). Si no termina en [saveTimeout], lanza
-  /// `TimeoutException` (RF-31).
-  Future<void> createAppointment(AppointmentModel appointment) {
-    final batch = _firestore.batch()
-      ..set(_appointments.doc(appointment.id), encodeDates(appointment.toMap()))
-      ..set(
-        _busySlots.doc(appointment.id),
-        encodeDates(
-          BusySlot(
-            id: appointment.id,
-            start: appointment.startTime,
-            end: appointment.endTime,
-          ).toMap(),
-        ),
-      );
-    return batch.commit().timeout(saveTimeout);
-  }
 
   /// Los turnos ocupados que empiezan entre [from] (incluido) y [to]
   /// (excluido), en vivo (RF-6).
@@ -177,55 +146,6 @@ class BookingRepository {
       busy: _slots(results[1] as QuerySnapshot<Map<String, dynamic>>),
       active: [for (final doc in active.docs) _appointment(doc)],
     );
-  }
-
-  /// Guarda la edición de la admin del turno [id] en una transacción (spec
-  /// 008, RF-28, plan § 2): vuelve a leer el turno y, solo si [expected] lo da
-  /// por bueno, cambia su inicio, su fin y lo reservado, lo deja confirmado
-  /// y escribe a la vez su turno ocupado con `set` (plan D-8).
-  ///
-  /// Con [person], cambia la persona y marca el turno como de la admin
-  /// (RF-31); sin ella, la persona y la marca no se tocan. Devuelve `false`
-  /// si el turno ya no es el esperado. Si no termina en [saveTimeout], lanza
-  /// `TimeoutException`.
-  Future<bool> updateAppointmentByAdmin({
-    required String id,
-    required bool Function(AppointmentModel? current) expected,
-    required DateTime start,
-    required DateTime end,
-    required BookedServiceModel booked,
-    AppointmentPerson? person,
-  }) {
-    final appointmentRef = _appointments.doc(id);
-    return _firestore
-        .runTransaction<bool>((transaction) async {
-          final doc = await transaction.get(appointmentRef);
-          if (!expected(doc.exists ? _appointment(doc) : null)) return false;
-          transaction
-            ..update(
-              appointmentRef,
-              encodeDates({
-                'startTime': start,
-                'endTime': end,
-                'booked': booked.toMap(),
-                'status': 'confirmed',
-                if (person != null) ...{
-                  // `null` escrito a propósito para una persona sin cuenta.
-                  'clientId': person.clientId,
-                  'clientName': person.clientName,
-                  'clientPhone': person.clientPhone,
-                  'clientPhotoUrl': person.clientPhotoUrl,
-                  'createdByAdmin': true,
-                },
-              }),
-            )
-            ..set(
-              _busySlots.doc(id),
-              encodeDates(BusySlot(id: id, start: start, end: end).toMap()),
-            );
-          return true;
-        })
-        .timeout(saveTimeout);
   }
 
   /// La clienta cancela su turno [id] en una transacción (spec 009, RF-11,

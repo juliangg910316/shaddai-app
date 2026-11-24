@@ -113,7 +113,6 @@ class FakeConfigRepository implements ConfigRepository {
     if (error != null) throw error;
   }
 
-  @override
   Future<void> createClosure(ClosureModel closure) async {
     _checkSave();
     created.add(closure);

@@ -98,7 +98,7 @@ Cada tarea: tests primero (rojo), luego el código (verde). En Flutter: `dart fo
     - en la vista de reserva y en la de edición, el aviso de cada resultado, en ES y PT, y la elección intacta.
   - Hecho cuando: `bookingItemChangedOnSave` está en `app_es.arb` (con descripción) y en `app_pt.arb`, `flutter gen-l10n` está ejecutado, `BookingRepository` ya no tiene `updateEditedAppointment` (`createAppointment` se quita en T8, porque la reserva de la admin lo usa hasta entonces; decidido por el autor el 2026-11-23), y todo está en verde.
 
-- [ ] **T8. La admin agenda, edita y cierra por la función** (`admin_booking_provider.dart`, `admin_edit_provider.dart`, `admin_closures_provider.dart`, `config_repository.dart`). RF-1, RF-2, RF-5 a RF-7, RF-16 a RF-19
+- [x] **T8. La admin agenda, edita y cierra por la función** (`admin_booking_provider.dart`, `admin_edit_provider.dart`, `admin_closures_provider.dart`, `config_repository.dart`). RF-1, RF-2, RF-5 a RF-7, RF-16 a RF-19
   - Tests: con la función falsa.
     - `AdminBookingSubmitter` y `AdminEditController`, cada motivo → su resultado:
       - `person_active`, que vuelve a leer el turno para el texto de siempre;

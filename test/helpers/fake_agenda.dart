@@ -7,10 +7,11 @@ import 'package:shaddai/data/models/booked_service_model.dart';
 import 'package:shaddai/data/models/closure_model.dart';
 import 'package:shaddai/data/models/user_model.dart';
 import 'package:shaddai/data/repositories/agenda_functions.dart';
-import 'package:shaddai/data/repositories/booking_repository.dart';
 import 'package:shaddai/features/auth/providers/auth_provider.dart';
+import 'package:shaddai/features/booking/logic/whatsapp.dart';
 import 'package:shaddai/features/booking/providers/booking_provider.dart';
 
+import 'fake_auth.dart';
 import 'fake_booking.dart';
 import 'fake_config.dart';
 
@@ -43,19 +44,32 @@ class FakeAgendaFunctions implements AgendaFunctions {
     FakeBookingRepository? booking,
     FakeConfigRepository? config,
     UserModel? caller,
-    this.users = const {},
+    Map<String, UserModel> users = const {},
     DateTime Function()? clock,
   }) : _booking = (() => booking),
        _config = (() => config),
        _caller = (() => caller),
+       _user = ((uid) => users[uid]),
        _clock = clock ?? DateTime.now;
 
   /// Unida a los providers de [ref]: `bookingRepositoryProvider`,
-  /// `configRepositoryProvider`, `currentUserProvider` y `clockProvider`.
-  FakeAgendaFunctions.linked(Ref ref, {this.users = const {}})
+  /// `configRepositoryProvider`, `currentUserProvider`, `clockProvider` y,
+  /// para las fichas de las personas de la admin, la `FakeUserRepository`
+  /// de `userRepositoryProvider` (sin contar como lectura del test).
+  FakeAgendaFunctions.linked(Ref ref)
     : _booking = (() => _tryRead(() => ref.read(bookingRepositoryProvider))),
       _config = (() => _tryRead(() => ref.read(configRepositoryProvider))),
       _caller = (() => _tryRead(() => ref.read(currentUserProvider).value)),
+      _user = ((uid) {
+        final repository = _tryRead<FakeUserRepository>(
+          () => ref.read(userRepositoryProvider),
+        );
+        if (repository == null) return null;
+        for (final user in repository.serverUsers ?? repository.users) {
+          if (user.uid == uid) return user;
+        }
+        return null;
+      }),
       _clock = (() => ref.read(clockProvider)());
 
   /// Lo que hay en el provider si es un doble; nada si no lo es o si leerlo
@@ -72,8 +86,8 @@ class FakeAgendaFunctions implements AgendaFunctions {
   final FakeBookingRepository? Function() _booking;
   final FakeConfigRepository? Function() _config;
   final UserModel? Function() _caller;
+  final UserModel? Function(String uid) _user;
   final DateTime Function() _clock;
-  Map<String, UserModel> users;
 
   FakeBookingRepository? get booking => _booking();
   FakeConfigRepository? get config => _config();
@@ -83,6 +97,10 @@ class FakeAgendaFunctions implements AgendaFunctions {
   List<String> conflictIds = const [];
   Object? error;
   Duration? latency;
+
+  /// Se ejecuta en cada llamada antes de responder: lo que pasa en el
+  /// servidor entre la comprobación de la app y la función.
+  void Function()? beforeAnswer;
 
   final books = <AgendaCall>[];
   final edits = <AgendaCall>[];
@@ -97,6 +115,7 @@ class FakeAgendaFunctions implements AgendaFunctions {
   Future<AgendaWriteResult?> _answer() async {
     final wait = latency;
     if (wait != null) await Future<void>.delayed(wait);
+    beforeAnswer?.call();
     final thrown = error;
     if (thrown != null) throw thrown;
     final rejected = rejection;
@@ -109,9 +128,9 @@ class FakeAgendaFunctions implements AgendaFunctions {
     null => null,
     AgendaAccountRecipient(:final clientId) => (
       clientId: clientId,
-      clientName: users[clientId]?.displayName ?? '',
-      clientPhone: users[clientId]?.phoneNumber ?? '',
-      clientPhotoUrl: users[clientId]?.photoUrl,
+      clientName: _user(clientId)?.displayName ?? '',
+      clientPhone: _user(clientId)?.phoneNumber ?? '',
+      clientPhotoUrl: _user(clientId)?.photoUrl,
     ),
     AgendaGuestRecipient(:final name, :final phone) => (
       clientId: null,
@@ -194,11 +213,16 @@ class FakeAgendaFunctions implements AgendaFunctions {
         current.booked == expected.booked;
     final end = start.add(Duration(minutes: booked.durationMinutes));
     final person = _person(recipient);
-    final changedPerson =
-        person != null &&
-        (person.clientId != expected.clientId ||
-            person.clientName != expected.clientName ||
-            person.clientPhone != expected.clientPhone);
+    // Como el servidor (`personChanged`): con cuenta, si es otra; sin
+    // cuenta, si el turno tenía cuenta, otro nombre u otro WhatsApp.
+    final changedPerson = switch (recipient) {
+      null => false,
+      AgendaAccountRecipient(:final clientId) => clientId != expected.clientId,
+      AgendaGuestRecipient(:final name, :final phone) =>
+        expected.clientId != null ||
+            expected.clientName.trim() != name.trim() ||
+            !sameWhatsApp(expected.clientPhone, phone),
+    };
     final saved = _admin
         ? await repository.updateAppointmentByAdmin(
             id: id,

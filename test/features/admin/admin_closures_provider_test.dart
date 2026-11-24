@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shaddai/data/repositories/agenda_functions.dart';
+import 'package:shaddai/features/booking/providers/agenda_functions_provider.dart';
 import 'package:shaddai/data/models/appointment_model.dart';
 import 'package:shaddai/data/models/calendar_settings_model.dart';
 import 'package:shaddai/data/models/closure_model.dart';
@@ -9,6 +11,7 @@ import 'package:shaddai/features/booking/logic/closures.dart';
 import 'package:shaddai/features/booking/logic/salon_time.dart';
 import 'package:shaddai/features/booking/providers/booking_provider.dart';
 
+import '../../helpers/fake_agenda.dart';
 import '../../helpers/fake_booking.dart';
 import '../../helpers/fake_config.dart';
 import '../../helpers/fake_session.dart';
@@ -65,6 +68,7 @@ void main() {
         salonNowProvider.overrideWith(
           (ref) => Stream.value(toSalon(bookingTestNow)),
         ),
+        agendaFunctionsProvider.overrideWith(FakeAgendaFunctions.linked),
       ],
     );
     addTearDown(c.dispose);
@@ -136,7 +140,8 @@ void main() {
         final saved = config.created.single;
         expect(saved.start, fromSalon(at(11, 13)));
         expect(saved.end, fromSalon(at(11, 14, 30)));
-        expect(saved.id, hasLength(36));
+        // El id lo pone el servidor (spec 012).
+        expect(saved.id, isNotEmpty);
       },
     );
 
@@ -157,6 +162,63 @@ void main() {
       expect(await controller().save(wednesdayRange), isA<ClosureSaveFailed>());
       expect(config.created, isEmpty);
     });
+
+    FakeAgendaFunctions agenda() =>
+        c.read(agendaFunctionsProvider) as FakeAgendaFunctions;
+
+    test('sin choques, lo guarda la función con su inicio y su fin '
+        '(spec 012)', () async {
+      await start();
+      expect(await controller().save(wednesdayRange), isA<ClosureSaveOk>());
+      final call = agenda().closures.single;
+      expect(call.start, fromSalon(at(11, 13)));
+      expect(call.end, fromSalon(at(11, 14, 30)));
+      expect(config.created, hasLength(1));
+    });
+
+    test('el servidor responde conflicts: vuelve a leer los turnos y los '
+        'devuelve (RF-5, RF-18)', () async {
+      await start();
+      // Se guardó un turno entre la lectura de la app y la función.
+      agenda()
+        ..rejection = AgendaRejection.conflicts
+        ..conflictIds = ['t9']
+        ..beforeAnswer = () =>
+            bookings.active = [appt('t9', at(11, 14), at(11, 15))];
+
+      final result = await controller().save(wednesdayRange);
+
+      expect(result, isA<ClosureSaveConflicts>());
+      expect((result as ClosureSaveConflicts).appointments.map((a) => a.id), [
+        't9',
+      ]);
+      expect(config.created, isEmpty);
+    });
+
+    test(
+      'conflicts sin turnos al volver a leer, u otro rechazo: failed',
+      () async {
+        await start();
+        agenda().rejection = AgendaRejection.conflicts;
+        expect(
+          await controller().save(wednesdayRange),
+          isA<ClosureSaveFailed>(),
+        );
+        for (final rejection in [
+          AgendaRejection.invalid,
+          AgendaRejection.notAllowed,
+          AgendaRejection.failed,
+        ]) {
+          agenda().rejection = rejection;
+          expect(
+            await controller().save(wednesdayRange),
+            isA<ClosureSaveFailed>(),
+            reason: rejection.name,
+          );
+        }
+        expect(config.created, isEmpty);
+      },
+    );
 
     test('si no se puede guardar, failed (RF-11)', () async {
       config.saveError = Exception('sin red');
