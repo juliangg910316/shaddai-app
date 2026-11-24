@@ -28,7 +28,8 @@ import 'fake_push.dart';
 /// avisos push van por [pushRepository] o, si no se pasa, por un
 /// [FakePushRepository] con el permiso concedido (spec 011, plan D-11). Las
 /// escrituras en la agenda van por [agendaFunctions] o, si no se pasa, por
-/// una [FakeAgendaFunctions] que no guarda nada (spec 012).
+/// una [FakeAgendaFunctions.linked], que guarda en los repositorios falsos
+/// de [overrides] (spec 012).
 Future<void> pumpApp(
   WidgetTester tester, {
   Map<String, Object> stored = const {},
@@ -62,9 +63,9 @@ Future<void> pumpApp(
         pushRepositoryProvider.overrideWithValue(
           pushRepository ?? FakePushRepository(),
         ),
-        agendaFunctionsProvider.overrideWithValue(
-          agendaFunctions ?? FakeAgendaFunctions(),
-        ),
+        agendaFunctions == null
+            ? agendaFunctionsProvider.overrideWith(FakeAgendaFunctions.linked)
+            : agendaFunctionsProvider.overrideWithValue(agendaFunctions),
         ...overrides,
       ],
       child: const MyApp(),

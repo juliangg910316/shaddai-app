@@ -1916,6 +1916,12 @@ abstract class AppLocalizations {
   /// **'El servicio elegido ya no está disponible.'**
   String get bookingItemUnavailable;
 
+  /// Al guardar, el servidor encontró el servicio cambiado en la lista de precios (spec 012, RF-12, RF-16)
+  ///
+  /// In es, this message translates to:
+  /// **'El servicio cambió de nombre, precio o duración. Revisa el resumen y vuelve a confirmar.'**
+  String get bookingItemChangedOnSave;
+
   /// La fecha elegida dejó de poder elegirse (casos límite)
   ///
   /// In es, this message translates to:

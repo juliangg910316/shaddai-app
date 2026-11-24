@@ -334,6 +334,7 @@
   "bookingSlotGone": "O horário escolhido não está mais disponível. Escolha outro.",
   "bookingSlotNoLongerFits": "O horário escolhido não tem mais tempo suficiente para o serviço. Escolha outro.",
   "bookingItemUnavailable": "O serviço escolhido não está mais disponível.",
+  "bookingItemChangedOnSave": "O serviço mudou de nome, preço ou duração. Revise o resumo e confirme novamente.",
   "bookingDateMoved": "A data escolhida não pode mais ser agendada: mostramos a próxima disponível.",
   "bookingUnavailableLabel": "indisponível",
   "bookingMissingSlot": "Escolha um horário",

@@ -360,7 +360,8 @@ class FakeBookingRepository implements BookingRepository {
         );
   }
 
-  @override
+  /// Lo que escribe `editAppointment` para la clienta (spec 012): lo usa
+  /// `FakeAgendaFunctions`.
   Future<bool> updateEditedAppointment({
     required String id,
     required bool Function(AppointmentModel? current) expected,

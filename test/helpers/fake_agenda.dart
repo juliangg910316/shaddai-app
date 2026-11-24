@@ -1,11 +1,15 @@
 import 'dart:async';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
 import 'package:shaddai/data/models/appointment_model.dart';
 import 'package:shaddai/data/models/booked_service_model.dart';
 import 'package:shaddai/data/models/closure_model.dart';
 import 'package:shaddai/data/models/user_model.dart';
 import 'package:shaddai/data/repositories/agenda_functions.dart';
 import 'package:shaddai/data/repositories/booking_repository.dart';
+import 'package:shaddai/features/auth/providers/auth_provider.dart';
+import 'package:shaddai/features/booking/providers/booking_provider.dart';
 
 import 'fake_booking.dart';
 import 'fake_config.dart';
@@ -29,20 +33,51 @@ typedef AgendaCall = ({
 /// marcado para la persona elegida (sus fichas en [users]). Con [rejection],
 /// responde con ese rechazo (y [conflictIds]) sin guardar nada; con [error],
 /// lanza; con [latency], tarda.
+///
+/// [FakeAgendaFunctions.linked], la que ponen los helpers, lee en cada
+/// llamada los repositorios falsos, la sesión y el reloj del test: lo que
+/// guarda llega a quien escucha, y los errores de guardado de los
+/// repositorios falsos (`saveError`, `updateError`) siguen fallando igual.
 class FakeAgendaFunctions implements AgendaFunctions {
   FakeAgendaFunctions({
-    this.booking,
-    this.config,
-    this.caller,
+    FakeBookingRepository? booking,
+    FakeConfigRepository? config,
+    UserModel? caller,
     this.users = const {},
     DateTime Function()? clock,
-  }) : _clock = clock ?? DateTime.now;
+  }) : _booking = (() => booking),
+       _config = (() => config),
+       _caller = (() => caller),
+       _clock = clock ?? DateTime.now;
 
-  final FakeBookingRepository? booking;
-  final FakeConfigRepository? config;
-  UserModel? caller;
-  Map<String, UserModel> users;
+  /// Unida a los providers de [ref]: `bookingRepositoryProvider`,
+  /// `configRepositoryProvider`, `currentUserProvider` y `clockProvider`.
+  FakeAgendaFunctions.linked(Ref ref, {this.users = const {}})
+    : _booking = (() => _tryRead(() => ref.read(bookingRepositoryProvider))),
+      _config = (() => _tryRead(() => ref.read(configRepositoryProvider))),
+      _caller = (() => _tryRead(() => ref.read(currentUserProvider).value)),
+      _clock = (() => ref.read(clockProvider)());
+
+  /// Lo que hay en el provider si es un doble; nada si no lo es o si leerlo
+  /// tocaría Firebase.
+  static T? _tryRead<T>(Object? Function() read) {
+    try {
+      final value = read();
+      return value is T ? value : null;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  final FakeBookingRepository? Function() _booking;
+  final FakeConfigRepository? Function() _config;
+  final UserModel? Function() _caller;
   final DateTime Function() _clock;
+  Map<String, UserModel> users;
+
+  FakeBookingRepository? get booking => _booking();
+  FakeConfigRepository? get config => _config();
+  UserModel? get caller => _caller();
 
   AgendaRejection? rejection;
   List<String> conflictIds = const [];

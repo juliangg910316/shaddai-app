@@ -12,6 +12,7 @@ import 'package:shaddai/features/auth/providers/auth_provider.dart';
 import 'package:shaddai/features/booking/logic/bookable_catalog.dart';
 import 'package:shaddai/features/booking/logic/salon_time.dart';
 import 'package:shaddai/features/booking/presentation/booking_view.dart';
+import 'package:shaddai/features/booking/providers/agenda_functions_provider.dart';
 import 'package:shaddai/features/booking/providers/admin_booking_provider.dart';
 import 'package:shaddai/features/booking/providers/booking_edit_provider.dart';
 import 'package:shaddai/features/booking/providers/booking_provider.dart';
@@ -21,6 +22,7 @@ import 'package:shaddai/features/services/providers/price_list_provider.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 import '../../helpers/fake_auth.dart';
+import '../../helpers/fake_agenda.dart';
 import '../../helpers/fake_booking.dart';
 import '../../helpers/fake_config.dart';
 import '../../helpers/fake_session.dart';
@@ -223,6 +225,7 @@ void main() {
           ),
           userRepositoryProvider.overrideWithValue(users),
           currentPriceListProvider.overrideWithValue(PriceListReady(priceList)),
+          agendaFunctionsProvider.overrideWith(FakeAgendaFunctions.linked),
         ],
       );
       addTearDown(c.dispose);

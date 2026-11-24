@@ -188,6 +188,8 @@ String bookingSubmitMessage(
   BookingSubmitResult.slotTaken => l10n.bookingSlotTaken,
   BookingSubmitResult.doesNotFit => l10n.bookingSlotNoLongerFits,
   BookingSubmitResult.alreadyActive => l10n.bookingAlreadyActive,
+  BookingSubmitResult.itemUnavailable => l10n.bookingItemUnavailable,
+  BookingSubmitResult.itemChanged => l10n.bookingItemChangedOnSave,
   BookingSubmitResult.failed => l10n.bookingCreateError,
 };
 
@@ -230,6 +232,8 @@ String editSaveMessage(AppLocalizations l10n, EditSaveOutcome outcome) =>
       EditSaveOutcome.notEditable => l10n.bookingEditNotEditable,
       EditSaveOutcome.notActive => l10n.bookingEditNotActive,
       EditSaveOutcome.changed => l10n.bookingEditChangedMeanwhile,
+      EditSaveOutcome.itemUnavailable => l10n.bookingItemUnavailable,
+      EditSaveOutcome.itemChanged => l10n.bookingItemChangedOnSave,
       EditSaveOutcome.failed => l10n.bookingEditSaveError,
     };
 

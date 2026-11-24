@@ -89,14 +89,14 @@ Cada tarea: tests primero (rojo), luego el código (verde). En Flutter: `dart fo
     - un código desconocido, sin conexión o con otra forma → `failed`; si tarda demasiado → `TimeoutException`.
   - Hecho cuando: `FakeAgendaFunctions` (`test/helpers/fake_agenda.dart`) guarda en la `FakeBookingRepository` lo que la función escribiría y puede responder con un rechazo; `pumpApp`, `pumpWebApp` y `pumpMobileApp` la inyectan por defecto; todos los tests existentes siguen en verde.
 
-- [ ] **T7. La clienta reserva y edita por la función** (`booking_provider.dart`, `booking_edit_provider.dart`, `.arb`, plan § 6, § 7). RF-1, RF-2, RF-12, RF-16, RF-17, RF-19
+- [x] **T7. La clienta reserva y edita por la función** (`booking_provider.dart`, `booking_edit_provider.dart`, `.arb`, plan § 6, § 7). RF-1, RF-2, RF-12, RF-16, RF-17, RF-19
   - Tests:
     - `BookingSubmitter` y `BookingEditor` con la función falsa:
       - la comprobación previa no cambia;
       - tras ella, llaman a la función en lugar de escribir;
       - cada motivo → su resultado: `slot_taken` y los de horas → `slotTaken` quitando la hora; `does_not_fit`; `already_active`; `item_unavailable` e `item_changed` (resultados nuevos); `not_active`, `changed` y `not_editable` en la edición; el resto → `failed` conservando lo elegido;
     - en la vista de reserva y en la de edición, el aviso de cada resultado, en ES y PT, y la elección intacta.
-  - Hecho cuando: `bookingItemChangedOnSave` está en `app_es.arb` (con descripción) y en `app_pt.arb`, `flutter gen-l10n` está ejecutado, `BookingRepository` ya no tiene `createAppointment` ni `updateEditedAppointment`, y todo está en verde.
+  - Hecho cuando: `bookingItemChangedOnSave` está en `app_es.arb` (con descripción) y en `app_pt.arb`, `flutter gen-l10n` está ejecutado, `BookingRepository` ya no tiene `updateEditedAppointment` (`createAppointment` se quita en T8, porque la reserva de la admin lo usa hasta entonces; decidido por el autor el 2026-11-23), y todo está en verde.
 
 - [ ] **T8. La admin agenda, edita y cierra por la función** (`admin_booking_provider.dart`, `admin_edit_provider.dart`, `admin_closures_provider.dart`, `config_repository.dart`). RF-1, RF-2, RF-5 a RF-7, RF-16 a RF-19
   - Tests: con la función falsa.
@@ -105,7 +105,7 @@ Cada tarea: tests primero (rojo), luego el código (verde). En Flutter: `dart fo
       - `recipient_blocked`, `slot_taken`, `does_not_fit`, `item_changed`, `not_active`, `changed` y `failed`.
       - Al guardar, se vacían la selección y la persona, como hoy.
     - `ClosureController.save`: `conflicts` → vuelve a leer y devuelve `ClosureSaveConflicts`; el formulario los muestra con «Editar» y «Cancelar» (RF-18).
-  - Hecho cuando: `updateAppointmentByAdmin` y `createClosure` ya no existen, las suites de las specs 007, 008 y 010 siguen en verde, y todo está en verde.
+  - Hecho cuando: `createAppointment` (de T7), `updateAppointmentByAdmin` y `createClosure` ya no existen, las suites de las specs 007, 008 y 010 siguen en verde, y todo está en verde.
 
 - [ ] **T9. Reglas de Firestore y comprobación manual** (`firestore.rules`, `test/core/firestore_rules_test.dart`, `specs/012-reglas/rules-check.md`, plan § 5, D-7). RF-1, RF-2, RF-4, RF-5, RF-14, RNF-3, RNF-5
   - Tests: en `firestore_rules_test.dart`.

@@ -971,6 +971,10 @@ class AppLocalizationsEs extends AppLocalizations {
       'El servicio elegido ya no está disponible.';
 
   @override
+  String get bookingItemChangedOnSave =>
+      'El servicio cambió de nombre, precio o duración. Revisa el resumen y vuelve a confirmar.';
+
+  @override
   String get bookingDateMoved =>
       'La fecha elegida ya no se puede reservar: te mostramos la siguiente disponible.';
 

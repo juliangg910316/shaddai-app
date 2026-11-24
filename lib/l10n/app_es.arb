@@ -501,6 +501,8 @@
   "@bookingSlotNoLongerFits": {"description": "El servicio ya no cabe en la hora elegida (RF-16)"},
   "bookingItemUnavailable": "El servicio elegido ya no está disponible.",
   "@bookingItemUnavailable": {"description": "El servicio elegido ya no se ofrece (RF-17, RF-44)"},
+  "bookingItemChangedOnSave": "El servicio cambió de nombre, precio o duración. Revisa el resumen y vuelve a confirmar.",
+  "@bookingItemChangedOnSave": {"description": "Al guardar, el servidor encontró el servicio cambiado en la lista de precios (spec 012, RF-12, RF-16)"},
   "bookingDateMoved": "La fecha elegida ya no se puede reservar: te mostramos la siguiente disponible.",
   "@bookingDateMoved": {"description": "La fecha elegida dejó de poder elegirse (casos límite)"},
   "bookingUnavailableLabel": "no disponible",

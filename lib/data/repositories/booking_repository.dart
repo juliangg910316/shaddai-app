@@ -66,7 +66,9 @@ class BookingRepository {
           ?BusySlot.fromMap(decodeDates(doc.data()), doc.id),
       ];
 
-  /// Guarda [appointment] y su turno ocupado en un solo lote (RF-27; las
+  /// Guarda [appointment] y su turno ocupado en un solo lote. Solo la usa
+  /// la reserva de la admin hasta que pase a la función (spec 012, T8).
+  /// (RF-27; las
   /// reglas exigen los dos juntos). Si no termina en [saveTimeout], lanza
   /// `TimeoutException` (RF-31).
   Future<void> createAppointment(AppointmentModel appointment) {
@@ -139,44 +141,6 @@ class BookingRepository {
       appointment: doc.exists ? _appointment(doc) : null,
       busy: _slots(results[1] as QuerySnapshot<Map<String, dynamic>>),
     );
-  }
-
-  /// Guarda la edición del turno [id] en una transacción (spec 006, plan
-  /// D-5): vuelve a leer el turno y, solo si [expected] lo da por bueno,
-  /// cambia su inicio, su fin y lo reservado, lo deja esperando confirmación
-  /// (RF-13) y cambia a la vez su turno ocupado (RF-26).
-  ///
-  /// Devuelve `false` si el turno ya no es el esperado. Si no termina en
-  /// [saveTimeout], lanza `TimeoutException` (RF-16).
-  Future<bool> updateEditedAppointment({
-    required String id,
-    required bool Function(AppointmentModel? current) expected,
-    required DateTime start,
-    required DateTime end,
-    required BookedServiceModel booked,
-  }) {
-    final appointmentRef = _appointments.doc(id);
-    return _firestore
-        .runTransaction<bool>((transaction) async {
-          final doc = await transaction.get(appointmentRef);
-          if (!expected(doc.exists ? _appointment(doc) : null)) return false;
-          transaction
-            ..update(
-              appointmentRef,
-              encodeDates({
-                'startTime': start,
-                'endTime': end,
-                'booked': booked.toMap(),
-                'status': 'waiting_confirmation',
-              }),
-            )
-            ..update(
-              _busySlots.doc(id),
-              encodeDates({'start': start, 'end': end}),
-            );
-          return true;
-        })
-        .timeout(saveTimeout);
   }
 
   /// El turno [id] en vivo, o `null` si no existe (spec 008, RF-19, RF-30).

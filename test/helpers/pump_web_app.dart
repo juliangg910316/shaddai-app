@@ -275,9 +275,9 @@ Future<FakeWebSession> _pumpRealApp(
         pushRepositoryProvider.overrideWithValue(
           pushRepository ?? FakePushRepository(),
         ),
-        agendaFunctionsProvider.overrideWithValue(
-          agendaFunctions ?? FakeAgendaFunctions(),
-        ),
+        agendaFunctions == null
+            ? agendaFunctionsProvider.overrideWith(FakeAgendaFunctions.linked)
+            : agendaFunctionsProvider.overrideWithValue(agendaFunctions),
         ...overrides,
       ],
       child: const MyApp(),

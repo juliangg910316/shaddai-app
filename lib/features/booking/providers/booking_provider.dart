@@ -7,6 +7,7 @@ import '../../../data/models/appointment_model.dart';
 import '../../../data/models/busy_slot_model.dart';
 import '../../../data/models/calendar_settings_model.dart';
 import '../../../data/models/closure_model.dart';
+import '../../../data/repositories/agenda_functions.dart';
 import '../../../data/repositories/booking_repository.dart';
 import '../../../data/repositories/config_repository.dart';
 
@@ -26,6 +27,7 @@ import '../logic/booking_selection.dart'
 import '../logic/booking_window.dart';
 import '../logic/free_slots.dart';
 import '../logic/salon_time.dart';
+import 'agenda_functions_provider.dart';
 
 final bookingRepositoryProvider = Provider((ref) => BookingRepository());
 final configRepositoryProvider = Provider((ref) => ConfigRepository());
@@ -466,9 +468,41 @@ Future<List<BusyRange>> fetchClosureRanges(Ref ref, DateTime day) async =>
     );
 
 /// Resultado de "Agendar turno" (RF-26 a RF-31, RF-36).
-enum BookingSubmitResult { ok, slotTaken, doesNotFit, alreadyActive, failed }
+/// El resultado de "Agendar turno". [itemUnavailable] e [itemChanged] los
+/// da el servidor: lo reservado ya no está en la lista o cambió (spec 012,
+/// RF-12).
+enum BookingSubmitResult {
+  ok,
+  slotTaken,
+  doesNotFit,
+  alreadyActive,
+  itemUnavailable,
+  itemChanged,
+  failed,
+}
 
-/// Guarda el turno elegido tras comprobarlo en el servidor (plan D-4).
+/// Lo que da "Agendar turno" cuando el servidor responde [rejection]
+/// (`null`: guardado; spec 012, plan § 6). Las reglas de horas (cierre,
+/// horario, ventana, ya pasada) se avisan como hora ocupada, igual que la
+/// comprobación de la app.
+BookingSubmitResult bookingResultOf(AgendaRejection? rejection) =>
+    switch (rejection) {
+      null => BookingSubmitResult.ok,
+      AgendaRejection.slotTaken ||
+      AgendaRejection.closed ||
+      AgendaRejection.outsideHours ||
+      AgendaRejection.outsideWindow ||
+      AgendaRejection.past => BookingSubmitResult.slotTaken,
+      AgendaRejection.doesNotFit => BookingSubmitResult.doesNotFit,
+      AgendaRejection.alreadyActive => BookingSubmitResult.alreadyActive,
+      AgendaRejection.itemUnavailable => BookingSubmitResult.itemUnavailable,
+      AgendaRejection.itemChanged => BookingSubmitResult.itemChanged,
+      _ => BookingSubmitResult.failed,
+    };
+
+/// Guarda el turno elegido tras comprobarlo en el servidor (plan D-4): la
+/// app comprueba primero y, si está bien, lo guarda la función
+/// `bookAppointment` (spec 012).
 class BookingSubmitter {
   BookingSubmitter(this._ref);
 
@@ -534,25 +568,21 @@ class BookingSubmitter {
         ))
           if (selection.addonIds.contains(addon.id)) addon,
       ];
-      final startTime = fromSalon(start);
-      await repository
-          .createAppointment(
-            AppointmentModel(
-              id: const Uuid().v4(),
-              clientId: user.uid,
-              clientName: user.displayName,
-              clientPhone: user.phoneNumber ?? '',
-              clientPhotoUrl: user.photoUrl,
-              startTime: startTime,
-              endTime: startTime.add(
-                Duration(minutes: bookable.durationMinutes),
-              ),
-              status: 'waiting_confirmation',
-              createdAt: _ref.read(clockProvider)(),
-              booked: snapshotOf(bookable, addons),
-            ),
+      // Guarda el servidor, que vuelve a comprobarlo todo (spec 012, D-1).
+      final agenda = _ref.read(agendaFunctionsProvider);
+      final saved = await agenda
+          .book(
+            id: const Uuid().v4(),
+            start: fromSalon(start),
+            booked: snapshotOf(bookable, addons),
           )
-          .timeout(repository.saveTimeout);
+          .timeout(agenda.timeout);
+      final result = bookingResultOf(saved.rejection);
+      if (result == BookingSubmitResult.slotTaken ||
+          result == BookingSubmitResult.doesNotFit) {
+        selector.dropSlot();
+      }
+      if (result != BookingSubmitResult.ok) return result;
     } catch (error) {
       debugPrint('No se pudo agendar el turno: $error');
       return BookingSubmitResult.failed;
