@@ -43,6 +43,7 @@
 - **Turno**: clienta (id, nombre, teléfono, foto), inicio, fin, estado (`waiting_confirmation` | `confirmed` | `cancelled`) y fecha de creación. Desde la spec 009, quién lo canceló (`cancelledBy: 'client'` si fue la clienta; sin el campo, el salón) y si la cuenta de la clienta se borró (`accountDeleted: true`: conserva nombre y WhatsApp para la admin, sin la foto).
 - **Calendario**: horario de cada día de la semana (apertura, cierre, cerrado), duración global del turno y fechas bloqueadas.
 - **Servicio**: nuevo en Firestore; sus campos se definen en su spec.
+- **Escritura de la agenda** (spec 012): los turnos, sus horas ocupadas y los cierres solo los guarda el servidor, que comprueba antes las reglas de la agenda (sin solapes, un turno activo por persona, horario, ventana, duración y lo reservado según la lista de precios). Confirmar, cancelar, bloquear y quitar cierres siguen guardándose desde la app.
 
 ## 5. Glosario
 
@@ -57,7 +58,7 @@
 
 ## 6. Alcance
 
-**Dentro (v1):** landing/inicio, servicios y precios, inicio de sesión con Google y captura de WhatsApp, reserva de turnos, perfil con mis turnos, panel admin (turnos, usuarias y calendario), aviso push a la admin, tema claro/oscuro y ES/PT.
+**Dentro (v1):** landing/inicio, servicios y precios, inicio de sesión con Google y captura de WhatsApp, reserva de turnos, perfil con mis turnos, panel admin (turnos, usuarias y calendario), aviso push a la admin, reglas de la agenda comprobadas en el servidor (spec 012), tema claro/oscuro y ES/PT.
 
 **Fuera (v1):** campañas push a clientas (descuentos, promociones, recordatorios).
 
@@ -90,5 +91,5 @@ Mapa aprobado el 2026-10-20, en orden. El 2026-10-24 el autor dividió las reser
 | 009-perfil | Perfil y mis turnos: cancelar el turno, historial, cambiar el WhatsApp y borrar la cuenta (Cloud Function `deleteAccount`) | implementada (2026-11-18) |
 | 010-admin | Panel de administración: confirmar al cancelar y al bloquear (bloquear cancela el turno activo), "Hoy" y calendario en la agenda, turnos pasados de solo lectura, lista de clientas sin admins y con WhatsApp | implementada (2026-11-20) |
 | 011-push | Avisos push a la admin (solo Android/iOS, en español) cuando una clienta reserva, edita o cancela un turno; tocarlo abre la agenda de ese día | implementada (2026-11-23) |
-| 012-reglas | Reglas de la agenda en el servidor: sin solapes entre turnos ni con cierres, un turno activo por persona, horario, ventana, duración y lo reservado según la lista de precios | spec, plan y tareas aprobados (2026-11-23) |
+| 012-reglas | Reglas de la agenda en el servidor: sin solapes entre turnos ni con cierres, un turno activo por persona, horario, ventana, duración y lo reservado según la lista de precios | implementada (2026-11-24) |
 | 013-publicacion | Publicación en tiendas y web en Hostinger | sin empezar |

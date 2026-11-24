@@ -1,5 +1,5 @@
 # Spec 012 — Reglas del servidor para los turnos
-Estado: aprobada
+Estado: implementada
 
 ## Contexto y objetivo
 Hoy la app comprueba, antes de guardar un turno, que la hora está libre, que no cae en un cierre, que la persona no tiene ya un turno activo, que la hora está dentro del horario y de la ventana de reserva, y que lo reservado es lo de la lista de precios (specs 005 a 008). Pero el servidor solo protege quién puede escribir qué, no estas reglas de la agenda. Dos confirmaciones en el mismo instante, o una app modificada, pueden guardar dos turnos a la misma hora, un turno dentro de un cierre, un segundo turno activo, un turno a las 3 de la mañana o un servicio de dos horas guardado como de media hora y con otro precio. Las specs 005, 006, 007 y 008 dejaron esta garantía para esta spec.

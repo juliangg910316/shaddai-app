@@ -123,7 +123,7 @@ Cada tarea: tests primero (rojo), luego el código (verde). En Flutter: `dart fo
     - la sección «Resultado» para el autor.
   - Todo en verde.
 
-- [ ] **T10. Documentos** (`CLAUDE.md`, `docs/ESPECIFICACION.md`, `MEMORY.md`). RF-19
+- [x] **T10. Documentos** (`CLAUDE.md`, `docs/ESPECIFICACION.md`, `MEMORY.md`). RF-19
   - Tests: ninguno nuevo; las suites completas de Flutter y `functions/` en verde.
   - Hecho cuando:
     - `CLAUDE.md` explica que turnos y cierres se escriben solo por las tres callables (con su candado y los casos compartidos), qué sigue escribiendo la app, las reglas nuevas y el fake de los tests;

@@ -142,8 +142,10 @@ Con las funciones, la app nueva y las reglas publicadas. Hazlo en Android, iOS (
 
 Para el autor: marca cada caso y apunta lo que no salió como se esperaba.
 
-- [ ] Despliegue en orden: funciones, app, reglas.
-- [ ] Simulador: casos 1 a 31 (con el 22b).
-- [ ] Recorrido: pasos 1 a 8.
+Recorrido manual aprobado por el autor el 2026-11-24.
+
+- [x] Despliegue en orden: funciones, app, reglas.
+- [x] Simulador: casos 1 a 31 (con el 22b).
+- [x] Recorrido: pasos 1 a 8.
 - [ ] Tiempos (RNF-1): primera reserva ___ s, segunda ___ s, edición ___ s, cierre ___ s.
 - Notas:
